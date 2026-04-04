@@ -42,7 +42,7 @@ Handle errors
 - ビジネスロジック上の検証失敗時に早期終了
 - 必要なデータが欠損している場合の防御的終了
 
-## Call Recipe Function
+## Recipe Functions（レシピ関数）
 
 別のレシピを呼び出してロジックを再利用する。
 
@@ -51,3 +51,19 @@ Handle errors
 - レシピ間でロジックを共有
 - 入力パラメータを渡し、結果を受け取る
 - メンテナンスの一元化
+
+### 作成手順
+
+1. 新規レシピを作成し、トリガーに「Recipe function」を選択
+2. Input Schema（JSON）を定義 — 呼出し元から受け取るパラメータ
+3. Response Schema（JSON）を定義 — 呼出し元に返すデータ
+4. レシピ内にロジックを構築
+
+### 呼び出し方
+
+1. 呼出し元レシピで「Call recipe」アクションを追加
+2. 対象の Recipe function を選択
+3. Input Schema のフィールドに datapill をマッピング
+4. Response のデータピルが後続ステップで利用可能に
+
+> **注意**: 旧 Callable recipes コネクタは非推奨。新規作成は Recipe functions コネクタを使用。

@@ -14,9 +14,13 @@ Workato (エンタープライズ iPaaS) の自動化開発を Claude Code / Cur
     .workatoenv              # プロジェクト設定（project_id等）
   docs/
     logic/                   # ロジックパターン（公式ドキュメントベース）
+      triggers.md            # トリガーの種類（Polling/Real-time/Scheduled/CDC）、条件、Since
       if-conditions.md       # IF/ELSE IF/ELSE + 14条件演算子
       loops.md               # repeat-while, repeat-for-each
-      error-handling.md      # Monitor/Error ブロック、Stop Job、Call Recipe
+      error-handling.md      # Monitor/Error ブロック、Stop Job、Recipe Functions
+      data-pills.md          # データピル、データマッピング、型変換、システムデータピル
+      formulas.md            # フォーミュラモード、文字列/数値/日付/リスト操作
+      file-handling.md       # ファイル処理（テキスト/バイナリ、ストリーミング）
     connectors/              # コネクタナレッジ
       _index.md              # 全コネクタ一覧 + 分類（Pre-built/Universal/Community/Custom）
       slack.md               # Slack + Workbot for Slack
