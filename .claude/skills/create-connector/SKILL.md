@@ -101,7 +101,11 @@ settings.yaml.enc
 生成完了後、以下を表示:
 - 生成したファイル一覧
 - コネクタの構成サマリー（認証方式、アクション数、トリガー数）
-- 次のステップ:
+- 次のステップ（本家 CLI の場合）:
   1. `settings.yaml` に認証情報を設定
-  2. `workato exec connector.rb test` でテスト
+  2. `workato exec connectors/<name>/connector.rb test` でテスト
   3. `workato push connectors/<name>` でアップロード
+- 次のステップ（フォーク版 CLI の場合）:
+  1. `settings.yaml` に認証情報を設定
+  2. `workato sdk exec connectors/<name>/connector.rb test` でテスト
+  3. `workato sdk push connectors/<name>` でアップロード

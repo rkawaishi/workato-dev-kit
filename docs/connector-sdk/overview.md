@@ -21,6 +21,8 @@ Workato が標準で提供していないアプリケーションに接続する
 
 ## SDK CLI コマンド
 
+### 本家 CLI (`gem install workato-connector-sdk`)
+
 | コマンド | 説明 |
 |---|---|
 | `workato new <PATH>` | 新規コネクタプロジェクト作成 |
@@ -28,6 +30,23 @@ Workato が標準で提供していないアプリケーションに接続する
 | `workato push <FOLDER>` | コネクタコードを Workato にアップロード |
 | `workato edit <PATH>` | 暗号化ファイルを編集 |
 | `workato generate <SUBCOMMAND>` | テンプレートからコード生成 |
+
+### フォーク版 CLI (`rkawaishi/workato-platform-cli`)
+
+SDK コマンドが Platform CLI に統合されており、Ruby gem 不要:
+
+| コマンド | 説明 |
+|---|---|
+| `workato sdk new <PATH>` | 新規コネクタプロジェクト作成 |
+| `workato sdk exec <PATH>` | コネクタの lambda ブロックを実行・テスト |
+| `workato sdk push <FOLDER>` | コネクタコードを Workato にアップロード |
+| `workato sdk generate schema <PATH>` | コネクタからスキーマ生成 |
+| `workato sdk oauth2 <PATH>` | OAuth2 フロー実行 |
+
+フォーク版にはさらに以下の追加機能がある:
+- `workato jobs list` / `workato jobs get` — ジョブ一覧・詳細
+- `workato oauth-profiles` — Custom OAuth Profile の CRUD
+- `workspace_id` による自動プロファイル解決（`.workatoenv` の Git 共有対応）
 
 ## プロジェクト構造
 
