@@ -7,13 +7,14 @@ Workato (エンタープライズ iPaaS) の自動化開発を Claude Code / Cur
 
 ```
 <workspace-root>/
-  <project-name>/           # レシピプロジェクト（Platform CLI 管理）
-    *.recipe.json            # レシピ（ワークフロー定義）
-    *.connection.json        # コネクション（接続情報）
-    *.agentic_genie.json     # Genie（AIエージェント定義）
-    *.agentic_skill.json     # Genieスキル定義
-    *.mcp_server.json        # MCP サーバー定義
-    .workatoenv              # プロジェクト設定（project_id等）
+  projects/                  # レシピプロジェクト（Platform CLI 管理）
+    <project-name>/
+      *.recipe.json          # レシピ（ワークフロー定義）
+      *.connection.json      # コネクション（接続情報）
+      *.agentic_genie.json   # Genie（AIエージェント定義）
+      *.agentic_skill.json   # Genieスキル定義
+      *.mcp_server.json      # MCP サーバー定義
+      .workatoenv            # プロジェクト設定（project_id等）
   connectors/                # カスタムコネクタ（Connector SDK）
     <connector-name>/
       connector.rb           # コネクタ定義（Ruby DSL）
@@ -82,7 +83,7 @@ Workato (エンタープライズ iPaaS) の自動化開発を Claude Code / Cur
 - インストール: `pipx install workato-platform-cli`
 - Pull: `workato projects use "<name>" && workato pull`
 - Push: `workato push`
-- Init: `workato init --non-interactive --profile <profile> --project-id <id> --folder-name "<name>"`
+- Init: `workato init --non-interactive --profile <profile> --project-id <id> --folder-name "projects/<name>"`
 
 ### Connector SDK CLI（コネクタ開発）
 - インストール: `gem install workato-connector-sdk`

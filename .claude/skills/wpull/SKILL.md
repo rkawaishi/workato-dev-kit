@@ -27,7 +27,7 @@ workato pull
 ### --all の場合
 1. `workato projects list --source remote --output-mode json` でリモート一覧取得
 2. 各プロジェクトについて:
-   - ローカルに存在しない場合: `workato init --non-interactive --profile default --project-id <id> --folder-name "<name>"`
+   - ローカルに存在しない場合: `workato init --non-interactive --profile default --project-id <id> --folder-name "projects/<name>"`
    - 存在する場合: `workato projects use "<name>" && workato pull`
 
 ### --list の場合
