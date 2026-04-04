@@ -118,6 +118,17 @@ foreach 内の current_item:
 }
 ```
 
+## Genie 呼び出し (`assign_task_to_genie`)
+
+レシピから Genie を呼び出す:
+- `name`: `"assign_task_to_genie"`
+- `input.genie_handle`: Genie ファイル参照（zip_name 形式）
+- `input.task_instructions`: タスク指示テキスト（datapill 可）
+
+スキルレシピのパラメータ参照:
+- `path:["parameters","<param_name>"]`（parameters 配下にネスト）
+- `workflow_return_result`: `input.result.<field>` に個別マッピング
+
 ## Custom Action (`__adhoc_http_action`)
 
 コネクタに適切なアクションがない場合、API を直接呼び出す:

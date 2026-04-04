@@ -1,7 +1,7 @@
 {
   "name": "Auto reply to Slack ticket reactions",
   "description": "Slack メッセージに :ticket: リアクションが付いたら起動し、メッセージ内容を読み取り、Jira から類似した過去の問い合わせを検索して一次回答をスレッドに投稿する。\n\n**Trigger**: Slack で :ticket: リアクション追加\n**Actions**:\n1. リアクションが付いたメッセージの内容を取得\n2. Jira で類似チケットを JQL 検索\n3. AI で過去チケットの情報を分析し一次回答を生成\n4. Slack スレッドに一次回答を投稿",
-  "version": 7,
+  "version": 10,
   "private": true,
   "concurrency": 1,
   "code": {
@@ -446,16 +446,22 @@
       {
         "number": 2,
         "provider": "workato_genie",
-        "name": "ask_genie",
+        "name": "assign_task_to_genie",
         "as": "e3f7a2b9",
         "keyword": "action",
+        "dynamicPickListSelection": {
+          "genie_handle": "Helpdesk search agent"
+        },
+        "toggleCfg": {
+          "genie_handle": true
+        },
         "input": {
-          "genie_id": {
+          "genie_handle": {
             "zip_name": "helpdesk_search_agent.agentic_genie.json",
             "name": "Helpdesk search agent",
             "folder": ""
           },
-          "question": "以下の問い合わせについて、類似する過去の Jira チケットを検索し、一次回答を作成してください。\n\n問い合わせ内容:\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"4cc84584\",\"path\":[\"messages\",{\"path_element_type\":\"current_item\"},\"text\"]}')}"
+          "task_instructions": "以下の問い合わせがありました。\nJira のチケット（過去の対応履歴）から、類似する問い合わせを特定して一次回答を行なってください。\n\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"4cc84584\",\"path\":[\"messages\",{\"path_element_type\":\"current_item\"},\"text\"]}')}"
         },
         "comment": "Helpdesk search agent（Genie）を呼び出し、Jira 検索と一次回答生成を AI エージェントに委任する",
         "uuid": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e"
@@ -608,6 +614,7 @@
     {
       "keyword": "application",
       "provider": "workato_genie",
+      "skip_validation": false,
       "account_id": null
     }
   ]

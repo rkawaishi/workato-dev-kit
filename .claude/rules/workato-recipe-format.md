@@ -76,6 +76,42 @@ provider が `workato_genie` の場合:
 }
 ```
 
+## Genie 呼び出し (`assign_task_to_genie`)
+
+レシピから AI エージェント（Genie）を呼び出す:
+
+```json
+{
+  "provider": "workato_genie",
+  "name": "assign_task_to_genie",
+  "keyword": "action",
+  "dynamicPickListSelection": { "genie_handle": "Genie名" },
+  "toggleCfg": { "genie_handle": true },
+  "input": {
+    "genie_handle": {
+      "zip_name": "genie.agentic_genie.json",
+      "name": "Genie名",
+      "folder": ""
+    },
+    "task_instructions": "タスク指示文（datapill 可）"
+  }
+}
+```
+
+## Genie スキルレシピのパラメータ参照
+
+- パラメータは `parameters` オブジェクト配下にネスト:
+  `path:["parameters","<param_name>"]`
+- `workflow_return_result` は `input.result.<field>` に個別マッピング:
+  ```json
+  "input": {
+    "result": {
+      "field1": "#{_dp('...')}",
+      "field2": "#{_dp('...')}"
+    }
+  }
+  ```
+
 ## Custom Action (`__adhoc_http_action`)
 
 コネクタに適切なアクションがない場合、API を直接呼び出す:

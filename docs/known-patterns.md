@@ -66,7 +66,47 @@ trigger (workato_genie/start_workflow)
 - トリガーの `input` に `parameters_schema_json` と `result_schema_json` を JSON 文字列で定義
 - `as` フィールドにはランダム8文字 hex を使用（通常レシピとの違い）
 - 最終ステップで必ず `workflow_return_result` を呼ぶ
-- 出典: `search_contracts_in_salesforce.recipe.json`, `update_contract_in_salesforce.recipe.json`
+- パラメータ参照: `path:["parameters","<param_name>"]` でアクセス（`parameters` がネストされる）
+- `workflow_return_result` の入力: `input.result.<field>` に個別マッピング
+- 出典: `search_contracts_in_salesforce.recipe.json`, `search_similar_jira_tickets.recipe.json`
+
+### パターン5: レシピから Genie を呼び出す
+
+レシピ内で AI エージェント（Genie）にタスクを委任するパターン。
+
+```
+trigger (slack_bot/new_event)
+  ├── action (slack_bot/__adhoc_http_action)    — データ取得
+  ├── action (workato_genie/assign_task_to_genie) — Genie にタスク委任
+  └── action (slack_bot/post_bot_message)       — 結果を投稿
+```
+
+Genie 呼び出しステップの構造:
+```json
+{
+  "provider": "workato_genie",
+  "name": "assign_task_to_genie",
+  "keyword": "action",
+  "dynamicPickListSelection": {
+    "genie_handle": "Genie名"
+  },
+  "toggleCfg": { "genie_handle": true },
+  "input": {
+    "genie_handle": {
+      "zip_name": "genie.agentic_genie.json",
+      "name": "Genie名",
+      "folder": ""
+    },
+    "task_instructions": "タスク指示文（datapill 可）"
+  }
+}
+```
+
+- アクション名は **`assign_task_to_genie`**（`ask_genie` ではない）
+- `input.genie_handle`: Genie ファイルを参照（zip_name 形式）
+- `input.task_instructions`: Genie に渡すタスク指示テキスト
+- Genie が内部でスキルレシピを実行し、結果を返す
+- 出典: `auto_reply_to_slack_ticket_reactions.recipe.json`
 
 ### パターン4: イベントトリガー → データ取得 → AI分析 → 通知
 
