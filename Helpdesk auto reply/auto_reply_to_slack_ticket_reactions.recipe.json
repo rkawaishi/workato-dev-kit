@@ -1,24 +1,94 @@
 {
   "name": "Auto reply to Slack ticket reactions",
   "description": "Slack メッセージに :ticket: リアクションが付いたら起動し、メッセージ内容を読み取り、Jira から類似した過去の問い合わせを検索して一次回答をスレッドに投稿する。\n\n**Trigger**: Slack で :ticket: リアクション追加\n**Actions**:\n1. リアクションが付いたメッセージの内容を取得\n2. Jira で類似チケットを JQL 検索\n3. AI で過去チケットの情報を分析し一次回答を生成\n4. Slack スレッドに一次回答を投稿",
-  "version": 4,
+  "version": 7,
   "private": true,
   "concurrency": 1,
   "code": {
     "number": 0,
-    "provider": "slack",
+    "provider": "slack_bot",
     "name": "new_event",
-    "as": "new_event",
+    "as": "fd6582a2",
     "keyword": "trigger",
-    "input": {
-      "webhook_suffix": "reaction_added"
+    "dynamicPickListSelection": {
+      "event_name": "Reaction Added (reaction_added)"
     },
+    "toggleCfg": {
+      "event_name": true
+    },
+    "input": {
+      "event_name": "reaction_added"
+    },
+    "extended_output_schema": [
+      {
+        "label": "Reaction added",
+        "name": "reaction_added",
+        "properties": [
+          {
+            "control_type": "text",
+            "label": "Type",
+            "type": "string",
+            "name": "type"
+          },
+          {
+            "control_type": "text",
+            "label": "User",
+            "type": "string",
+            "name": "user"
+          },
+          {
+            "control_type": "text",
+            "label": "Reaction",
+            "type": "string",
+            "name": "reaction"
+          },
+          {
+            "control_type": "text",
+            "label": "Item user",
+            "type": "string",
+            "name": "item_user"
+          },
+          {
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Type",
+                "type": "string",
+                "name": "type"
+              },
+              {
+                "control_type": "text",
+                "label": "Channel",
+                "type": "string",
+                "name": "channel"
+              },
+              {
+                "control_type": "text",
+                "label": "Ts",
+                "type": "string",
+                "name": "ts"
+              }
+            ],
+            "label": "Item",
+            "type": "object",
+            "name": "item"
+          },
+          {
+            "control_type": "text",
+            "label": "Event ts",
+            "type": "string",
+            "name": "event_ts"
+          }
+        ],
+        "type": "object"
+      }
+    ],
     "block": [
       {
         "number": 1,
-        "provider": "slack",
+        "provider": "slack_bot",
         "name": "__adhoc_http_action",
-        "as": "get_message",
+        "as": "4cc84584",
         "keyword": "action",
         "toggleCfg": {
           "input.data.inclusive": true
@@ -31,14 +101,14 @@
           "input": {
             "schema": "[{\"control_type\":\"text\",\"label\":\"channel\",\"optional\":true,\"details\":{\"real_name\":\"channel\"},\"sticky\":true,\"parent\":[\"input\",\"data\"],\"type\":\"string\",\"name\":\"channel\"},{\"control_type\":\"text\",\"label\":\"latest\",\"optional\":true,\"details\":{\"real_name\":\"latest\"},\"parent\":[\"input\",\"data\"],\"sticky\":true,\"type\":\"string\",\"name\":\"latest\"},{\"control_type\":\"text\",\"label\":\"oldest\",\"optional\":true,\"details\":{\"real_name\":\"oldest\"},\"parent\":[\"input\",\"data\"],\"sticky\":true,\"type\":\"string\",\"name\":\"oldest\"},{\"control_type\":\"checkbox\",\"label\":\"inclusive\",\"parse_output\":\"boolean_conversion\",\"render_input\":\"boolean_conversion\",\"optional\":true,\"details\":{\"real_name\":\"inclusive\"},\"parent\":[\"input\",\"data\"],\"toggle_hint\":\"Select from option list\",\"toggle_field\":{\"label\":\"inclusive\",\"control_type\":\"text\",\"toggle_hint\":\"Use custom value\",\"name\":\"inclusive\",\"type\":\"boolean\",\"optional\":true,\"details\":{\"real_name\":\"inclusive\"},\"parent\":[\"input\",\"data\"]},\"sticky\":true,\"type\":\"number\",\"name\":\"inclusive\"},{\"name\":\"limit\",\"type\":\"integer\",\"optional\":true,\"label\":\"limit\",\"details\":{\"real_name\":\"limit\"},\"control_type\":\"integer\",\"parent\":[\"input\",\"data\"]}]",
             "data": {
-              "limit": "1",
-              "channel": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack\",\"line\":\"new_event\",\"path\":[\"event\",\"channel\"]}')}",
-              "latest": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack\",\"line\":\"new_event\",\"path\":[\"event\",\"ts\"]}')}",
-              "oldest": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack\",\"line\":\"new_event\",\"path\":[\"event\",\"ts\"]}')}",
-              "inclusive": "true"
+              "channel": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"fd6582a2\",\"path\":[\"reaction_added\",\"item\",\"channel\"]}')}",
+              "latest": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"fd6582a2\",\"path\":[\"reaction_added\",\"item\",\"ts\"]}')}",
+              "oldest": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"fd6582a2\",\"path\":[\"reaction_added\",\"item\",\"ts\"]}')}",
+              "inclusive": "true",
+              "limit": "1"
             }
           },
-          "output": "[{\"control_type\":\"text\",\"label\":\"Ok\",\"render_input\":\"boolean_conversion\",\"parse_output\":\"boolean_conversion\",\"toggle_hint\":\"Select from option list\",\"toggle_field\":{\"label\":\"Ok\",\"control_type\":\"text\",\"toggle_hint\":\"Use custom value\",\"type\":\"boolean\",\"name\":\"ok\"},\"type\":\"boolean\",\"name\":\"ok\"},{\"label\":\"Messages\",\"of\":\"object\",\"properties\":[{\"control_type\":\"text\",\"label\":\"Type\",\"type\":\"string\",\"name\":\"type\"},{\"control_type\":\"text\",\"label\":\"User\",\"type\":\"string\",\"name\":\"user\"},{\"control_type\":\"text\",\"label\":\"Text\",\"type\":\"string\",\"name\":\"text\"},{\"control_type\":\"text\",\"label\":\"Ts\",\"type\":\"string\",\"name\":\"ts\"}],\"type\":\"array\",\"name\":\"messages\"},{\"control_type\":\"text\",\"label\":\"Has more\",\"render_input\":\"boolean_conversion\",\"parse_output\":\"boolean_conversion\",\"toggle_hint\":\"Select from option list\",\"toggle_field\":{\"label\":\"Has more\",\"control_type\":\"text\",\"toggle_hint\":\"Use custom value\",\"type\":\"boolean\",\"name\":\"has_more\"},\"type\":\"boolean\",\"name\":\"has_more\"},{\"control_type\":\"number\",\"label\":\"Pin count\",\"parse_output\":\"float_conversion\",\"type\":\"number\",\"name\":\"pin_count\"},{\"properties\":[{\"control_type\":\"text\",\"label\":\"Next cursor\",\"type\":\"string\",\"name\":\"next_cursor\"}],\"label\":\"Response metadata\",\"type\":\"object\",\"name\":\"response_metadata\"}]"
+          "output": "[{\"control_type\":\"text\",\"label\":\"Ok\",\"render_input\":\"boolean_conversion\",\"parse_output\":\"boolean_conversion\",\"toggle_hint\":\"Select from option list\",\"toggle_field\":{\"label\":\"Ok\",\"control_type\":\"text\",\"toggle_hint\":\"Use custom value\",\"type\":\"boolean\",\"name\":\"ok\"},\"type\":\"boolean\",\"name\":\"ok\"},{\"label\":\"Messages\",\"type\":\"array\",\"name\":\"messages\",\"of\":\"object\",\"properties\":[{\"control_type\":\"text\",\"label\":\"Type\",\"type\":\"string\",\"name\":\"type\"},{\"control_type\":\"text\",\"label\":\"User\",\"type\":\"string\",\"name\":\"user\"},{\"control_type\":\"text\",\"label\":\"Text\",\"type\":\"string\",\"name\":\"text\"},{\"control_type\":\"text\",\"label\":\"Ts\",\"type\":\"string\",\"name\":\"ts\"}]},{\"control_type\":\"text\",\"label\":\"Has more\",\"render_input\":\"boolean_conversion\",\"parse_output\":\"boolean_conversion\",\"toggle_hint\":\"Select from option list\",\"toggle_field\":{\"label\":\"Has more\",\"control_type\":\"text\",\"toggle_hint\":\"Use custom value\",\"type\":\"boolean\",\"name\":\"has_more\"},\"type\":\"boolean\",\"name\":\"has_more\"},{\"control_type\":\"number\",\"label\":\"Pin count\",\"parse_output\":\"float_conversion\",\"type\":\"number\",\"name\":\"pin_count\",\"render_input\":\"float_conversion\"},{\"properties\":[{\"control_type\":\"text\",\"label\":\"Next cursor\",\"type\":\"string\",\"name\":\"next_cursor\"}],\"label\":\"Response metadata\",\"type\":\"object\",\"name\":\"response_metadata\"}]"
         },
         "extended_output_schema": [
           {
@@ -118,7 +188,8 @@
             "name": "pin_count",
             "optional": true,
             "parse_output": "float_conversion",
-            "type": "number"
+            "type": "number",
+            "render_input": "float_conversion"
           },
           {
             "label": "Response metadata",
@@ -357,12 +428,12 @@
         "visible_config_fields": [
           "mnemonic",
           "verb",
+          "path",
           "response_type",
           "input",
           "input.schema",
           "output",
           "input.data.channel",
-          "path",
           "input.data.latest",
           "input.data.oldest",
           "input.data.inclusive",
@@ -399,12 +470,130 @@
       },
       {
         "number": 4,
-        "provider": "slack",
-        "name": "post_message",
-        "as": "post_message",
+        "provider": "slack_bot",
+        "name": "post_bot_message",
+        "as": "64c48bb1",
         "keyword": "action",
-        "input": {
+        "toggleCfg": {
+          "channel": true
         },
+        "input": {
+          "channel": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"fd6582a2\",\"path\":[\"reaction_added\",\"item\",\"channel\"]}')}",
+          "text": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"open_ai_utility\",\"line\":\"analyse_document\",\"path\":[\"response\"]}')}",
+          "advanced": {
+            "thread_ts": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"fd6582a2\",\"path\":[\"reaction_added\",\"event_ts\"]}')}"
+          }
+        },
+        "visible_config_fields": [
+          "blocks",
+          "blocks.block_type",
+          "blocks.section_text",
+          "blocks.image_url",
+          "blocks.alt_text",
+          "blocks.button_title",
+          "blocks.url",
+          "blocks.bot_command",
+          "blocks.params",
+          "blocks.style",
+          "blocks.button_type",
+          "blocks.attachment_fields",
+          "blocks.attachment_fields.value",
+          "blocks.placeholder_text",
+          "blocks.menu_type",
+          "blocks.dynamic_menu_recipe",
+          "blocks.field_name",
+          "blocks.options",
+          "blocks.options.title",
+          "blocks.options.bot_command",
+          "blocks.options.params",
+          "blocks.options.init_value",
+          "blocks.init_option",
+          "blocks.initial_date",
+          "blocks.options.value",
+          "blocks.init_options",
+          "blocks.image_title",
+          "blocks.external_id",
+          "blocks.elements",
+          "blocks.elements.type",
+          "blocks.elements.text",
+          "blocks.elements.image_url",
+          "blocks.elements.alt_text",
+          "blocks.actions",
+          "blocks.actions.type",
+          "blocks.actions.button_title",
+          "blocks.actions.url",
+          "blocks.actions.bot_command",
+          "blocks.actions.params",
+          "blocks.actions.style",
+          "blocks.actions.button_type",
+          "blocks.actions.placeholder_text",
+          "blocks.actions.initial_date",
+          "blocks.actions.field_name",
+          "blocks.actions.options",
+          "blocks.actions.options.params",
+          "blocks.actions.menu_type",
+          "blocks.actions.dynamic_menu_recipe",
+          "blocks.objects",
+          "blocks.objects.blocks",
+          "blocks.objects.blocks.block_type",
+          "blocks.objects.blocks.section_text",
+          "blocks.objects.blocks.image_url",
+          "blocks.objects.blocks.alt_text",
+          "blocks.objects.blocks.button_title",
+          "blocks.objects.blocks.button_type",
+          "blocks.objects.blocks.bot_command",
+          "blocks.objects.blocks.params",
+          "blocks.objects.blocks.url",
+          "blocks.objects.blocks.style",
+          "blocks.objects.blocks.attachment_fields",
+          "blocks.objects.blocks.attachment_fields.value",
+          "blocks.objects.blocks.placeholder_text",
+          "blocks.objects.blocks.menu_type",
+          "blocks.objects.blocks.dynamic_menu_recipe",
+          "blocks.objects.blocks.field_name",
+          "blocks.objects.blocks.options",
+          "blocks.objects.blocks.options.title",
+          "blocks.objects.blocks.options.bot_command",
+          "blocks.objects.blocks.options.params",
+          "blocks.objects.blocks.options.init_value",
+          "blocks.objects.blocks.init_option",
+          "blocks.objects.blocks.initial_date",
+          "blocks.objects.blocks.image_title",
+          "blocks.objects.blocks.elements",
+          "blocks.objects.blocks.elements.type",
+          "blocks.objects.blocks.elements.text",
+          "blocks.objects.blocks.elements.image_url",
+          "blocks.objects.blocks.elements.alt_text",
+          "blocks.objects.blocks.actions",
+          "blocks.objects.blocks.actions.type",
+          "blocks.objects.blocks.actions.button_title",
+          "blocks.objects.blocks.actions.url",
+          "blocks.objects.blocks.actions.bot_command",
+          "blocks.objects.blocks.actions.params",
+          "blocks.objects.blocks.actions.style",
+          "blocks.objects.blocks.actions.button_type",
+          "blocks.objects.blocks.actions.placeholder_text",
+          "blocks.objects.blocks.actions.initial_date",
+          "blocks.objects.blocks.actions.field_name",
+          "blocks.objects.blocks.actions.options",
+          "blocks.objects.blocks.actions.options.params",
+          "blocks.objects.blocks.actions.menu_type",
+          "blocks.objects.blocks.actions.dynamic_menu_recipe",
+          "text",
+          "message.title",
+          "message.title_link",
+          "message.attachment_text",
+          "message.color",
+          "attachment_fields",
+          "attachment_buttons",
+          "attachment_items.message.title",
+          "attachment_items.message.title_link",
+          "attachment_items.message.attachment_text",
+          "attachment_items.message.color",
+          "attachment_items.attachment_fields",
+          "attachment_items.attachment_buttons",
+          "advanced.thread_ts"
+        ],
         "comment": "AI が生成した一次回答を元メッセージのスレッドに投稿する",
         "uuid": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f80"
       }
@@ -414,16 +603,6 @@
     "format_version": 2
   },
   "config": [
-    {
-      "keyword": "application",
-      "provider": "slack",
-      "skip_validation": false,
-      "account_id": {
-        "zip_name": "Sample project 2/sample2_slack.connection.json",
-        "name": "Sample2 | Slack",
-        "folder": "Sample project 2"
-      }
-    },
     {
       "keyword": "application",
       "provider": "jira",
@@ -441,6 +620,16 @@
       "account_id": {
         "zip_name": "helpdesk_ai_by_workato.connection.json",
         "name": "Helpdesk | AI by Workato",
+        "folder": ""
+      }
+    },
+    {
+      "keyword": "application",
+      "provider": "slack_bot",
+      "skip_validation": false,
+      "account_id": {
+        "zip_name": "helpdesk_workbot_for_slack.connection.json",
+        "name": "Helpdesk | Workbot for Slack",
         "folder": ""
       }
     }

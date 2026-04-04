@@ -10,8 +10,10 @@
 | `gmail` | `download_attachment` | action | 添付ファイルダウンロード | Sample project 1 |
 | `google_drive` | `upload_file` | action | ファイルアップロード | Sample project 1 |
 | `jira` | `new_issue` | trigger | 新規チケット作成 | Sample project 2 |
-| `slack` | `new_event` | trigger | Slack イベント（リアクション追加等）。`input.webhook_suffix` でイベント種別指定 | Helpdesk auto reply |
-| `slack` | `__adhoc_http_action` | action | Custom action（Slack API 直接呼出）。標準アクションにない操作に使用 | Helpdesk auto reply |
+| `slack` | `new_event` | trigger | Slack イベント。`input.webhook_suffix` でイベント種別指定（標準コネクタ） | Helpdesk auto reply |
+| `slack_bot` | `new_event` | trigger | Slack イベント（Custom OAuth）。`input.event_name` でイベント種別指定 | Helpdesk auto reply |
+| `slack_bot` | `__adhoc_http_action` | action | Custom action（Slack API 直接呼出）。標準アクションにない操作に使用 | Helpdesk auto reply |
+| `slack_bot` | `post_bot_message` | action | Bot としてメッセージ投稿。`advanced.thread_ts` でスレッド返信 | Helpdesk auto reply |
 | `slack` | `post_message` | action | チャンネルへのメッセージ投稿 | Sample project 2 |
 | `jira` | `search_issues` | action | JQL によるチケット検索 | Helpdesk auto reply |
 | `salesforce` | `search_sobjects` | action | オブジェクト検索 | Sample project 3 |
@@ -78,10 +80,25 @@ trigger (slack/new_event) [webhook_suffix: "reaction_added"]
   └── action (slack/post_message)       — スレッドに投稿
 ```
 
-- `slack/new_event` トリガーは `input.webhook_suffix` でイベント種別を指定（`reaction_added` 等）
-- **注意**: `event_type` や `reaction` ではなく `webhook_suffix` がフィールド名
+- **`slack` (標準)**: `input.webhook_suffix` でイベント種別を指定
+- **`slack_bot` (Custom OAuth/Workbot)**: `input.event_name` でイベント種別を指定 + `dynamicPickListSelection` あり
+- `slack_bot` を使う理由: 標準コネクタでは `reaction_added` イベント購読や `channels.history` 権限がない
+- `slack_bot` ではトリガーの `as` がランダム hex になる（通常レシピでも）
+- `post_bot_message` は `input.advanced.thread_ts` でスレッド返信を指定
 - コネクションは別プロジェクトのものも `folder` 指定で参照可能
 - 出典: `auto_reply_to_slack_ticket_reactions.recipe.json`
+
+### slack vs slack_bot プロバイダーの違い
+
+| | `slack`（標準） | `slack_bot`（Workbot / Custom OAuth） |
+|---|---|---|
+| provider 名 | `slack` | `slack_bot` |
+| connection 名 | `* \| Slack` | `* \| Workbot for Slack` |
+| トリガーの event 指定 | `webhook_suffix` | `event_name` + `dynamicPickListSelection` |
+| メッセージ投稿 | `post_message` | `post_bot_message` |
+| `as` フィールド | アクション名と同じ | ランダム 8文字 hex |
+| Custom OAuth | 不要 | 必要（権限拡張）|
+| 用途 | 基本的な Slack 連携 | reaction_added 等の高度なイベント、channels.history 等 |
 
 ## Custom Action パターン (`__adhoc_http_action`)
 
