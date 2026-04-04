@@ -21,6 +21,7 @@ Workato (エンタープライズ iPaaS) の自動化開発を Claude Code / Cur
       data-pills.md          # データピル、データマッピング、型変換、システムデータピル
       formulas.md            # フォーミュラモード、文字列/数値/日付/リスト操作
       file-handling.md       # ファイル処理（テキスト/バイナリ、ストリーミング）
+    platform/                # Workato プラットフォーム機能
       data-tables.md         # Data Tables（内蔵データストア、4トリガー+10アクション）
     connectors/              # コネクタナレッジ
       _index.md              # 全コネクタ一覧 + 分類（Pre-built/Universal/Community/Custom）
