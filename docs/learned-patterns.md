@@ -1,0 +1,126 @@
+# Learned Patterns（独自知見）
+
+公式ドキュメントに載っていない、UI フィードバックから学んだ知見。
+`/learn-recipe` で自動更新される。
+
+## JSON 構造の非公開仕様
+
+### Datapill 記法
+
+```
+#{_dp('{"pill_type":"output","provider":"<provider>","line":"<as>","path":["field"]}')}
+```
+
+- `provider`: ステップの provider 名
+- `line`: ステップの `as` 値
+- `path`: フィールドパス配列。リストの現在アイテムは `{"path_element_type":"current_item"}`
+
+```ruby
+#{_('data.provider.step.field')}                    # ドット記法
+=_('data.provider.step.list').pluck('f').join(', ') # Ruby式
+```
+
+### `as` フィールドの命名規則
+
+- **通常レシピ**: アクション名と同じ値（例: `new_email`, `post_message`）
+- **Genie スキルレシピ**: ランダム 8文字 hex（例: `a7c3e1f9`）
+- **slack_bot コネクタ**: 通常レシピでもランダム 8文字 hex
+
+### Genie 呼び出し: `assign_task_to_genie`
+
+レシピから Genie を呼び出すアクション:
+```json
+{
+  "provider": "workato_genie",
+  "name": "assign_task_to_genie",
+  "dynamicPickListSelection": { "genie_handle": "Genie名" },
+  "toggleCfg": { "genie_handle": true },
+  "input": {
+    "genie_handle": { "zip_name": "genie.agentic_genie.json", "name": "Genie名", "folder": "" },
+    "task_instructions": "タスク指示文（datapill 可）"
+  }
+}
+```
+
+### Genie スキルレシピのパラメータ
+
+- パラメータ参照: `path:["parameters","<param_name>"]` — `parameters` 配下にネスト
+- `workflow_return_result` の入力: `input.result.<field>` に個別マッピング
+```json
+"input": {
+  "result": {
+    "field1": "#{_dp('...')}",
+    "field2": "#{_dp('...')}"
+  }
+}
+```
+
+### Custom Action (`__adhoc_http_action`)
+
+コネクタに適切なアクションがない場合、API を直接呼び出す:
+```json
+{
+  "provider": "<connector>",
+  "name": "__adhoc_http_action",
+  "as": "<任意の参照名>",
+  "input": {
+    "mnemonic": "表示名",
+    "verb": "get|post|put|delete",
+    "response_type": "json",
+    "path": "api/endpoint",
+    "input": {
+      "schema": "[{...スキーマJSON文字列...}]",
+      "data": { "param": "#{_dp('...')}" }
+    },
+    "output": "[{...レスポンススキーマJSON文字列...}]"
+  },
+  "extended_output_schema": [...],
+  "extended_input_schema": [...],
+  "visible_config_fields": [...],
+  "wizardFinished": true
+}
+```
+
+- `name` は常に `"__adhoc_http_action"`（全コネクタ共通）
+- コネクタの認証・base URI を利用しつつ任意の API エンドポイントを呼べる
+
+## Slack コネクタの固有知見
+
+### `slack` vs `slack_bot` のイベント指定
+
+| | `slack`（標準） | `slack_bot`（Workbot） |
+|---|---|---|
+| イベント種別フィールド | `input.webhook_suffix` | `input.event_name` |
+| dynamicPickListSelection | なし | あり |
+
+- 標準コネクタでは `reaction_added` イベント購読や `channels.history` 権限がない
+- これらが必要な場合は `slack_bot` + Custom OAuth profile を使用
+
+## Workato のインポート/エクスポート挙動
+
+- push 時に datapill を含む input を設定しても、UI でコネクタ未設定だと **空 `{}` にリセット**される
+- `version` は UI で編集するたびに自動インクリメント
+- コネクション名が微妙に変わることがある（例: `helpdesk_ai` → `helpdesk_ai_by_workato`）
+- 別プロジェクトのコネクションを参照する場合、`account_id.folder` にプロジェクト名が入る
+- `pull` で削除確認が入る場合がある（`echo "y" | workato pull` で自動承認）
+
+## コネクション参照の構造
+
+```json
+"account_id": {
+  "zip_name": "file.connection.json",  // 同一プロジェクト
+  "name": "Display Name",
+  "folder": ""
+}
+```
+
+```json
+"account_id": {
+  "zip_name": "Other Project/file.connection.json",  // 別プロジェクト
+  "name": "Display Name",
+  "folder": "Other Project"
+}
+```
+
+---
+*最終更新: Helpdesk auto reply フィードバック反映*

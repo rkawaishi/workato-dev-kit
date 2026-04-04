@@ -16,11 +16,16 @@ Workato レシピ JSON ファイルを対話的に生成するスキル。
    - **条件**: フィルタ条件があるか
    - **格納先プロジェクト**: どのプロジェクトディレクトリに作成するか
 
-2. JSON 構造のリファレンスを読む:
-   - `@.claude/rules/workato-recipe-format.md`
+2. コネクタのナレッジを確認:
+   - `@docs/connectors/_index.md` で利用するコネクタを特定
+   - `@docs/connectors/<connector>.md` があれば参照（なければ公式ドキュメントを WebFetch）
 
-3. 既存パターンを参照:
-   - `@docs/known-patterns.md` で類似パターンを確認
+3. JSON 構造のリファレンスを読む:
+   - `@.claude/rules/workato-recipe-format.md`
+   - ロジックステップが必要なら `@docs/logic/` の該当ファイル
+
+4. 独自知見と既存パターンを参照:
+   - `@docs/learned-patterns.md` で JSON 構造の独自知見を確認
    - 同じプロジェクト内の既存レシピがあれば参照
 
 4. ファイルを生成:
