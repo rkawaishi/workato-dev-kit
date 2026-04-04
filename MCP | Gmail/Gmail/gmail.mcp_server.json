@@ -1,0 +1,270 @@
+{
+  "name": "Gmail",
+  "description": "Use this MCP Server to search for Gmail messages and threads, retrieve full email content and attachments, create and update email drafts, send email via drafts, and manage inbox state (read/unread, labels, archive, star).\r\n\r\nUse this server when the user asks to:\r\n  - Find or review emails or conversations\r\n  - Summarize or reference email content\r\n  - Draft, edit, or send emails\r\n  - Organize their inbox (labels, archive, read/unread)\r\n\r\nDo not use this server for:\r\n  - Compliance, legal, or archival workflows\r\n  - Delivery status, bounce handling, or retries\r\n  - Automated, scheduled, or background email actions\r\n  - Managing multiple accounts or delegated inboxes",
+  "auth_type": "workato_idp",
+  "tools_type": "project_assets",
+  "tools": [
+    {
+      "tool": "ref_0",
+      "description": "Use this tool when the user asks to:\r\nFind conversations with a specific person, customer, or group\r\nLocate ongoing or historical discussions about a topic\r\nIdentify active deal, project, or decision-related threads\r\nNarrow the search space before retrieving full thread content\r\nDo not use this tool when:\r\nA specific message or thread ID is already known\r\nFull message or thread content is immediately required (use retrieval tools instead)\r\nPrefer structured search parameters. Use raw_query only when the user explicitly provides Gmail search syntax.\r\nFor thread messages, use get_messages to get the metadata of the messages.",
+      "vua_required": true
+    },
+    {
+      "tool": "ref_1",
+      "description": "Use this tool when the user asks to:\r\nFind a specific email they sent or received\r\nLocate a message with a known subject or phrase\r\nIdentify a particular inbound or outbound email\r\nDo not use this tool when:\r\nConversation-level context is required (use search_threads)\r\nFull message content is required immediately (use retrieval tools)\r\nAlmost always prefer structured search parameters. Use raw_query only when the user explicitly provides Gmail search syntax.",
+      "vua_required": true
+    },
+    {
+      "tool": "ref_2",
+      "description": "Retrieves the list of system and user-defined labels available to the authenticated user.",
+      "vua_required": true
+    },
+    {
+      "tool": "ref_3",
+      "description": "Use this tool when:\r\nComplete thread context is required\r\nThe user asks to review or summarize an email thread\r\nPreparing replies, follow-ups, or handoffs based on a thread\r\nUnderstanding decisions, commitments, or shared materials across messages\r\nDo not use this tool when:\r\nOnly a single message is required (use get_message)\r\nThe thread ID is unknown (use search_threads to identify the appropriate thread, or search_messages when starting from a specific email)",
+      "vua_required": true
+    },
+    {
+      "tool": "ref_4",
+      "description": "Use this tool when:\r\nThe user wants to read or inspect a specific email\r\nA message has been identified via search_messages and complete contents are required\r\nMessage-level precision is required\r\nDo not use this tool when:\r\nComplete thread context is required (use get_thread)\r\nThe message ID is unknown (use search_messages to locate the message first)",
+      "vua_required": true
+    },
+    {
+      "tool": "ref_5",
+      "description": "Use this tool when:\r\nThe user asks what files were attached to an email\r\nThe assistant needs to reference or include existing attachments in a reply\r\nPreparing to retrieve an attachment payload\r\nDo not use this tool to analyze or summarize attachment contents.",
+      "vua_required": true
+    },
+    {
+      "tool": "ref_6",
+      "description": "Use this tool when:\r\nThe user asks to label, tag, or categorize messages or threads.\r\nLabel application is part of an explicit organization request.\r\nIts important to call list_labels always before calling this tool to correctly identify the labels to add.",
+      "vua_required": true
+    },
+    {
+      "tool": "ref_7",
+      "description": "Use this tool when:\r\nThe user asks to remove labels from messages or threads.\r\nThe user requests cleanup or reclassification of email.\r\nIts important to call list_labels always before calling this tool to correctly identify the labels to remove.",
+      "vua_required": true
+    },
+    {
+      "tool": "ref_8",
+      "description": "Use this tool when:\r\nThe user asks to unstar or unflag messages.",
+      "vua_required": true
+    },
+    {
+      "tool": "ref_9",
+      "description": "Use this tool when:\r\nThe user asks to star or flag specific messages.",
+      "vua_required": true
+    },
+    {
+      "tool": "ref_10",
+      "description": "Use this tool when:\r\nThe user asks to move archived conversations back to the inbox.",
+      "vua_required": true
+    },
+    {
+      "tool": "ref_11",
+      "description": "Use this tool when:\r\nThe user asks to archive emails or conversations.\r\nArchiving is part of explicit inbox cleanup requested by the user.",
+      "vua_required": true
+    },
+    {
+      "tool": "ref_12",
+      "description": "Use this tool when:\r\n\r\n- The user asks to start, create, or save a draft email (new email or reply).\r\n- The user asks to write an email that may be sent now or later.\r\n- The user asks to send an email and no draft has been created or explicitly referenced earlier in the current conversational context (i.e., a draft that has been created, retrieved, or explicitly mentioned in the conversation).\r\n\r\nReply-to-Thread Rules\r\n\r\n- For reply and reply-all, infer recipients strictly from the original message or thread context.\r\n- When replying to a thread, omit the To field and rely on thread metadata for recipient resolution.\r\n- For reply-all, preserve the original Cc and Bcc recipients as present in the source message.\r\n- For replies, retrieve all required fields using the get_message tool.\r\n- Subject, Cc, and Bcc must exactly match the original email.\r\n- For reply drafts, threadId, inReplyTo, and references are mandatory.\r\n- The subject must remain unchanged from the original email.\r\n- The reply must maintain proper context from the original message.\r\n\r\nDo not use this tool to add attachments (use add_attachments after creating the draft). If the user wants attachments, create the draft first, then call add_attachments.",
+      "vua_required": true
+    },
+    {
+      "tool": "ref_13",
+      "description": "Use this tool when:\r\nThe user asks to review, see, or confirm the current draft.",
+      "vua_required": true
+    },
+    {
+      "tool": "ref_14",
+      "description": "Use this tool when:\r\n\r\n- The user asks to change, revise, or edit an existing draft.\r\n\r\nDo not use this tool when:\r\n\r\n- Adding or removing attachments (use add_attachments / remove_attachments).\r\n- Creating a new draft (use create_draft).\r\n- Sending the draft (use send_draft).\r\n\r\nSequencing and clarifications:\r\n\r\n- If the user requests both content edits and attachment changes, call update_draft first, then call add_attachments or remove_attachments.\r\n- If no draft_id is provided, call list_drafts or get_draft to identify the target and ask the user to confirm which draft to modify.\r\n- Ask explicit clarifying questions when recipients, body edits, or which attachments to change are unspecified.",
+      "vua_required": true
+    },
+    {
+      "tool": "ref_15",
+      "description": "Use this tool when:\r\nThe user asks to send the email, and\r\nA draft has been created or explicitly referenced earlier in the current conversational context (i.e., a draft that has been created, retrieved, or explicitly mentioned in the conversation).",
+      "vua_required": true
+    },
+    {
+      "tool": "ref_16",
+      "description": "Use this tool when:\r\nThe user asks to mark messages as read or unread.\r\nThe assistant performs explicit inbox triage actions requested by the user.",
+      "vua_required": true
+    },
+    {
+      "tool": "ref_17",
+      "description": "Use this tool when:\r\nThe user needs to find a specific draft to review, see, or start working on it.",
+      "vua_required": true
+    },
+    {
+      "tool": "ref_18",
+      "description": "Use this tool when:\r\n\r\n- The user asks to attach files to an existing draft.\r\n- The user wants to include attachments before sending a draft.\r\n- A draft has already been created and attachments must be added separately.\r\n\r\nDo not use this tool when:\r\n\r\n- Creating a new draft (use create_draft).\r\n- Editing body, subject, or recipients (use update_draft).\r\n- Sending the email (use send_draft).\r\n- No draft exists yet.\r\n\r\nAsk the user to clarify which files to attach if attachment references are not explicit.",
+      "vua_required": true
+    },
+    {
+      "tool": "ref_19",
+      "description": "Use this tool when:\r\n\r\n- The user asks to remove, delete, or replace attachments on an existing draft.\r\n- The user indicates that a specific file should not be included before sending.\r\n- The assistant must remove an attachment prior to sending.\r\n\r\nDo not use this tool when:\r\n\r\n- Editing draft body, subject, or recipients (use update_draft).\r\n- Adding attachments (use add_attachments).\r\n- Creating a new draft (use create_draft).\r\n- Sending the email (use send_draft).\r\n\r\nIf the user does not specify which attachment to remove, retrieve the draft first and ask for clarification.",
+      "vua_required": true
+    }
+  ],
+  "references": {
+    "ref_0": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/search_threads.agentic_skill.json",
+        "name": "search_threads",
+        "folder": "Gmail"
+      }
+    },
+    "ref_1": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/search_messages.agentic_skill.json",
+        "name": "search_messages",
+        "folder": "Gmail"
+      }
+    },
+    "ref_2": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/list_labels.agentic_skill.json",
+        "name": "list_labels",
+        "folder": "Gmail"
+      }
+    },
+    "ref_3": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/get_thread.agentic_skill.json",
+        "name": "get_thread",
+        "folder": "Gmail"
+      }
+    },
+    "ref_4": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/get_message.agentic_skill.json",
+        "name": "get_message",
+        "folder": "Gmail"
+      }
+    },
+    "ref_5": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/list_attachments.agentic_skill.json",
+        "name": "list_attachments",
+        "folder": "Gmail"
+      }
+    },
+    "ref_6": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/add_labels.agentic_skill.json",
+        "name": "add_labels",
+        "folder": "Gmail"
+      }
+    },
+    "ref_7": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/remove_labels.agentic_skill.json",
+        "name": "remove_labels",
+        "folder": "Gmail"
+      }
+    },
+    "ref_8": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/unstar_messages.agentic_skill.json",
+        "name": "unstar_messages",
+        "folder": "Gmail"
+      }
+    },
+    "ref_9": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/star_messages.agentic_skill.json",
+        "name": "star_messages",
+        "folder": "Gmail"
+      }
+    },
+    "ref_10": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/unarchive_threads.agentic_skill.json",
+        "name": "unarchive_threads",
+        "folder": "Gmail"
+      }
+    },
+    "ref_11": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/archive_threads.agentic_skill.json",
+        "name": "archive_threads",
+        "folder": "Gmail"
+      }
+    },
+    "ref_12": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/create_draft.agentic_skill.json",
+        "name": "create_draft",
+        "folder": "Gmail"
+      }
+    },
+    "ref_13": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/get_draft.agentic_skill.json",
+        "name": "get_draft",
+        "folder": "Gmail"
+      }
+    },
+    "ref_14": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/update_draft.agentic_skill.json",
+        "name": "update_draft",
+        "folder": "Gmail"
+      }
+    },
+    "ref_15": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/send_draft.agentic_skill.json",
+        "name": "send_draft",
+        "folder": "Gmail"
+      }
+    },
+    "ref_16": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/mark_message_read_state.agentic_skill.json",
+        "name": "mark_message_read_state",
+        "folder": "Gmail"
+      }
+    },
+    "ref_17": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/list_drafts.agentic_skill.json",
+        "name": "list_drafts",
+        "folder": "Gmail"
+      }
+    },
+    "ref_18": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/add_attachments.agentic_skill.json",
+        "name": "add_attachments",
+        "folder": "Gmail"
+      }
+    },
+    "ref_19": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Gmail/remove_attachments.agentic_skill.json",
+        "name": "remove_attachments",
+        "folder": "Gmail"
+      }
+    }
+  }
+}

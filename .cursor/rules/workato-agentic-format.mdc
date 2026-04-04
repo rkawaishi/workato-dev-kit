@@ -1,6 +1,6 @@
 ---
 description: Workato Genie/Skill JSON のフォーマット定義。*.agentic_genie.json, *.agentic_skill.json を編集・生成する際に適用。
-globs: "**/*.agentic_genie.json,**/*.agentic_skill.json"
+globs: "**/*.agentic_genie.json,**/*.agentic_skill.json,**/*.mcp_server.json"
 alwaysApply: false
 ---
 
@@ -82,9 +82,36 @@ agentic_genie.json
 { "name": "表示名", "provider": "プロバイダー名", "root_folder": false }
 ```
 
+## MCP Server: *.mcp_server.json
+
+```json
+{
+  "name": "サーバー名",
+  "description": "サーバー説明（AI用）",
+  "auth_type": "workato_idp",
+  "tools_type": "project_assets",
+  "tools": [
+    { "tool": "ref_0", "description": "AI向けツール使用指示", "vua_required": true }
+  ],
+  "references": {
+    "ref_0": {
+      "type": "agentic_skill",
+      "id": { "zip_name": "Folder/skill.agentic_skill.json", "name": "skill_name", "folder": "Folder" }
+    }
+  }
+}
+```
+
+### 構造: mcp_server → agentic_skill → recipe
+
+- `auth_type`: `"workato_idp"` / `tools_type`: `"project_assets"`
+- `vua_required`: Verified User Access（エンドユーザー認証で API 呼出し）
+- tools[].description は AI がツール選択に使う詳細指示
+
 ## ファイル命名規則
 
 - レシピ: `<snake_case_name>.recipe.json`
 - コネクション: `<prefix>_<provider>.connection.json`
 - Genie: `<snake_case_name>.agentic_genie.json`
 - スキル: `<snake_case_name>.agentic_skill.json`
+- MCP サーバー: `<name>.mcp_server.json`

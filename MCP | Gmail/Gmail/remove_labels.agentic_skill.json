@@ -1,0 +1,14 @@
+{
+  "name": "remove_labels",
+  "trigger_description": "Use this tool when:\nThe user asks to remove labels from messages or threads.\nThe user requests cleanup or reclassification of email.\nIts important to call list_labels always before calling this tool to correctly identify the labels to remove.",
+  "references": {
+    "recipe_id": {
+      "type": "recipe",
+      "id": {
+        "zip_name": "Gmail/remove_labels.recipe.json",
+        "name": "remove_labels",
+        "folder": "Gmail"
+      }
+    }
+  }
+}

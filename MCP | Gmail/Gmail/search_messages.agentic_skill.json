@@ -1,0 +1,14 @@
+{
+  "name": "search_messages",
+  "trigger_description": "Use this tool when the user asks to:\nFind a specific email they sent or received\nLocate a message with a known subject or phrase\nIdentify a particular inbound or outbound email\nDo not use this tool when:\nConversation-level context is required (use search_threads)\nFull message content is required immediately (use retrieval tools)\nAlmost always prefer structured search parameters. Use raw_query only when the user explicitly provides Gmail search syntax.\n",
+  "references": {
+    "recipe_id": {
+      "type": "recipe",
+      "id": {
+        "zip_name": "Gmail/search_messages.recipe.json",
+        "name": "search_messages",
+        "folder": "Gmail"
+      }
+    }
+  }
+}

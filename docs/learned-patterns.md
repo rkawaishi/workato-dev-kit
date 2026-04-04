@@ -139,5 +139,71 @@
 }
 ```
 
+## MCP Server JSON (`*.mcp_server.json`)
+
+### ファイル構造
+
+```json
+{
+  "name": "サーバー名",
+  "description": "MCP サーバーの説明（AI がサーバー選択に使用）",
+  "auth_type": "workato_idp",
+  "tools_type": "project_assets",
+  "tools": [
+    {
+      "tool": "ref_0",
+      "description": "ツールの使用条件（AI がツール選択に使用）",
+      "vua_required": true
+    }
+  ],
+  "references": {
+    "ref_0": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Folder/skill_name.agentic_skill.json",
+        "name": "skill_name",
+        "folder": "Folder"
+      }
+    }
+  }
+}
+```
+
+### 構造の関係
+
+```
+mcp_server.json
+  └── tools[] → references → agentic_skill.json (複数可)
+                                └── references.recipe_id → recipe.json
+```
+
+- MCP サーバーは複数のツール（tools）を持つ
+- 各ツールは `ref_N` キーで `references` 内の agentic_skill を参照
+- 各 agentic_skill は1つのレシピに紐づく
+- `description` フィールドは AI がツール選択に使う詳細な指示（「Use this tool when...」「Do not use this tool when...」形式）
+- `vua_required: true` は Verified User Access（エンドユーザーの認証情報で API 呼出し）が必要であることを示す
+
+### 確認済みの値
+
+- `auth_type`: `"workato_idp"` — Workato Identity Provider 認証
+- `tools_type`: `"project_assets"` — プロジェクト内のアセットをツールとして公開
+
+### Gmail MCP Server の例
+
+Gmail サーバーでは 20 個のツール/スキルが定義されている:
+search_threads, search_messages, list_labels, get_thread, get_message, list_attachments, add_labels, remove_labels, unstar_messages, star_messages, unarchive_threads, archive_threads, create_draft, get_draft, update_draft, send_draft, mark_message_read_state, list_drafts, add_attachments, remove_attachments
+
+## Gmail カスタムアクションのパターン
+
+- Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用
+- パス例: `me/messages/{messageId}?format=full` — Gmail API の REST エンドポイント
+- base URI は Gmail API（`https://gmail.googleapis.com/gmail/v1/users/`）
+
+## レシピの新しいキーワード: `try`
+
+- `keyword: "try"` はエラーハンドリングブロック（try/catch パターン）を示す
+- `docs/logic/error-handling.md` の Monitor/Error ブロックに対応するJSON表現
+- try ブロック内のステップでエラーが発生した場合、catch ブロック（エラーハンドラー）に制御が移る
+
 ---
-*最終更新: Helpdesk auto reply フィードバック反映*
+*最終更新: MCP Server JSON 形式、Gmail パターン、try キーワード追加*

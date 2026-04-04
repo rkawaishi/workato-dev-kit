@@ -1,0 +1,14 @@
+{
+  "name": "list_drafts",
+  "trigger_description": "Use this tool when:\nThe user refers to an existing draft but does not provide a draft ID.\nThe user asks to view, list, or select from their drafts.\nDo not use this tool:\nTo automatically choose a draft to send.\nAs a background step when a draft is already present in the conversational context.",
+  "references": {
+    "recipe_id": {
+      "type": "recipe",
+      "id": {
+        "zip_name": "Gmail/list_drafts.recipe.json",
+        "name": "list_drafts",
+        "folder": "Gmail"
+      }
+    }
+  }
+}

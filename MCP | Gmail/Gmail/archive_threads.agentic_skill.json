@@ -1,0 +1,14 @@
+{
+  "name": "archive_threads",
+  "trigger_description": "Use this tool when:\nThe user asks to archive emails or conversations.\nArchiving is part of explicit inbox cleanup requested by the user.\n",
+  "references": {
+    "recipe_id": {
+      "type": "recipe",
+      "id": {
+        "zip_name": "Gmail/archive_threads.recipe.json",
+        "name": "archive_threads",
+        "folder": "Gmail"
+      }
+    }
+  }
+}

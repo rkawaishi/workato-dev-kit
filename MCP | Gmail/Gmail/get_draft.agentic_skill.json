@@ -1,0 +1,14 @@
+{
+  "name": "get_draft",
+  "trigger_description": "Use this tool when:\nThe user asks to review, see, or confirm the current draft.",
+  "references": {
+    "recipe_id": {
+      "type": "recipe",
+      "id": {
+        "zip_name": "Gmail/get_draft.recipe.json",
+        "name": "get_draft",
+        "folder": "Gmail"
+      }
+    }
+  }
+}

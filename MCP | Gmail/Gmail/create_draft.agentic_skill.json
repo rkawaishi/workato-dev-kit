@@ -1,0 +1,14 @@
+{
+  "name": "create_draft",
+  "trigger_description": "Use this tool when:\nThe user asks to start, create, or save a draft email (new email or reply).\nThe user asks to write an email that may be sent now or later.\nThe user asks to send an email and no draft has been created or explicitly referenced earlier in the current conversational context (i.e., a draft that has been created, retrieved, or explicitly mentioned in the conversation).\n\nReply-to-Thread Rules\nFor reply and reply-all, infer recipients strictly from the original message or thread context.\nWhen replying to a thread, omit the To field and rely on thread metadata for recipient resolution.\nFor reply-all, preserve the original Cc and Bcc recipients as present in the source message.\nFor replies, retrieve all required fields using the get_message tool.\nSubject, Cc, and Bcc must exactly match the original email.\nFor reply drafts, threadId, inReplyTo, and references are mandatory.\nThe subject must remain unchanged from the original email.\nThe reply must maintain proper context from the original message.\n\nDo not use this tool to add attachments (use add_attachments after creating the draft). If the user wants attachments, create the draft first, then call add_attachments.",
+  "references": {
+    "recipe_id": {
+      "type": "recipe",
+      "id": {
+        "zip_name": "Gmail/create_draft.recipe.json",
+        "name": "create_draft",
+        "folder": "Gmail"
+      }
+    }
+  }
+}

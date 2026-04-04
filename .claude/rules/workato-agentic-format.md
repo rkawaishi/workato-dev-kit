@@ -2,6 +2,7 @@
 paths:
   - "**/*.agentic_genie.json"
   - "**/*.agentic_skill.json"
+  - "**/*.mcp_server.json"
 ---
 
 # Workato Agentic JSON Format
@@ -105,3 +106,57 @@ agentic_genie.json
 - Genie: `<snake_case_name>.agentic_genie.json`
 - スキル: `<snake_case_name>.agentic_skill.json`
 - ロゴ: `<genie_name>.agentic_genie.png`
+- MCP サーバー: `<name>.mcp_server.json`
+
+## MCP Server: *.mcp_server.json
+
+```json
+{
+  "name": "サーバー名",
+  "description": "MCP サーバーの説明（AI がサーバー選択に使用）",
+  "auth_type": "workato_idp",
+  "tools_type": "project_assets",
+  "tools": [
+    {
+      "tool": "ref_0",
+      "description": "ツールの使用条件と指示（Use this tool when... / Do not use this tool when...）",
+      "vua_required": true
+    }
+  ],
+  "references": {
+    "ref_0": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Folder/skill_name.agentic_skill.json",
+        "name": "skill_name",
+        "folder": "Folder"
+      }
+    }
+  }
+}
+```
+
+### フィールド詳細
+
+| フィールド | 説明 |
+|---|---|
+| `name` | MCP サーバーの表示名 |
+| `description` | サーバー全体の説明。AI がどのサーバーを使うか判断する際に参照 |
+| `auth_type` | 認証方式。確認済み: `"workato_idp"`（Workato Identity Provider） |
+| `tools_type` | ツール種別。確認済み: `"project_assets"`（プロジェクト内アセット） |
+| `tools[].tool` | `references` 内の参照キー（`ref_0`, `ref_1`, ...） |
+| `tools[].description` | AI がツール選択に使う詳細指示 |
+| `tools[].vua_required` | Verified User Access が必要か。`true` = エンドユーザーの認証情報で API 呼出し |
+| `references` | `ref_N` → agentic_skill へのマッピング |
+
+### 構造の関係
+
+```
+mcp_server.json
+  └── tools[] → references → agentic_skill.json (複数可)
+                                └── references.recipe_id → recipe.json
+```
+
+- MCP サーバーは Genie とは別の経路でスキルを公開する仕組み
+- Genie が `references` でスキルを直接参照するのに対し、MCP サーバーは `tools[]` 配列で順序・説明付きで参照
+- 各ツールの `description` は Genie スキルの `trigger_description` に相当するが、より詳細な AI 向け指示を含む

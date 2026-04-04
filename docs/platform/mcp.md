@@ -62,6 +62,65 @@ Genie → MCP Client → MCP Server → 外部 API / ツール
 プリビルトの MCP サーバーを検索・設定して LLM プロジェクトにアプリ固有のツールセットを追加。
 公式: https://docs.workato.com/en/mcp/mcp-server-registry.html
 
+## MCP Server JSON 構造 (`*.mcp_server.json`)
+
+Workato プロジェクトをエクスポートすると、MCP サーバー定義が `*.mcp_server.json` ファイルとして含まれる。
+
+### トップレベルフィールド
+
+| フィールド | 説明 |
+|---|---|
+| `name` | サーバー表示名（例: "Gmail"） |
+| `description` | AI がサーバーを選択する際に使う説明文 |
+| `auth_type` | 認証方式。`"workato_idp"` = Workato Identity Provider |
+| `tools_type` | `"project_assets"` = プロジェクト内アセットをツールとして公開 |
+| `tools` | ツール定義の配列 |
+| `references` | `ref_N` → agentic_skill へのマッピング |
+
+### tools 配列の構造
+
+```json
+{
+  "tool": "ref_0",
+  "description": "Use this tool when... / Do not use this tool when...",
+  "vua_required": true
+}
+```
+
+- `tool`: `references` 内の参照キー
+- `description`: AI がツール選択に使う詳細な指示文
+- `vua_required`: Verified User Access が必要か（エンドユーザーの認証情報で外部 API を呼出し）
+
+### references マップの構造
+
+```json
+{
+  "ref_0": {
+    "type": "agentic_skill",
+    "id": {
+      "zip_name": "Gmail/search_threads.agentic_skill.json",
+      "name": "search_threads",
+      "folder": "Gmail"
+    }
+  }
+}
+```
+
+### MCP サーバー → スキル → レシピの関係
+
+```
+mcp_server.json
+  └── tools[] → references → agentic_skill.json (複数可)
+                                └── references.recipe_id → recipe.json
+```
+
+MCP サーバーは Genie とは異なる経路でスキルを外部 AI エージェント（Claude Desktop, Cursor, ChatGPT 等）に公開する。Genie が自身の `references` でスキルを直接参照するのに対し、MCP サーバーは `tools[]` 配列で順序付き・説明付きでスキルを公開する。
+
+### Gmail MCP Server の実例
+
+Gmail サーバーでは 20 個のツール/スキルが定義されている:
+search_threads, search_messages, list_labels, get_thread, get_message, list_attachments, add_labels, remove_labels, unstar_messages, star_messages, unarchive_threads, archive_threads, create_draft, get_draft, update_draft, send_draft, mark_message_read_state, list_drafts, add_attachments, remove_attachments
+
 ## 利用可能リージョン
 
 US, EU, AU, JP, SG データセンター（CN は不可）

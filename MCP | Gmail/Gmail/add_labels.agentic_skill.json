@@ -1,0 +1,14 @@
+{
+  "name": "add_labels",
+  "trigger_description": "Use this tool when:\nThe user asks to label, tag, or categorize messages or threads.\nLabel application is part of an explicit organization request.\nIts important to call list_labels always before calling this tool to correctly identify the labels to add.",
+  "references": {
+    "recipe_id": {
+      "type": "recipe",
+      "id": {
+        "zip_name": "Gmail/add_labels.recipe.json",
+        "name": "add_labels",
+        "folder": "Gmail"
+      }
+    }
+  }
+}
