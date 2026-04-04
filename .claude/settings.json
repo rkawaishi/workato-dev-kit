@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(workato:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(sudo:*)"
+    ]
+  }
+}

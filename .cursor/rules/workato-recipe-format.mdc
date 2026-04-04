@@ -1,0 +1,127 @@
+---
+description: Workato レシピ JSON のフォーマット定義。*.recipe.json を編集・生成する際に適用。
+globs: "**/*.recipe.json"
+alwaysApply: false
+---
+
+# Workato Recipe JSON Format
+
+## トップレベル構造
+
+```json
+{
+  "name": "レシピ名",
+  "description": "マークダウン対応の説明文",
+  "version": 1,
+  "private": true,
+  "concurrency": 1,
+  "code": { /* トリガー + アクションツリー */ },
+  "config": [ /* コネクション設定 */ ]
+}
+```
+
+## code: ステップツリー（再帰構造）
+
+各ステップのフィールド:
+
+- `number` (int) — ステップ番号（0始まり、トリガーが0）
+- `provider` (string) — コネクタ名（例: `gmail`, `slack`, `salesforce`）
+- `name` (string) — アクション名（例: `new_email`, `post_message`）
+- `as` (string) — ステップの参照名（datapill で使用）
+- `keyword` (string) — `"trigger"` / `"action"` / `"foreach"`
+- `input` (object) — 入力パラメータ（datapill 参照を含む）
+- `block` (array) — 子ステップの配列（ネスト可）
+- `filter` (object) — 条件フィルタ（optional）
+- `comment` (string) — ステップのコメント（optional）
+- `uuid` (string) — UUID v4
+- `extended_output_schema` (array/null) — カスタム出力スキーマ（optional）
+
+### Slack イベントトリガー
+
+```json
+{
+  "provider": "slack",
+  "name": "new_event",
+  "keyword": "trigger",
+  "input": { "webhook_suffix": "reaction_added" }
+}
+```
+
+- イベント種別は `webhook_suffix` で指定（`event_type` ではない）
+
+### keyword の種別
+
+- `"trigger"` — レシピの起点（number: 0）
+- `"action"` — 通常のアクションステップ
+- `"foreach"` — ループ。`source` でイテレート対象を指定、`block` に子ステップ
+
+### Genie ワークフロー用トリガー
+
+provider が `workato_genie` の場合:
+```json
+{
+  "provider": "workato_genie",
+  "name": "start_workflow",
+  "keyword": "trigger",
+  "input": {
+    "requires_user_confirmation": "false",
+    "description": "スキルの説明",
+    "parameters_schema_json": "[{\"name\":\"param1\",\"type\":\"string\",...}]",
+    "result_schema_json": "[{\"name\":\"response\",\"type\":\"string\",...}]"
+  }
+}
+```
+
+## Datapill 記法
+
+```
+#{_dp('{"pill_type":"output","provider":"<provider>","line":"<as>","path":["field"]}')}
+```
+
+- `provider`: 参照元ステップの `provider`
+- `line`: 参照元ステップの `as` 値
+- `path`: フィールドパス配列
+
+foreach 内の current_item:
+```
+#{_dp('{"pill_type":"output","provider":"foreach","line":"foreach","path":["fieldName"]}')}
+```
+
+その他の記法:
+```ruby
+#{_('data.provider.step.field')}                    # ドット記法
+=_('data.provider.step.list').pluck('f').join(', ') # Ruby式
+```
+
+## filter: 条件フィルタ
+
+```json
+{
+  "conditions": [{ "operand": "contains", "lhs": "#{_dp('...')}", "rhs": "値", "uuid": "..." }],
+  "operand": "and",
+  "type": "compound"
+}
+```
+
+## config: コネクション参照
+
+```json
+{
+  "keyword": "application",
+  "provider": "gmail",
+  "account_id": {
+    "zip_name": "conn.connection.json",
+    "name": "Display Name",
+    "folder": ""
+  },
+  "skip_validation": false
+}
+```
+
+## 生成時のルール
+
+- `number` はトリガーが 0、以降連番
+- 各ステップに UUID v4 を生成
+- 通常レシピの `as` は `name` と同じ値、Genie ワークフローではランダム8文字 hex
+- `config` には使用する全プロバイダーのコネクション参照を含める
+- 新規作成時の `version` は 1

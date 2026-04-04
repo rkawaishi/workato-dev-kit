@@ -1,0 +1,35 @@
+---
+description: Workato Dev Kit プロジェクト全体のコンテキスト。Workato 関連ファイルを編集する際に適用。
+globs:
+alwaysApply: true
+---
+
+# Workato Dev Kit
+
+Workato (エンタープライズ iPaaS) の自動化開発を AI エディタで行うためのツールキット。
+
+## プロジェクト構造
+
+- `<project-name>/*.recipe.json` — レシピ（ワークフロー定義）
+- `<project-name>/*.connection.json` — コネクション（接続情報、認証なし）
+- `<project-name>/*.agentic_genie.json` — Genie（AIエージェント定義）
+- `<project-name>/*.agentic_skill.json` — Genieスキル定義
+- `docs/known-patterns.md` — レシピから学んだパターン知識（参照必須）
+
+## Workato Platform CLI
+
+```bash
+workato projects list --source remote    # リモートプロジェクト一覧
+workato projects use "<name>"            # プロジェクト切り替え
+workato pull                             # リモートから取得
+workato push                             # リモートへ反映
+workato recipes list                     # レシピ一覧
+workato init --non-interactive --profile default --project-id <id> --folder-name "<name>"
+```
+
+## 開発ルール
+
+- レシピ JSON を編集する際は `docs/known-patterns.md` のパターンを参照する
+- 新しいパターンを発見したら `docs/known-patterns.md` に追記する
+- `*.connection.json` に認証情報は含まれない（名前とプロバイダーのみ）
+- `.workatoenv` は編集しない
