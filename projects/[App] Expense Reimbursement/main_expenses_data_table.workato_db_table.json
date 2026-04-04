@@ -1,0 +1,205 @@
+{
+  "name": "Main expenses data table",
+  "schema": [
+    {
+      "id": "11fbe9a6-a16d-4d7e-86ea-afe42ec03005",
+      "title": "Record ID",
+      "type": "short-text",
+      "read_only": true,
+      "hidden": true
+    },
+    {
+      "id": "a5612739-5401-4ae7-bd07-782c1a6fb2d1",
+      "title": "Created time",
+      "type": "date-time",
+      "read_only": true,
+      "hidden": true
+    },
+    {
+      "id": "61aae604-a95e-4519-9091-bb0bf754a67f",
+      "title": "Last modified time",
+      "type": "date-time",
+      "read_only": true,
+      "hidden": true
+    },
+    {
+      "id": "a3f8f034-5330-4406-9cc7-22e46fdc7b42",
+      "title": "Expense description",
+      "type": "long-text",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    },
+    {
+      "id": "530c0ada-23c5-479b-9754-9fe9c4dacf0f",
+      "title": "Description",
+      "type": "long-text",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    },
+    {
+      "id": "2708620a-7fde-4fda-b49d-650538677cb5",
+      "title": "Review comments (Finance)",
+      "type": "long-text",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    },
+    {
+      "id": "87409c3c-1bf7-4c69-8d6c-9f8b6195e7af",
+      "title": "Total invoice",
+      "type": "file",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    },
+    {
+      "id": "711bb909-651a-402d-9029-579a78a16db9",
+      "title": "Workday profile",
+      "type": "short-text",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    },
+    {
+      "id": "7c23078b-f8ab-472f-9243-5ada6ceb5bb9",
+      "title": "Category",
+      "type": "relation",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      },
+      "relation": {
+        "table_id": {
+          "zip_name": "expense_categories.workato_db_table.json",
+          "name": "Expense categories",
+          "folder": ""
+        },
+        "field_id": "50bb5dd5-50b7-4286-a8e1-96411405a3a4"
+      }
+    },
+    {
+      "id": "1c7f21ac-42eb-45ca-b092-fb75ed424ec8",
+      "title": "Review comments (Manager)",
+      "type": "long-text",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    },
+    {
+      "id": "935df445-f918-47d4-b0b4-43dd24f1b5f2",
+      "title": "Submit on behalf of colleague",
+      "type": "boolean",
+      "default_value": false,
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    },
+    {
+      "id": "90524855-35e2-4b14-855a-cabe5d88ce83",
+      "title": "Colleague name",
+      "type": "short-text",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    },
+    {
+      "id": "2d15f5c6-63f7-4333-85d3-ff054075611e",
+      "title": "Colleague email",
+      "type": "short-text",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    },
+    {
+      "id": "30d449b1-f36f-43b0-a666-68bc333a31fb",
+      "title": "Sub category",
+      "type": "relation",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      },
+      "relation": {
+        "table_id": {
+          "zip_name": "expense_subcategories.workato_db_table.json",
+          "name": "Expense Subcategories",
+          "folder": ""
+        },
+        "field_id": "52da159e-6bed-4a84-a26a-e80021ad2642"
+      }
+    },
+    {
+      "id": "4dae0673-9892-4a37-ad9d-989e8209e079",
+      "title": "Total (in $)",
+      "type": "number",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    },
+    {
+      "id": "178a4a80-4d73-4665-9dcb-f3283c8c9e8e",
+      "title": "Itemize",
+      "type": "boolean",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    },
+    {
+      "id": "4e26f4f5-1d82-422a-9d53-5ed95d85bd4e",
+      "title": "Expense date",
+      "type": "date",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    },
+    {
+      "id": "b72ef492-c6e0-4488-97cf-da7864c772a9",
+      "title": "Expense amount",
+      "type": "number",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "hint": "Specify amount in ﹩",
+      "metadata": {
+      }
+    },
+    {
+      "id": "e903e275-7cfb-478d-ab02-2abb63fa4b1f",
+      "title": "Manager Name",
+      "type": "short-text",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    }
+  ],
+  "project_name": "[App] Expense Reimbursement"
+}

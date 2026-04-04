@@ -1,0 +1,616 @@
+{
+  "name": "Submit request in My expense",
+  "path": "submit-request-in-my-expense",
+  "content": {
+    "type": "common",
+    "maxWidth": "fixed",
+    "background": {
+      "style": "pattern",
+      "pattern": "light-7"
+    },
+    "variables": [
+
+    ],
+    "handlers": {
+      "pageLoad": null
+    },
+    "layout": [
+      1,
+      [
+        {
+          "type": "container",
+          "id": "0853aa9d",
+          "name": "Main container",
+          "x": 1,
+          "width": 10,
+          "visible": true,
+          "layout": [
+            1,
+            [
+              {
+                "type": "container",
+                "id": "c7816b5d",
+                "name": "Container",
+                "x": 0,
+                "width": 12,
+                "visible": true,
+                "layout": [
+                  1,
+                  [
+                    {
+                      "type": "image",
+                      "id": "a4988a85",
+                      "name": "Image 5",
+                      "x": 8,
+                      "width": 4,
+                      "height": 12,
+                      "visible": true,
+                      "image": "illustration-12",
+                      "customUrl": "",
+                      "source": "manual",
+                      "fitting": "cover",
+                      "horizontalAlignment": "center",
+                      "verticalAlignment": "center"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "container",
+                      "id": "e1e3a084",
+                      "name": "Container (2)",
+                      "x": 0,
+                      "width": 8,
+                      "visible": true,
+                      "layout": [
+                        1,
+                        [
+                          {
+                            "type": "text",
+                            "id": "a074de93",
+                            "name": "Text 4",
+                            "x": 0,
+                            "width": 12,
+                            "visible": true,
+                            "text": "# #{_dp('{\"source\":\"user\",\"path\":[\"name\"]}')}, submit your expense report here!",
+                            "alignment": "left",
+                            "color": "#24434f",
+                            "pillsSupportMarkdown": false,
+                            "style": "paragraph"
+                          },
+                          0
+                        ],
+                        [
+                          {
+                            "type": "text",
+                            "id": "5b3ee99a",
+                            "name": "Text 5",
+                            "x": 0,
+                            "width": 12,
+                            "visible": true,
+                            "text": "Submitting your report now ensures you get reimbursed faster.",
+                            "alignment": "left",
+                            "color": "#24434f",
+                            "pillsSupportMarkdown": false,
+                            "style": "paragraph"
+                          },
+                          0
+                        ]
+                      ],
+                      "backgroundColor": "transparent",
+                      "borderColor": "transparent",
+                      "padding": "medium"
+                    },
+                    1
+                  ]
+                ],
+                "backgroundColor": "#dadafb",
+                "borderColor": "transparent",
+                "padding": "none"
+              },
+              0
+            ],
+            [
+              {
+                "type": "dropdown",
+                "id": "b8b8ddbb",
+                "name": "Category",
+                "x": 0,
+                "width": 6,
+                "visible": true,
+                "dataSource": {
+                  "id": "Category",
+                  "type": "relation"
+                },
+                "editable": true,
+                "appFunctionOptions": null,
+                "validations": {
+                  "required": {
+                    "condition": true
+                  }
+                },
+                "handlers": {
+                  "change": null
+                },
+                "label": "Category",
+                "hint": "",
+                "placeholder": "Choose a category",
+                "options": [
+
+                ],
+                "dataSourceOptions": {
+                  "sortOrder": "asc",
+                  "sortByColumnId": null,
+                  "tableId": {
+                    "zip_name": "expense_categories.workato_db_table.json",
+                    "name": "Expense categories",
+                    "folder": ""
+                  },
+                  "fieldId": "50bb5dd5-50b7-4286-a8e1-96411405a3a4"
+                },
+                "labelDataSource": null,
+                "multiValue": false
+              },
+              0
+            ],
+            [
+              {
+                "type": "dropdown",
+                "id": "6e3f8db6",
+                "name": "Sub category",
+                "x": 6,
+                "width": 6,
+                "visible": true,
+                "dataSource": {
+                  "id": "Sub category",
+                  "type": "relation"
+                },
+                "editable": true,
+                "appFunctionOptions": null,
+                "validations": {
+                  "required": {
+                    "condition": false
+                  }
+                },
+                "handlers": {
+                  "change": null
+                },
+                "label": "Subcategory",
+                "hint": "",
+                "placeholder": "Choose an option",
+                "options": [
+
+                ],
+                "dataSourceOptions": {
+                  "sortOrder": "asc",
+                  "sortByColumnId": null,
+                  "tableId": {
+                    "zip_name": "expense_subcategories.workato_db_table.json",
+                    "name": "Expense Subcategories",
+                    "folder": ""
+                  },
+                  "fieldId": "52da159e-6bed-4a84-a26a-e80021ad2642",
+                  "conditions": [
+                    {
+                      "field": "75cd8c76-bf91-4e7b-8c3c-23fcdfe87f9e",
+                      "op": "eq",
+                      "value": "#{_dp('{\"source\":\"widget\",\"id\":\"b8b8ddbb\",\"path\":[\"value\"]}')}"
+                    }
+                  ]
+                },
+                "labelDataSource": null,
+                "multiValue": false
+              },
+              0
+            ],
+            [
+              {
+                "type": "input",
+                "id": "b011a62f",
+                "name": "Text input",
+                "x": 0,
+                "width": 12,
+                "visible": true,
+                "dataSource": {
+                  "id": "Expense description",
+                  "type": "long-text"
+                },
+                "editable": true,
+                "validations": {
+                  "required": {
+                    "condition": [
+                      1,
+                      [
+                        1,
+                        "#{_dp('{\"source\":\"widget\",\"id\":\"b8b8ddbb\",\"path\":[\"selectedLabel\"]}')}",
+                        "Other"
+                      ]
+                    ]
+                  },
+                  "limitLength": {
+                    "min": 50,
+                    "max": null
+                  }
+                },
+                "label": "Expense Description of #{_dp('{\"source\":\"widget\",\"id\":\"6e3f8db6\",\"path\":[\"selectedLabel\"]}')} ",
+                "hint": "",
+                "placeholder": "Enter description of the expense",
+                "textareaHeight": 112,
+                "style": "long-text"
+              },
+              0
+            ],
+            [
+              {
+                "type": "checkbox",
+                "id": "911f718f",
+                "name": "Submit on behalf of colleague",
+                "x": 0,
+                "width": 12,
+                "visible": true,
+                "dataSource": {
+                  "id": "Submit on behalf of colleague",
+                  "type": "boolean"
+                },
+                "editable": true,
+                "validations": {
+                  "required": {
+                    "condition": false
+                  }
+                },
+                "label": "Submit on behalf of colleague"
+              },
+              0
+            ],
+            [
+              {
+                "type": "container",
+                "id": "9b961e5a",
+                "name": "Container 5",
+                "x": 0,
+                "width": 12,
+                "visible": [
+                  1,
+                  [
+                    11,
+                    "#{_dp('{\"source\":\"widget\",\"id\":\"911f718f\",\"path\":[\"checked\"]}')}"
+                  ]
+                ],
+                "layout": [
+                  1,
+                  [
+                    {
+                      "type": "input",
+                      "id": "785bc8a1",
+                      "name": "Text input 2",
+                      "x": 0,
+                      "width": 6,
+                      "visible": [
+                        1,
+                        [
+                          11,
+                          "#{_dp('{\"source\":\"widget\",\"id\":\"911f718f\",\"path\":[\"checked\"]}')}"
+                        ]
+                      ],
+                      "dataSource": {
+                        "id": "Colleague name",
+                        "type": "short-text"
+                      },
+                      "editable": [
+                        1,
+                        [
+                          11,
+                          "#{_dp('{\"source\":\"widget\",\"id\":\"911f718f\",\"path\":[\"checked\"]}')}"
+                        ]
+                      ],
+                      "validations": {
+                        "required": {
+                          "condition": [
+                            1,
+                            [
+                              11,
+                              "#{_dp('{\"source\":\"widget\",\"id\":\"911f718f\",\"path\":[\"checked\"]}')}"
+                            ]
+                          ]
+                        }
+                      },
+                      "label": "Colleague Name",
+                      "hint": "",
+                      "placeholder": "Name Surname",
+                      "style": "short-text"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "input",
+                      "id": "7e398b50",
+                      "name": "Text input 3",
+                      "x": 6,
+                      "width": 6,
+                      "visible": [
+                        1,
+                        [
+                          11,
+                          "#{_dp('{\"source\":\"widget\",\"id\":\"911f718f\",\"path\":[\"checked\"]}')}"
+                        ]
+                      ],
+                      "dataSource": {
+                        "id": "Colleague email",
+                        "type": "short-text"
+                      },
+                      "editable": true,
+                      "validations": {
+                        "required": {
+                          "condition": [
+                            1,
+                            [
+                              11,
+                              "#{_dp('{\"source\":\"widget\",\"id\":\"911f718f\",\"path\":[\"checked\"]}')}"
+                            ]
+                          ]
+                        }
+                      },
+                      "label": " Email",
+                      "hint": "",
+                      "placeholder": "colleague@workato.com",
+                      "style": "email"
+                    },
+                    0
+                  ]
+                ],
+                "backgroundColor": "#f7f9fa",
+                "borderColor": "transparent",
+                "padding": "medium"
+              },
+              0
+            ],
+            [
+              {
+                "type": "divider",
+                "id": "bb029fd1",
+                "name": "Divider 4",
+                "x": 0,
+                "width": 12,
+                "visible": true,
+                "backgroundColor": "#ced5db"
+              },
+              0
+            ],
+            [
+              {
+                "type": "checkbox",
+                "id": "2b62a597",
+                "name": "Itemize",
+                "x": 0,
+                "width": 12,
+                "visible": true,
+                "dataSource": {
+                  "id": "Itemize",
+                  "type": "boolean"
+                },
+                "editable": true,
+                "validations": {
+                  "required": {
+                    "condition": false
+                  }
+                },
+                "label": "Itemize items for this expense report?"
+              },
+              0
+            ],
+            [
+              {
+                "type": "date",
+                "id": "86592040",
+                "name": "Expense date",
+                "x": 0,
+                "width": 6,
+                "visible": [
+                  1,
+                  [
+                    12,
+                    "#{_dp('{\"source\":\"widget\",\"id\":\"2b62a597\",\"path\":[\"checked\"]}')}"
+                  ]
+                ],
+                "dataSource": {
+                  "id": "Expense date",
+                  "type": "date"
+                },
+                "editable": true,
+                "validations": {
+                  "required": {
+                    "condition": true
+                  },
+                  "limitDate": {
+                    "start": null,
+                    "end": {
+                      "type": "calendar",
+                      "inclusive": true,
+                      "value": "today"
+                    }
+                  }
+                },
+                "handlers": {
+                  "change": null
+                },
+                "label": "Expense date",
+                "hint": "Specify date when expense occured",
+                "style": "date"
+              },
+              0
+            ],
+            [
+              {
+                "type": "input",
+                "id": "86db5731",
+                "name": "Expense amount",
+                "x": 6,
+                "width": 6,
+                "visible": [
+                  1,
+                  [
+                    12,
+                    "#{_dp('{\"source\":\"widget\",\"id\":\"2b62a597\",\"path\":[\"checked\"]}')}"
+                  ]
+                ],
+                "dataSource": {
+                  "id": "Expense amount",
+                  "type": "number"
+                },
+                "editable": true,
+                "validations": {
+                  "required": {
+                    "condition": true
+                  },
+                  "limit": {
+                    "min": "0",
+                    "max": ""
+                  }
+                },
+                "label": "Expense amount",
+                "hint": "Specify amount in ﹩",
+                "placeholder": "",
+                "style": "number"
+              },
+              0
+            ],
+            [
+              {
+                "type": "file",
+                "id": "69240492",
+                "name": "File",
+                "x": 0,
+                "width": 12,
+                "visible": [
+                  1,
+                  [
+                    12,
+                    "#{_dp('{\"source\":\"widget\",\"id\":\"2b62a597\",\"path\":[\"checked\"]}')}"
+                  ]
+                ],
+                "dataSource": {
+                  "id": "Total invoice",
+                  "type": "file"
+                },
+                "validations": {
+                  "required": {
+                    "condition": false
+                  },
+                  "fileSize": {
+                    "max": 10
+                  }
+                },
+                "label": "Total invoice for the #{_dp('{\"source\":\"widget\",\"id\":\"b8b8ddbb\",\"path\":[\"selectedLabel\"]}')} expense",
+                "hint": "",
+                "mode": "upload"
+              },
+              0
+            ],
+            [
+              {
+                "type": "table",
+                "id": "30742e68",
+                "name": "Table",
+                "x": 0,
+                "width": 12,
+                "visible": [
+                  1,
+                  [
+                    11,
+                    "#{_dp('{\"source\":\"widget\",\"id\":\"2b62a597\",\"path\":[\"checked\"]}')}"
+                  ]
+                ],
+                "editable": true,
+                "appFunctionOptions": null,
+                "handlers": {
+                  "activeRow": null
+                },
+                "title": "Expense items",
+                "addRowButtonText": "New expense",
+                "displayedRowsCount": 5,
+                "allowRowCreation": true,
+                "allowRowDeletion": true,
+                "tableId": {
+                  "zip_name": "expense_items.workato_db_table.json",
+                  "name": "Expense items",
+                  "folder": ""
+                },
+                "relatedColumnId": "94a9b838-156f-427f-9159-2ed6fe78e9dc",
+                "columnsSettings": [
+                  {
+                    "id": "71a3389e-d393-4944-b784-a220b6a77f78",
+                    "visible": true,
+                    "readonly": false
+                  },
+                  {
+                    "id": "2eff8681-2beb-4b17-885c-48a9372c76f5",
+                    "visible": true,
+                    "readonly": false
+                  },
+                  {
+                    "id": "bbe539dd-b472-439f-9477-9be7ac709e01",
+                    "visible": true,
+                    "readonly": false
+                  },
+                  {
+                    "id": "67dff32a-29ad-4af6-8474-1203e216e13d",
+                    "visible": true,
+                    "readonly": false
+                  },
+                  {
+                    "id": "94a9b838-156f-427f-9159-2ed6fe78e9dc",
+                    "visible": false,
+                    "readonly": false
+                  }
+                ]
+              },
+              0
+            ],
+            [
+              {
+                "type": "divider",
+                "id": "9d126e34",
+                "name": "Divider 12",
+                "x": 0,
+                "width": 12,
+                "visible": [
+                  1,
+                  [
+                    11,
+                    "#{_dp('{\"source\":\"widget\",\"id\":\"2b62a597\",\"path\":[\"checked\"]}')}"
+                  ]
+                ],
+                "backgroundColor": "#ced5db"
+              },
+              0
+            ],
+            [
+              {
+                "type": "button",
+                "id": "14a9893a",
+                "name": "Button",
+                "x": 0,
+                "width": 12,
+                "visible": true,
+                "handlers": {
+                  "click": {
+                    "type": "save-data"
+                  }
+                },
+                "label": "Submit",
+                "style": "filled",
+                "enabled": true
+              },
+              0
+            ]
+          ],
+          "backgroundColor": "#ffffff",
+          "borderColor": "transparent",
+          "padding": "large"
+        },
+        0
+      ]
+    ]
+  }
+}

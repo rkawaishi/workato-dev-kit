@@ -1,0 +1,2335 @@
+{
+  "name": "New reimbursement request",
+  "version": 1,
+  "private": true,
+  "concurrency": 1,
+  "code": {
+    "number": 0,
+    "provider": "workato_workflow_task",
+    "name": "new_requests_realtime",
+    "as": "new_requests_realtime",
+    "keyword": "trigger",
+    "input": {
+      "app_id": {
+        "zip_name": "expense_reimbursement.lcap_app.json",
+        "name": "Expense Reimbursement",
+        "folder": ""
+      }
+    },
+    "extended_output_schema": [
+      {
+        "label": "Request",
+        "name": "request",
+        "properties": [
+          {
+            "control_type": "text",
+            "label": "Record ID",
+            "type": "string",
+            "name": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
+          },
+          {
+            "control_type": "text",
+            "label": "Expense description",
+            "type": "string",
+            "name": "a3f8f034_5330_4406_9cc7_22e46fdc7b42"
+          },
+          {
+            "control_type": "text",
+            "label": "Description",
+            "type": "string",
+            "name": "530c0ada_23c5_479b_9754_9fe9c4dacf0f"
+          },
+          {
+            "control_type": "text",
+            "label": "Review comments (Finance)",
+            "type": "string",
+            "name": "2708620a_7fde_4fda_b49d_650538677cb5"
+          },
+          {
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "File name",
+                "type": "string",
+                "name": "filename"
+              },
+              {
+                "control_type": "text",
+                "label": "File contents",
+                "type": "string",
+                "name": "file_content"
+              }
+            ],
+            "label": "Total invoice",
+            "custom_type": "file",
+            "type": "object",
+            "name": "87409c3c_1bf7_4c69_8d6c_9f8b6195e7af"
+          },
+          {
+            "control_type": "text",
+            "label": "Workday profile",
+            "type": "string",
+            "name": "711bb909_651a_402d_9029_579a78a16db9"
+          },
+          {
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Record ID",
+                "type": "string",
+                "name": "record_id"
+              },
+              {
+                "control_type": "text",
+                "label": "Name",
+                "type": "string",
+                "name": "display_name"
+              }
+            ],
+            "label": "Category",
+            "custom_type": "relation",
+            "custom_field_id": "Name",
+            "type": "object",
+            "name": "7c23078b_f8ab_472f_9243_5ada6ceb5bb9"
+          },
+          {
+            "control_type": "text",
+            "label": "Review comments (Manager)",
+            "type": "string",
+            "name": "1c7f21ac_42eb_45ca_b092_fb75ed424ec8"
+          },
+          {
+            "control_type": "checkbox",
+            "label": "Submit on behalf of colleague",
+            "render_input": {
+            },
+            "parse_output": {
+            },
+            "toggle_hint": "Select from option list",
+            "toggle_field": {
+              "label": "Submit on behalf of colleague",
+              "control_type": "text",
+              "toggle_hint": "Use custom value",
+              "type": "boolean",
+              "name": "935df445_f918_47d4_b0b4_43dd24f1b5f2"
+            },
+            "type": "boolean",
+            "name": "935df445_f918_47d4_b0b4_43dd24f1b5f2"
+          },
+          {
+            "control_type": "text",
+            "label": "Colleague name",
+            "type": "string",
+            "name": "90524855_35e2_4b14_855a_cabe5d88ce83"
+          },
+          {
+            "control_type": "text",
+            "label": "Colleague email",
+            "type": "string",
+            "name": "2d15f5c6_63f7_4333_85d3_ff054075611e"
+          },
+          {
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Record ID",
+                "type": "string",
+                "name": "record_id"
+              },
+              {
+                "control_type": "text",
+                "label": "Name",
+                "type": "string",
+                "name": "display_name"
+              }
+            ],
+            "label": "Sub category",
+            "custom_type": "relation",
+            "custom_field_id": "Name",
+            "type": "object",
+            "name": "30d449b1_f36f_43b0_a666_68bc333a31fb"
+          },
+          {
+            "control_type": "number",
+            "label": "Total (in $)",
+            "parse_output": "float_conversion",
+            "type": "number",
+            "name": "4dae0673_9892_4a37_ad9d_989e8209e079"
+          },
+          {
+            "control_type": "checkbox",
+            "label": "Itemize",
+            "render_input": {
+            },
+            "parse_output": {
+            },
+            "toggle_hint": "Select from option list",
+            "toggle_field": {
+              "label": "Itemize",
+              "control_type": "text",
+              "toggle_hint": "Use custom value",
+              "type": "boolean",
+              "name": "178a4a80_4d73_4665_9dcb_f3283c8c9e8e"
+            },
+            "type": "boolean",
+            "name": "178a4a80_4d73_4665_9dcb_f3283c8c9e8e"
+          },
+          {
+            "control_type": "date",
+            "label": "Expense date",
+            "render_input": "date_conversion",
+            "parse_output": "date_conversion",
+            "type": "date",
+            "name": "4e26f4f5_1d82_422a_9d53_5ed95d85bd4e"
+          },
+          {
+            "control_type": "number",
+            "label": "Expense amount",
+            "parse_output": "float_conversion",
+            "type": "number",
+            "name": "b72ef492_c6e0_4488_97cf_da7864c772a9"
+          },
+          {
+            "control_type": "text",
+            "label": "Manager Name",
+            "type": "string",
+            "name": "e903e275_7cfb_478d_ab02_2abb63fa4b1f"
+          },
+          {
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "User ID",
+                "type": "string",
+                "name": "id"
+              },
+              {
+                "control_type": "text",
+                "label": "User name",
+                "type": "string",
+                "name": "name"
+              },
+              {
+                "control_type": "email",
+                "label": "Email",
+                "type": "string",
+                "name": "email"
+              },
+              {
+                "control_type": "text",
+                "label": "Status",
+                "type": "string",
+                "name": "status"
+              },
+              {
+                "name": "user_groups",
+                "type": "array",
+                "of": "object",
+                "label": "Groups",
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Group ID",
+                    "type": "string",
+                    "name": "id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Group name",
+                    "type": "string",
+                    "name": "name"
+                  }
+                ]
+              }
+            ],
+            "label": "Created by",
+            "type": "object",
+            "name": "created_by"
+          },
+          {
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Stage ID",
+                "type": "string",
+                "name": "id"
+              },
+              {
+                "control_type": "text",
+                "label": "Stage name",
+                "type": "string",
+                "name": "name"
+              }
+            ],
+            "label": "Stage",
+            "type": "object",
+            "name": "stage"
+          },
+          {
+            "control_type": "date_time",
+            "label": "Created at",
+            "render_input": "date_time_conversion",
+            "parse_output": "date_time_conversion",
+            "type": "date_time",
+            "name": "a5612739_5401_4ae7_bd07_782c1a6fb2d1"
+          },
+          {
+            "control_type": "date_time",
+            "label": "Updated at",
+            "render_input": "date_time_conversion",
+            "parse_output": "date_time_conversion",
+            "type": "date_time",
+            "name": "61aae604_a95e_4519_9091_bb0bf754a67f"
+          }
+        ],
+        "type": "object"
+      }
+    ],
+    "block": [
+      {
+        "number": 1,
+        "provider": "workato_recipe_function",
+        "name": "call_recipe",
+        "as": "3bff2967",
+        "keyword": "action",
+        "dynamicPickListSelection": {
+          "flow_id": "Get manager"
+        },
+        "input": {
+          "flow_id": "63562972",
+          "parameters": {
+            "UserEmail": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"935df445_f918_47d4_b0b4_43dd24f1b5f2\"]}')?_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"2d15f5c6_63f7_4333_85d3_ff054075611e\"]}'):_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"created_by\",\"email\"]}')"
+          }
+        },
+        "extended_output_schema": [
+          {
+            "label": "Result",
+            "name": "result",
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Workday profile link",
+                "name": "WorkdayProfileLink",
+                "type": "string",
+                "optional": false
+              },
+              {
+                "control_type": "text",
+                "label": "Manager",
+                "name": "Manager",
+                "type": "string",
+                "optional": false
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "extended_input_schema": [
+          {
+            "label": "Parameters",
+            "name": "parameters",
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "User email",
+                "name": "UserEmail",
+                "type": "string",
+                "optional": false
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "comment": "Implement getting data from HR system",
+        "uuid": "db334173-0d53-4530-af6d-516a6d9c9b1b",
+        "skip": true
+      },
+      {
+        "number": 2,
+        "provider": "workato_workflow_task",
+        "name": "update_request",
+        "as": "3a9e1779",
+        "keyword": "action",
+        "dynamicPickListSelection": {
+          "app_id": "My expenses"
+        },
+        "input": {
+          "app_id": {
+            "zip_name": "expense_reimbursement.lcap_app.json",
+            "name": "Expense Reimbursement",
+            "folder": ""
+          },
+          "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
+          "parameters": {
+            "711bb909_651a_402d_9029_579a78a16db9": "https://workato.com",
+            "e903e275_7cfb_478d_ab02_2abb63fa4b1f": "Annie Smith",
+            "4dae0673_9892_4a37_ad9d_989e8209e079": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"b72ef492_c6e0_4488_97cf_da7864c772a9\"]}')}"
+          }
+        },
+        "extended_output_schema": [
+          {
+            "label": "Request",
+            "name": "request",
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Record ID",
+                "type": "string",
+                "name": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
+              },
+              {
+                "control_type": "text",
+                "label": "Expense description",
+                "type": "string",
+                "name": "a3f8f034_5330_4406_9cc7_22e46fdc7b42"
+              },
+              {
+                "control_type": "text",
+                "label": "Description",
+                "type": "string",
+                "name": "530c0ada_23c5_479b_9754_9fe9c4dacf0f"
+              },
+              {
+                "control_type": "text",
+                "label": "Review comments (Finance)",
+                "type": "string",
+                "name": "2708620a_7fde_4fda_b49d_650538677cb5"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "File name",
+                    "type": "string",
+                    "name": "filename"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "File contents",
+                    "type": "string",
+                    "name": "file_content"
+                  }
+                ],
+                "label": "Total invoice",
+                "custom_type": "file",
+                "type": "object",
+                "name": "87409c3c_1bf7_4c69_8d6c_9f8b6195e7af"
+              },
+              {
+                "control_type": "text",
+                "label": "Workday profile",
+                "type": "string",
+                "name": "711bb909_651a_402d_9029_579a78a16db9"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Record ID",
+                    "type": "string",
+                    "name": "record_id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Name",
+                    "type": "string",
+                    "name": "display_name"
+                  }
+                ],
+                "label": "Category",
+                "custom_type": "relation",
+                "custom_field_id": "Name",
+                "type": "object",
+                "name": "7c23078b_f8ab_472f_9243_5ada6ceb5bb9"
+              },
+              {
+                "control_type": "text",
+                "label": "Review comments (Manager)",
+                "type": "string",
+                "name": "1c7f21ac_42eb_45ca_b092_fb75ed424ec8"
+              },
+              {
+                "control_type": "checkbox",
+                "label": "Submit on behalf of colleague",
+                "render_input": {
+                },
+                "parse_output": {
+                },
+                "toggle_hint": "Select from option list",
+                "toggle_field": {
+                  "label": "Submit on behalf of colleague",
+                  "control_type": "text",
+                  "toggle_hint": "Use custom value",
+                  "type": "boolean",
+                  "name": "935df445_f918_47d4_b0b4_43dd24f1b5f2"
+                },
+                "type": "boolean",
+                "name": "935df445_f918_47d4_b0b4_43dd24f1b5f2"
+              },
+              {
+                "control_type": "text",
+                "label": "Colleague name",
+                "type": "string",
+                "name": "90524855_35e2_4b14_855a_cabe5d88ce83"
+              },
+              {
+                "control_type": "text",
+                "label": "Colleague email",
+                "type": "string",
+                "name": "2d15f5c6_63f7_4333_85d3_ff054075611e"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Record ID",
+                    "type": "string",
+                    "name": "record_id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Name",
+                    "type": "string",
+                    "name": "display_name"
+                  }
+                ],
+                "label": "Sub category",
+                "custom_type": "relation",
+                "custom_field_id": "Name",
+                "type": "object",
+                "name": "30d449b1_f36f_43b0_a666_68bc333a31fb"
+              },
+              {
+                "control_type": "number",
+                "label": "Total (in $)",
+                "parse_output": "float_conversion",
+                "type": "number",
+                "name": "4dae0673_9892_4a37_ad9d_989e8209e079"
+              },
+              {
+                "control_type": "checkbox",
+                "label": "Itemize",
+                "render_input": {
+                },
+                "parse_output": {
+                },
+                "toggle_hint": "Select from option list",
+                "toggle_field": {
+                  "label": "Itemize",
+                  "control_type": "text",
+                  "toggle_hint": "Use custom value",
+                  "type": "boolean",
+                  "name": "178a4a80_4d73_4665_9dcb_f3283c8c9e8e"
+                },
+                "type": "boolean",
+                "name": "178a4a80_4d73_4665_9dcb_f3283c8c9e8e"
+              },
+              {
+                "control_type": "date",
+                "label": "Expense date",
+                "render_input": "date_conversion",
+                "parse_output": "date_conversion",
+                "type": "date",
+                "name": "4e26f4f5_1d82_422a_9d53_5ed95d85bd4e"
+              },
+              {
+                "control_type": "number",
+                "label": "Expense amount",
+                "parse_output": "float_conversion",
+                "type": "number",
+                "name": "b72ef492_c6e0_4488_97cf_da7864c772a9"
+              },
+              {
+                "control_type": "text",
+                "label": "Manager Name",
+                "type": "string",
+                "name": "e903e275_7cfb_478d_ab02_2abb63fa4b1f"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Task ID",
+                    "type": "string",
+                    "name": "id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Task name",
+                    "type": "string",
+                    "name": "name"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Status",
+                    "type": "string",
+                    "name": "status"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "User ID",
+                        "type": "string",
+                        "name": "id"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "User name",
+                        "type": "string",
+                        "name": "name"
+                      },
+                      {
+                        "control_type": "email",
+                        "label": "Email",
+                        "type": "string",
+                        "name": "email"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Status",
+                        "type": "string",
+                        "name": "status"
+                      },
+                      {
+                        "name": "user_groups",
+                        "type": "array",
+                        "of": "object",
+                        "label": "Groups",
+                        "properties": [
+                          {
+                            "control_type": "text",
+                            "label": "Group ID",
+                            "type": "string",
+                            "name": "id"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Group name",
+                            "type": "string",
+                            "name": "name"
+                          }
+                        ]
+                      }
+                    ],
+                    "label": "Assigned user",
+                    "type": "object",
+                    "name": "assigned_user"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "Group ID",
+                        "type": "string",
+                        "name": "id"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Group name",
+                        "type": "string",
+                        "name": "name"
+                      }
+                    ],
+                    "label": "Assigned group",
+                    "type": "object",
+                    "name": "assigned_group"
+                  },
+                  {
+                    "control_type": "date_time",
+                    "label": "Due date",
+                    "render_input": "date_time_conversion",
+                    "parse_output": "date_time_conversion",
+                    "type": "date_time",
+                    "name": "expires_at"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Task URL",
+                    "type": "string",
+                    "name": "link"
+                  }
+                ],
+                "label": "Active task",
+                "type": "object",
+                "name": "task"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "User ID",
+                    "type": "string",
+                    "name": "id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "User name",
+                    "type": "string",
+                    "name": "name"
+                  },
+                  {
+                    "control_type": "email",
+                    "label": "Email",
+                    "type": "string",
+                    "name": "email"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Status",
+                    "type": "string",
+                    "name": "status"
+                  },
+                  {
+                    "name": "user_groups",
+                    "type": "array",
+                    "of": "object",
+                    "label": "Groups",
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "Group ID",
+                        "type": "string",
+                        "name": "id"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Group name",
+                        "type": "string",
+                        "name": "name"
+                      }
+                    ]
+                  }
+                ],
+                "label": "Created by",
+                "type": "object",
+                "name": "created_by"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Stage ID",
+                    "type": "string",
+                    "name": "id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Stage name",
+                    "type": "string",
+                    "name": "name"
+                  }
+                ],
+                "label": "Stage",
+                "type": "object",
+                "name": "stage"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Created at",
+                "render_input": "date_time_conversion",
+                "parse_output": "date_time_conversion",
+                "type": "date_time",
+                "name": "a5612739_5401_4ae7_bd07_782c1a6fb2d1"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Updated at",
+                "render_input": "date_time_conversion",
+                "parse_output": "date_time_conversion",
+                "type": "date_time",
+                "name": "61aae604_a95e_4519_9091_bb0bf754a67f"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "extended_input_schema": [
+          {
+            "hint": "Fill out the fields that need to be updated. Fields that are left blank will not be updated.",
+            "label": "Update request fields with new inputs",
+            "name": "parameters",
+            "properties": [
+              {
+                "control_type": "text-area",
+                "label": "Expense description",
+                "optional": true,
+                "sticky": true,
+                "type": "string",
+                "name": "a3f8f034_5330_4406_9cc7_22e46fdc7b42"
+              },
+              {
+                "control_type": "text-area",
+                "label": "Description",
+                "optional": true,
+                "sticky": true,
+                "type": "string",
+                "name": "530c0ada_23c5_479b_9754_9fe9c4dacf0f"
+              },
+              {
+                "control_type": "text-area",
+                "label": "Review comments (Finance)",
+                "optional": true,
+                "sticky": true,
+                "type": "string",
+                "name": "2708620a_7fde_4fda_b49d_650538677cb5"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "File name",
+                    "type": "string",
+                    "name": "filename"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "File contents",
+                    "strip_interpolation": true,
+                    "type": "string",
+                    "name": "file_content"
+                  }
+                ],
+                "label": "Total invoice",
+                "optional": true,
+                "custom_type": "file",
+                "type": "object",
+                "name": "87409c3c_1bf7_4c69_8d6c_9f8b6195e7af"
+              },
+              {
+                "control_type": "text",
+                "label": "Workday profile",
+                "optional": true,
+                "sticky": true,
+                "type": "string",
+                "name": "711bb909_651a_402d_9029_579a78a16db9"
+              },
+              {
+                "control_type": "text",
+                "label": "Category Record ID",
+                "optional": true,
+                "custom_type": "relation",
+                "custom_field_id": "Name",
+                "type": "string",
+                "name": "7c23078b_f8ab_472f_9243_5ada6ceb5bb9"
+              },
+              {
+                "control_type": "text-area",
+                "label": "Review comments (Manager)",
+                "optional": true,
+                "sticky": false,
+                "type": "string",
+                "name": "1c7f21ac_42eb_45ca_b092_fb75ed424ec8"
+              },
+              {
+                "control_type": "checkbox",
+                "label": "Submit on behalf of colleague",
+                "render_input": "boolean_conversion",
+                "parse_output": "boolean_conversion",
+                "toggle_hint": "Select from option list",
+                "toggle_field": {
+                  "label": "Submit on behalf of colleague",
+                  "control_type": "text",
+                  "toggle_hint": "Use custom value",
+                  "hint": null,
+                  "placeholder": false,
+                  "optional": true,
+                  "sticky": false,
+                  "render_input": "boolean_conversion",
+                  "parse_output": "boolean_conversion",
+                  "type": "boolean",
+                  "name": "935df445_f918_47d4_b0b4_43dd24f1b5f2"
+                },
+                "placeholder": false,
+                "optional": true,
+                "sticky": false,
+                "type": "boolean",
+                "name": "935df445_f918_47d4_b0b4_43dd24f1b5f2"
+              },
+              {
+                "control_type": "text",
+                "label": "Colleague name",
+                "optional": true,
+                "sticky": false,
+                "type": "string",
+                "name": "90524855_35e2_4b14_855a_cabe5d88ce83"
+              },
+              {
+                "control_type": "text",
+                "label": "Colleague email",
+                "optional": true,
+                "sticky": false,
+                "type": "string",
+                "name": "2d15f5c6_63f7_4333_85d3_ff054075611e"
+              },
+              {
+                "control_type": "text",
+                "label": "Sub category Record ID",
+                "optional": true,
+                "custom_type": "relation",
+                "custom_field_id": "Name",
+                "type": "string",
+                "name": "30d449b1_f36f_43b0_a666_68bc333a31fb"
+              },
+              {
+                "control_type": "number",
+                "label": "Total (in $)",
+                "parse_output": "float_conversion",
+                "optional": true,
+                "sticky": false,
+                "render_input": "float_conversion",
+                "type": "number",
+                "name": "4dae0673_9892_4a37_ad9d_989e8209e079"
+              },
+              {
+                "control_type": "checkbox",
+                "label": "Itemize",
+                "render_input": "boolean_conversion",
+                "parse_output": "boolean_conversion",
+                "toggle_hint": "Select from option list",
+                "toggle_field": {
+                  "label": "Itemize",
+                  "control_type": "text",
+                  "toggle_hint": "Use custom value",
+                  "hint": null,
+                  "placeholder": null,
+                  "optional": true,
+                  "sticky": false,
+                  "render_input": "boolean_conversion",
+                  "parse_output": "boolean_conversion",
+                  "type": "boolean",
+                  "name": "178a4a80_4d73_4665_9dcb_f3283c8c9e8e"
+                },
+                "optional": true,
+                "sticky": false,
+                "type": "boolean",
+                "name": "178a4a80_4d73_4665_9dcb_f3283c8c9e8e"
+              },
+              {
+                "control_type": "date",
+                "label": "Expense date",
+                "render_input": "date_conversion",
+                "parse_output": "date_conversion",
+                "optional": true,
+                "sticky": false,
+                "type": "date",
+                "name": "4e26f4f5_1d82_422a_9d53_5ed95d85bd4e"
+              },
+              {
+                "control_type": "number",
+                "label": "Expense amount",
+                "parse_output": "float_conversion",
+                "hint": "Specify amount in ﹩",
+                "optional": true,
+                "sticky": false,
+                "render_input": "float_conversion",
+                "type": "number",
+                "name": "b72ef492_c6e0_4488_97cf_da7864c772a9"
+              },
+              {
+                "control_type": "text",
+                "label": "Manager Name",
+                "optional": true,
+                "sticky": false,
+                "type": "string",
+                "name": "e903e275_7cfb_478d_ab02_2abb63fa4b1f"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "visible_config_fields": [
+          "app_id",
+          "record_id",
+          "parameters.a3f8f034_5330_4406_9cc7_22e46fdc7b42",
+          "parameters.530c0ada_23c5_479b_9754_9fe9c4dacf0f",
+          "parameters.2708620a_7fde_4fda_b49d_650538677cb5",
+          "parameters.1c7f21ac_42eb_45ca_b092_fb75ed424ec8",
+          "parameters.711bb909_651a_402d_9029_579a78a16db9",
+          "parameters",
+          "parameters.e903e275_7cfb_478d_ab02_2abb63fa4b1f",
+          "parameters.4dae0673_9892_4a37_ad9d_989e8209e079"
+        ],
+        "comment": "Update request with information from Workday",
+        "uuid": "aa9852f4-9a0c-41dc-857c-fd6a30cabdcf",
+        "skip": false
+      },
+      {
+        "number": 3,
+        "keyword": "if",
+        "input": {
+          "type": "compound",
+          "operand": "and",
+          "conditions": [
+            {
+              "operand": "is_true",
+              "lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"178a4a80_4d73_4665_9dcb_f3283c8c9e8e\"]}')}",
+              "rhs": "",
+              "uuid": "3ee92b19-0eb9-4a35-96b8-8bbac05ec908"
+            }
+          ]
+        },
+        "block": [
+          {
+            "number": 4,
+            "provider": "workato_db_table",
+            "name": "get_records",
+            "as": "11d16eaf",
+            "keyword": "action",
+            "dynamicPickListSelection": {
+              "table_id": "Expense items",
+              "filters.0.field_id": "Report"
+            },
+            "input": {
+              "order_direction": "asc",
+              "limit": "100",
+              "table_id": {
+                "zip_name": "expense_items.workato_db_table.json",
+                "name": "Expense items",
+                "folder": ""
+              },
+              "94a9b838-156f-427f-9159-2ed6fe78e9dc": "relation",
+              "71a3389e-d393-4944-b784-a220b6a77f78": "string",
+              "67dff32a-29ad-4af6-8474-1203e216e13d": "file",
+              "2eff8681-2beb-4b17-885c-48a9372c76f5": "date",
+              "bbe539dd-b472-439f-9477-9be7ac709e01": "number",
+              "11fbe9a6-a16d-4d7e-86ea-afe42ec03005": "id",
+              "a5612739-5401-4ae7-bd07-782c1a6fb2d1": "date_time",
+              "61aae604-a95e-4519-9091-bb0bf754a67f": "date_time",
+              "filters": [
+                {
+                  "field_id": "94a9b838-156f-427f-9159-2ed6fe78e9dc",
+                  "value_relation": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
+                  "op_relation": "eq"
+                }
+              ]
+            },
+            "extended_output_schema": [
+              {
+                "label": "Records",
+                "name": "records",
+                "of": "object",
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Record ID",
+                    "type": "string",
+                    "name": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "Record ID",
+                        "type": "string",
+                        "name": "record_id"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Description",
+                        "type": "string",
+                        "name": "display_name"
+                      }
+                    ],
+                    "label": "Report",
+                    "custom_type": "relation",
+                    "custom_field_id": "Description",
+                    "type": "object",
+                    "name": "94a9b838_156f_427f_9159_2ed6fe78e9dc"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Description",
+                    "type": "string",
+                    "name": "71a3389e_d393_4944_b784_a220b6a77f78"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "File name",
+                        "type": "string",
+                        "name": "filename"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "File contents",
+                        "type": "string",
+                        "name": "file_content"
+                      }
+                    ],
+                    "label": "Receipt",
+                    "custom_type": "file",
+                    "type": "object",
+                    "name": "67dff32a_29ad_4af6_8474_1203e216e13d"
+                  },
+                  {
+                    "control_type": "date",
+                    "label": "Date",
+                    "render_input": "date_conversion",
+                    "parse_output": "date_conversion",
+                    "type": "date",
+                    "name": "2eff8681_2beb_4b17_885c_48a9372c76f5"
+                  },
+                  {
+                    "control_type": "number",
+                    "label": "Amount ($)",
+                    "parse_output": "float_conversion",
+                    "type": "number",
+                    "name": "bbe539dd_b472_439f_9477_9be7ac709e01"
+                  },
+                  {
+                    "control_type": "date_time",
+                    "label": "Created at",
+                    "render_input": "date_time_conversion",
+                    "parse_output": "date_time_conversion",
+                    "type": "date_time",
+                    "name": "a5612739_5401_4ae7_bd07_782c1a6fb2d1"
+                  },
+                  {
+                    "control_type": "date_time",
+                    "label": "Updated at",
+                    "render_input": "date_time_conversion",
+                    "parse_output": "date_time_conversion",
+                    "type": "date_time",
+                    "name": "61aae604_a95e_4519_9091_bb0bf754a67f"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "control_type": "text",
+                "label": "Next Page Token",
+                "name": "continuation_token",
+                "type": "string"
+              }
+            ],
+            "extended_input_schema": [
+              {
+                "control_type": "text",
+                "default": "relation",
+                "label": "$internal_value_94a9b838-156f-427f-9159-2ed6fe78e9dc",
+                "name": "94a9b838-156f-427f-9159-2ed6fe78e9dc",
+                "ngIf": "false",
+                "optional": true,
+                "type": "string"
+              },
+              {
+                "control_type": "text",
+                "default": "string",
+                "label": "$internal_value_71a3389e-d393-4944-b784-a220b6a77f78",
+                "name": "71a3389e-d393-4944-b784-a220b6a77f78",
+                "ngIf": "false",
+                "optional": true,
+                "type": "string"
+              },
+              {
+                "control_type": "text",
+                "default": "file",
+                "label": "$internal_value_67dff32a-29ad-4af6-8474-1203e216e13d",
+                "name": "67dff32a-29ad-4af6-8474-1203e216e13d",
+                "ngIf": "false",
+                "optional": true,
+                "type": "string"
+              },
+              {
+                "control_type": "text",
+                "default": "date",
+                "label": "$internal_value_2eff8681-2beb-4b17-885c-48a9372c76f5",
+                "name": "2eff8681-2beb-4b17-885c-48a9372c76f5",
+                "ngIf": "false",
+                "optional": true,
+                "type": "string"
+              },
+              {
+                "control_type": "text",
+                "default": "number",
+                "label": "$internal_value_bbe539dd-b472-439f-9477-9be7ac709e01",
+                "name": "bbe539dd-b472-439f-9477-9be7ac709e01",
+                "ngIf": "false",
+                "optional": true,
+                "type": "string"
+              },
+              {
+                "control_type": "text",
+                "default": "id",
+                "label": "$internal_value_11fbe9a6-a16d-4d7e-86ea-afe42ec03005",
+                "name": "11fbe9a6-a16d-4d7e-86ea-afe42ec03005",
+                "ngIf": "false",
+                "optional": true,
+                "type": "string"
+              },
+              {
+                "control_type": "text",
+                "default": "date_time",
+                "label": "$internal_value_a5612739-5401-4ae7-bd07-782c1a6fb2d1",
+                "name": "a5612739-5401-4ae7-bd07-782c1a6fb2d1",
+                "ngIf": "false",
+                "optional": true,
+                "type": "string"
+              },
+              {
+                "control_type": "text",
+                "default": "date_time",
+                "label": "$internal_value_61aae604-a95e-4519-9091-bb0bf754a67f",
+                "name": "61aae604-a95e-4519-9091-bb0bf754a67f",
+                "ngIf": "false",
+                "optional": true,
+                "type": "string"
+              }
+            ],
+            "comment": "Get all line items",
+            "uuid": "e5703ee3-f344-4d8a-90b9-87a87d0c5043",
+            "skip": false
+          },
+          {
+            "number": 5,
+            "provider": "workato_variable",
+            "name": "declare_variable",
+            "as": "5926ebed",
+            "keyword": "action",
+            "input": {
+              "variables": {
+                "schema": "[{\"name\":\"Total\",\"type\":\"number\",\"optional\":true,\"label\":\"Total\",\"details\":{\"real_name\":\"Total\"},\"control_type\":\"number\"}]",
+                "data": {
+                  "Total": "0"
+                }
+              }
+            },
+            "extended_output_schema": [
+              {
+                "control_type": "number",
+                "label": "Total",
+                "name": "Total",
+                "optional": true,
+                "parse_output": "float_conversion",
+                "type": "number",
+                "details": {
+                  "real_name": "Total"
+                }
+              }
+            ],
+            "extended_input_schema": [
+              {
+                "add_field_label": "Add a variable",
+                "control_type": "form-schema-builder",
+                "empty_schema_title": "Add variables by giving them a name, type and default value",
+                "exclude_fields": [
+                  "hint"
+                ],
+                "item_label": "variable",
+                "label": "Variables",
+                "mark_as_required": true,
+                "name": "variables",
+                "ngIf": "!input.name",
+                "optional": true,
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Schema",
+                    "extends_schema": true,
+                    "broadcast_change_event": true,
+                    "type": "string",
+                    "name": "schema"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "number",
+                        "label": "Total",
+                        "parse_output": "float_conversion",
+                        "name": "Total",
+                        "type": "number",
+                        "optional": true,
+                        "details": {
+                          "real_name": "Total"
+                        },
+                        "hint": "Defaults to nil if not supplied.",
+                        "sticky": true
+                      }
+                    ],
+                    "label": "Data",
+                    "type": "object",
+                    "name": "data"
+                  }
+                ],
+                "type": "object"
+              }
+            ],
+            "visible_config_fields": [
+              "name",
+              "type",
+              "variables.data.Total"
+            ],
+            "uuid": "05fc8520-2b61-4415-9526-20e049911d9a",
+            "skip": false
+          },
+          {
+            "number": 6,
+            "as": "18b1384a",
+            "keyword": "foreach",
+            "repeat_mode": "simple",
+            "clear_scope": "false",
+            "input": {
+            },
+            "block": [
+              {
+                "number": 7,
+                "provider": "workato_variable",
+                "name": "update_variables",
+                "as": "4d9a6c98",
+                "keyword": "action",
+                "dynamicPickListSelection": {
+                  "name": [
+                    {
+                      "label": "Total (step 3)",
+                      "value": "05fc8520-2b61-4415-9526-20e049911d9a:5926ebed:Total"
+                    }
+                  ]
+                },
+                "input": {
+                  "name": "05fc8520-2b61-4415-9526-20e049911d9a:5926ebed:Total",
+                  "Total": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"5926ebed\",\"path\":[\"Total\"]}')+_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"18b1384a\",\"path\":[\"bbe539dd_b472_439f_9477_9be7ac709e01\"]}')"
+                },
+                "extended_input_schema": [
+                  {
+                    "control_type": "number",
+                    "hint": "Provide a value for the variable. When the value is not supplied, the variable is not updated.<br>To clear the value, set the value to <b>nil</b> in formula mode.",
+                    "label": "Total",
+                    "name": "Total",
+                    "optional": true,
+                    "parse_output": "float_conversion",
+                    "sticky": true,
+                    "type": "number",
+                    "strip_interpolation": true
+                  }
+                ],
+                "uuid": "c86c9d95-dddf-434c-a5c4-e11fdcf508cd",
+                "skip": false
+              }
+            ],
+            "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"11d16eaf\",\"path\":[\"records\"]}')}",
+            "uuid": "1e0b881d-aff9-4655-a214-0ad6a6353889",
+            "skip": false
+          },
+          {
+            "number": 8,
+            "provider": "workato_workflow_task",
+            "name": "update_request",
+            "as": "aa2ca387",
+            "keyword": "action",
+            "dynamicPickListSelection": {
+              "app_id": "My expense"
+            },
+            "input": {
+              "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
+              "app_id": {
+                "zip_name": "expense_reimbursement.lcap_app.json",
+                "name": "Expense Reimbursement",
+                "folder": ""
+              },
+              "parameters": {
+                "4dae0673_9892_4a37_ad9d_989e8209e079": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"5926ebed\",\"path\":[\"Total\"]}')}"
+              }
+            },
+            "extended_output_schema": [
+              {
+                "label": "Request",
+                "name": "request",
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Record ID",
+                    "type": "string",
+                    "name": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Expense description",
+                    "type": "string",
+                    "name": "a3f8f034_5330_4406_9cc7_22e46fdc7b42"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Description",
+                    "type": "string",
+                    "name": "530c0ada_23c5_479b_9754_9fe9c4dacf0f"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Review comments (Finance)",
+                    "type": "string",
+                    "name": "2708620a_7fde_4fda_b49d_650538677cb5"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "File name",
+                        "type": "string",
+                        "name": "filename"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "File contents",
+                        "type": "string",
+                        "name": "file_content"
+                      }
+                    ],
+                    "label": "Total invoice",
+                    "custom_type": "file",
+                    "type": "object",
+                    "name": "87409c3c_1bf7_4c69_8d6c_9f8b6195e7af"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Workday profile",
+                    "type": "string",
+                    "name": "711bb909_651a_402d_9029_579a78a16db9"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "Record ID",
+                        "type": "string",
+                        "name": "record_id"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Name",
+                        "type": "string",
+                        "name": "display_name"
+                      }
+                    ],
+                    "label": "Category",
+                    "custom_type": "relation",
+                    "custom_field_id": "Name",
+                    "type": "object",
+                    "name": "7c23078b_f8ab_472f_9243_5ada6ceb5bb9"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Review comments (Manager)",
+                    "type": "string",
+                    "name": "1c7f21ac_42eb_45ca_b092_fb75ed424ec8"
+                  },
+                  {
+                    "control_type": "checkbox",
+                    "label": "Submit on behalf of colleague",
+                    "render_input": {
+                    },
+                    "parse_output": {
+                    },
+                    "toggle_hint": "Select from option list",
+                    "toggle_field": {
+                      "label": "Submit on behalf of colleague",
+                      "control_type": "text",
+                      "toggle_hint": "Use custom value",
+                      "type": "boolean",
+                      "name": "935df445_f918_47d4_b0b4_43dd24f1b5f2"
+                    },
+                    "type": "boolean",
+                    "name": "935df445_f918_47d4_b0b4_43dd24f1b5f2"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Colleague name",
+                    "type": "string",
+                    "name": "90524855_35e2_4b14_855a_cabe5d88ce83"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Colleague email",
+                    "type": "string",
+                    "name": "2d15f5c6_63f7_4333_85d3_ff054075611e"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "Record ID",
+                        "type": "string",
+                        "name": "record_id"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Name",
+                        "type": "string",
+                        "name": "display_name"
+                      }
+                    ],
+                    "label": "Sub category",
+                    "custom_type": "relation",
+                    "custom_field_id": "Name",
+                    "type": "object",
+                    "name": "30d449b1_f36f_43b0_a666_68bc333a31fb"
+                  },
+                  {
+                    "control_type": "number",
+                    "label": "Total (in $)",
+                    "parse_output": "float_conversion",
+                    "type": "number",
+                    "name": "4dae0673_9892_4a37_ad9d_989e8209e079"
+                  },
+                  {
+                    "control_type": "checkbox",
+                    "label": "Itemize",
+                    "render_input": {
+                    },
+                    "parse_output": {
+                    },
+                    "toggle_hint": "Select from option list",
+                    "toggle_field": {
+                      "label": "Itemize",
+                      "control_type": "text",
+                      "toggle_hint": "Use custom value",
+                      "type": "boolean",
+                      "name": "178a4a80_4d73_4665_9dcb_f3283c8c9e8e"
+                    },
+                    "type": "boolean",
+                    "name": "178a4a80_4d73_4665_9dcb_f3283c8c9e8e"
+                  },
+                  {
+                    "control_type": "date",
+                    "label": "Expense date",
+                    "render_input": "date_conversion",
+                    "parse_output": "date_conversion",
+                    "type": "date",
+                    "name": "4e26f4f5_1d82_422a_9d53_5ed95d85bd4e"
+                  },
+                  {
+                    "control_type": "number",
+                    "label": "Expense amount",
+                    "parse_output": "float_conversion",
+                    "type": "number",
+                    "name": "b72ef492_c6e0_4488_97cf_da7864c772a9"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Manager Name",
+                    "type": "string",
+                    "name": "e903e275_7cfb_478d_ab02_2abb63fa4b1f"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "Task ID",
+                        "type": "string",
+                        "name": "id"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Task name",
+                        "type": "string",
+                        "name": "name"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Status",
+                        "type": "string",
+                        "name": "status"
+                      },
+                      {
+                        "properties": [
+                          {
+                            "control_type": "text",
+                            "label": "User ID",
+                            "type": "string",
+                            "name": "id"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "User name",
+                            "type": "string",
+                            "name": "name"
+                          },
+                          {
+                            "control_type": "email",
+                            "label": "Email",
+                            "type": "string",
+                            "name": "email"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Status",
+                            "type": "string",
+                            "name": "status"
+                          },
+                          {
+                            "name": "user_groups",
+                            "type": "array",
+                            "of": "object",
+                            "label": "Groups",
+                            "properties": [
+                              {
+                                "control_type": "text",
+                                "label": "Group ID",
+                                "type": "string",
+                                "name": "id"
+                              },
+                              {
+                                "control_type": "text",
+                                "label": "Group name",
+                                "type": "string",
+                                "name": "name"
+                              }
+                            ]
+                          }
+                        ],
+                        "label": "Assigned user",
+                        "type": "object",
+                        "name": "assigned_user"
+                      },
+                      {
+                        "properties": [
+                          {
+                            "control_type": "text",
+                            "label": "Group ID",
+                            "type": "string",
+                            "name": "id"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Group name",
+                            "type": "string",
+                            "name": "name"
+                          }
+                        ],
+                        "label": "Assigned group",
+                        "type": "object",
+                        "name": "assigned_group"
+                      },
+                      {
+                        "control_type": "date_time",
+                        "label": "Due date",
+                        "render_input": "date_time_conversion",
+                        "parse_output": "date_time_conversion",
+                        "type": "date_time",
+                        "name": "expires_at"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Task URL",
+                        "type": "string",
+                        "name": "link"
+                      }
+                    ],
+                    "label": "Active task",
+                    "type": "object",
+                    "name": "task"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "User ID",
+                        "type": "string",
+                        "name": "id"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "User name",
+                        "type": "string",
+                        "name": "name"
+                      },
+                      {
+                        "control_type": "email",
+                        "label": "Email",
+                        "type": "string",
+                        "name": "email"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Status",
+                        "type": "string",
+                        "name": "status"
+                      },
+                      {
+                        "name": "user_groups",
+                        "type": "array",
+                        "of": "object",
+                        "label": "Groups",
+                        "properties": [
+                          {
+                            "control_type": "text",
+                            "label": "Group ID",
+                            "type": "string",
+                            "name": "id"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Group name",
+                            "type": "string",
+                            "name": "name"
+                          }
+                        ]
+                      }
+                    ],
+                    "label": "Created by",
+                    "type": "object",
+                    "name": "created_by"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "Stage ID",
+                        "type": "string",
+                        "name": "id"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Stage name",
+                        "type": "string",
+                        "name": "name"
+                      }
+                    ],
+                    "label": "Stage",
+                    "type": "object",
+                    "name": "stage"
+                  },
+                  {
+                    "control_type": "date_time",
+                    "label": "Created at",
+                    "render_input": "date_time_conversion",
+                    "parse_output": "date_time_conversion",
+                    "type": "date_time",
+                    "name": "a5612739_5401_4ae7_bd07_782c1a6fb2d1"
+                  },
+                  {
+                    "control_type": "date_time",
+                    "label": "Updated at",
+                    "render_input": "date_time_conversion",
+                    "parse_output": "date_time_conversion",
+                    "type": "date_time",
+                    "name": "61aae604_a95e_4519_9091_bb0bf754a67f"
+                  }
+                ],
+                "type": "object"
+              }
+            ],
+            "extended_input_schema": [
+              {
+                "hint": "Fill out the fields that need to be updated. Fields that are left blank will not be updated.",
+                "label": "Update request fields with new inputs",
+                "name": "parameters",
+                "properties": [
+                  {
+                    "control_type": "text-area",
+                    "label": "Expense description",
+                    "optional": true,
+                    "sticky": true,
+                    "type": "string",
+                    "name": "a3f8f034_5330_4406_9cc7_22e46fdc7b42"
+                  },
+                  {
+                    "control_type": "text-area",
+                    "label": "Description",
+                    "optional": true,
+                    "sticky": true,
+                    "type": "string",
+                    "name": "530c0ada_23c5_479b_9754_9fe9c4dacf0f"
+                  },
+                  {
+                    "control_type": "text-area",
+                    "label": "Review comments (Finance)",
+                    "optional": true,
+                    "sticky": true,
+                    "type": "string",
+                    "name": "2708620a_7fde_4fda_b49d_650538677cb5"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "File name",
+                        "type": "string",
+                        "name": "filename"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "File contents",
+                        "strip_interpolation": true,
+                        "type": "string",
+                        "name": "file_content"
+                      }
+                    ],
+                    "label": "Total invoice",
+                    "optional": true,
+                    "custom_type": "file",
+                    "type": "object",
+                    "name": "87409c3c_1bf7_4c69_8d6c_9f8b6195e7af"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Workday profile",
+                    "optional": true,
+                    "sticky": true,
+                    "type": "string",
+                    "name": "711bb909_651a_402d_9029_579a78a16db9"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Category Record ID",
+                    "optional": true,
+                    "custom_type": "relation",
+                    "custom_field_id": "Name",
+                    "type": "string",
+                    "name": "7c23078b_f8ab_472f_9243_5ada6ceb5bb9"
+                  },
+                  {
+                    "control_type": "text-area",
+                    "label": "Review comments (Manager)",
+                    "optional": true,
+                    "sticky": false,
+                    "type": "string",
+                    "name": "1c7f21ac_42eb_45ca_b092_fb75ed424ec8"
+                  },
+                  {
+                    "control_type": "checkbox",
+                    "label": "Submit on behalf of colleague",
+                    "render_input": "boolean_conversion",
+                    "parse_output": "boolean_conversion",
+                    "toggle_hint": "Select from option list",
+                    "toggle_field": {
+                      "label": "Submit on behalf of colleague",
+                      "control_type": "text",
+                      "toggle_hint": "Use custom value",
+                      "hint": null,
+                      "placeholder": false,
+                      "optional": true,
+                      "sticky": false,
+                      "render_input": "boolean_conversion",
+                      "parse_output": "boolean_conversion",
+                      "type": "boolean",
+                      "name": "935df445_f918_47d4_b0b4_43dd24f1b5f2"
+                    },
+                    "placeholder": false,
+                    "optional": true,
+                    "sticky": false,
+                    "type": "boolean",
+                    "name": "935df445_f918_47d4_b0b4_43dd24f1b5f2"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Colleague name",
+                    "optional": true,
+                    "sticky": false,
+                    "type": "string",
+                    "name": "90524855_35e2_4b14_855a_cabe5d88ce83"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Colleague email",
+                    "optional": true,
+                    "sticky": false,
+                    "type": "string",
+                    "name": "2d15f5c6_63f7_4333_85d3_ff054075611e"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Sub category Record ID",
+                    "optional": true,
+                    "custom_type": "relation",
+                    "custom_field_id": "Name",
+                    "type": "string",
+                    "name": "30d449b1_f36f_43b0_a666_68bc333a31fb"
+                  },
+                  {
+                    "control_type": "number",
+                    "label": "Total (in $)",
+                    "parse_output": "float_conversion",
+                    "optional": true,
+                    "sticky": false,
+                    "render_input": "float_conversion",
+                    "type": "number",
+                    "name": "4dae0673_9892_4a37_ad9d_989e8209e079"
+                  },
+                  {
+                    "control_type": "checkbox",
+                    "label": "Itemize",
+                    "render_input": "boolean_conversion",
+                    "parse_output": "boolean_conversion",
+                    "toggle_hint": "Select from option list",
+                    "toggle_field": {
+                      "label": "Itemize",
+                      "control_type": "text",
+                      "toggle_hint": "Use custom value",
+                      "hint": null,
+                      "placeholder": null,
+                      "optional": true,
+                      "sticky": false,
+                      "render_input": "boolean_conversion",
+                      "parse_output": "boolean_conversion",
+                      "type": "boolean",
+                      "name": "178a4a80_4d73_4665_9dcb_f3283c8c9e8e"
+                    },
+                    "optional": true,
+                    "sticky": false,
+                    "type": "boolean",
+                    "name": "178a4a80_4d73_4665_9dcb_f3283c8c9e8e"
+                  },
+                  {
+                    "control_type": "date",
+                    "label": "Expense date",
+                    "render_input": "date_conversion",
+                    "parse_output": "date_conversion",
+                    "optional": true,
+                    "sticky": false,
+                    "type": "date",
+                    "name": "4e26f4f5_1d82_422a_9d53_5ed95d85bd4e"
+                  },
+                  {
+                    "control_type": "number",
+                    "label": "Expense amount",
+                    "parse_output": "float_conversion",
+                    "hint": "Specify amount in ﹩",
+                    "optional": true,
+                    "sticky": false,
+                    "render_input": "float_conversion",
+                    "type": "number",
+                    "name": "b72ef492_c6e0_4488_97cf_da7864c772a9"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Manager Name",
+                    "optional": true,
+                    "sticky": false,
+                    "type": "string",
+                    "name": "e903e275_7cfb_478d_ab02_2abb63fa4b1f"
+                  }
+                ],
+                "type": "object"
+              }
+            ],
+            "visible_config_fields": [
+              "app_id",
+              "record_id",
+              "parameters.7e839bde_eaf5_4043_8b93_84a13181ff59",
+              "parameters.530c0ada_23c5_479b_9754_9fe9c4dacf0f",
+              "parameters.1c7f21ac_42eb_45ca_b092_fb75ed424ec8",
+              "parameters.a3f8f034_5330_4406_9cc7_22e46fdc7b42",
+              "parameters.4173a3a4_2dd5_49cc_990c_295d884a88a5",
+              "parameters.4dae0673_9892_4a37_ad9d_989e8209e079"
+            ],
+            "comment": "Update total",
+            "uuid": "2d772ae7-c271-4606-a279-49d8728eadcd",
+            "skip": false
+          }
+        ],
+        "comment": "Calculate totals for itemized expenses",
+        "uuid": "c7a6d3a7-04cc-42f6-8865-b577f7c5e689",
+        "skip": false
+      },
+      {
+        "number": 9,
+        "provider": "workato_workflow_task",
+        "name": "human_review_on_existing_record",
+        "as": "human_review_on_existing_record",
+        "keyword": "action",
+        "toggleCfg": {
+          "workflow_stage_id": true,
+          "send_email_notification": true,
+          "reassignable": true,
+          "due_in_days": true
+        },
+        "input": {
+          "app_id": {
+            "zip_name": "expense_reimbursement.lcap_app.json",
+            "name": "Expense Reimbursement",
+            "folder": ""
+          },
+          "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
+          "name": "Review #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"7c23078b_f8ab_472f_9243_5ada6ceb5bb9\",\"display_name\"]}')} expense",
+          "workflow_stage_id": {
+            "name": "Finance approval"
+          },
+          "due_in_days": "30",
+          "email": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"created_by\",\"email\"]}')}",
+          "send_email_notification": "true",
+          "reassignable": "true"
+        },
+        "extended_output_schema": [
+          {
+            "label": "Record",
+            "name": "record",
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Record ID",
+                "type": "string",
+                "name": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
+              },
+              {
+                "control_type": "text",
+                "label": "Expense description",
+                "type": "string",
+                "name": "a3f8f034_5330_4406_9cc7_22e46fdc7b42"
+              },
+              {
+                "control_type": "text",
+                "label": "Description",
+                "type": "string",
+                "name": "530c0ada_23c5_479b_9754_9fe9c4dacf0f"
+              },
+              {
+                "control_type": "text",
+                "label": "Review comments (Finance)",
+                "type": "string",
+                "name": "2708620a_7fde_4fda_b49d_650538677cb5"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "File name",
+                    "type": "string",
+                    "name": "filename"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "File contents",
+                    "type": "string",
+                    "name": "file_content"
+                  }
+                ],
+                "label": "Total invoice",
+                "custom_type": "file",
+                "type": "object",
+                "name": "87409c3c_1bf7_4c69_8d6c_9f8b6195e7af"
+              },
+              {
+                "control_type": "text",
+                "label": "Workday profile",
+                "type": "string",
+                "name": "711bb909_651a_402d_9029_579a78a16db9"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Record ID",
+                    "type": "string",
+                    "name": "record_id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Name",
+                    "type": "string",
+                    "name": "display_name"
+                  }
+                ],
+                "label": "Category",
+                "custom_type": "relation",
+                "custom_field_id": "Name",
+                "type": "object",
+                "name": "7c23078b_f8ab_472f_9243_5ada6ceb5bb9"
+              },
+              {
+                "control_type": "text",
+                "label": "Review comments (Manager)",
+                "type": "string",
+                "name": "1c7f21ac_42eb_45ca_b092_fb75ed424ec8"
+              },
+              {
+                "control_type": "checkbox",
+                "label": "Submit on behalf of colleague",
+                "render_input": {
+                },
+                "parse_output": {
+                },
+                "toggle_hint": "Select from option list",
+                "toggle_field": {
+                  "label": "Submit on behalf of colleague",
+                  "control_type": "text",
+                  "toggle_hint": "Use custom value",
+                  "type": "boolean",
+                  "name": "935df445_f918_47d4_b0b4_43dd24f1b5f2"
+                },
+                "type": "boolean",
+                "name": "935df445_f918_47d4_b0b4_43dd24f1b5f2"
+              },
+              {
+                "control_type": "text",
+                "label": "Colleague name",
+                "type": "string",
+                "name": "90524855_35e2_4b14_855a_cabe5d88ce83"
+              },
+              {
+                "control_type": "text",
+                "label": "Colleague email",
+                "type": "string",
+                "name": "2d15f5c6_63f7_4333_85d3_ff054075611e"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Record ID",
+                    "type": "string",
+                    "name": "record_id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Name",
+                    "type": "string",
+                    "name": "display_name"
+                  }
+                ],
+                "label": "Sub category",
+                "custom_type": "relation",
+                "custom_field_id": "Name",
+                "type": "object",
+                "name": "30d449b1_f36f_43b0_a666_68bc333a31fb"
+              },
+              {
+                "control_type": "number",
+                "label": "Total (in $)",
+                "parse_output": "float_conversion",
+                "type": "number",
+                "name": "4dae0673_9892_4a37_ad9d_989e8209e079"
+              },
+              {
+                "control_type": "checkbox",
+                "label": "Itemize",
+                "render_input": {
+                },
+                "parse_output": {
+                },
+                "toggle_hint": "Select from option list",
+                "toggle_field": {
+                  "label": "Itemize",
+                  "control_type": "text",
+                  "toggle_hint": "Use custom value",
+                  "type": "boolean",
+                  "name": "178a4a80_4d73_4665_9dcb_f3283c8c9e8e"
+                },
+                "type": "boolean",
+                "name": "178a4a80_4d73_4665_9dcb_f3283c8c9e8e"
+              },
+              {
+                "control_type": "date",
+                "label": "Expense date",
+                "render_input": "date_conversion",
+                "parse_output": "date_conversion",
+                "type": "date",
+                "name": "4e26f4f5_1d82_422a_9d53_5ed95d85bd4e"
+              },
+              {
+                "control_type": "number",
+                "label": "Expense amount",
+                "parse_output": "float_conversion",
+                "type": "number",
+                "name": "b72ef492_c6e0_4488_97cf_da7864c772a9"
+              },
+              {
+                "control_type": "text",
+                "label": "Manager Name",
+                "type": "string",
+                "name": "e903e275_7cfb_478d_ab02_2abb63fa4b1f"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "User ID",
+                    "type": "string",
+                    "name": "id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "User name",
+                    "type": "string",
+                    "name": "name"
+                  },
+                  {
+                    "control_type": "email",
+                    "label": "Email",
+                    "type": "string",
+                    "name": "email"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Status",
+                    "type": "string",
+                    "name": "status"
+                  },
+                  {
+                    "name": "user_groups",
+                    "type": "array",
+                    "of": "object",
+                    "label": "Groups",
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "Group ID",
+                        "type": "string",
+                        "name": "id"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Group name",
+                        "type": "string",
+                        "name": "name"
+                      }
+                    ]
+                  }
+                ],
+                "label": "Created by",
+                "type": "object",
+                "name": "created_by"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Stage ID",
+                    "type": "string",
+                    "name": "id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Stage name",
+                    "type": "string",
+                    "name": "name"
+                  }
+                ],
+                "label": "Stage",
+                "type": "object",
+                "name": "stage"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Created at",
+                "render_input": "date_time_conversion",
+                "parse_output": "date_time_conversion",
+                "type": "date_time",
+                "name": "a5612739_5401_4ae7_bd07_782c1a6fb2d1"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Updated at",
+                "render_input": "date_time_conversion",
+                "parse_output": "date_time_conversion",
+                "type": "date_time",
+                "name": "61aae604_a95e_4519_9091_bb0bf754a67f"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "comment": "Assign a task onto Finance personnel",
+        "uuid": "a5e14d94-f61c-42fd-a8a7-2a2c325e4887"
+      },
+      {
+        "number": 10,
+        "as": "c457b451",
+        "keyword": "if",
+        "input": {
+          "type": "compound",
+          "operand": "and",
+          "conditions": [
+            {
+              "operand": "is_true",
+              "lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"human_review_on_existing_record\",\"path\":[\"task\",\"is_approved\"]}')}",
+              "rhs": "",
+              "uuid": "condition-d8e5ae23-8efa-4a2f-89d8-c716f59272c6"
+            }
+          ]
+        },
+        "block": [
+          {
+            "number": 11,
+            "keyword": "action",
+            "input": {
+            },
+            "comment": "Implement actual expense reimbursement here",
+            "uuid": "c8aa9992-0d8c-4aea-ac24-61d33f232764",
+            "skip": true
+          },
+          {
+            "number": 12,
+            "provider": "workato_workflow_task",
+            "name": "change_workflow_stage",
+            "as": "48223ec1",
+            "keyword": "action",
+            "toggleCfg": {
+              "workflow_stage_id": true
+            },
+            "input": {
+              "project_id": {
+                "zip_name": "expense_reimbursement.lcap_app.json",
+                "name": "Expense Reimbursement",
+                "folder": ""
+              },
+              "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"human_review_on_existing_record\",\"path\":[\"record\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
+              "workflow_stage_id": {
+                "name": "Reimbursement completed"
+              }
+            },
+            "uuid": "9455e13b-451d-427a-a73d-66ea2f4eb537"
+          },
+          {
+            "number": 13,
+            "as": "b14a40d8",
+            "keyword": "else",
+            "block": [
+              {
+                "number": 14,
+                "provider": "workato_workflow_task",
+                "name": "change_workflow_stage",
+                "as": "ce061247",
+                "keyword": "action",
+                "input": {
+                  "project_id": {
+                    "zip_name": "expense_reimbursement.lcap_app.json",
+                    "name": "Expense Reimbursement",
+                    "folder": ""
+                  },
+                  "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"human_review_on_existing_record\",\"path\":[\"record\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
+                  "workflow_stage_id": {
+                    "name": "Rejected"
+                  }
+                },
+                "uuid": "1f8bbb6d-9948-4c74-9607-25e2dfb7c91f"
+              }
+            ],
+            "uuid": "5afee9d5-8ed8-4da3-8bad-646d50d1a73f"
+          }
+        ],
+        "comment": "Check if reimbursement has been approved.",
+        "uuid": "bd351115-ef53-45c1-9c5e-e6c8892cb635"
+      }
+    ],
+    "uuid": "cedae116-eba8-471d-83be-035500e1c6cc",
+    "format_version": 2
+  },
+  "config": [
+    {
+      "keyword": "application",
+      "provider": "workato_workflow_task",
+      "skip_validation": false,
+      "account_id": null
+    },
+    {
+      "keyword": "application",
+      "provider": "workato_db_table",
+      "skip_validation": false,
+      "account_id": null
+    },
+    {
+      "keyword": "application",
+      "provider": "workato_variable",
+      "skip_validation": false,
+      "account_id": null
+    },
+    {
+      "keyword": "application",
+      "provider": "workato_recipe_function",
+      "skip_validation": true,
+      "account_id": null
+    }
+  ]
+}

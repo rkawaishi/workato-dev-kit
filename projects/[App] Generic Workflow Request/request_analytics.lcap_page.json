@@ -1,0 +1,274 @@
+{
+  "name": "Request analytics",
+  "path": "request-analytics",
+  "content": {
+    "type": "dashboard",
+    "maxWidth": "full",
+    "background": {
+      "style": "color",
+      "color": "#fafbfc"
+    },
+    "variables": [
+
+    ],
+    "handlers": {
+      "pageLoad": null
+    },
+    "layout": [
+      1,
+      [
+        {
+          "type": "container",
+          "id": "9f7e3ff8",
+          "name": "Container (2)",
+          "x": 0,
+          "width": 12,
+          "visible": true,
+          "layout": [
+            1,
+            [
+              {
+                "type": "image",
+                "id": "9d6076b4",
+                "name": "Image",
+                "x": 8,
+                "width": 4,
+                "height": 12,
+                "visible": true,
+                "image": "illustration-8",
+                "customUrl": "",
+                "source": "manual",
+                "fitting": "cover",
+                "horizontalAlignment": "center",
+                "verticalAlignment": "center"
+              },
+              0
+            ],
+            [
+              {
+                "type": "container",
+                "id": "9d17a8e0",
+                "name": "Container (3)",
+                "x": 0,
+                "width": 8,
+                "visible": true,
+                "layout": [
+                  1,
+                  [
+                    {
+                      "type": "text",
+                      "id": "b210a637",
+                      "name": "Text block (2)",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "text": "# 📝 Workflow requests analytics",
+                      "alignment": "left",
+                      "color": "#24434f",
+                      "pillsSupportMarkdown": false,
+                      "style": "paragraph"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "text",
+                      "id": "272de71a",
+                      "name": "Text block (3)",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "text": "Use this dashboard to view insights on the workflow requests.",
+                      "alignment": "left",
+                      "color": "#637a87",
+                      "pillsSupportMarkdown": false,
+                      "style": "paragraph"
+                    },
+                    0
+                  ]
+                ],
+                "backgroundColor": "transparent",
+                "borderColor": "transparent",
+                "padding": "small"
+              },
+              2
+            ]
+          ],
+          "backgroundColor": "#c8e2f8",
+          "borderColor": "transparent",
+          "padding": "none"
+        },
+        0
+      ],
+      [
+        {
+          "type": "dashboard",
+          "id": "995a7e95",
+          "name": "Chart",
+          "x": 0,
+          "width": 2,
+          "height": 23,
+          "visible": true,
+          "settings": {
+            "type": "kpi",
+            "column": {
+              "qualifier": "afc17f7029fd1319"
+            },
+            "label": "Total requests"
+          },
+          "queryId": {
+            "zip_name": "request_analytics_0.insights_query.json",
+            "name": "Request analytics-0",
+            "folder": ""
+          },
+          "isQueryPersisted": true
+        },
+        0
+      ],
+      [
+        {
+          "type": "dashboard",
+          "id": "f14141d1",
+          "name": "Chart (4)",
+          "x": 2,
+          "width": 5,
+          "height": 23,
+          "visible": true,
+          "settings": {
+            "type": "pie",
+            "title": "Requests by stage",
+            "x": {
+              "qualifier": "5bc6f2c5775ac1cf"
+            },
+            "y": {
+              "qualifier": "afc17f7029fd1319"
+            },
+            "colors": [
+              {
+                "textValue": null,
+                "color": "#6DC8CE"
+              }
+            ]
+          },
+          "queryId": {
+            "zip_name": "request_analytics_1.insights_query.json",
+            "name": "Request analytics-1",
+            "folder": ""
+          },
+          "isQueryPersisted": true
+        },
+        0
+      ],
+      [
+        {
+          "type": "dashboard",
+          "id": "73dd7aa7",
+          "name": "Chart (5)",
+          "x": 7,
+          "width": 5,
+          "height": 23,
+          "visible": true,
+          "settings": {
+            "type": "pie",
+            "title": "Requests by user",
+            "x": {
+              "qualifier": "400bdf6b2c747b09"
+            },
+            "y": {
+              "qualifier": "bce80e5e51ca578f"
+            },
+            "colors": [
+              {
+                "textValue": null,
+                "color": "#6DC8CE"
+              }
+            ]
+          },
+          "queryId": {
+            "zip_name": "request_analytics_2.insights_query.json",
+            "name": "Request analytics-2",
+            "folder": ""
+          },
+          "isQueryPersisted": true
+        },
+        0
+      ],
+      [
+        {
+          "type": "dashboard",
+          "id": "1cb2df9b",
+          "name": "Chart (6)",
+          "x": 0,
+          "width": 12,
+          "height": 27,
+          "visible": true,
+          "settings": {
+            "type": "line",
+            "title": "Request created by date",
+            "x": {
+              "qualifier": "43fbc9431e7c9781"
+            },
+            "y": {
+              "qualifier": "bce80e5e51ca578f"
+            },
+            "xLabel": "",
+            "yLabel": ""
+          },
+          "queryId": {
+            "zip_name": "request_analytics_3.insights_query.json",
+            "name": "Request analytics-3",
+            "folder": ""
+          },
+          "isQueryPersisted": true
+        },
+        0
+      ],
+      [
+        {
+          "type": "dashboard",
+          "id": "1671e745",
+          "name": "Chart (7)",
+          "x": 0,
+          "width": 12,
+          "height": 32,
+          "visible": true,
+          "settings": {
+            "type": "table",
+            "title": "Latest requests",
+            "visibleColumns": [
+              "5a2a5c66d4b97513",
+              "4d328f92b4657a18",
+              "88ccb939af70979b",
+              "992bd4fb20a95d49",
+              "7e76825ca5a49cf1"
+            ],
+            "columnsOrder": [
+              "88ccb939af70979b",
+              "992bd4fb20a95d49",
+              "5a2a5c66d4b97513",
+              "4d328f92b4657a18",
+              "7e76825ca5a49cf1",
+              "31bd60c2315fbce1",
+              "3e51382224b5518",
+              "1cd33e31af49d600",
+              "73ee7533cd230bef",
+              "1884fb72bbff131a",
+              "b8d98361d2d1f9f2",
+              "9f33c4aa60e408f6",
+              "8b54af43175b6982",
+              "d5d98ada8fb62d3b",
+              "4218594ccb137e8b"
+            ]
+          },
+          "queryId": {
+            "zip_name": "request_analytics_4.insights_query.json",
+            "name": "Request analytics-4",
+            "folder": ""
+          },
+          "isQueryPersisted": true
+        },
+        0
+      ]
+    ]
+  }
+}

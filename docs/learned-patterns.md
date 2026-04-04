@@ -205,5 +205,326 @@ search_threads, search_messages, list_labels, get_thread, get_message, list_atta
 - `docs/logic/error-handling.md` の Monitor/Error ブロックに対応するJSON表現
 - try ブロック内のステップでエラーが発生した場合、catch ブロック（エラーハンドラー）に制御が移る
 
+## Workflow App ファイル種別
+
+### `.lcap_app.json` — Workflow App 定義
+
+```json
+{
+  "name": "App名",
+  "creation_page": {
+    "zip_name": "submit_form.lcap_page.json",
+    "name": "Submit form",
+    "folder": ""
+  },
+  "workato_db_table": {
+    "zip_name": "table_name.workato_db_table.json",
+    "name": "Table Name",
+    "folder": ""
+  },
+  "workflow_stages": [
+    { "name": "New", "color": 0 },
+    {
+      "name": "In progress", "color": 1,
+      "task_page": { "zip_name": "...", "name": "...", "folder": "" },
+      "details_page": { "zip_name": "...", "name": "...", "folder": "" }
+    },
+    { "name": "Done", "color": 2, "details_page": { "..." } },
+    { "name": "Canceled", "color": 3, "details_page": { "..." } }
+  ],
+  "tabs": [
+    { "name": "Tab名", "kind": "new_request", "visibility": "all" },
+    { "name": "Analytics", "kind": "user_defined", "visibility": "managers",
+      "page": { "zip_name": "analytics.lcap_page.json", "name": "...", "folder": "" } }
+  ],
+  "displayed_columns": [
+    { "id": "UUID or CURRENT_STAGE|CURRENT_TASK|ASSIGNED_TO|EXPIRES_AT|CREATED_BY", "visibility": "all|managers|nobody" }
+  ]
+}
+```
+
+- `creation_page`: リクエスト送信フォームの lcap_page を参照
+- `workato_db_table`: バックエンドの Data Table を参照
+- `workflow_stages`: ステージ一覧。各ステージに `task_page`（タスク実行画面）と `details_page`（詳細表示画面）を持てる
+- `tabs`: アプリのタブ。`kind` は `new_request`（デフォルト）/ `user_defined`（カスタムページ）
+- `displayed_columns`: テーブルビューで表示するカラム。UUID は Data Table のフィールド ID、大文字はシステムカラム
+- `color`: ステージの色コード（0=New, 1=In progress, 2=Done/完了系, 3=Canceled, 8=中間ステージ）
+
+### `.workato_db_table.json` — Data Table スキーマ
+
+```json
+{
+  "name": "テーブル名",
+  "schema": [
+    {
+      "id": "UUID",
+      "title": "フィールド名",
+      "type": "short-text|long-text|number|boolean|date|date-time|file|relation",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "default_value": "デフォルト値（省略可）",
+      "hint": "入力ヒント（省略可）",
+      "metadata": {},
+      "relation": {
+        "table_id": { "zip_name": "other.workato_db_table.json", "name": "Other Table", "folder": "" },
+        "field_id": "UUID"
+      }
+    }
+  ],
+  "project_name": "[App] Project Name"
+}
+```
+
+- システムフィールド（Record ID, Created time, Last modified time）は `read_only: true, hidden: true`
+- `type: "relation"` の場合、`relation` オブジェクトで外部テーブルとフィールドを参照
+- フィールド ID は UUID v4 形式。レシピの output やページ内で UUID がカラム名として使われる
+- `project_name`: このテーブルが属するプロジェクト名
+
+### `.lcap_page.json` — Workflow App ページ定義
+
+```json
+{
+  "name": "ページ名",
+  "path": "url-slug",
+  "content": {
+    "type": "common",
+    "maxWidth": "fixed",
+    "background": { "style": "pattern", "pattern": "light-2" },
+    "variables": [],
+    "handlers": { "pageLoad": null },
+    "layout": [ ... ]
+  }
+}
+```
+
+- `content.layout` はネストされたコンポーネントツリー（container, text, image, input, divider 等）
+- 各コンポーネントは `type`, `id`（8桁hex）, `name`, `x`, `width`, `visible` を持つ
+- `input` コンポーネントの `dataSource.id` は Data Table のフィールド title と対応
+- ページは非常に大きくなるため（数百〜数千行）、通常は参照のみで直接編集しない
+- `.lcap_page.zip` も存在する — UI アセット（画像等）のバイナリ、編集不可
+
+### `.insights_query.json` — Insights クエリ定義
+
+```json
+{
+  "page_id": { "zip_name": "page.lcap_page.json", "name": "Page Name", "folder": "" },
+  "name": "クエリ名",
+  "index": 0,
+  "version": "v1",
+  "query": {
+    "relation": "Aggregate",
+    "groupKey": [],
+    "aggCalls": [
+      { "qualifier": "hex16桁", "function": "COUNT", "operand": null }
+    ],
+    "input": {
+      "relation": "TableScan",
+      "catalog": "lcap",
+      "schema": "public",
+      "table": "__ref__1",
+      "columnQualifiers": [
+        { "column": "workflow_stage|UUID|assignee|creator|...", "qualifier": "hex16桁" }
+      ]
+    }
+  },
+  "references": {
+    "__ref__1": {
+      "type": "lcap_app",
+      "id": { "zip_name": "app.lcap_app.json", "name": "App Name", "folder": "" }
+    }
+  }
+}
+```
+
+- `page_id`: このクエリが表示される lcap_page を参照
+- `references.__ref__N`: クエリ対象の lcap_app を参照（テーブルスキャン先）
+- `columnQualifiers` の `column` には UUID（Data Table フィールド ID）やシステムカラム名が使われる
+- `aggCalls` の `function`: `COUNT`, `SUM`, `AVG` 等の集約関数
+
+### `workato_workflow_task` プロバイダー — 全アクション一覧
+
+Workflow App のトリガー・アクションに使用されるプロバイダー:
+
+**トリガー:**
+
+| アクション名 | 用途 | 主要 input |
+|---|---|---|
+| `new_requests_realtime` | 新規リクエスト送信時にリアルタイム発火 | `app_id` |
+| `app_function_generic_request` | 汎用アプリ関数（ボタン等から呼出） | `parameters_schema_json` |
+| `app_function_load_table_request` | テーブルウィジェット用データ読込 | `table_schema_json`, `parameters_schema_json` |
+| `app_function_load_dropdown_request` | ドロップダウンウィジェット用データ読込 | `search_enabled` |
+
+**アクション:**
+
+| アクション名 | 用途 | 主要 input |
+|---|---|---|
+| `human_review_on_existing_record` | タスクアサイン＆承認/却下待ち | `app_id`, `record_id`, `name`, `email`, `workflow_stage_id`, `page_id` |
+| `change_workflow_stage` | ワークフローステージ変更 | `project_id`（lcap_app参照）, `record_id`, `workflow_stage_id` |
+| `update_request` | リクエストレコードのフィールド更新 | `app_id`, `record_id`, `parameters` |
+| `app_function_return` | アプリ関数の結果を UI に返却 | `rows`（テーブル用）or `items`（ドロップダウン用） |
+
+### `workato_db_table` プロバイダー — Data Table 操作
+
+| アクション名 | 用途 | 主要 input |
+|---|---|---|
+| `get_records` | Data Table からレコード取得 | `table_id`, `limit`, `order_direction`, `filters` |
+| `update_record` | Data Table のレコード更新 | `table_id`, `record_id`, `parameters` |
+
+**`get_records` のフィルタ構造:**
+```json
+"filters": [
+  {
+    "field_id": "UUID-with-hyphens",
+    "op_id": "eq",
+    "value_default": "#{_dp('...')}"
+  }
+]
+```
+
+### `workato_recipe_function` プロバイダー — レシピ関数呼び出し
+
+```json
+{
+  "provider": "workato_recipe_function",
+  "name": "call_recipe",
+  "keyword": "action",
+  "dynamicPickListSelection": { "flow_id": "レシピ名" },
+  "input": {
+    "flow_id": "数値ID（文字列）",
+    "parameters": { "ParamName": "値またはdatapill" }
+  }
+}
+```
+
+- 出力は `result` オブジェクト配下に呼び出し先レシピの返り値が格納される
+- `skip: true` が設定されている場合、そのステップはスキップされる（プレースホルダー用途）
+
+## Workflow App レシピパターン（典型フロー）
+
+### パターン 1: 承認ワークフロー
+
+Generic Workflow Request, Application Access, Expense Reimbursement で共通:
+```
+new_requests_realtime トリガー
+  → [optional] call_recipe（外部データ取得、例: マネージャー情報）
+  → [optional] update_request（リクエストにデータ追加）
+  → human_review_on_existing_record（タスクアサイン＆承認待ち）
+  → if (task.is_approved)
+      → change_workflow_stage("Done" / "Approved")
+    else
+      → change_workflow_stage("Canceled" / "Rejected")
+```
+
+### パターン 2: テーブルウィジェットデータ取得
+
+```
+app_function_load_table_request トリガー
+  → workato_db_table.get_records
+  → app_function_return (rows)
+```
+
+`app_function_return` の `rows` 入力:
+```json
+{
+  "rows": {
+    "____source": "#{_dp('...records...')}",
+    "ColumnName": "#{_dp('...records.current_item.uuid_field...')}"
+  }
+}
+```
+
+### パターン 3: ドロップダウンデータ取得
+
+```
+app_function_load_dropdown_request トリガー
+  → workato_db_table.get_records
+  → app_function_return (items)
+```
+
+`app_function_return` の `items` 入力:
+```json
+{
+  "items": {
+    "____source": "#{_dp('...records...')}",
+    "value": "#{_dp('...record_id_field...')}",
+    "label": "#{_dp('...display_field...')}"
+  }
+}
+```
+
+### パターン 4: データ更新アプリ関数
+
+```
+app_function_generic_request トリガー（parameters でパラメータ受取）
+  → workato_db_table.get_records（フィルタで対象レコード検索）
+  → if (レコードが存在)
+      → workato_db_table.update_record
+```
+
+### Data Table カラム ID の UUID 規則
+
+- **input 参照時**: ハイフン区切り UUID（`11fbe9a6-a16d-4d7e-86ea-afe42ec03005`）
+- **output スキーマ / datapill パス**: アンダースコア区切り UUID（`11fbe9a6_a16d_4d7e_86ea_afe42ec03005`）
+- 共通の予約カラム（全 Data Table 共通）:
+  - `11fbe9a6-a16d-4d7e-86ea-afe42ec03005` = **Record ID**
+  - `a5612739-5401-4ae7-bd07-782c1a6fb2d1` = **Created at**
+  - `61aae604-a95e-4519-9091-bb0bf754a67f` = **Updated at**
+
+### `human_review_on_existing_record` の詳細構造
+
+```json
+{
+  "provider": "workato_workflow_task",
+  "name": "human_review_on_existing_record",
+  "keyword": "action",
+  "dynamicPickListSelection": {
+    "user_group_id": "グループ名（optional）",
+    "workflow_stage_id": "In progress"
+  },
+  "toggleCfg": {
+    "send_email_notification": true,
+    "reassignable": true,
+    "workflow_stage_id": true,
+    "due_in_days": true
+  },
+  "input": {
+    "app_id": { "zip_name": "...", "name": "App Name", "folder": "" },
+    "record_id": "#{_dp('...')}",
+    "name": "タスク名（datapill 可）",
+    "email": "#{_dp('...created_by.email...')}",
+    "workflow_stage_id": { "name": "In progress" },
+    "due_in_days": "14",
+    "send_email_notification": "true",
+    "reassignable": "true",
+    "page_id": { "zip_name": "Pages/page.lcap_page.json", "name": "Page Name", "folder": "Pages" }
+  }
+}
+```
+
+出力: `task` オブジェクト（`is_approved` boolean, `assigned_user`, `assigned_group`, `expires_at`, `link`）と `record` オブジェクト。
+
+### Workflow App の特殊フィールド型
+
+- `custom_type: "relation"` — 他テーブルへのリレーション。`record_id` と `display_name` を持つ
+- `custom_type: "file"` — ファイルフィールド。`filename` と `file_content` を持つ
+- `created_by` — 共通の作成者オブジェクト（`id`, `name`, `email`, `status`, `user_groups[]`, `is_guest`）
+- `stage` — ワークフローステージ（`id`, `name`）
+- `task` — アクティブタスク（`id`, `name`, `status`, `assigned_user`, `assigned_group`, `expires_at`, `link`）
+
+### `extended_input_schema` の内部型宣言（Data Table）
+
+Data Table の `get_records` では、`extended_input_schema` にカラムの型宣言が隠しフィールドとして格納される:
+```json
+{
+  "label": "$internal_value_<uuid-with-hyphens>",
+  "name": "<uuid-with-hyphens>",
+  "default": "string|date|date_time|id",
+  "ngIf": "false",
+  "optional": true,
+  "type": "string"
+}
+```
+
 ---
-*最終更新: MCP Server JSON 形式、Gmail パターン、try キーワード追加*
+*最終更新: Workflow App レシピパターン（承認フロー、テーブル/ドロップダウン関数、データ更新）、全プロバイダー・アクション一覧追加*

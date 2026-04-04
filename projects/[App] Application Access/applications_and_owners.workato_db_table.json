@@ -1,0 +1,97 @@
+{
+  "name": "Applications and Owners",
+  "schema": [
+    {
+      "id": "11fbe9a6-a16d-4d7e-86ea-afe42ec03005",
+      "title": "Record ID",
+      "type": "short-text",
+      "read_only": true,
+      "hidden": true
+    },
+    {
+      "id": "a5612739-5401-4ae7-bd07-782c1a6fb2d1",
+      "title": "Created time",
+      "type": "date-time",
+      "read_only": true,
+      "hidden": true
+    },
+    {
+      "id": "61aae604-a95e-4519-9091-bb0bf754a67f",
+      "title": "Last modified time",
+      "type": "date-time",
+      "read_only": true,
+      "hidden": true
+    },
+    {
+      "id": "20588582-86a4-4e3e-bf56-1a42078f3420",
+      "title": "Application",
+      "type": "short-text",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    },
+    {
+      "id": "df96ad44-21ca-4390-8127-06cc77678e4a",
+      "title": "Owner Name",
+      "type": "short-text",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    },
+    {
+      "id": "d2567845-70b5-4ddd-a161-95dbb9f7187d",
+      "title": "Owner Email",
+      "type": "short-text",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    },
+    {
+      "id": "c349f3a9-a394-472b-a67e-2e73ae0b0dcb",
+      "title": "Employee ID",
+      "type": "short-text",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    },
+    {
+      "id": "40f22a87-e8bc-4b33-bebe-fb31cc15c52d",
+      "title": "Department",
+      "type": "short-text",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    },
+    {
+      "id": "da26d523-b767-44fb-86f6-762fde7da914",
+      "title": "Supports tickets/cases?",
+      "type": "boolean",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    },
+    {
+      "id": "e56fefe8-283a-45cd-ade9-e8458f99a0ff",
+      "title": "Index",
+      "type": "integer",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    }
+  ],
+  "project_name": "[App] Application Access"
+}

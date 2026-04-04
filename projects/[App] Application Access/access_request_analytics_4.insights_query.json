@@ -1,0 +1,154 @@
+{
+  "page_id": {
+    "zip_name": "access_request_analytics.lcap_page.json",
+    "name": "Access request analytics",
+    "folder": ""
+  },
+  "name": "Access request analytics-4",
+  "index": 4,
+  "version": "v1",
+  "query": {
+    "relation": "Aggregate",
+    "groupKey": [
+      {
+        "expression": "Call",
+        "qualifier": "df19152433c8433f",
+        "operator": "DATE_TRUNC",
+        "operands": [
+          {
+            "expression": "Literal",
+            "qualifier": null,
+            "value": "week"
+          },
+          {
+            "expression": "ColumnRef",
+            "qualifier": "2c228a8f028273de",
+            "label": "Created time"
+          }
+        ]
+      }
+    ],
+    "aggCalls": [
+      {
+        "qualifier": "ae5b672eae69d479",
+        "function": "COUNT",
+        "operand": null
+      }
+    ],
+    "input": {
+      "relation": "TableScan",
+      "catalog": "lcap",
+      "schema": "public",
+      "table": "__ref__1",
+      "label": null,
+      "columnQualifiers": [
+        {
+          "column": "workflow_stage",
+          "qualifier": "5e5d8cb1086d0ca2"
+        },
+        {
+          "column": "assignee",
+          "qualifier": "3702ff0b031ee808"
+        },
+        {
+          "column": "expires_at",
+          "qualifier": "47782915c402225c"
+        },
+        {
+          "column": "creator",
+          "qualifier": "3213b592a8c7c36"
+        },
+        {
+          "column": "98000bf3-d20f-488f-bd29-8801a00592c8_record_id",
+          "qualifier": "91cafc4d7aa1add8"
+        },
+        {
+          "column": "98000bf3-d20f-488f-bd29-8801a00592c8_value",
+          "qualifier": "c46f3f83a75617a2"
+        },
+        {
+          "column": "e8483357-2dee-40e8-8cde-9e0902de0d4d",
+          "qualifier": "592fd8452eab5615"
+        },
+        {
+          "column": "f660d655-76a3-4917-92c4-1657327f8242",
+          "qualifier": "4bb8687c3d46843f"
+        },
+        {
+          "column": "f9eac073-025a-41a9-ad62-4adaeb0b6f58",
+          "qualifier": "c2221a5381316b8"
+        },
+        {
+          "column": "b3be36fc-982e-4597-9abc-713b8b319b83",
+          "qualifier": "92d426310ec1b35b"
+        },
+        {
+          "column": "03321d77-74cc-470f-ae1c-d3d150f641f5",
+          "qualifier": "451299cac32fc1f4"
+        },
+        {
+          "column": "3e919a1f-923d-4917-880c-dba94b275eb0",
+          "qualifier": "55e53ab1a0e48b87"
+        },
+        {
+          "column": "fe0dc46b-281b-4c1f-abf7-5b78cd6bdff1",
+          "qualifier": "be1f9a93a694c07c"
+        },
+        {
+          "column": "57c08fa0-4274-4073-9f5f-5b5409097d9b",
+          "qualifier": "83bcfd9f8d15d4b2"
+        },
+        {
+          "column": "f4f81c2e-4967-4523-bebc-dc658bb5e8f9",
+          "qualifier": "274339b18aab7d3b"
+        },
+        {
+          "column": "2019e609-b373-45dd-a67e-725577cabdb7",
+          "qualifier": "6ed35e7635419fbf"
+        },
+        {
+          "column": "11fbe9a6-a16d-4d7e-86ea-afe42ec03005",
+          "qualifier": "b168b626ac511965"
+        },
+        {
+          "column": "a5612739-5401-4ae7-bd07-782c1a6fb2d1",
+          "qualifier": "2c228a8f028273de"
+        },
+        {
+          "column": "61aae604-a95e-4519-9091-bb0bf754a67f",
+          "qualifier": "24f93304757e02b3"
+        },
+        {
+          "column": "assignee_email",
+          "qualifier": "aab23fe652bde108"
+        },
+        {
+          "column": "assignee_user_id",
+          "qualifier": "c37ec2af76537bda"
+        },
+        {
+          "column": "assignee_user_group_id",
+          "qualifier": "ad410228dbe652fe"
+        },
+        {
+          "column": "creator_id",
+          "qualifier": "47265081e8a423a6"
+        },
+        {
+          "column": "workflow_stage_id",
+          "qualifier": "d63bd086588e505"
+        }
+      ]
+    }
+  },
+  "references": {
+    "__ref__1": {
+      "type": "lcap_app",
+      "id": {
+        "zip_name": "application_access.lcap_app.json",
+        "name": "Application Access",
+        "folder": ""
+      }
+    }
+  }
+}

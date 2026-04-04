@@ -1,0 +1,444 @@
+{
+  "name": "Get employees for table widget",
+  "version": 1,
+  "private": true,
+  "concurrency": 1,
+  "code": {
+    "number": 0,
+    "provider": "workato_workflow_task",
+    "name": "app_function_load_table_request",
+    "as": "7b9d5bb1",
+    "keyword": "trigger",
+    "input": {
+      "_app_function_load_table_request_trigger_mark": "true",
+      "table_schema_json": "[{\"name\":\"Name\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"Name\"},{\"name\":\"Title\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"Title\"},{\"name\":\"Department\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"Department\"},{\"name\":\"Birthday\",\"type\":\"date_time\",\"optional\":true,\"control_type\":\"date\",\"label\":\"Birthday\",\"render_input\":\"date_conversion\",\"parse_output\":\"date_conversion\"},{\"name\":\"ID\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"ID\"},{\"name\":\"Location\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"Location\"},{\"name\":\"DaysinCompany\",\"type\":\"integer\",\"optional\":true,\"control_type\":\"integer\",\"label\":\"Daysin company\",\"parse_output\":\"integer_conversion\",\"render_input\":\"integer_conversion\"},{\"name\":\"StartDate\",\"type\":\"date_time\",\"optional\":true,\"control_type\":\"date\",\"label\":\"Start date\",\"render_input\":\"date_conversion\",\"parse_output\":\"date_conversion\"}]",
+      "parameters_schema_json": "[]"
+    },
+    "extended_output_schema": [
+      {
+        "label": "Parameters",
+        "name": "parameters",
+        "properties": [
+
+        ],
+        "type": "object"
+      }
+    ],
+    "block": [
+      {
+        "number": 1,
+        "provider": "workato_db_table",
+        "name": "get_records",
+        "as": "3e24162b",
+        "keyword": "action",
+        "dynamicPickListSelection": {
+          "table_id": "Employees",
+          "filters.0.field_id": "Record ID"
+        },
+        "input": {
+          "order_direction": "asc",
+          "limit": "1000",
+          "table_id": {
+            "zip_name": "employees.workato_db_table.json",
+            "name": "Employees",
+            "folder": ""
+          },
+          "9cdb5d85-2aaa-4881-8252-69e5ac81ebd5": "string",
+          "9c3402ab-aec7-46b5-9b96-de10623ab457": "date",
+          "66d24eb7-ffd2-49fa-8d6e-0bea2cf7849d": "string",
+          "f4503d2b-4135-497d-867b-1bcbcbb566cd": "string",
+          "94d0c086-27ef-41e5-aa6a-2615ca8ef1bc": "date",
+          "11fbe9a6-a16d-4d7e-86ea-afe42ec03005": "id",
+          "a5612739-5401-4ae7-bd07-782c1a6fb2d1": "date_time",
+          "61aae604-a95e-4519-9091-bb0bf754a67f": "date_time",
+          "3299118e-471f-49af-96a2-a90e22c27968": "string"
+        },
+        "extended_output_schema": [
+          {
+            "label": "Records",
+            "name": "records",
+            "of": "object",
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Record ID",
+                "type": "string",
+                "name": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
+              },
+              {
+                "control_type": "text",
+                "label": "Name",
+                "type": "string",
+                "name": "9cdb5d85_2aaa_4881_8252_69e5ac81ebd5"
+              },
+              {
+                "control_type": "date",
+                "label": "Start date",
+                "render_input": "date_conversion",
+                "parse_output": "date_conversion",
+                "type": "date",
+                "name": "9c3402ab_aec7_46b5_9b96_de10623ab457"
+              },
+              {
+                "control_type": "text",
+                "label": "Department",
+                "type": "string",
+                "name": "66d24eb7_ffd2_49fa_8d6e_0bea2cf7849d"
+              },
+              {
+                "control_type": "text",
+                "label": "Location",
+                "type": "string",
+                "name": "f4503d2b_4135_497d_867b_1bcbcbb566cd"
+              },
+              {
+                "control_type": "date",
+                "label": "Birthday",
+                "render_input": "date_conversion",
+                "parse_output": "date_conversion",
+                "type": "date",
+                "name": "94d0c086_27ef_41e5_aa6a_2615ca8ef1bc"
+              },
+              {
+                "control_type": "text",
+                "label": "Title",
+                "type": "string",
+                "name": "3299118e_471f_49af_96a2_a90e22c27968"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Created at",
+                "render_input": "date_time_conversion",
+                "parse_output": "date_time_conversion",
+                "type": "date_time",
+                "name": "a5612739_5401_4ae7_bd07_782c1a6fb2d1"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Updated at",
+                "render_input": "date_time_conversion",
+                "parse_output": "date_time_conversion",
+                "type": "date_time",
+                "name": "61aae604_a95e_4519_9091_bb0bf754a67f"
+              }
+            ],
+            "type": "array"
+          },
+          {
+            "control_type": "text",
+            "label": "Next Page Token",
+            "name": "continuation_token",
+            "type": "string"
+          }
+        ],
+        "extended_input_schema": [
+          {
+            "control_type": "text",
+            "default": "string",
+            "label": "$internal_value_9cdb5d85-2aaa-4881-8252-69e5ac81ebd5",
+            "name": "9cdb5d85-2aaa-4881-8252-69e5ac81ebd5",
+            "ngIf": "false",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "control_type": "text",
+            "default": "date",
+            "label": "$internal_value_9c3402ab-aec7-46b5-9b96-de10623ab457",
+            "name": "9c3402ab-aec7-46b5-9b96-de10623ab457",
+            "ngIf": "false",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "control_type": "text",
+            "default": "string",
+            "label": "$internal_value_66d24eb7-ffd2-49fa-8d6e-0bea2cf7849d",
+            "name": "66d24eb7-ffd2-49fa-8d6e-0bea2cf7849d",
+            "ngIf": "false",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "control_type": "text",
+            "default": "string",
+            "label": "$internal_value_f4503d2b-4135-497d-867b-1bcbcbb566cd",
+            "name": "f4503d2b-4135-497d-867b-1bcbcbb566cd",
+            "ngIf": "false",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "control_type": "text",
+            "default": "date",
+            "label": "$internal_value_94d0c086-27ef-41e5-aa6a-2615ca8ef1bc",
+            "name": "94d0c086-27ef-41e5-aa6a-2615ca8ef1bc",
+            "ngIf": "false",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "control_type": "text",
+            "default": "string",
+            "label": "$internal_value_3299118e-471f-49af-96a2-a90e22c27968",
+            "name": "3299118e-471f-49af-96a2-a90e22c27968",
+            "ngIf": "false",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "control_type": "text",
+            "default": "id",
+            "label": "$internal_value_11fbe9a6-a16d-4d7e-86ea-afe42ec03005",
+            "name": "11fbe9a6-a16d-4d7e-86ea-afe42ec03005",
+            "ngIf": "false",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "control_type": "text",
+            "default": "date_time",
+            "label": "$internal_value_a5612739-5401-4ae7-bd07-782c1a6fb2d1",
+            "name": "a5612739-5401-4ae7-bd07-782c1a6fb2d1",
+            "ngIf": "false",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "control_type": "text",
+            "default": "date_time",
+            "label": "$internal_value_61aae604-a95e-4519-9091-bb0bf754a67f",
+            "name": "61aae604-a95e-4519-9091-bb0bf754a67f",
+            "ngIf": "false",
+            "optional": true,
+            "type": "string"
+          }
+        ],
+        "uuid": "3cc7371a-13a8-446b-b7d6-ed9b0099997d"
+      },
+      {
+        "number": 2,
+        "provider": "workato_workflow_task",
+        "name": "app_function_return",
+        "as": "eae09c10",
+        "keyword": "action",
+        "input": {
+          "rows": {
+            "____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"3e24162b\",\"path\":[\"records\"]}')}",
+            "Name": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"3e24162b\",\"path\":[\"records\",{\"path_element_type\":\"current_item\"},\"9cdb5d85_2aaa_4881_8252_69e5ac81ebd5\"]}')}",
+            "Title": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"3e24162b\",\"path\":[\"records\",{\"path_element_type\":\"current_item\"},\"3299118e_471f_49af_96a2_a90e22c27968\"]}')}",
+            "Department": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"3e24162b\",\"path\":[\"records\",{\"path_element_type\":\"current_item\"},\"66d24eb7_ffd2_49fa_8d6e_0bea2cf7849d\"]}')}",
+            "Birthday": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"3e24162b\",\"path\":[\"records\",{\"path_element_type\":\"current_item\"},\"94d0c086_27ef_41e5_aa6a_2615ca8ef1bc\"]}')}",
+            "ID": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"3e24162b\",\"path\":[\"records\",{\"path_element_type\":\"current_item\"},\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
+            "Location": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"3e24162b\",\"path\":[\"records\",{\"path_element_type\":\"current_item\"},\"f4503d2b_4135_497d_867b_1bcbcbb566cd\"]}')}",
+            "DaysinCompany": "=(today - _dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"3e24162b\",\"path\":[\"records\",{\"path_element_type\":\"current_item\"},\"9c3402ab_aec7_46b5_9b96_de10623ab457\"]}')).to_i",
+            "StartDate": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"3e24162b\",\"path\":[\"records\",{\"path_element_type\":\"current_item\"},\"9c3402ab_aec7_46b5_9b96_de10623ab457\"]}')}"
+          }
+        },
+        "extended_output_schema": [
+          {
+            "add_item_label": "Add table column",
+            "initially_expanded": true,
+            "item_label": "Table column",
+            "label": "Table data",
+            "mark_as_required": true,
+            "name": "rows",
+            "of": "object",
+            "optional": true,
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Name",
+                "name": "Name",
+                "type": "string",
+                "optional": true,
+                "render_input": "string_coercion"
+              },
+              {
+                "control_type": "text",
+                "label": "Title",
+                "name": "Title",
+                "type": "string",
+                "optional": true,
+                "render_input": "string_coercion"
+              },
+              {
+                "control_type": "text",
+                "label": "Department",
+                "name": "Department",
+                "type": "string",
+                "optional": true,
+                "render_input": "string_coercion"
+              },
+              {
+                "control_type": "date",
+                "label": "Birthday",
+                "render_input": "date_conversion",
+                "parse_output": "date_conversion",
+                "name": "Birthday",
+                "type": "date_time",
+                "optional": true
+              },
+              {
+                "control_type": "text",
+                "label": "ID",
+                "name": "ID",
+                "type": "string",
+                "optional": true,
+                "render_input": "string_coercion"
+              },
+              {
+                "control_type": "text",
+                "label": "Location",
+                "name": "Location",
+                "type": "string",
+                "optional": true,
+                "render_input": "string_coercion"
+              },
+              {
+                "control_type": "integer",
+                "label": "Daysin company",
+                "parse_output": "integer_conversion",
+                "name": "DaysinCompany",
+                "type": "integer",
+                "optional": true,
+                "render_input": "integer_conversion"
+              },
+              {
+                "control_type": "date",
+                "label": "Start date",
+                "render_input": "date_conversion",
+                "parse_output": "date_conversion",
+                "name": "StartDate",
+                "type": "date_time",
+                "optional": true
+              }
+            ],
+            "type": "array"
+          }
+        ],
+        "extended_input_schema": [
+          {
+            "add_item_label": "Add table column",
+            "initially_expanded": true,
+            "item_label": "Table column",
+            "label": "Table data",
+            "mark_as_required": true,
+            "name": "rows",
+            "of": "object",
+            "optional": true,
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Name",
+                "name": "Name",
+                "type": "string",
+                "optional": true,
+                "render_input": "string_coercion"
+              },
+              {
+                "control_type": "text",
+                "label": "Title",
+                "name": "Title",
+                "type": "string",
+                "optional": true,
+                "render_input": "string_coercion"
+              },
+              {
+                "control_type": "text",
+                "label": "Department",
+                "name": "Department",
+                "type": "string",
+                "optional": true,
+                "render_input": "string_coercion"
+              },
+              {
+                "control_type": "date",
+                "label": "Birthday",
+                "render_input": "date_conversion",
+                "parse_output": "date_conversion",
+                "name": "Birthday",
+                "type": "date_time",
+                "optional": true
+              },
+              {
+                "control_type": "text",
+                "label": "ID",
+                "name": "ID",
+                "type": "string",
+                "optional": true,
+                "render_input": "string_coercion"
+              },
+              {
+                "control_type": "text",
+                "label": "Location",
+                "name": "Location",
+                "type": "string",
+                "optional": true,
+                "render_input": "string_coercion"
+              },
+              {
+                "control_type": "integer",
+                "label": "Daysin company",
+                "parse_output": "integer_conversion",
+                "name": "DaysinCompany",
+                "type": "integer",
+                "optional": true,
+                "render_input": "integer_conversion"
+              },
+              {
+                "control_type": "date",
+                "label": "Start date",
+                "render_input": "date_conversion",
+                "parse_output": "date_conversion",
+                "name": "StartDate",
+                "type": "date_time",
+                "optional": true
+              }
+            ],
+            "type": "array"
+          }
+        ],
+        "visible_config_fields": [
+          "is_success",
+          "output.Name",
+          "output.Location",
+          "output.Department",
+          "output.Birthday",
+          "output.StartDate",
+          "output.YearsInCompany",
+          "success_message",
+          "output",
+          "output.DaysInCompany",
+          "output.Title",
+          "rows.Name",
+          "rows.Title",
+          "rows.Department",
+          "rows.Birthday",
+          "rows",
+          "rows.ID",
+          "rows.DaysinCompany",
+          "rows.Location",
+          "rows.StartDate"
+        ],
+        "uuid": "0cc83819-854c-422f-9f4b-c4895539cbb4"
+      }
+    ],
+    "uuid": "804b5435-3044-4e60-9a40-c55f2d398716",
+    "unfinished": false
+  },
+  "config": [
+    {
+      "keyword": "application",
+      "provider": "workato_workflow_task",
+      "skip_validation": false,
+      "account_id": null
+    },
+    {
+      "keyword": "application",
+      "provider": "workato_db_table",
+      "skip_validation": false,
+      "account_id": null
+    }
+  ]
+}

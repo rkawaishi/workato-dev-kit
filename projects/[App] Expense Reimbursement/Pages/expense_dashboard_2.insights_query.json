@@ -1,0 +1,179 @@
+{
+  "page_id": {
+    "zip_name": "Pages/expense_dashboard.lcap_page.json",
+    "name": "Expense dashboard",
+    "folder": "Pages"
+  },
+  "name": "Expense dashboard-2",
+  "index": 2,
+  "version": "v1",
+  "query": {
+    "relation": "Filter",
+    "conditions": [
+      {
+        "expression": "Call",
+        "qualifier": null,
+        "operator": "IS_NOT_NULL",
+        "operands": [
+          {
+            "expression": "ColumnRef",
+            "qualifier": "5f0034ba28f7303b",
+            "label": "Created by"
+          }
+        ]
+      }
+    ],
+    "input": {
+      "relation": "Aggregate",
+      "groupKey": [
+        {
+          "expression": "ColumnRef",
+          "qualifier": "5f0034ba28f7303b",
+          "label": "Created by"
+        }
+      ],
+      "aggCalls": [
+        {
+          "qualifier": "82183f376c34829",
+          "function": "COUNT",
+          "operand": null
+        }
+      ],
+      "input": {
+        "relation": "TableScan",
+        "catalog": "lcap",
+        "schema": "public",
+        "table": "__ref__1",
+        "label": null,
+        "columnQualifiers": [
+          {
+            "column": "11fbe9a6-a16d-4d7e-86ea-afe42ec03005",
+            "qualifier": "41ad2d29b0674e64"
+          },
+          {
+            "column": "a5612739-5401-4ae7-bd07-782c1a6fb2d1",
+            "qualifier": "6d463956b253848a"
+          },
+          {
+            "column": "61aae604-a95e-4519-9091-bb0bf754a67f",
+            "qualifier": "8f4d55d8e8815a80"
+          },
+          {
+            "column": "a3f8f034-5330-4406-9cc7-22e46fdc7b42",
+            "qualifier": "c3a4c25840a25c29"
+          },
+          {
+            "column": "530c0ada-23c5-479b-9754-9fe9c4dacf0f",
+            "qualifier": "5e9f8ad3af4b6467"
+          },
+          {
+            "column": "2708620a-7fde-4fda-b49d-650538677cb5",
+            "qualifier": "827776b0d48d534d"
+          },
+          {
+            "column": "711bb909-651a-402d-9029-579a78a16db9",
+            "qualifier": "bc5782e89d411ff3"
+          },
+          {
+            "column": "7c23078b-f8ab-472f-9243-5ada6ceb5bb9_record_id",
+            "qualifier": "557893fb662a31c7"
+          },
+          {
+            "column": "7c23078b-f8ab-472f-9243-5ada6ceb5bb9_value",
+            "qualifier": "9e4998a2f83f4da1"
+          },
+          {
+            "column": "1c7f21ac-42eb-45ca-b092-fb75ed424ec8",
+            "qualifier": "ffa181d3debe216f"
+          },
+          {
+            "column": "935df445-f918-47d4-b0b4-43dd24f1b5f2",
+            "qualifier": "64119506ce7870c0"
+          },
+          {
+            "column": "90524855-35e2-4b14-855a-cabe5d88ce83",
+            "qualifier": "ba913c91ed0fd029"
+          },
+          {
+            "column": "2d15f5c6-63f7-4333-85d3-ff054075611e",
+            "qualifier": "9ad4fe4da419ad9f"
+          },
+          {
+            "column": "30d449b1-f36f-43b0-a666-68bc333a31fb_record_id",
+            "qualifier": "b9950a0cc2b02836"
+          },
+          {
+            "column": "30d449b1-f36f-43b0-a666-68bc333a31fb_value",
+            "qualifier": "308a776b071c8550"
+          },
+          {
+            "column": "4dae0673-9892-4a37-ad9d-989e8209e079",
+            "qualifier": "5bc4f550db67bda4"
+          },
+          {
+            "column": "178a4a80-4d73-4665-9dcb-f3283c8c9e8e",
+            "qualifier": "3b1281b83df02ed8"
+          },
+          {
+            "column": "4e26f4f5-1d82-422a-9d53-5ed95d85bd4e",
+            "qualifier": "cdb139e90745b60b"
+          },
+          {
+            "column": "b72ef492-c6e0-4488-97cf-da7864c772a9",
+            "qualifier": "9591475f8ff1ec5f"
+          },
+          {
+            "column": "e903e275-7cfb-478d-ab02-2abb63fa4b1f",
+            "qualifier": "7c2422a97d591ca7"
+          },
+          {
+            "column": "workflow_stage",
+            "qualifier": "91b3089c16932c34"
+          },
+          {
+            "column": "assignee",
+            "qualifier": "4ca98223187cd3d1"
+          },
+          {
+            "column": "assignee_email",
+            "qualifier": "fe3d6507cefa44d0"
+          },
+          {
+            "column": "assignee_user_id",
+            "qualifier": "ce698d3ab2094e2e"
+          },
+          {
+            "column": "assignee_user_group_id",
+            "qualifier": "d2dc765d2143bfe3"
+          },
+          {
+            "column": "expires_at",
+            "qualifier": "5e99b51f2a03b264"
+          },
+          {
+            "column": "creator_id",
+            "qualifier": "190179548768150"
+          },
+          {
+            "column": "creator",
+            "qualifier": "5f0034ba28f7303b"
+          },
+          {
+            "column": "workflow_stage_id",
+            "qualifier": "cab86578aa9bfc83"
+          }
+        ]
+      }
+    }
+  },
+  "references": {
+    "__ref__1": {
+      "type": "lcap_app",
+      "id": {
+        "zip_name": "expense_reimbursement.lcap_app.json",
+        "name": "Expense Reimbursement",
+        "folder": ""
+      }
+    }
+  }
+}

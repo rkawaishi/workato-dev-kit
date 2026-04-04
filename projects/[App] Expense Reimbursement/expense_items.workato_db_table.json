@@ -1,0 +1,85 @@
+{
+  "name": "Expense items",
+  "schema": [
+    {
+      "id": "11fbe9a6-a16d-4d7e-86ea-afe42ec03005",
+      "title": "Record ID",
+      "type": "short-text",
+      "read_only": true,
+      "hidden": true
+    },
+    {
+      "id": "a5612739-5401-4ae7-bd07-782c1a6fb2d1",
+      "title": "Created time",
+      "type": "date-time",
+      "read_only": true,
+      "hidden": true
+    },
+    {
+      "id": "61aae604-a95e-4519-9091-bb0bf754a67f",
+      "title": "Last modified time",
+      "type": "date-time",
+      "read_only": true,
+      "hidden": true
+    },
+    {
+      "id": "94a9b838-156f-427f-9159-2ed6fe78e9dc",
+      "title": "Expense request",
+      "type": "relation",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      },
+      "relation": {
+        "table_id": {
+          "zip_name": "main_expenses_data_table.workato_db_table.json",
+          "name": "Main expenses data table",
+          "folder": ""
+        },
+        "field_id": "530c0ada-23c5-479b-9754-9fe9c4dacf0f"
+      }
+    },
+    {
+      "id": "71a3389e-d393-4944-b784-a220b6a77f78",
+      "title": "Description",
+      "type": "short-text",
+      "read_only": false,
+      "hidden": false,
+      "required": true,
+      "metadata": {
+      }
+    },
+    {
+      "id": "67dff32a-29ad-4af6-8474-1203e216e13d",
+      "title": "Receipt",
+      "type": "file",
+      "read_only": false,
+      "hidden": false,
+      "required": false,
+      "metadata": {
+      }
+    },
+    {
+      "id": "2eff8681-2beb-4b17-885c-48a9372c76f5",
+      "title": "Date",
+      "type": "date",
+      "read_only": false,
+      "hidden": false,
+      "required": true,
+      "metadata": {
+      }
+    },
+    {
+      "id": "bbe539dd-b472-439f-9477-9be7ac709e01",
+      "title": "Amount ($)",
+      "type": "number",
+      "read_only": false,
+      "hidden": false,
+      "required": true,
+      "metadata": {
+      }
+    }
+  ],
+  "project_name": "[App] Expense Reimbursement"
+}

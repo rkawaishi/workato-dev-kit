@@ -1,0 +1,336 @@
+{
+  "name": "Submit Access Request",
+  "path": "submit-access-request",
+  "content": {
+    "type": "common",
+    "maxWidth": "fixed",
+    "background": {
+      "style": "pattern",
+      "pattern": "light-1"
+    },
+    "variables": [
+
+    ],
+    "handlers": {
+      "pageLoad": null
+    },
+    "layout": [
+      1,
+      [
+        {
+          "type": "container",
+          "id": "0b3bf91e",
+          "name": "Container",
+          "x": 1,
+          "width": 10,
+          "visible": true,
+          "layout": [
+            1,
+            [
+              {
+                "type": "container",
+                "id": "b22ec9b6",
+                "name": "Container (2)",
+                "x": -3,
+                "width": 8,
+                "visible": true,
+                "layout": [
+                  1,
+                  [
+                    {
+                      "type": "image",
+                      "id": "6b05face",
+                      "name": "Image",
+                      "x": 0,
+                      "width": 12,
+                      "height": 47,
+                      "visible": true,
+                      "image": "illustration-4",
+                      "customUrl": "",
+                      "source": "manual",
+                      "fitting": "cover",
+                      "horizontalAlignment": "center",
+                      "verticalAlignment": "center"
+                    },
+                    0
+                  ]
+                ],
+                "backgroundColor": "#e2cfc2",
+                "borderColor": "transparent",
+                "padding": "none"
+              },
+              0
+            ],
+            [
+              {
+                "type": "container",
+                "id": "fe9a5067",
+                "name": "Container (3)",
+                "x": 5,
+                "width": 7,
+                "visible": true,
+                "layout": [
+                  1,
+                  [
+                    {
+                      "type": "text",
+                      "id": "07461e80",
+                      "name": "Text block",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "text": "# Ready to begin?",
+                      "alignment": "left",
+                      "color": "#24434f",
+                      "pillsSupportMarkdown": false,
+                      "style": "paragraph"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "text",
+                      "id": "6394548d",
+                      "name": "Text block (2)",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "text": "Simply complete the form below and click \"Submit\" to initiate your access request.",
+                      "alignment": "left",
+                      "color": "#24434f",
+                      "pillsSupportMarkdown": false,
+                      "style": "paragraph"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "divider",
+                      "id": "f729443b",
+                      "name": "Divider",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "backgroundColor": "#ced5db"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "dropdown",
+                      "id": "6074d8a3",
+                      "name": "Application",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "dataSource": {
+                        "id": "Application",
+                        "type": "relation"
+                      },
+                      "editable": true,
+                      "appFunctionOptions": null,
+                      "validations": {
+                        "required": {
+                          "condition": true
+                        }
+                      },
+                      "handlers": {
+                        "change": null
+                      },
+                      "label": "Application",
+                      "hint": "",
+                      "placeholder": "Jira",
+                      "options": [
+
+                      ],
+                      "dataSourceOptions": {
+                        "sortOrder": "asc",
+                        "sortByColumnId": null,
+                        "tableId": {
+                          "zip_name": "applications_and_owners.workato_db_table.json",
+                          "name": "Applications and Owners",
+                          "folder": ""
+                        },
+                        "fieldId": "20588582-86a4-4e3e-bf56-1a42078f3420"
+                      },
+                      "labelDataSource": null,
+                      "multiValue": false
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "dropdown",
+                      "id": "da078f30",
+                      "name": "Access Level",
+                      "x": 0,
+                      "width": 12,
+                      "visible": [
+                        1,
+                        [
+                          13,
+                          "#{_dp('{\"source\":\"widget\",\"id\":\"6074d8a3\",\"path\":[\"value\"]}')}"
+                        ]
+                      ],
+                      "dataSource": {
+                        "id": "Access Type",
+                        "type": "short-text"
+                      },
+                      "editable": true,
+                      "appFunctionOptions": null,
+                      "validations": {
+                        "required": {
+                          "condition": true
+                        }
+                      },
+                      "handlers": {
+                        "change": null
+                      },
+                      "label": "What kind of access do you need?",
+                      "hint": "",
+                      "placeholder": "Read / Write ",
+                      "options": [
+                        {
+                          "title": "Read-Only",
+                          "value": "Read-Only"
+                        },
+                        {
+                          "title": "Editor",
+                          "value": "Editor"
+                        },
+                        {
+                          "title": "Administrator",
+                          "value": "Administrator"
+                        }
+                      ],
+                      "dataSourceOptions": null,
+                      "labelDataSource": null,
+                      "multiValue": false
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "date",
+                      "id": "bbb23187",
+                      "name": "Date",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "dataSource": {
+                        "id": "Provisioning Date",
+                        "type": "date"
+                      },
+                      "editable": true,
+                      "validations": {
+                        "required": {
+                          "condition": true
+                        },
+                        "limitDate": {
+                          "start": {
+                            "type": "calendar",
+                            "inclusive": false,
+                            "value": "today"
+                          },
+                          "end": null
+                        }
+                      },
+                      "handlers": {
+                        "change": null
+                      },
+                      "label": "When do you want it to be provisioned?",
+                      "hint": "",
+                      "style": "date"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "input",
+                      "id": "1fc04d8c",
+                      "name": "Long answer",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "dataSource": {
+                        "id": "Business Justification",
+                        "type": "long-text"
+                      },
+                      "editable": true,
+                      "validations": {
+                        "required": {
+                          "condition": false
+                        }
+                      },
+                      "label": "Please provide reason for access",
+                      "hint": "",
+                      "placeholder": "Required for customer support incident management",
+                      "textareaHeight": 96,
+                      "style": "long-text"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "divider",
+                      "id": "46aeb464",
+                      "name": "Divider (2)",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "backgroundColor": "#ced5db"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "button",
+                      "id": "6f809666",
+                      "name": "Button",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "handlers": {
+                        "click": {
+                          "type": "save-data"
+                        }
+                      },
+                      "label": "Submit",
+                      "style": "filled",
+                      "enabled": true
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "text",
+                      "id": "b5bb1c9c",
+                      "name": "Text block (3)",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "text": "Note that your access request will require approval from:\n**1. Line Manager**\n**2. Application Owner**",
+                      "alignment": "left",
+                      "color": "#637a87",
+                      "pillsSupportMarkdown": false,
+                      "style": "paragraph"
+                    },
+                    0
+                  ]
+                ],
+                "backgroundColor": "#ffffff",
+                "borderColor": "transparent",
+                "padding": "none"
+              },
+              0
+            ]
+          ],
+          "backgroundColor": "#ffffff",
+          "borderColor": "transparent",
+          "padding": "large"
+        },
+        0
+      ]
+    ]
+  }
+}

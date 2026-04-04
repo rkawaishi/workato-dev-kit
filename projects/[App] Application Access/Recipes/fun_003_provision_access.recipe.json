@@ -1,0 +1,1361 @@
+{
+  "name": "FUN 003 | Provision Access",
+  "description": "When there is a function call, do action and other actions",
+  "version": 1,
+  "private": true,
+  "concurrency": 1,
+  "code": {
+    "number": 0,
+    "provider": "workato_recipe_function",
+    "name": "execute",
+    "as": "bc0c5fb7",
+    "keyword": "trigger",
+    "dynamicPickListSelection": {
+    },
+    "toggleCfg": {
+    },
+    "input": {
+      "parameters_schema_json": "[{\"properties\":[{\"control_type\":\"text\",\"label\":\"Emp Num\",\"type\":\"string\",\"name\":\"empNum\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"First name\",\"type\":\"string\",\"name\":\"firstName\"},{\"control_type\":\"text\",\"label\":\"Last name\",\"type\":\"string\",\"name\":\"lastName\"},{\"control_type\":\"text\",\"label\":\"Mobile phone\",\"type\":\"string\",\"name\":\"mobilePhone\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"Manager ID\",\"type\":\"string\",\"name\":\"managerId\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"Title\",\"type\":\"string\",\"name\":\"title\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"Email\",\"type\":\"string\",\"name\":\"email\"}],\"label\":\"Profile\",\"type\":\"object\",\"name\":\"profile\"},{\"control_type\":\"text\",\"label\":\"App name\",\"name\":\"appName\",\"type\":\"string\",\"optional\":false}]",
+      "result_schema_json": "[{\"name\":\"isSuccess\",\"type\":\"boolean\",\"optional\":true,\"label\":\"Is success\",\"toggle_hint\":\"Select from option list\",\"toggle_field\":{\"label\":\"Is success\",\"control_type\":\"text\",\"toggle_hint\":\"Use custom value\",\"name\":\"isSuccess\",\"type\":\"boolean\",\"optional\":false},\"control_type\":\"checkbox\",\"render_input\":{},\"parse_output\":{}}]"
+    },
+    "extended_output_schema": [
+      {
+        "label": "Parameters",
+        "name": "parameters",
+        "properties": [
+          {
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Emp Num",
+                "type": "string",
+                "name": "empNum",
+                "optional": true
+              },
+              {
+                "control_type": "text",
+                "label": "First name",
+                "type": "string",
+                "name": "firstName"
+              },
+              {
+                "control_type": "text",
+                "label": "Last name",
+                "type": "string",
+                "name": "lastName"
+              },
+              {
+                "control_type": "text",
+                "label": "Mobile phone",
+                "type": "string",
+                "name": "mobilePhone",
+                "optional": true
+              },
+              {
+                "control_type": "text",
+                "label": "Manager ID",
+                "type": "string",
+                "name": "managerId",
+                "optional": true
+              },
+              {
+                "control_type": "text",
+                "label": "Title",
+                "type": "string",
+                "name": "title",
+                "optional": true
+              },
+              {
+                "control_type": "text",
+                "label": "Email",
+                "type": "string",
+                "name": "email"
+              }
+            ],
+            "label": "Profile",
+            "type": "object",
+            "name": "profile"
+          },
+          {
+            "control_type": "text",
+            "label": "App name",
+            "name": "appName",
+            "type": "string",
+            "optional": false
+          }
+        ],
+        "type": "object"
+      }
+    ],
+    "block": [
+      {
+        "number": 1,
+        "provider": "okta",
+        "name": "get_groups_by_name",
+        "as": "a36f5eab",
+        "keyword": "action",
+        "dynamicPickListSelection": {
+        },
+        "toggleCfg": {
+        },
+        "input": {
+          "name": "#{_('data.workato_recipe_function.bc0c5fb7.parameters.appName')} Users"
+        },
+        "uuid": "a3c67848-5d05-45d9-b47b-c18dbde47611",
+        "skip": false
+      },
+      {
+        "number": 2,
+        "keyword": "try",
+        "dynamicPickListSelection": {
+        },
+        "toggleCfg": {
+        },
+        "input": {
+        },
+        "block": [
+          {
+            "number": 3,
+            "provider": "okta",
+            "name": "get_people_by_id",
+            "as": "5e834036",
+            "keyword": "action",
+            "dynamicPickListSelection": {
+            },
+            "toggleCfg": {
+            },
+            "input": {
+              "id": "#{_('data.workato_recipe_function.bc0c5fb7.parameters.profile.email')}"
+            },
+            "extended_output_schema": [
+              {
+                "control_type": "text",
+                "label": "ID",
+                "name": "id",
+                "optional": true,
+                "type": "string"
+              },
+              {
+                "control_type": "text",
+                "label": "Status",
+                "name": "status",
+                "optional": true,
+                "type": "string"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Created time",
+                "name": "created",
+                "optional": true,
+                "type": "date_time",
+                "parse_output": "date_time_conversion",
+                "render_input": "date_time_conversion"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Activated time",
+                "name": "activated",
+                "optional": true,
+                "type": "date_time",
+                "parse_output": "date_time_conversion",
+                "render_input": "date_time_conversion"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Status changed time",
+                "name": "statusChanged",
+                "optional": true,
+                "type": "date_time",
+                "parse_output": "date_time_conversion",
+                "render_input": "date_time_conversion"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Last login time",
+                "name": "lastLogin",
+                "optional": true,
+                "type": "date_time",
+                "parse_output": "date_time_conversion",
+                "render_input": "date_time_conversion"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Last updated time",
+                "name": "lastUpdated",
+                "optional": true,
+                "type": "date_time",
+                "parse_output": "date_time_conversion",
+                "render_input": "date_time_conversion"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Password changed time",
+                "name": "passwordChanged",
+                "optional": true,
+                "type": "date_time",
+                "parse_output": "date_time_conversion",
+                "render_input": "date_time_conversion"
+              },
+              {
+                "label": "Profile",
+                "name": "profile",
+                "optional": true,
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "First name",
+                    "sticky": true,
+                    "optional": true,
+                    "type": "string",
+                    "name": "firstName"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Last name",
+                    "sticky": true,
+                    "optional": true,
+                    "type": "string",
+                    "name": "lastName"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Primary email ID",
+                    "sticky": true,
+                    "optional": true,
+                    "type": "string",
+                    "name": "email"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Secondary email ID",
+                    "optional": true,
+                    "type": "string",
+                    "name": "secondEmail"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Username",
+                    "hint": "Must be an email",
+                    "sticky": true,
+                    "optional": true,
+                    "type": "string",
+                    "name": "login"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Middle name",
+                    "optional": true,
+                    "type": "string",
+                    "name": "middleName"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Honorific prefix",
+                    "optional": true,
+                    "type": "string",
+                    "name": "honorificPrefix"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Honorific suffix",
+                    "optional": true,
+                    "type": "string",
+                    "name": "honorificSuffix"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Title",
+                    "hint": "User's title, such as 'Vice President'",
+                    "optional": true,
+                    "type": "string",
+                    "name": "title"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Display name",
+                    "optional": true,
+                    "type": "string",
+                    "name": "displayName"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Nick name",
+                    "optional": true,
+                    "type": "string",
+                    "name": "nickName"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Profile URL",
+                    "hint": "URL of user's online profile",
+                    "optional": true,
+                    "type": "string",
+                    "name": "profileUrl"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Primary phone",
+                    "optional": true,
+                    "type": "string",
+                    "name": "primaryPhone"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Mobile phone",
+                    "optional": true,
+                    "type": "string",
+                    "name": "mobilePhone"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Street address",
+                    "optional": true,
+                    "type": "string",
+                    "name": "streetAddress"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "City",
+                    "optional": true,
+                    "type": "string",
+                    "name": "city"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "State",
+                    "optional": true,
+                    "type": "string",
+                    "name": "state"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Zip code",
+                    "optional": true,
+                    "type": "string",
+                    "name": "zipCode"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Country code",
+                    "hint": "ISO 3166 format. Example: 'US' for 'United states'",
+                    "optional": true,
+                    "type": "string",
+                    "name": "countryCode"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Postal address",
+                    "optional": true,
+                    "type": "string",
+                    "name": "postalAddress"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Preferred language",
+                    "optional": true,
+                    "type": "string",
+                    "name": "preferredLanguage"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Locale",
+                    "hint": "A locale value is a concatenation of the ISO 639-1 two letter language code, an underscore, and the ISO 3166-1 2 letter country code. Example: ‘en_US’",
+                    "optional": true,
+                    "type": "string",
+                    "name": "locale"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Timezone",
+                    "optional": true,
+                    "type": "string",
+                    "name": "timezone"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "User type",
+                    "hint": "Example: 'Employee', 'Contractor'",
+                    "optional": true,
+                    "type": "string",
+                    "name": "userType"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Employee number",
+                    "hint": "Organization assigned unique identifier for the user",
+                    "optional": true,
+                    "type": "string",
+                    "name": "employeeNumber"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Cost center",
+                    "hint": "Name of a cost center assigned to user",
+                    "optional": true,
+                    "type": "string",
+                    "name": "costCenter"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Organization",
+                    "hint": "Name of user's organization",
+                    "optional": true,
+                    "type": "string",
+                    "name": "organization"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Division",
+                    "hint": "Name of user's division",
+                    "optional": true,
+                    "type": "string",
+                    "name": "division"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Department",
+                    "hint": "Name of user's department",
+                    "optional": true,
+                    "type": "string",
+                    "name": "department"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Manager ID",
+                    "hint": "ID of user's manager",
+                    "optional": true,
+                    "type": "string",
+                    "name": "managerId"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Manager",
+                    "hint": "Display name of user's manager",
+                    "optional": true,
+                    "type": "string",
+                    "name": "manager"
+                  }
+                ],
+                "type": "object"
+              },
+              {
+                "label": "Credentials",
+                "name": "credentials",
+                "optional": true,
+                "properties": [
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "Question",
+                        "optional": true,
+                        "type": "string",
+                        "name": "question"
+                      }
+                    ],
+                    "label": "Recovery question",
+                    "optional": true,
+                    "type": "object",
+                    "name": "recovery_question"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "Type",
+                        "hint": "Valid values are OKTA, ACTIVE_DIRECTORY,LDAP, FEDERATION, SOCIAL",
+                        "optional": true,
+                        "type": "string",
+                        "name": "type"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Name",
+                        "optional": true,
+                        "type": "string",
+                        "name": "name"
+                      }
+                    ],
+                    "label": "Provider",
+                    "optional": true,
+                    "type": "object",
+                    "name": "provider"
+                  }
+                ],
+                "type": "object"
+              },
+              {
+                "label": "Links",
+                "name": "_links",
+                "optional": true,
+                "properties": [
+                  {
+                    "properties": [
+                      {
+                        "control_type": "url",
+                        "label": "Href",
+                        "optional": true,
+                        "type": "string",
+                        "name": "href"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Method",
+                        "optional": true,
+                        "type": "string",
+                        "name": "method"
+                      }
+                    ],
+                    "label": "Suspend",
+                    "optional": true,
+                    "type": "object",
+                    "name": "suspend"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "url",
+                        "label": "Href",
+                        "optional": true,
+                        "type": "string",
+                        "name": "href"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Method",
+                        "optional": true,
+                        "type": "string",
+                        "name": "method"
+                      }
+                    ],
+                    "label": "Reset password",
+                    "optional": true,
+                    "type": "object",
+                    "name": "resetPassword"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "url",
+                        "label": "Href",
+                        "optional": true,
+                        "type": "string",
+                        "name": "href"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Method",
+                        "optional": true,
+                        "type": "string",
+                        "name": "method"
+                      }
+                    ],
+                    "label": "Expire password",
+                    "optional": true,
+                    "type": "object",
+                    "name": "expirePassword"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "url",
+                        "label": "Href",
+                        "optional": true,
+                        "type": "string",
+                        "name": "href"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Method",
+                        "optional": true,
+                        "type": "string",
+                        "name": "method"
+                      }
+                    ],
+                    "label": "Forgot password",
+                    "optional": true,
+                    "type": "object",
+                    "name": "forgotPassword"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "url",
+                        "label": "Href",
+                        "optional": true,
+                        "type": "string",
+                        "name": "href"
+                      }
+                    ],
+                    "label": "Self",
+                    "optional": true,
+                    "type": "object",
+                    "name": "self"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "url",
+                        "label": "Href",
+                        "optional": true,
+                        "type": "string",
+                        "name": "href"
+                      }
+                    ],
+                    "label": "Type",
+                    "optional": true,
+                    "type": "object",
+                    "name": "type"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "url",
+                        "label": "Href",
+                        "optional": true,
+                        "type": "string",
+                        "name": "href"
+                      }
+                    ],
+                    "label": "Schema",
+                    "optional": true,
+                    "type": "object",
+                    "name": "schema"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "url",
+                        "label": "Href",
+                        "optional": true,
+                        "type": "string",
+                        "name": "href"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Method",
+                        "optional": true,
+                        "type": "string",
+                        "name": "method"
+                      }
+                    ],
+                    "label": "Change recovery question",
+                    "optional": true,
+                    "type": "object",
+                    "name": "changeRecoveryQuestion"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "url",
+                        "label": "Href",
+                        "optional": true,
+                        "type": "string",
+                        "name": "href"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Method",
+                        "optional": true,
+                        "type": "string",
+                        "name": "method"
+                      }
+                    ],
+                    "label": "Deactivate",
+                    "optional": true,
+                    "type": "object",
+                    "name": "deactivate"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "url",
+                        "label": "Href",
+                        "optional": true,
+                        "type": "string",
+                        "name": "href"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Method",
+                        "optional": true,
+                        "type": "string",
+                        "name": "method"
+                      }
+                    ],
+                    "label": "Activate",
+                    "optional": true,
+                    "type": "object",
+                    "name": "activate"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "url",
+                        "label": "Href",
+                        "optional": true,
+                        "type": "string",
+                        "name": "href"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Method",
+                        "optional": true,
+                        "type": "string",
+                        "name": "method"
+                      }
+                    ],
+                    "label": "Reactivate",
+                    "optional": true,
+                    "type": "object",
+                    "name": "reactivate"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "url",
+                        "label": "Href",
+                        "optional": true,
+                        "type": "string",
+                        "name": "href"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Method",
+                        "optional": true,
+                        "type": "string",
+                        "name": "method"
+                      }
+                    ],
+                    "label": "Change password",
+                    "optional": true,
+                    "type": "object",
+                    "name": "changePassword"
+                  }
+                ],
+                "type": "object"
+              }
+            ],
+            "comment": "Get details of the user if already existing",
+            "uuid": "e82f91f5-6da3-4d0f-9fd2-68d1483e18c7",
+            "skip": false
+          },
+          {
+            "number": 4,
+            "provider": "okta",
+            "name": "add_user_to_group",
+            "as": "f9088156",
+            "keyword": "action",
+            "dynamicPickListSelection": {
+            },
+            "toggleCfg": {
+            },
+            "input": {
+              "userId": "#{_('data.okta.5e834036.id')}",
+              "groupId": "#{_('data.okta.a36f5eab.groups.first.id')}"
+            },
+            "comment": "Add the existing user to the Application group",
+            "uuid": "8ce27c23-550a-43b9-a84e-1bb4a07fea5f",
+            "skip": false
+          },
+          {
+            "number": 5,
+            "provider": "workato_recipe_function",
+            "name": "return_result",
+            "as": "33b6c11d",
+            "keyword": "action",
+            "dynamicPickListSelection": {
+            },
+            "toggleCfg": {
+            },
+            "input": {
+              "result": {
+                "isSuccess": "true"
+              }
+            },
+            "extended_output_schema": [
+              {
+                "label": "Result",
+                "name": "result",
+                "properties": [
+                  {
+                    "control_type": "checkbox",
+                    "label": "Is success",
+                    "render_input": {
+                    },
+                    "parse_output": {
+                    },
+                    "toggle_hint": "Select from option list",
+                    "toggle_field": {
+                      "label": "Is success",
+                      "control_type": "text",
+                      "toggle_hint": "Use custom value",
+                      "name": "isSuccess",
+                      "type": "boolean",
+                      "optional": false
+                    },
+                    "name": "isSuccess",
+                    "type": "boolean",
+                    "optional": true
+                  }
+                ],
+                "type": "object"
+              }
+            ],
+            "extended_input_schema": [
+              {
+                "label": "Result",
+                "name": "result",
+                "properties": [
+                  {
+                    "control_type": "checkbox",
+                    "label": "Is success",
+                    "render_input": {
+                    },
+                    "parse_output": {
+                    },
+                    "toggle_hint": "Select from option list",
+                    "toggle_field": {
+                      "label": "Is success",
+                      "control_type": "text",
+                      "toggle_hint": "Use custom value",
+                      "name": "isSuccess",
+                      "type": "boolean",
+                      "optional": false
+                    },
+                    "name": "isSuccess",
+                    "type": "boolean",
+                    "optional": true
+                  }
+                ],
+                "type": "object"
+              }
+            ],
+            "visible_config_fields": [
+              "result.isSuccess"
+            ],
+            "uuid": "27b695fa-c381-4abc-97c0-9c7f9ae71592"
+          },
+          {
+            "number": 6,
+            "as": "bcf10f7e",
+            "keyword": "catch",
+            "dynamicPickListSelection": {
+            },
+            "toggleCfg": {
+            },
+            "input": {
+              "max_retry_count": "0",
+              "retry_interval": "2"
+            },
+            "block": [
+              {
+                "number": 7,
+                "keyword": "if",
+                "dynamicPickListSelection": {
+                },
+                "toggleCfg": {
+                },
+                "input": {
+                  "type": "compound",
+                  "operand": "and",
+                  "conditions": [
+                    {
+                      "operand": "contains",
+                      "lhs": "#{_('data.catch.bcf10f7e.message')}",
+                      "rhs": "404 Not Found",
+                      "uuid": "condition-c2913412-99f7-44a3-9196-32013f0ec130"
+                    }
+                  ]
+                },
+                "block": [
+                  {
+                    "number": 8,
+                    "provider": "okta",
+                    "name": "create_people",
+                    "as": "ea04d48a",
+                    "keyword": "action",
+                    "dynamicPickListSelection": {
+                    },
+                    "toggleCfg": {
+                    },
+                    "input": {
+                      "profile": {
+                        "firstName": "#{_('data.workato_recipe_function.bc0c5fb7.parameters.profile.firstName')}",
+                        "lastName": "#{_('data.workato_recipe_function.bc0c5fb7.parameters.profile.lastName')}",
+                        "login": "#{_('data.workato_recipe_function.bc0c5fb7.parameters.profile.email')}",
+                        "email": "#{_('data.workato_recipe_function.bc0c5fb7.parameters.profile.email')}",
+                        "title": "#{_('data.workato_recipe_function.bc0c5fb7.parameters.profile.title')}",
+                        "managerId": "#{_('data.workato_recipe_function.bc0c5fb7.parameters.profile.managerId')}",
+                        "mobilePhone": "#{_('data.workato_recipe_function.bc0c5fb7.parameters.profile.mobilePhone')}",
+                        "employeeNumber": "#{_('data.workato_recipe_function.bc0c5fb7.parameters.profile.empNum')}"
+                      },
+                      "activate": "true",
+                      "groupIds": {
+                        "groupIds": "#{_('data.okta.a36f5eab.groups.first.id')}"
+                      }
+                    },
+                    "extended_output_schema": [
+                      {
+                        "label": "Profile",
+                        "name": "profile",
+                        "optional": true,
+                        "properties": [
+                          {
+                            "control_type": "text",
+                            "label": "First name",
+                            "sticky": true,
+                            "optional": true,
+                            "type": "string",
+                            "name": "firstName"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Last name",
+                            "sticky": true,
+                            "optional": true,
+                            "type": "string",
+                            "name": "lastName"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Primary email ID",
+                            "sticky": true,
+                            "optional": true,
+                            "type": "string",
+                            "name": "email"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Secondary email ID",
+                            "optional": true,
+                            "type": "string",
+                            "name": "secondEmail"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Username",
+                            "hint": "Must be an email",
+                            "sticky": true,
+                            "optional": true,
+                            "type": "string",
+                            "name": "login"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Middle name",
+                            "optional": true,
+                            "type": "string",
+                            "name": "middleName"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Honorific prefix",
+                            "optional": true,
+                            "type": "string",
+                            "name": "honorificPrefix"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Honorific suffix",
+                            "optional": true,
+                            "type": "string",
+                            "name": "honorificSuffix"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Title",
+                            "hint": "User's title, such as 'Vice President'",
+                            "optional": true,
+                            "type": "string",
+                            "name": "title",
+                            "sticky": true
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Display name",
+                            "optional": true,
+                            "type": "string",
+                            "name": "displayName"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Nick name",
+                            "optional": true,
+                            "type": "string",
+                            "name": "nickName"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Profile URL",
+                            "optional": true,
+                            "hint": "URL of user's online profile",
+                            "type": "string",
+                            "name": "profileUrl"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Primary phone",
+                            "optional": true,
+                            "type": "string",
+                            "name": "primaryPhone"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Mobile phone",
+                            "optional": true,
+                            "type": "string",
+                            "name": "mobilePhone"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Street address",
+                            "optional": true,
+                            "type": "string",
+                            "name": "streetAddress"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "City",
+                            "optional": true,
+                            "type": "string",
+                            "name": "city"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "State",
+                            "optional": true,
+                            "type": "string",
+                            "name": "state"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Zip code",
+                            "optional": true,
+                            "type": "string",
+                            "name": "zipCode"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Country code",
+                            "optional": true,
+                            "hint": "ISO 3166 format. Example: 'US' for 'United states'",
+                            "type": "string",
+                            "name": "countryCode"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Postal address",
+                            "optional": true,
+                            "type": "string",
+                            "name": "postalAddress"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Preferred language",
+                            "optional": true,
+                            "type": "string",
+                            "name": "preferredLanguage"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Locale",
+                            "optional": true,
+                            "hint": "A locale value is a concatenation of the ISO 639-1 two letter language code, an underscore, and the ISO 3166-1 2 letter country code. Example: ‘en_US’",
+                            "type": "string",
+                            "name": "locale"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Timezone",
+                            "optional": true,
+                            "type": "string",
+                            "name": "timezone"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "User type",
+                            "hint": "Example: 'Employee', 'Contractor'",
+                            "optional": true,
+                            "type": "string",
+                            "name": "userType"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Employee number",
+                            "hint": "Organization assigned unique identifier for the user",
+                            "optional": true,
+                            "type": "string",
+                            "name": "employeeNumber",
+                            "sticky": true
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Cost center",
+                            "hint": "Name of a cost center assigned to user",
+                            "optional": true,
+                            "type": "string",
+                            "name": "costCenter"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Organization",
+                            "hint": "Name of user's organization",
+                            "optional": true,
+                            "type": "string",
+                            "name": "organization"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Division",
+                            "hint": "Name of user's division",
+                            "optional": true,
+                            "type": "string",
+                            "name": "division"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Department",
+                            "hint": "Name of user's department",
+                            "optional": true,
+                            "type": "string",
+                            "name": "department"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Manager ID",
+                            "hint": "ID of user's manager",
+                            "optional": true,
+                            "type": "string",
+                            "name": "managerId",
+                            "sticky": true
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Manager",
+                            "hint": "Display name of user's manager",
+                            "optional": true,
+                            "type": "string",
+                            "name": "manager",
+                            "sticky": true
+                          }
+                        ],
+                        "type": "object"
+                      }
+                    ],
+                    "extended_input_schema": [
+                      {
+                        "label": "Custom fields",
+                        "name": "custom_fields",
+                        "optional": true,
+                        "properties": [
+
+                        ],
+                        "type": "object"
+                      }
+                    ],
+                    "visible_config_fields": [
+                      "profile",
+                      "profile.firstName",
+                      "profile.lastName",
+                      "profile.email",
+                      "profile.login",
+                      "profile.title",
+                      "profile.employeeNumber",
+                      "profile.managerId",
+                      "profile.manager",
+                      "credentials.password.value",
+                      "activate",
+                      "groupIds.groupIds"
+                    ],
+                    "comment": "Create user in Okta and add to the Application group",
+                    "uuid": "1f83c865-0b1c-4e98-96e6-f10cfa31532f",
+                    "skip": false
+                  },
+                  {
+                    "number": 9,
+                    "provider": "workato_recipe_function",
+                    "name": "return_result",
+                    "as": "c4fc77e4",
+                    "keyword": "action",
+                    "dynamicPickListSelection": {
+                    },
+                    "toggleCfg": {
+                    },
+                    "input": {
+                      "result": {
+                        "isSuccess": "true"
+                      }
+                    },
+                    "extended_output_schema": [
+                      {
+                        "label": "Result",
+                        "name": "result",
+                        "properties": [
+                          {
+                            "control_type": "checkbox",
+                            "label": "Is success",
+                            "render_input": {
+                            },
+                            "parse_output": {
+                            },
+                            "toggle_hint": "Select from option list",
+                            "toggle_field": {
+                              "label": "Is success",
+                              "control_type": "text",
+                              "toggle_hint": "Use custom value",
+                              "name": "isSuccess",
+                              "type": "boolean",
+                              "optional": false
+                            },
+                            "name": "isSuccess",
+                            "type": "boolean",
+                            "optional": true
+                          }
+                        ],
+                        "type": "object"
+                      }
+                    ],
+                    "extended_input_schema": [
+                      {
+                        "label": "Result",
+                        "name": "result",
+                        "properties": [
+                          {
+                            "control_type": "checkbox",
+                            "label": "Is success",
+                            "render_input": {
+                            },
+                            "parse_output": {
+                            },
+                            "toggle_hint": "Select from option list",
+                            "toggle_field": {
+                              "label": "Is success",
+                              "control_type": "text",
+                              "toggle_hint": "Use custom value",
+                              "name": "isSuccess",
+                              "type": "boolean",
+                              "optional": false
+                            },
+                            "name": "isSuccess",
+                            "type": "boolean",
+                            "optional": true
+                          }
+                        ],
+                        "type": "object"
+                      }
+                    ],
+                    "visible_config_fields": [
+                      "result.isSuccess"
+                    ],
+                    "uuid": "f8bd88a9-c455-4d07-bbdf-ba39df448875"
+                  }
+                ],
+                "comment": "If the user is not found",
+                "uuid": "c72350e5-cc39-40a2-acb4-a44fdfb3ba4b",
+                "skip": false
+              }
+            ],
+            "uuid": "0214f73b-2e55-4a03-9325-98bcda355ac9",
+            "skip": false
+          }
+        ],
+        "uuid": "a734671f-867d-42b2-b4c4-01293e54a18d",
+        "skip": false
+      },
+      {
+        "number": 10,
+        "provider": "workato_recipe_function",
+        "name": "return_result",
+        "as": "e9f58033",
+        "keyword": "action",
+        "dynamicPickListSelection": {
+        },
+        "toggleCfg": {
+        },
+        "input": {
+          "result": {
+            "isSuccess": "false"
+          }
+        },
+        "extended_output_schema": [
+          {
+            "label": "Result",
+            "name": "result",
+            "properties": [
+              {
+                "control_type": "checkbox",
+                "label": "Is success",
+                "render_input": {
+                },
+                "parse_output": {
+                },
+                "toggle_hint": "Select from option list",
+                "toggle_field": {
+                  "label": "Is success",
+                  "control_type": "text",
+                  "toggle_hint": "Use custom value",
+                  "name": "isSuccess",
+                  "type": "boolean",
+                  "optional": false
+                },
+                "name": "isSuccess",
+                "type": "boolean",
+                "optional": true
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "extended_input_schema": [
+          {
+            "label": "Result",
+            "name": "result",
+            "properties": [
+              {
+                "control_type": "checkbox",
+                "label": "Is success",
+                "render_input": {
+                },
+                "parse_output": {
+                },
+                "toggle_hint": "Select from option list",
+                "toggle_field": {
+                  "label": "Is success",
+                  "control_type": "text",
+                  "toggle_hint": "Use custom value",
+                  "name": "isSuccess",
+                  "type": "boolean",
+                  "optional": false
+                },
+                "name": "isSuccess",
+                "type": "boolean",
+                "optional": true
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "visible_config_fields": [
+          "result.isSuccess"
+        ],
+        "uuid": "ed2c9cf7-8333-4246-ba3d-12ad4dd90ec4"
+      }
+    ],
+    "uuid": "4e64cffc-0ce8-4b1a-917a-0c05d89f5417"
+  },
+  "config": [
+    {
+      "keyword": "application",
+      "provider": "workato_recipe_function",
+      "skip_validation": false,
+      "account_id": null
+    },
+    {
+      "keyword": "application",
+      "provider": "okta",
+      "skip_validation": false,
+      "account_id": null
+    }
+  ]
+}

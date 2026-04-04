@@ -3,6 +3,8 @@ paths:
   - "**/*.agentic_genie.json"
   - "**/*.agentic_skill.json"
   - "**/*.mcp_server.json"
+  - "**/*.lcap_app.json"
+  - "**/*.workato_db_table.json"
 ---
 
 # Workato Agentic JSON Format
@@ -107,6 +109,52 @@ agentic_genie.json
 - スキル: `<snake_case_name>.agentic_skill.json`
 - ロゴ: `<genie_name>.agentic_genie.png`
 - MCP サーバー: `<name>.mcp_server.json`
+- Workflow App: `<snake_case_name>.lcap_app.json`
+- Data Table: `<snake_case_name>.workato_db_table.json`
+- Workflow App ページ: `<snake_case_name>.lcap_page.json` / `.lcap_page.zip`
+- Insights クエリ: `<snake_case_name>.insights_query.json`
+
+## Workflow App: *.lcap_app.json
+
+```json
+{
+  "name": "App名",
+  "creation_page": { "zip_name": "form.lcap_page.json", "name": "Form", "folder": "" },
+  "workato_db_table": { "zip_name": "table.workato_db_table.json", "name": "Table", "folder": "" },
+  "workflow_stages": [
+    { "name": "New", "color": 0 },
+    { "name": "In progress", "color": 1, "task_page": { "..." }, "details_page": { "..." } },
+    { "name": "Done", "color": 2, "details_page": { "..." } }
+  ],
+  "tabs": [
+    { "name": "Tab", "kind": "new_request|user_defined", "visibility": "all|managers" }
+  ],
+  "displayed_columns": [
+    { "id": "UUID or CURRENT_STAGE|CURRENT_TASK|ASSIGNED_TO|EXPIRES_AT|CREATED_BY", "visibility": "all|managers|nobody" }
+  ]
+}
+```
+
+- `creation_page` → 送信フォーム、`workato_db_table` → バックエンド Data Table
+- `workflow_stages` でステージごとに task_page / details_page を参照
+- `displayed_columns.id` は Data Table の UUID フィールド ID、または大文字のシステムカラム
+
+## Data Table: *.workato_db_table.json
+
+```json
+{
+  "name": "テーブル名",
+  "schema": [
+    { "id": "UUID", "title": "フィールド名", "type": "short-text|long-text|number|boolean|date|date-time|file|relation",
+      "read_only": false, "hidden": false, "required": false }
+  ],
+  "project_name": "[App] Project Name"
+}
+```
+
+- `type: "relation"` は `relation.table_id` で外部テーブルを参照
+- システムフィールド（Record ID, Created time, Last modified time）は read_only + hidden
+- フィールド ID は UUID v4。レシピ output やページで UUID がカラム名として使われる
 
 ## MCP Server: *.mcp_server.json
 

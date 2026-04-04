@@ -1,0 +1,118 @@
+{
+  "page_id": {
+    "zip_name": "request_analytics.lcap_page.json",
+    "name": "Request analytics",
+    "folder": ""
+  },
+  "name": "Request analytics-3",
+  "index": 3,
+  "version": "v1",
+  "query": {
+    "relation": "Aggregate",
+    "groupKey": [
+      {
+        "expression": "Call",
+        "qualifier": "43fbc9431e7c9781",
+        "operator": "DATE_TRUNC",
+        "operands": [
+          {
+            "expression": "Literal",
+            "qualifier": null,
+            "value": "day"
+          },
+          {
+            "expression": "ColumnRef",
+            "qualifier": "d53290a244f4f188",
+            "label": "Created time"
+          }
+        ]
+      }
+    ],
+    "aggCalls": [
+      {
+        "qualifier": "bce80e5e51ca578f",
+        "function": "COUNT",
+        "operand": null
+      }
+    ],
+    "input": {
+      "relation": "TableScan",
+      "catalog": "lcap",
+      "schema": "public",
+      "table": "__ref__1",
+      "label": null,
+      "columnQualifiers": [
+        {
+          "column": "workflow_stage",
+          "qualifier": "784fecfe728b560c"
+        },
+        {
+          "column": "assignee",
+          "qualifier": "5d096f1c637f9ff3"
+        },
+        {
+          "column": "expires_at",
+          "qualifier": "ea664825e9452b7"
+        },
+        {
+          "column": "creator",
+          "qualifier": "400bdf6b2c747b09"
+        },
+        {
+          "column": "1266a4d9-37c4-480f-8f58-44a48872f9bb",
+          "qualifier": "3716b60a5d03657a"
+        },
+        {
+          "column": "f34268fd-d480-4479-9f26-ac8ad1cf41d1",
+          "qualifier": "2bec081795cc639a"
+        },
+        {
+          "column": "2f74a857-06e6-47a1-ba27-16a164bbf0de",
+          "qualifier": "49b00f7936701855"
+        },
+        {
+          "column": "11fbe9a6-a16d-4d7e-86ea-afe42ec03005",
+          "qualifier": "3235cb7c85713235"
+        },
+        {
+          "column": "a5612739-5401-4ae7-bd07-782c1a6fb2d1",
+          "qualifier": "d53290a244f4f188"
+        },
+        {
+          "column": "61aae604-a95e-4519-9091-bb0bf754a67f",
+          "qualifier": "b79a3cee3dfc52c5"
+        },
+        {
+          "column": "assignee_email",
+          "qualifier": "bf8239523853b460"
+        },
+        {
+          "column": "assignee_user_id",
+          "qualifier": "29318d9b86e17863"
+        },
+        {
+          "column": "assignee_user_group_id",
+          "qualifier": "2f486e36f4a3d514"
+        },
+        {
+          "column": "creator_id",
+          "qualifier": "e5691bfb752a5334"
+        },
+        {
+          "column": "workflow_stage_id",
+          "qualifier": "e5eaa034081e8e7a"
+        }
+      ]
+    }
+  },
+  "references": {
+    "__ref__1": {
+      "type": "lcap_app",
+      "id": {
+        "zip_name": "generic_workflow_request.lcap_app.json",
+        "name": "Generic Workflow Request",
+        "folder": ""
+      }
+    }
+  }
+}

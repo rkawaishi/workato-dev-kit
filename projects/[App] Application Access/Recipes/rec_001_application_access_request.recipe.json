@@ -1,0 +1,1613 @@
+{
+  "name": "REC 001 |Application Access Request",
+  "description": "When there is a trigger event, do action",
+  "version": 1,
+  "private": true,
+  "concurrency": 1,
+  "code": {
+    "number": 0,
+    "provider": "workato_workflow_task",
+    "name": "new_requests_realtime",
+    "as": "020fc9ca",
+    "keyword": "trigger",
+    "dynamicPickListSelection": {
+      "app_id": "Application Access"
+    },
+    "input": {
+      "app_id": {
+        "zip_name": "application_access.lcap_app.json",
+        "name": "Application Access",
+        "folder": ""
+      }
+    },
+    "extended_output_schema": [
+      {
+        "label": "Request",
+        "name": "request",
+        "properties": [
+          {
+            "control_type": "text",
+            "label": "Record ID",
+            "type": "string",
+            "name": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
+          },
+          {
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Record ID",
+                "type": "string",
+                "name": "record_id"
+              },
+              {
+                "control_type": "text",
+                "label": "Application",
+                "type": "string",
+                "name": "display_name"
+              }
+            ],
+            "label": "Application",
+            "custom_type": "relation",
+            "custom_field_id": "Application",
+            "type": "object",
+            "name": "98000bf3_d20f_488f_bd29_8801a00592c8"
+          },
+          {
+            "control_type": "text",
+            "label": "Emp Id",
+            "type": "string",
+            "name": "e8483357_2dee_40e8_8cde_9e0902de0d4d"
+          },
+          {
+            "control_type": "text",
+            "label": "Beneficiary Email",
+            "type": "string",
+            "name": "f660d655_76a3_4917_92c4_1657327f8242"
+          },
+          {
+            "control_type": "text",
+            "label": "Department",
+            "type": "string",
+            "name": "f9eac073_025a_41a9_ad62_4adaeb0b6f58"
+          },
+          {
+            "control_type": "text",
+            "label": "Access Type",
+            "type": "string",
+            "name": "b3be36fc_982e_4597_9abc_713b8b319b83"
+          },
+          {
+            "control_type": "date",
+            "label": "Provisioning Date",
+            "render_input": "date_conversion",
+            "parse_output": "date_conversion",
+            "type": "date",
+            "name": "03321d77_74cc_470f_ae1c_d3d150f641f5"
+          },
+          {
+            "control_type": "text",
+            "label": "Business Justification",
+            "type": "string",
+            "name": "3e919a1f_923d_4917_880c_dba94b275eb0"
+          },
+          {
+            "control_type": "text",
+            "label": "Manager Name",
+            "type": "string",
+            "name": "fe0dc46b_281b_4c1f_abf7_5b78cd6bdff1"
+          },
+          {
+            "control_type": "text",
+            "label": "Manager Comments",
+            "type": "string",
+            "name": "57c08fa0_4274_4073_9f5f_5b5409097d9b"
+          },
+          {
+            "control_type": "text",
+            "label": "App Owner Name",
+            "type": "string",
+            "name": "f4f81c2e_4967_4523_bebc_dc658bb5e8f9"
+          },
+          {
+            "control_type": "text",
+            "label": "App Owner Comments",
+            "type": "string",
+            "name": "2019e609_b373_45dd_a67e_725577cabdb7"
+          },
+          {
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "User ID",
+                "type": "string",
+                "name": "id"
+              },
+              {
+                "control_type": "text",
+                "label": "User name",
+                "type": "string",
+                "name": "name"
+              },
+              {
+                "control_type": "email",
+                "label": "Email",
+                "type": "string",
+                "name": "email"
+              },
+              {
+                "control_type": "text",
+                "label": "Status",
+                "type": "string",
+                "name": "status"
+              },
+              {
+                "name": "user_groups",
+                "type": "array",
+                "of": "object",
+                "label": "Groups",
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Group ID",
+                    "type": "string",
+                    "name": "id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Group name",
+                    "type": "string",
+                    "name": "name"
+                  }
+                ]
+              },
+              {
+                "control_type": "checkbox",
+                "label": "Guest user",
+                "toggle_hint": "Select from option list",
+                "toggle_field": {
+                  "label": "Guest user",
+                  "control_type": "text",
+                  "toggle_hint": "Use custom value",
+                  "render_input": null,
+                  "parse_output": null,
+                  "type": "boolean",
+                  "name": "is_guest"
+                },
+                "type": "boolean",
+                "name": "is_guest"
+              }
+            ],
+            "label": "Created by",
+            "type": "object",
+            "name": "created_by"
+          },
+          {
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Stage ID",
+                "type": "string",
+                "name": "id"
+              },
+              {
+                "control_type": "text",
+                "label": "Stage name",
+                "type": "string",
+                "name": "name"
+              }
+            ],
+            "label": "Stage",
+            "type": "object",
+            "name": "stage"
+          },
+          {
+            "control_type": "date_time",
+            "label": "Created at",
+            "render_input": "date_time_conversion",
+            "parse_output": "date_time_conversion",
+            "type": "date_time",
+            "name": "a5612739_5401_4ae7_bd07_782c1a6fb2d1"
+          },
+          {
+            "control_type": "date_time",
+            "label": "Updated at",
+            "render_input": "date_time_conversion",
+            "parse_output": "date_time_conversion",
+            "type": "date_time",
+            "name": "61aae604_a95e_4519_9091_bb0bf754a67f"
+          }
+        ],
+        "type": "object"
+      }
+    ],
+    "block": [
+      {
+        "number": 1,
+        "provider": "workato_recipe_function",
+        "name": "call_recipe",
+        "as": "d0e99048",
+        "keyword": "action",
+        "dynamicPickListSelection": {
+          "flow_id": "Get Line Manager"
+        },
+        "input": {
+          "flow_id": "63564459",
+          "parameters": {
+            "EmployeeId": "21323"
+          }
+        },
+        "extended_output_schema": [
+          {
+            "label": "Result",
+            "name": "result",
+            "properties": [
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "ID",
+                    "type": "string",
+                    "name": "Id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Name",
+                    "type": "string",
+                    "name": "Name"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Email",
+                    "type": "string",
+                    "name": "Email"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Phone",
+                    "type": "string",
+                    "name": "Phone"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Department",
+                    "type": "string",
+                    "name": "Department"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Job title",
+                    "type": "string",
+                    "name": "JobTitle"
+                  }
+                ],
+                "label": "Manager",
+                "type": "object",
+                "name": "Manager"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "extended_input_schema": [
+          {
+            "label": "Parameters",
+            "name": "parameters",
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Employee ID",
+                "name": "EmployeeId",
+                "type": "string",
+                "optional": false
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "comment": "Get Line Manager from HRMS",
+        "uuid": "74c110fd-2246-45c2-99a7-c2a46d7de759",
+        "skip": true
+      },
+      {
+        "number": 2,
+        "provider": "workato_workflow_task",
+        "name": "update_request",
+        "as": "1b80c191",
+        "keyword": "action",
+        "dynamicPickListSelection": {
+          "app_id": "Application Access"
+        },
+        "input": {
+          "app_id": {
+            "zip_name": "application_access.lcap_app.json",
+            "name": "Application Access",
+            "folder": ""
+          },
+          "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"020fc9ca\",\"path\":[\"request\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
+          "parameters": {
+            "e8483357_2dee_40e8_8cde_9e0902de0d4d": "123",
+            "f660d655_76a3_4917_92c4_1657327f8242": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"020fc9ca\",\"path\":[\"request\",\"created_by\",\"name\"]}')}",
+            "f9eac073_025a_41a9_ad62_4adaeb0b6f58": "Marketing",
+            "fe0dc46b_281b_4c1f_abf7_5b78cd6bdff1": "John Smith"
+          }
+        },
+        "extended_output_schema": [
+          {
+            "label": "Request",
+            "name": "request",
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Record ID",
+                "type": "string",
+                "name": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Record ID",
+                    "type": "string",
+                    "name": "record_id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Application",
+                    "type": "string",
+                    "name": "display_name"
+                  }
+                ],
+                "label": "Application",
+                "custom_type": "relation",
+                "custom_field_id": "Application",
+                "type": "object",
+                "name": "98000bf3_d20f_488f_bd29_8801a00592c8"
+              },
+              {
+                "control_type": "text",
+                "label": "Emp Id",
+                "type": "string",
+                "name": "e8483357_2dee_40e8_8cde_9e0902de0d4d"
+              },
+              {
+                "control_type": "text",
+                "label": "Beneficiary Email",
+                "type": "string",
+                "name": "f660d655_76a3_4917_92c4_1657327f8242"
+              },
+              {
+                "control_type": "text",
+                "label": "Department",
+                "type": "string",
+                "name": "f9eac073_025a_41a9_ad62_4adaeb0b6f58"
+              },
+              {
+                "control_type": "text",
+                "label": "Access Type",
+                "type": "string",
+                "name": "b3be36fc_982e_4597_9abc_713b8b319b83"
+              },
+              {
+                "control_type": "date",
+                "label": "Provisioning Date",
+                "render_input": "date_conversion",
+                "parse_output": "date_conversion",
+                "type": "date",
+                "name": "03321d77_74cc_470f_ae1c_d3d150f641f5"
+              },
+              {
+                "control_type": "text",
+                "label": "Business Justification",
+                "type": "string",
+                "name": "3e919a1f_923d_4917_880c_dba94b275eb0"
+              },
+              {
+                "control_type": "text",
+                "label": "Manager Name",
+                "type": "string",
+                "name": "fe0dc46b_281b_4c1f_abf7_5b78cd6bdff1"
+              },
+              {
+                "control_type": "text",
+                "label": "Manager Comments",
+                "type": "string",
+                "name": "57c08fa0_4274_4073_9f5f_5b5409097d9b"
+              },
+              {
+                "control_type": "text",
+                "label": "App Owner Name",
+                "type": "string",
+                "name": "f4f81c2e_4967_4523_bebc_dc658bb5e8f9"
+              },
+              {
+                "control_type": "text",
+                "label": "App Owner Comments",
+                "type": "string",
+                "name": "2019e609_b373_45dd_a67e_725577cabdb7"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Task ID",
+                    "type": "string",
+                    "name": "id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Task name",
+                    "type": "string",
+                    "name": "name"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Status",
+                    "type": "string",
+                    "name": "status"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "User ID",
+                        "type": "string",
+                        "name": "id"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "User name",
+                        "type": "string",
+                        "name": "name"
+                      },
+                      {
+                        "control_type": "email",
+                        "label": "Email",
+                        "type": "string",
+                        "name": "email"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Status",
+                        "type": "string",
+                        "name": "status"
+                      },
+                      {
+                        "name": "user_groups",
+                        "type": "array",
+                        "of": "object",
+                        "label": "Groups",
+                        "properties": [
+                          {
+                            "control_type": "text",
+                            "label": "Group ID",
+                            "type": "string",
+                            "name": "id"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Group name",
+                            "type": "string",
+                            "name": "name"
+                          }
+                        ]
+                      }
+                    ],
+                    "label": "Assigned user",
+                    "type": "object",
+                    "name": "assigned_user"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "Group ID",
+                        "type": "string",
+                        "name": "id"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Group name",
+                        "type": "string",
+                        "name": "name"
+                      }
+                    ],
+                    "label": "Assigned group",
+                    "type": "object",
+                    "name": "assigned_group"
+                  },
+                  {
+                    "control_type": "date_time",
+                    "label": "Due date",
+                    "render_input": "date_time_conversion",
+                    "parse_output": "date_time_conversion",
+                    "type": "date_time",
+                    "name": "expires_at"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Task URL",
+                    "type": "string",
+                    "name": "link"
+                  }
+                ],
+                "label": "Active task",
+                "type": "object",
+                "name": "task"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "User ID",
+                    "type": "string",
+                    "name": "id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "User name",
+                    "type": "string",
+                    "name": "name"
+                  },
+                  {
+                    "control_type": "email",
+                    "label": "Email",
+                    "type": "string",
+                    "name": "email"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Status",
+                    "type": "string",
+                    "name": "status"
+                  },
+                  {
+                    "name": "user_groups",
+                    "type": "array",
+                    "of": "object",
+                    "label": "Groups",
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "Group ID",
+                        "type": "string",
+                        "name": "id"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Group name",
+                        "type": "string",
+                        "name": "name"
+                      }
+                    ]
+                  },
+                  {
+                    "control_type": "checkbox",
+                    "label": "Guest user",
+                    "toggle_hint": "Select from option list",
+                    "toggle_field": {
+                      "label": "Guest user",
+                      "control_type": "text",
+                      "toggle_hint": "Use custom value",
+                      "render_input": null,
+                      "parse_output": null,
+                      "type": "boolean",
+                      "name": "is_guest"
+                    },
+                    "type": "boolean",
+                    "name": "is_guest"
+                  }
+                ],
+                "label": "Created by",
+                "type": "object",
+                "name": "created_by"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Stage ID",
+                    "type": "string",
+                    "name": "id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Stage name",
+                    "type": "string",
+                    "name": "name"
+                  }
+                ],
+                "label": "Stage",
+                "type": "object",
+                "name": "stage"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Created at",
+                "render_input": "date_time_conversion",
+                "parse_output": "date_time_conversion",
+                "type": "date_time",
+                "name": "a5612739_5401_4ae7_bd07_782c1a6fb2d1"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Updated at",
+                "render_input": "date_time_conversion",
+                "parse_output": "date_time_conversion",
+                "type": "date_time",
+                "name": "61aae604_a95e_4519_9091_bb0bf754a67f"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "extended_input_schema": [
+          {
+            "hint": "Fill out the fields that need to be updated. Fields that are left blank will not be updated.",
+            "label": "Update request fields with new inputs",
+            "name": "parameters",
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Application Record ID",
+                "optional": true,
+                "custom_type": "relation",
+                "custom_field_id": "Application",
+                "type": "string",
+                "name": "98000bf3_d20f_488f_bd29_8801a00592c8"
+              },
+              {
+                "control_type": "text",
+                "label": "Emp Id",
+                "placeholder": "0",
+                "optional": true,
+                "sticky": true,
+                "type": "string",
+                "name": "e8483357_2dee_40e8_8cde_9e0902de0d4d"
+              },
+              {
+                "control_type": "text",
+                "label": "Beneficiary Email",
+                "optional": true,
+                "sticky": true,
+                "type": "string",
+                "name": "f660d655_76a3_4917_92c4_1657327f8242"
+              },
+              {
+                "control_type": "text",
+                "label": "Department",
+                "optional": true,
+                "sticky": true,
+                "type": "string",
+                "name": "f9eac073_025a_41a9_ad62_4adaeb0b6f58"
+              },
+              {
+                "control_type": "text",
+                "label": "Access Type",
+                "placeholder": "Read-Only",
+                "optional": true,
+                "sticky": true,
+                "type": "string",
+                "name": "b3be36fc_982e_4597_9abc_713b8b319b83"
+              },
+              {
+                "control_type": "date",
+                "label": "Provisioning Date",
+                "render_input": "date_conversion",
+                "parse_output": "date_conversion",
+                "optional": true,
+                "sticky": false,
+                "type": "date",
+                "name": "03321d77_74cc_470f_ae1c_d3d150f641f5"
+              },
+              {
+                "control_type": "text-area",
+                "label": "Business Justification",
+                "optional": true,
+                "sticky": false,
+                "type": "string",
+                "name": "3e919a1f_923d_4917_880c_dba94b275eb0"
+              },
+              {
+                "control_type": "text",
+                "label": "Manager Name",
+                "optional": true,
+                "sticky": false,
+                "type": "string",
+                "name": "fe0dc46b_281b_4c1f_abf7_5b78cd6bdff1"
+              },
+              {
+                "control_type": "text-area",
+                "label": "Manager Comments",
+                "optional": true,
+                "sticky": false,
+                "type": "string",
+                "name": "57c08fa0_4274_4073_9f5f_5b5409097d9b"
+              },
+              {
+                "control_type": "text",
+                "label": "App Owner Name",
+                "optional": true,
+                "sticky": false,
+                "type": "string",
+                "name": "f4f81c2e_4967_4523_bebc_dc658bb5e8f9"
+              },
+              {
+                "control_type": "text-area",
+                "label": "App Owner Comments",
+                "optional": true,
+                "sticky": false,
+                "type": "string",
+                "name": "2019e609_b373_45dd_a67e_725577cabdb7"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "visible_config_fields": [
+          "app_id",
+          "parameters.e8483357_2dee_40e8_8cde_9e0902de0d4d",
+          "parameters.f660d655_76a3_4917_92c4_1657327f8242",
+          "parameters.f9eac073_025a_41a9_ad62_4adaeb0b6f58",
+          "parameters.b3be36fc_982e_4597_9abc_713b8b319b83",
+          "parameters.fe0dc46b_281b_4c1f_abf7_5b78cd6bdff1",
+          "record_id",
+          "parameters",
+          "parameters.f4f81c2e_4967_4523_bebc_dc658bb5e8f9",
+          "parameters.57c08fa0_4274_4073_9f5f_5b5409097d9b",
+          "parameters.3e919a1f_923d_4917_880c_dba94b275eb0",
+          "parameters.03321d77_74cc_470f_ae1c_d3d150f641f5",
+          "parameters.98000bf3_d20f_488f_bd29_8801a00592c8",
+          "assignee_user_group_id",
+          "workflow_stage_id"
+        ],
+        "uuid": "eac4b725-d22c-41ad-b609-4ccd2eb9e410"
+      },
+      {
+        "number": 3,
+        "provider": "workato_workflow_task",
+        "name": "human_review_on_existing_record",
+        "as": "5ccdfda4",
+        "keyword": "action",
+        "dynamicPickListSelection": {
+          "user_group_id": "Manager",
+          "workflow_stage_id": "In progress"
+        },
+        "toggleCfg": {
+          "due_in_days": true,
+          "send_email_notification": true,
+          "reassignable": true,
+          "workflow_stage_id": true
+        },
+        "input": {
+          "name": "Review Access Request",
+          "page_id": {
+            "zip_name": "Pages/application_access_line_manager_review.lcap_page.json",
+            "name": "Application Access Line Manager Review",
+            "folder": "Pages"
+          },
+          "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"020fc9ca\",\"path\":[\"request\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
+          "due_in_days": "14",
+          "workflow_stage_id": {
+            "name": "In progress"
+          },
+          "email": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"020fc9ca\",\"path\":[\"request\",\"created_by\",\"email\"]}')}",
+          "app_id": {
+            "zip_name": "application_access.lcap_app.json",
+            "name": "Application Access",
+            "folder": ""
+          },
+          "send_email_notification": "true",
+          "reassignable": "true"
+        },
+        "extended_output_schema": [
+          {
+            "label": "Record",
+            "name": "record",
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Record ID",
+                "type": "string",
+                "name": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Record ID",
+                    "type": "string",
+                    "name": "record_id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Application",
+                    "type": "string",
+                    "name": "display_name"
+                  }
+                ],
+                "label": "Application",
+                "custom_type": "relation",
+                "custom_field_id": "Application",
+                "type": "object",
+                "name": "98000bf3_d20f_488f_bd29_8801a00592c8"
+              },
+              {
+                "control_type": "text",
+                "label": "Emp Id",
+                "type": "string",
+                "name": "e8483357_2dee_40e8_8cde_9e0902de0d4d"
+              },
+              {
+                "control_type": "text",
+                "label": "Beneficiary Email",
+                "type": "string",
+                "name": "f660d655_76a3_4917_92c4_1657327f8242"
+              },
+              {
+                "control_type": "text",
+                "label": "Department",
+                "type": "string",
+                "name": "f9eac073_025a_41a9_ad62_4adaeb0b6f58"
+              },
+              {
+                "control_type": "text",
+                "label": "Access Type",
+                "type": "string",
+                "name": "b3be36fc_982e_4597_9abc_713b8b319b83"
+              },
+              {
+                "control_type": "date",
+                "label": "Provisioning Date",
+                "render_input": "date_conversion",
+                "parse_output": "date_conversion",
+                "type": "date",
+                "name": "03321d77_74cc_470f_ae1c_d3d150f641f5"
+              },
+              {
+                "control_type": "text",
+                "label": "Business Justification",
+                "type": "string",
+                "name": "3e919a1f_923d_4917_880c_dba94b275eb0"
+              },
+              {
+                "control_type": "text",
+                "label": "Manager Name",
+                "type": "string",
+                "name": "fe0dc46b_281b_4c1f_abf7_5b78cd6bdff1"
+              },
+              {
+                "control_type": "text",
+                "label": "Manager Comments",
+                "type": "string",
+                "name": "57c08fa0_4274_4073_9f5f_5b5409097d9b"
+              },
+              {
+                "control_type": "text",
+                "label": "App Owner Name",
+                "type": "string",
+                "name": "f4f81c2e_4967_4523_bebc_dc658bb5e8f9"
+              },
+              {
+                "control_type": "text",
+                "label": "App Owner Comments",
+                "type": "string",
+                "name": "2019e609_b373_45dd_a67e_725577cabdb7"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "User ID",
+                    "type": "string",
+                    "name": "id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "User name",
+                    "type": "string",
+                    "name": "name"
+                  },
+                  {
+                    "control_type": "email",
+                    "label": "Email",
+                    "type": "string",
+                    "name": "email"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Status",
+                    "type": "string",
+                    "name": "status"
+                  },
+                  {
+                    "name": "user_groups",
+                    "type": "array",
+                    "of": "object",
+                    "label": "Groups",
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "Group ID",
+                        "type": "string",
+                        "name": "id"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Group name",
+                        "type": "string",
+                        "name": "name"
+                      }
+                    ]
+                  },
+                  {
+                    "control_type": "checkbox",
+                    "label": "Guest user",
+                    "toggle_hint": "Select from option list",
+                    "toggle_field": {
+                      "label": "Guest user",
+                      "control_type": "text",
+                      "toggle_hint": "Use custom value",
+                      "render_input": null,
+                      "parse_output": null,
+                      "type": "boolean",
+                      "name": "is_guest"
+                    },
+                    "type": "boolean",
+                    "name": "is_guest"
+                  }
+                ],
+                "label": "Created by",
+                "type": "object",
+                "name": "created_by"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Stage ID",
+                    "type": "string",
+                    "name": "id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Stage name",
+                    "type": "string",
+                    "name": "name"
+                  }
+                ],
+                "label": "Stage",
+                "type": "object",
+                "name": "stage"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Created at",
+                "render_input": "date_time_conversion",
+                "parse_output": "date_time_conversion",
+                "type": "date_time",
+                "name": "a5612739_5401_4ae7_bd07_782c1a6fb2d1"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Updated at",
+                "render_input": "date_time_conversion",
+                "parse_output": "date_time_conversion",
+                "type": "date_time",
+                "name": "61aae604_a95e_4519_9091_bb0bf754a67f"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "comment": "Request Manager's review. Update with actual manager",
+        "uuid": "245745f8-fb50-454a-ba97-055f4f8732e6",
+        "skip": false
+      },
+      {
+        "number": 4,
+        "keyword": "if",
+        "input": {
+          "type": "compound",
+          "operand": "and",
+          "conditions": [
+            {
+              "operand": "is_true",
+              "lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"5ccdfda4\",\"path\":[\"task\",\"is_approved\"]}')}",
+              "rhs": "",
+              "uuid": "condition-970073d7-7ca8-4961-9fd6-28ca96bae8df"
+            }
+          ]
+        },
+        "block": [
+          {
+            "number": 5,
+            "provider": "workato_recipe_function",
+            "name": "call_recipe",
+            "as": "1e3567e1",
+            "keyword": "action",
+            "dynamicPickListSelection": {
+              "flow_id": "Get Application Owner"
+            },
+            "input": {
+              "flow_id": "63830051",
+              "parameters": {
+                "AppName": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"020fc9ca\",\"path\":[\"request\",\"98000bf3_d20f_488f_bd29_8801a00592c8\",\"display_name\"]}')}"
+              }
+            },
+            "extended_output_schema": [
+              {
+                "label": "Result",
+                "name": "result",
+                "properties": [
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "ID",
+                        "type": "string",
+                        "name": "Id"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Name",
+                        "type": "string",
+                        "name": "Name"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Email",
+                        "type": "string",
+                        "name": "Email"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Phone",
+                        "type": "string",
+                        "name": "Phone",
+                        "optional": true
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Department",
+                        "type": "string",
+                        "name": "Department",
+                        "optional": true
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Job title",
+                        "type": "string",
+                        "name": "JobTitle",
+                        "optional": true
+                      }
+                    ],
+                    "label": "AppOwner",
+                    "type": "object",
+                    "name": "AppOwner"
+                  }
+                ],
+                "type": "object"
+              }
+            ],
+            "extended_input_schema": [
+              {
+                "label": "Parameters",
+                "name": "parameters",
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "App name",
+                    "name": "AppName",
+                    "type": "string",
+                    "optional": false
+                  }
+                ],
+                "type": "object"
+              }
+            ],
+            "comment": "Get the Application Owner details",
+            "uuid": "c5015873-3357-4c8b-a090-14072025f465",
+            "skip": true
+          },
+          {
+            "number": 6,
+            "provider": "workato_workflow_task",
+            "name": "human_review_on_existing_record",
+            "as": "870fd317",
+            "keyword": "action",
+            "dynamicPickListSelection": {
+              "user_group_id": "App Owners",
+              "workflow_stage_id": "Approved by Manager"
+            },
+            "toggleCfg": {
+              "due_in_days": true,
+              "send_email_notification": true,
+              "reassignable": true,
+              "workflow_stage_id": true
+            },
+            "input": {
+              "name": "Access Request Review by App Owner",
+              "page_id": "24790",
+              "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"020fc9ca\",\"path\":[\"request\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
+              "due_in_days": "14",
+              "email": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"020fc9ca\",\"path\":[\"request\",\"created_by\",\"email\"]}')}",
+              "workflow_stage_id": "3YdWjAGmRHDYTREN9P9qUk",
+              "app_id": "12824",
+              "send_email_notification": "true",
+              "reassignable": "true"
+            },
+            "extended_output_schema": [
+              {
+                "label": "Record",
+                "name": "record",
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Record ID",
+                    "type": "string",
+                    "name": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "Record ID",
+                        "type": "string",
+                        "name": "record_id"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Application",
+                        "type": "string",
+                        "name": "display_name"
+                      }
+                    ],
+                    "label": "Application",
+                    "custom_type": "relation",
+                    "custom_field_id": "Application",
+                    "type": "object",
+                    "name": "98000bf3_d20f_488f_bd29_8801a00592c8"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Emp Id",
+                    "type": "string",
+                    "name": "e8483357_2dee_40e8_8cde_9e0902de0d4d"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Beneficiary Email",
+                    "type": "string",
+                    "name": "f660d655_76a3_4917_92c4_1657327f8242"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Department",
+                    "type": "string",
+                    "name": "f9eac073_025a_41a9_ad62_4adaeb0b6f58"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Access Type",
+                    "type": "string",
+                    "name": "b3be36fc_982e_4597_9abc_713b8b319b83"
+                  },
+                  {
+                    "control_type": "date",
+                    "label": "Provisioning Date",
+                    "render_input": "date_conversion",
+                    "parse_output": "date_conversion",
+                    "type": "date",
+                    "name": "03321d77_74cc_470f_ae1c_d3d150f641f5"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Business Justification",
+                    "type": "string",
+                    "name": "3e919a1f_923d_4917_880c_dba94b275eb0"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Manager Name",
+                    "type": "string",
+                    "name": "fe0dc46b_281b_4c1f_abf7_5b78cd6bdff1"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Manager Comments",
+                    "type": "string",
+                    "name": "57c08fa0_4274_4073_9f5f_5b5409097d9b"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "App Owner Name",
+                    "type": "string",
+                    "name": "f4f81c2e_4967_4523_bebc_dc658bb5e8f9"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "App Owner Comments",
+                    "type": "string",
+                    "name": "2019e609_b373_45dd_a67e_725577cabdb7"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "User ID",
+                        "type": "string",
+                        "name": "id"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "User name",
+                        "type": "string",
+                        "name": "name"
+                      },
+                      {
+                        "control_type": "email",
+                        "label": "Email",
+                        "type": "string",
+                        "name": "email"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Status",
+                        "type": "string",
+                        "name": "status"
+                      },
+                      {
+                        "name": "user_groups",
+                        "type": "array",
+                        "of": "object",
+                        "label": "Groups",
+                        "properties": [
+                          {
+                            "control_type": "text",
+                            "label": "Group ID",
+                            "type": "string",
+                            "name": "id"
+                          },
+                          {
+                            "control_type": "text",
+                            "label": "Group name",
+                            "type": "string",
+                            "name": "name"
+                          }
+                        ]
+                      },
+                      {
+                        "control_type": "checkbox",
+                        "label": "Guest user",
+                        "toggle_hint": "Select from option list",
+                        "toggle_field": {
+                          "label": "Guest user",
+                          "control_type": "text",
+                          "toggle_hint": "Use custom value",
+                          "render_input": null,
+                          "parse_output": null,
+                          "type": "boolean",
+                          "name": "is_guest"
+                        },
+                        "type": "boolean",
+                        "name": "is_guest"
+                      }
+                    ],
+                    "label": "Created by",
+                    "type": "object",
+                    "name": "created_by"
+                  },
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "Stage ID",
+                        "type": "string",
+                        "name": "id"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Stage name",
+                        "type": "string",
+                        "name": "name"
+                      }
+                    ],
+                    "label": "Stage",
+                    "type": "object",
+                    "name": "stage"
+                  },
+                  {
+                    "control_type": "date_time",
+                    "label": "Created at",
+                    "render_input": "date_time_conversion",
+                    "parse_output": "date_time_conversion",
+                    "type": "date_time",
+                    "name": "a5612739_5401_4ae7_bd07_782c1a6fb2d1"
+                  },
+                  {
+                    "control_type": "date_time",
+                    "label": "Updated at",
+                    "render_input": "date_time_conversion",
+                    "parse_output": "date_time_conversion",
+                    "type": "date_time",
+                    "name": "61aae604_a95e_4519_9091_bb0bf754a67f"
+                  }
+                ],
+                "type": "object"
+              }
+            ],
+            "comment": "Request approval from App Owner. Update with actual app owner",
+            "uuid": "50f9a47b-48c1-471a-8ad1-2127bb3b699d",
+            "skip": true
+          },
+          {
+            "number": 7,
+            "provider": "workato_workflow_task",
+            "name": "change_workflow_stage",
+            "as": "7d4c2158",
+            "keyword": "action",
+            "dynamicPickListSelection": {
+              "workflow_stage_id": "Approved by Manager"
+            },
+            "toggleCfg": {
+              "workflow_stage_id": true
+            },
+            "input": {
+              "project_id": {
+                "zip_name": "application_access.lcap_app.json",
+                "name": "Application Access",
+                "folder": ""
+              },
+              "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"020fc9ca\",\"path\":[\"request\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
+              "workflow_stage_id": {
+                "name": "Approved by Manager"
+              }
+            },
+            "comment": "Update the Request stage as 'Approved by App Owner' and add rejection handling",
+            "uuid": "0fc4178e-4b67-4300-8649-ea06897de1f5"
+          },
+          {
+            "number": 8,
+            "provider": "workato_recipe_function",
+            "name": "call_recipe",
+            "as": "8b49e51d",
+            "keyword": "action",
+            "dynamicPickListSelection": {
+              "flow_id": "FUN 003 | Provision Access"
+            },
+            "input": {
+              "flow_id": "63564461",
+              "parameters": {
+                "profile": {
+                  "empNum": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"baeaf38c\",\"path\":[\"request\",\"e8483357_2dee_40e8_8cde_9e0902de0d4d\"]}')}",
+                  "managerId": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"d0e99048\",\"path\":[\"result\",\"Manager\",\"Id\"]}')}",
+                  "email": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"baeaf38c\",\"path\":[\"request\",\"f660d655_76a3_4917_92c4_1657327f8242\"]}')}",
+                  "firstName": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"baeaf38c\",\"path\":[\"request\",\"4ac80dac_1a56_44c5_b063_b471cc91c193\"]}').split(\" \").first()",
+                  "lastName": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"baeaf38c\",\"path\":[\"request\",\"4ac80dac_1a56_44c5_b063_b471cc91c193\"]}').split(\" \").last()"
+                },
+                "appName": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"baeaf38c\",\"path\":[\"request\",\"3f20c691_8d66_47ad_a934_f548edd133e8\"]}')}"
+              }
+            },
+            "extended_output_schema": [
+              {
+                "label": "Result",
+                "name": "result",
+                "properties": [
+                  {
+                    "control_type": "checkbox",
+                    "label": "Is success",
+                    "render_input": {
+                    },
+                    "parse_output": {
+                    },
+                    "toggle_hint": "Select from option list",
+                    "toggle_field": {
+                      "label": "Is success",
+                      "control_type": "text",
+                      "toggle_hint": "Use custom value",
+                      "name": "isSuccess",
+                      "type": "boolean",
+                      "optional": false
+                    },
+                    "name": "isSuccess",
+                    "type": "boolean",
+                    "optional": true
+                  }
+                ],
+                "type": "object"
+              }
+            ],
+            "extended_input_schema": [
+              {
+                "label": "Parameters",
+                "name": "parameters",
+                "properties": [
+                  {
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "Emp Num",
+                        "type": "string",
+                        "name": "empNum",
+                        "optional": true
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "First name",
+                        "type": "string",
+                        "name": "firstName"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Last name",
+                        "type": "string",
+                        "name": "lastName"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Mobile phone",
+                        "type": "string",
+                        "name": "mobilePhone",
+                        "optional": true
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Manager ID",
+                        "type": "string",
+                        "name": "managerId",
+                        "optional": true
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Title",
+                        "type": "string",
+                        "name": "title",
+                        "optional": true
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Email",
+                        "type": "string",
+                        "name": "email"
+                      }
+                    ],
+                    "label": "Profile",
+                    "type": "object",
+                    "name": "profile"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "App name",
+                    "name": "appName",
+                    "type": "string",
+                    "optional": false
+                  }
+                ],
+                "type": "object"
+              }
+            ],
+            "comment": "Provision access to the requested app",
+            "uuid": "2778e112-a837-44ff-b741-a31073741b20",
+            "skip": true
+          },
+          {
+            "number": 9,
+            "provider": "workato_workflow_task",
+            "name": "change_workflow_stage",
+            "as": "445cc4f7",
+            "keyword": "action",
+            "dynamicPickListSelection": {
+              "workflow_stage_id": "Access provisioned"
+            },
+            "toggleCfg": {
+              "workflow_stage_id": true
+            },
+            "input": {
+              "project_id": {
+                "zip_name": "application_access.lcap_app.json",
+                "name": "Application Access",
+                "folder": ""
+              },
+              "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"020fc9ca\",\"path\":[\"request\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
+              "workflow_stage_id": {
+                "name": "Access provisioned"
+              }
+            },
+            "comment": "Update the Request stage as 'Access Provisioned'",
+            "uuid": "3d83f0f7-dc39-4c11-9ac6-ef7201ad7016"
+          },
+          {
+            "number": 10,
+            "keyword": "else",
+            "input": {
+            },
+            "block": [
+              {
+                "number": 11,
+                "provider": "workato_workflow_task",
+                "name": "change_workflow_stage",
+                "as": "026a77f4",
+                "keyword": "action",
+                "dynamicPickListSelection": {
+                  "workflow_stage_id": "Canceled"
+                },
+                "toggleCfg": {
+                  "workflow_stage_id": true
+                },
+                "input": {
+                  "project_id": {
+                    "zip_name": "application_access.lcap_app.json",
+                    "name": "Application Access",
+                    "folder": ""
+                  },
+                  "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"020fc9ca\",\"path\":[\"request\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
+                  "workflow_stage_id": {
+                    "name": "Canceled"
+                  }
+                },
+                "comment": "Update the Request stage as 'Rejected by Manager'",
+                "uuid": "1b9f7bf4-4228-4fec-afaf-3cd802843af0"
+              },
+              {
+                "number": 12,
+                "provider": "logger",
+                "name": "log_message",
+                "as": "8316737a",
+                "keyword": "action",
+                "input": {
+                  "user_logs_enabled": "false",
+                  "message": "Request not approved"
+                },
+                "extended_input_schema": [
+                  {
+                    "control_type": "switch",
+                    "default": false,
+                    "disable_formula": true,
+                    "extends_schema": true,
+                    "hint": "                Send a copy of the message to Workato logs.\n                <a href=\"https://docs.workato.com/features/logging-service.html\" target=\"_blank\" class=\"ng-scope\">\n                  Learn more\n                </a>\n",
+                    "label": "Send to Workato log service",
+                    "name": "user_logs_enabled",
+                    "optional": true,
+                    "type": "string"
+                  }
+                ],
+                "comment": "Notify Requestor with Reason for rejection",
+                "uuid": "084d8619-6e3e-4f27-96c0-03437e9f1048",
+                "skip": false
+              }
+            ],
+            "comment": "Request rejected by Manager",
+            "uuid": "a3406ef6-df7a-4789-b0e6-77368c44bb65",
+            "skip": false
+          }
+        ],
+        "comment": "If approved by Manager",
+        "uuid": "9896bd80-a9ae-4bb8-b9d6-58008fafb720",
+        "skip": false
+      }
+    ],
+    "comment": "Triggers when there is a new request for Application Access",
+    "uuid": "33350252-c61b-4a8e-9d0b-d17ce7b6bbab",
+    "format_version": 2
+  },
+  "config": [
+    {
+      "keyword": "application",
+      "provider": "workato_workflow_task",
+      "skip_validation": false,
+      "account_id": null
+    },
+    {
+      "keyword": "application",
+      "provider": "logger",
+      "skip_validation": false,
+      "account_id": null
+    },
+    {
+      "keyword": "application",
+      "provider": "workato_recipe_function",
+      "skip_validation": true,
+      "account_id": null
+    }
+  ]
+}

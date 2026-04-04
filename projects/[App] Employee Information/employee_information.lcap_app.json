@@ -1,0 +1,23 @@
+{
+  "name": "Employee Information",
+  "creation_page": null,
+  "workato_db_table": null,
+  "workflow_stages": [
+
+  ],
+  "tabs": [
+    {
+      "name": "Home",
+      "kind": "user_defined",
+      "visibility": "all",
+      "page": {
+        "zip_name": "main.lcap_page.json",
+        "name": "Main",
+        "folder": ""
+      }
+    }
+  ],
+  "displayed_columns": [
+
+  ]
+}

@@ -1,0 +1,512 @@
+{
+  "name": "Review request (Finance)",
+  "path": "review-request-finance",
+  "content": {
+    "type": "common",
+    "maxWidth": "fixed",
+    "background": {
+      "style": "pattern",
+      "pattern": "light-1"
+    },
+    "variables": [
+
+    ],
+    "handlers": {
+      "pageLoad": null
+    },
+    "layout": [
+      1,
+      [
+        {
+          "type": "container",
+          "id": "a53ccc7f",
+          "name": "Main container",
+          "x": 1,
+          "width": 10,
+          "visible": true,
+          "layout": [
+            1,
+            [
+              {
+                "type": "text",
+                "id": "90ee5368",
+                "name": "Text 19 (2)",
+                "x": 0,
+                "width": 8,
+                "visible": true,
+                "text": "Review expense reimbursement details",
+                "alignment": "left",
+                "color": "#637a87",
+                "pillsSupportMarkdown": false,
+                "style": "paragraph"
+              },
+              0
+            ],
+            [
+              {
+                "type": "text",
+                "id": "0ba31ad5",
+                "name": "Text 6",
+                "x": 0,
+                "width": 8,
+                "visible": true,
+                "text": "# Expense reimbursement from #{_dp('{\"source\":\"request\",\"path\":[\"createdBy\",\"name\"]}')}",
+                "alignment": "left",
+                "color": "#24434f",
+                "pillsSupportMarkdown": false,
+                "style": "paragraph"
+              },
+              0
+            ],
+            [
+              {
+                "type": "button",
+                "id": "71039d74",
+                "name": "Button",
+                "x": 8,
+                "width": 4,
+                "visible": true,
+                "handlers": {
+                  "click": {
+                    "type": "open-webpage",
+                    "url": "#{_dp('{\"source\":\"request\",\"path\":[\"field\",\"711bb909-651a-402d-9029-579a78a16db9\"]}')}",
+                    "target": "_blank"
+                  }
+                },
+                "label": " #{_dp('{\"source\":\"request\",\"path\":[\"createdBy\",\"name\"]}')}'s profile",
+                "style": "outline",
+                "enabled": true
+              },
+              2
+            ],
+            [
+              {
+                "type": "text",
+                "id": "738e5047",
+                "name": "Text 6 (2)",
+                "x": 0,
+                "width": 8,
+                "visible": true,
+                "text": "## **Total: $#{_dp('{\"source\":\"request\",\"path\":[\"field\",\"4dae0673-9892-4a37-ad9d-989e8209e079\"]}')}**",
+                "alignment": "left",
+                "color": "#24434f",
+                "pillsSupportMarkdown": false,
+                "style": "paragraph"
+              },
+              0
+            ],
+            [
+              {
+                "type": "divider",
+                "id": "d9e98640",
+                "name": "Divider 14",
+                "x": 0,
+                "width": 12,
+                "visible": true,
+                "backgroundColor": "#ced5db"
+              },
+              0
+            ],
+            [
+              {
+                "type": "dropdown",
+                "id": "0dc7cd32",
+                "name": "Category",
+                "x": 0,
+                "width": 6,
+                "visible": true,
+                "dataSource": {
+                  "id": "Category",
+                  "type": "relation"
+                },
+                "editable": false,
+                "appFunctionOptions": null,
+                "validations": {
+                  "required": {
+                    "condition": false
+                  }
+                },
+                "handlers": {
+                  "change": null
+                },
+                "label": "Expense category",
+                "hint": "",
+                "placeholder": "Choose an option",
+                "options": [
+
+                ],
+                "dataSourceOptions": {
+                  "sortOrder": "asc",
+                  "sortByColumnId": null,
+                  "tableId": {
+                    "zip_name": "expense_categories.workato_db_table.json",
+                    "name": "Expense categories",
+                    "folder": ""
+                  },
+                  "fieldId": "50bb5dd5-50b7-4286-a8e1-96411405a3a4"
+                },
+                "labelDataSource": null,
+                "multiValue": false
+              },
+              0
+            ],
+            [
+              {
+                "type": "dropdown",
+                "id": "b9815b04",
+                "name": "Sub category 4",
+                "x": 6,
+                "width": 6,
+                "visible": [
+                  1,
+                  [
+                    13,
+                    "#{_dp('{\"source\":\"request\",\"path\":[\"field\",\"30d449b1-f36f-43b0-a666-68bc333a31fb\",\"label\"]}')}"
+                  ]
+                ],
+                "dataSource": {
+                  "id": "Sub category",
+                  "type": "relation"
+                },
+                "editable": false,
+                "appFunctionOptions": null,
+                "validations": {
+                  "required": {
+                    "condition": false
+                  }
+                },
+                "handlers": {
+                  "change": null
+                },
+                "label": "Subcategory",
+                "hint": "",
+                "placeholder": "Choose an option",
+                "options": [
+
+                ],
+                "dataSourceOptions": {
+                  "sortOrder": "asc",
+                  "sortByColumnId": null,
+                  "tableId": {
+                    "zip_name": "expense_subcategories.workato_db_table.json",
+                    "name": "Expense Subcategories",
+                    "folder": ""
+                  },
+                  "fieldId": "52da159e-6bed-4a84-a26a-e80021ad2642"
+                },
+                "labelDataSource": null,
+                "multiValue": false
+              },
+              0
+            ],
+            [
+              {
+                "type": "input",
+                "id": "0644cb09",
+                "name": "Expense description",
+                "x": 0,
+                "width": 12,
+                "visible": [
+                  1,
+                  [
+                    12,
+                    "#{_dp('{\"source\":\"request\",\"path\":[\"field\",\"178a4a80-4d73-4665-9dcb-f3283c8c9e8e\"]}')}"
+                  ]
+                ],
+                "dataSource": {
+                  "id": "Expense description",
+                  "type": "long-text"
+                },
+                "editable": false,
+                "validations": {
+                  "required": {
+                    "condition": false
+                  }
+                },
+                "label": "Expense description",
+                "hint": "",
+                "placeholder": "",
+                "textareaHeight": 64,
+                "style": "long-text"
+              },
+              0
+            ],
+            [
+              {
+                "type": "input",
+                "id": "45ffeb30",
+                "name": "Expense amount",
+                "x": 0,
+                "width": 6,
+                "visible": [
+                  1,
+                  [
+                    12,
+                    "#{_dp('{\"source\":\"request\",\"path\":[\"field\",\"178a4a80-4d73-4665-9dcb-f3283c8c9e8e\"]}')}"
+                  ]
+                ],
+                "dataSource": {
+                  "id": "Expense amount",
+                  "type": "number"
+                },
+                "editable": false,
+                "validations": {
+                  "required": {
+                    "condition": false
+                  }
+                },
+                "label": "Expense amount",
+                "hint": "Specify amount in ﹩",
+                "placeholder": "",
+                "style": "number"
+              },
+              0
+            ],
+            [
+              {
+                "type": "date",
+                "id": "ead693ad",
+                "name": "Expense date",
+                "x": 6,
+                "width": 6,
+                "visible": [
+                  1,
+                  [
+                    12,
+                    "#{_dp('{\"source\":\"request\",\"path\":[\"field\",\"178a4a80-4d73-4665-9dcb-f3283c8c9e8e\"]}')}"
+                  ]
+                ],
+                "dataSource": {
+                  "id": "Expense date",
+                  "type": "date"
+                },
+                "editable": false,
+                "validations": {
+                  "required": {
+                    "condition": false
+                  }
+                },
+                "handlers": {
+                  "change": null
+                },
+                "label": "Expense date",
+                "hint": "",
+                "style": "date"
+              },
+              0
+            ],
+            [
+              {
+                "type": "file",
+                "id": "b9fc03c7",
+                "name": "Total invoice",
+                "x": 0,
+                "width": 12,
+                "visible": [
+                  1,
+                  [
+                    13,
+                    "#{_dp('{\"source\":\"request\",\"path\":[\"field\",\"87409c3c-1bf7-4c69-8d6c-9f8b6195e7af\"]}')}"
+                  ],
+                  [
+                    12,
+                    "#{_dp('{\"source\":\"request\",\"path\":[\"field\",\"178a4a80-4d73-4665-9dcb-f3283c8c9e8e\"]}')}"
+                  ]
+                ],
+                "dataSource": {
+                  "id": "Total invoice",
+                  "type": "file"
+                },
+                "validations": {
+                  "required": {
+                    "condition": false
+                  },
+                  "fileSize": {
+                    "max": 10
+                  }
+                },
+                "label": "Total invoice",
+                "hint": "",
+                "mode": "download"
+              },
+              0
+            ],
+            [
+              {
+                "type": "table",
+                "id": "eefa5ab9",
+                "name": "Table",
+                "x": 0,
+                "width": 12,
+                "visible": [
+                  1,
+                  [
+                    11,
+                    "#{_dp('{\"source\":\"request\",\"path\":[\"field\",\"178a4a80-4d73-4665-9dcb-f3283c8c9e8e\"]}')}"
+                  ]
+                ],
+                "editable": false,
+                "appFunctionOptions": null,
+                "handlers": {
+                  "activeRow": null
+                },
+                "title": "Expense items",
+                "addRowButtonText": "Add record",
+                "displayedRowsCount": 10,
+                "allowRowCreation": true,
+                "allowRowDeletion": true,
+                "tableId": {
+                  "zip_name": "expense_items.workato_db_table.json",
+                  "name": "Expense items",
+                  "folder": ""
+                },
+                "relatedColumnId": "94a9b838-156f-427f-9159-2ed6fe78e9dc",
+                "columnsSettings": [
+                  {
+                    "id": "71a3389e-d393-4944-b784-a220b6a77f78",
+                    "visible": true,
+                    "readonly": false
+                  },
+                  {
+                    "id": "2eff8681-2beb-4b17-885c-48a9372c76f5",
+                    "visible": true,
+                    "readonly": false
+                  },
+                  {
+                    "id": "bbe539dd-b472-439f-9477-9be7ac709e01",
+                    "visible": true,
+                    "readonly": false
+                  },
+                  {
+                    "id": "67dff32a-29ad-4af6-8474-1203e216e13d",
+                    "visible": true,
+                    "readonly": false
+                  },
+                  {
+                    "id": "94a9b838-156f-427f-9159-2ed6fe78e9dc",
+                    "visible": false,
+                    "readonly": false
+                  }
+                ]
+              },
+              0
+            ],
+            [
+              {
+                "type": "text",
+                "id": "47aeea3b",
+                "name": "Text 74",
+                "x": 0,
+                "width": 12,
+                "visible": [
+                  1,
+                  [
+                    11,
+                    "#{_dp('{\"source\":\"request\",\"path\":[\"field\",\"178a4a80-4d73-4665-9dcb-f3283c8c9e8e\"]}')}"
+                  ]
+                ],
+                "text": "Total: **$#{_dp('{\"source\":\"request\",\"path\":[\"field\",\"4dae0673-9892-4a37-ad9d-989e8209e079\"]}')}**",
+                "alignment": "right",
+                "color": "#24434f",
+                "pillsSupportMarkdown": false,
+                "style": "paragraph"
+              },
+              0
+            ],
+            [
+              {
+                "type": "input",
+                "id": "6b56c595",
+                "name": "Review comments (Finance)",
+                "x": 0,
+                "width": 12,
+                "visible": true,
+                "dataSource": {
+                  "id": "Review comments (Finance)",
+                  "type": "long-text"
+                },
+                "editable": true,
+                "validations": {
+                  "required": {
+                    "condition": [
+                      1,
+                      [
+                        9,
+                        "#{_dp('{\"source\":\"request\",\"path\":[\"field\",\"4dae0673-9892-4a37-ad9d-989e8209e079\"]}')}",
+                        "1000"
+                      ]
+                    ]
+                  }
+                },
+                "label": "#{_dp('{\"source\":\"user\",\"path\":[\"name\"]}')}, provide comments",
+                "hint": "Required if total amount is > $1000",
+                "placeholder": "",
+                "textareaHeight": 112,
+                "style": "long-text"
+              },
+              0
+            ],
+            [
+              {
+                "type": "divider",
+                "id": "23af9d1f",
+                "name": "Divider 43",
+                "x": 0,
+                "width": 12,
+                "visible": true,
+                "backgroundColor": "#ced5db"
+              },
+              0
+            ],
+            [
+              {
+                "type": "button",
+                "id": "8120371a",
+                "name": "Approve",
+                "x": 0,
+                "width": 6,
+                "visible": true,
+                "handlers": {
+                  "click": {
+                    "type": "complete-task",
+                    "status": "approved",
+                    "statusLabel": ""
+                  }
+                },
+                "label": "Approve",
+                "style": "filled",
+                "enabled": true
+              },
+              0
+            ],
+            [
+              {
+                "type": "button",
+                "id": "e027b588",
+                "name": "Reject",
+                "x": 6,
+                "width": 6,
+                "visible": true,
+                "handlers": {
+                  "click": {
+                    "type": "complete-task",
+                    "status": "rejected",
+                    "statusLabel": ""
+                  }
+                },
+                "label": "Reject",
+                "style": "outline",
+                "enabled": true
+              },
+              0
+            ]
+          ],
+          "backgroundColor": "#ffffff",
+          "borderColor": "transparent",
+          "padding": "large"
+        },
+        0
+      ]
+    ]
+  }
+}

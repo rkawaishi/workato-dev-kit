@@ -1,0 +1,398 @@
+{
+  "name": "New request will assign a task to users and wait until completed",
+  "version": 1,
+  "private": true,
+  "concurrency": 1,
+  "code": {
+    "number": 0,
+    "provider": "workato_workflow_task",
+    "name": "new_requests_realtime",
+    "as": "new_requests_realtime",
+    "keyword": "trigger",
+    "input": {
+      "app_id": {
+        "zip_name": "generic_workflow_request.lcap_app.json",
+        "name": "Generic Workflow Request",
+        "folder": ""
+      }
+    },
+    "extended_output_schema": [
+      {
+        "label": "Request",
+        "name": "request",
+        "properties": [
+          {
+            "control_type": "text",
+            "label": "Record ID",
+            "type": "string",
+            "name": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
+          },
+          {
+            "control_type": "text",
+            "label": "Name",
+            "type": "string",
+            "name": "1266a4d9_37c4_480f_8f58_44a48872f9bb"
+          },
+          {
+            "control_type": "text",
+            "label": "Description",
+            "type": "string",
+            "name": "f34268fd_d480_4479_9f26_ac8ad1cf41d1"
+          },
+          {
+            "control_type": "text",
+            "label": "Review comments",
+            "type": "string",
+            "name": "2f74a857_06e6_47a1_ba27_16a164bbf0de"
+          },
+          {
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "User ID",
+                "type": "string",
+                "name": "id"
+              },
+              {
+                "control_type": "text",
+                "label": "User name",
+                "type": "string",
+                "name": "name"
+              },
+              {
+                "control_type": "email",
+                "label": "Email",
+                "type": "string",
+                "name": "email"
+              },
+              {
+                "control_type": "text",
+                "label": "Status",
+                "type": "string",
+                "name": "status"
+              },
+              {
+                "name": "user_groups",
+                "type": "array",
+                "of": "object",
+                "label": "Groups",
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Group ID",
+                    "type": "string",
+                    "name": "id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Group name",
+                    "type": "string",
+                    "name": "name"
+                  }
+                ]
+              },
+              {
+                "control_type": "checkbox",
+                "label": "Guest user",
+                "toggle_hint": "Select from option list",
+                "toggle_field": {
+                  "label": "Guest user",
+                  "control_type": "text",
+                  "toggle_hint": "Use custom value",
+                  "render_input": null,
+                  "parse_output": null,
+                  "type": "boolean",
+                  "name": "is_guest"
+                },
+                "type": "boolean",
+                "name": "is_guest"
+              }
+            ],
+            "label": "Created by",
+            "type": "object",
+            "name": "created_by"
+          },
+          {
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Stage ID",
+                "type": "string",
+                "name": "id"
+              },
+              {
+                "control_type": "text",
+                "label": "Stage name",
+                "type": "string",
+                "name": "name"
+              }
+            ],
+            "label": "Stage",
+            "type": "object",
+            "name": "stage"
+          },
+          {
+            "control_type": "date_time",
+            "label": "Created at",
+            "render_input": "date_time_conversion",
+            "parse_output": "date_time_conversion",
+            "type": "date_time",
+            "name": "a5612739_5401_4ae7_bd07_782c1a6fb2d1"
+          },
+          {
+            "control_type": "date_time",
+            "label": "Updated at",
+            "render_input": "date_time_conversion",
+            "parse_output": "date_time_conversion",
+            "type": "date_time",
+            "name": "61aae604_a95e_4519_9091_bb0bf754a67f"
+          }
+        ],
+        "type": "object"
+      }
+    ],
+    "block": [
+      {
+        "number": 1,
+        "provider": "workato_workflow_task",
+        "name": "human_review_on_existing_record",
+        "as": "human_review_on_existing_record",
+        "keyword": "action",
+        "toggleCfg": {
+          "send_email_notification": true,
+          "reassignable": true,
+          "workflow_stage_id": true,
+          "due_in_days": true
+        },
+        "input": {
+          "app_id": {
+            "zip_name": "generic_workflow_request.lcap_app.json",
+            "name": "Generic Workflow Request",
+            "folder": ""
+          },
+          "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
+          "name": "Review #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"1266a4d9_37c4_480f_8f58_44a48872f9bb\"]}')}",
+          "email": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"created_by\",\"email\"]}')}",
+          "workflow_stage_id": {
+            "name": "In progress"
+          },
+          "due_in_days": "14",
+          "send_email_notification": "true",
+          "reassignable": "true"
+        },
+        "extended_output_schema": [
+          {
+            "label": "Record",
+            "name": "record",
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Record ID",
+                "type": "string",
+                "name": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
+              },
+              {
+                "control_type": "text",
+                "label": "Name",
+                "type": "string",
+                "name": "1266a4d9_37c4_480f_8f58_44a48872f9bb"
+              },
+              {
+                "control_type": "text",
+                "label": "Description",
+                "type": "string",
+                "name": "f34268fd_d480_4479_9f26_ac8ad1cf41d1"
+              },
+              {
+                "control_type": "text",
+                "label": "Review comments",
+                "type": "string",
+                "name": "2f74a857_06e6_47a1_ba27_16a164bbf0de"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "User ID",
+                    "type": "string",
+                    "name": "id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "User name",
+                    "type": "string",
+                    "name": "name"
+                  },
+                  {
+                    "control_type": "email",
+                    "label": "Email",
+                    "type": "string",
+                    "name": "email"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Status",
+                    "type": "string",
+                    "name": "status"
+                  },
+                  {
+                    "name": "user_groups",
+                    "type": "array",
+                    "of": "object",
+                    "label": "Groups",
+                    "properties": [
+                      {
+                        "control_type": "text",
+                        "label": "Group ID",
+                        "type": "string",
+                        "name": "id"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Group name",
+                        "type": "string",
+                        "name": "name"
+                      }
+                    ]
+                  },
+                  {
+                    "control_type": "checkbox",
+                    "label": "Guest user",
+                    "toggle_hint": "Select from option list",
+                    "toggle_field": {
+                      "label": "Guest user",
+                      "control_type": "text",
+                      "toggle_hint": "Use custom value",
+                      "render_input": null,
+                      "parse_output": null,
+                      "type": "boolean",
+                      "name": "is_guest"
+                    },
+                    "type": "boolean",
+                    "name": "is_guest"
+                  }
+                ],
+                "label": "Created by",
+                "type": "object",
+                "name": "created_by"
+              },
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Stage ID",
+                    "type": "string",
+                    "name": "id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Stage name",
+                    "type": "string",
+                    "name": "name"
+                  }
+                ],
+                "label": "Stage",
+                "type": "object",
+                "name": "stage"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Created at",
+                "render_input": "date_time_conversion",
+                "parse_output": "date_time_conversion",
+                "type": "date_time",
+                "name": "a5612739_5401_4ae7_bd07_782c1a6fb2d1"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Updated at",
+                "render_input": "date_time_conversion",
+                "parse_output": "date_time_conversion",
+                "type": "date_time",
+                "name": "61aae604_a95e_4519_9091_bb0bf754a67f"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "uuid": "1f0efa8c-45fa-4dab-a9d8-c6d94fae1bc9"
+      },
+      {
+        "number": 2,
+        "as": "077e5a13",
+        "keyword": "if",
+        "input": {
+          "type": "compound",
+          "operand": "and",
+          "conditions": [
+            {
+              "operand": "is_true",
+              "lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"human_review_on_existing_record\",\"path\":[\"task\",\"is_approved\"]}')}",
+              "rhs": "",
+              "uuid": "condition-d8e5ae23-8efa-4a2f-89d8-c716f59272c6"
+            }
+          ]
+        },
+        "block": [
+          {
+            "number": 3,
+            "provider": "workato_workflow_task",
+            "name": "change_workflow_stage",
+            "as": "2a1f4907",
+            "keyword": "action",
+            "input": {
+              "project_id": {
+                "zip_name": "generic_workflow_request.lcap_app.json",
+                "name": "Generic Workflow Request",
+                "folder": ""
+              },
+              "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"human_review_on_existing_record\",\"path\":[\"record\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
+              "workflow_stage_id": {
+                "name": "Done"
+              }
+            },
+            "uuid": "d099c77d-48da-4db8-9209-585ccb2d00df"
+          },
+          {
+            "number": 4,
+            "as": "ffe6c44a",
+            "keyword": "else",
+            "block": [
+              {
+                "number": 5,
+                "provider": "workato_workflow_task",
+                "name": "change_workflow_stage",
+                "as": "558efe32",
+                "keyword": "action",
+                "input": {
+                  "project_id": {
+                    "zip_name": "generic_workflow_request.lcap_app.json",
+                    "name": "Generic Workflow Request",
+                    "folder": ""
+                  },
+                  "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"human_review_on_existing_record\",\"path\":[\"record\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
+                  "workflow_stage_id": {
+                    "name": "Canceled"
+                  }
+                },
+                "uuid": "08428e98-662b-49f8-8b42-ff5d07f901d1"
+              }
+            ],
+            "uuid": "dd99a5a6-e36e-41d7-83d6-aff7cfe3e3c8"
+          }
+        ],
+        "uuid": "18fd8b53-8068-4337-81ce-d1d68dd955fc"
+      }
+    ],
+    "uuid": "e7250019-1eed-478c-8f6e-193d9432faa6",
+    "format_version": 2
+  },
+  "config": [
+    {
+      "keyword": "application",
+      "provider": "workato_workflow_task",
+      "skip_validation": false,
+      "account_id": null
+    }
+  ]
+}

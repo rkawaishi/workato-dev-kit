@@ -1,0 +1,401 @@
+{
+  "name": "FNC 002 | Get Application Owner",
+  "description": "When there is a function call, do action and other actions",
+  "version": 1,
+  "private": true,
+  "concurrency": 1,
+  "code": {
+    "number": 0,
+    "provider": "workato_recipe_function",
+    "name": "execute",
+    "as": "9efd3b97",
+    "keyword": "trigger",
+    "input": {
+      "parameters_schema_json": "[{\"name\":\"AppName\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"App name\"}]",
+      "result_schema_json": "[{\"properties\":[{\"control_type\":\"text\",\"label\":\"ID\",\"type\":\"string\",\"name\":\"Id\"},{\"control_type\":\"text\",\"label\":\"Name\",\"type\":\"string\",\"name\":\"Name\"},{\"control_type\":\"text\",\"label\":\"Email\",\"type\":\"string\",\"name\":\"Email\"},{\"control_type\":\"text\",\"label\":\"Phone\",\"type\":\"string\",\"name\":\"Phone\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"Department\",\"type\":\"string\",\"name\":\"Department\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"Job title\",\"type\":\"string\",\"name\":\"JobTitle\",\"optional\":true}],\"label\":\"AppOwner\",\"type\":\"object\",\"name\":\"AppOwner\"}]"
+    },
+    "extended_output_schema": [
+      {
+        "label": "Parameters",
+        "name": "parameters",
+        "properties": [
+          {
+            "control_type": "text",
+            "label": "App name",
+            "name": "AppName",
+            "type": "string",
+            "optional": false
+          }
+        ],
+        "type": "object"
+      }
+    ],
+    "block": [
+      {
+        "number": 1,
+        "provider": "workato_db_table",
+        "name": "get_records",
+        "as": "bdcb9150",
+        "keyword": "action",
+        "dynamicPickListSelection": {
+          "table_id": "Applications and Owners",
+          "filters.0.field_id": "Application"
+        },
+        "input": {
+          "order_direction": "asc",
+          "limit": "100",
+          "table_id": {
+            "zip_name": "applications_and_owners.workato_db_table.json",
+            "name": "Applications and Owners",
+            "folder": ""
+          },
+          "11fbe9a6-a16d-4d7e-86ea-afe42ec03005": "id",
+          "a5612739-5401-4ae7-bd07-782c1a6fb2d1": "date_time",
+          "61aae604-a95e-4519-9091-bb0bf754a67f": "date_time",
+          "filters": [
+            {
+              "op_default": "eq",
+              "value_default": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"9efd3b97\",\"path\":[\"parameters\",\"AppName\"]}')}",
+              "field_id": "20588582-86a4-4e3e-bf56-1a42078f3420"
+            }
+          ],
+          "20588582-86a4-4e3e-bf56-1a42078f3420": "string",
+          "df96ad44-21ca-4390-8127-06cc77678e4a": "string",
+          "d2567845-70b5-4ddd-a161-95dbb9f7187d": "string",
+          "c349f3a9-a394-472b-a67e-2e73ae0b0dcb": "string",
+          "40f22a87-e8bc-4b33-bebe-fb31cc15c52d": "string",
+          "da26d523-b767-44fb-86f6-762fde7da914": "boolean",
+          "e56fefe8-283a-45cd-ade9-e8458f99a0ff": "integer"
+        },
+        "extended_output_schema": [
+          {
+            "label": "Records",
+            "name": "records",
+            "of": "object",
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Record ID",
+                "type": "string",
+                "name": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
+              },
+              {
+                "control_type": "text",
+                "label": "Application",
+                "type": "string",
+                "name": "20588582_86a4_4e3e_bf56_1a42078f3420"
+              },
+              {
+                "control_type": "text",
+                "label": "Owner Name",
+                "type": "string",
+                "name": "df96ad44_21ca_4390_8127_06cc77678e4a"
+              },
+              {
+                "control_type": "text",
+                "label": "Owner Email",
+                "type": "string",
+                "name": "d2567845_70b5_4ddd_a161_95dbb9f7187d"
+              },
+              {
+                "control_type": "text",
+                "label": "Employee ID",
+                "type": "string",
+                "name": "c349f3a9_a394_472b_a67e_2e73ae0b0dcb"
+              },
+              {
+                "control_type": "text",
+                "label": "Department",
+                "type": "string",
+                "name": "40f22a87_e8bc_4b33_bebe_fb31cc15c52d"
+              },
+              {
+                "control_type": "checkbox",
+                "label": "Supports tickets/cases?",
+                "toggle_hint": "Select from option list",
+                "toggle_field": {
+                  "label": "Supports tickets/cases?",
+                  "control_type": "text",
+                  "toggle_hint": "Use custom value",
+                  "render_input": null,
+                  "parse_output": null,
+                  "type": "boolean",
+                  "name": "da26d523_b767_44fb_86f6_762fde7da914"
+                },
+                "type": "boolean",
+                "name": "da26d523_b767_44fb_86f6_762fde7da914"
+              },
+              {
+                "control_type": "number",
+                "label": "Index",
+                "parse_output": "integer_conversion",
+                "type": "integer",
+                "name": "e56fefe8_283a_45cd_ade9_e8458f99a0ff"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Created at",
+                "render_input": "date_time_conversion",
+                "parse_output": "date_time_conversion",
+                "type": "date_time",
+                "name": "a5612739_5401_4ae7_bd07_782c1a6fb2d1"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Updated at",
+                "render_input": "date_time_conversion",
+                "parse_output": "date_time_conversion",
+                "type": "date_time",
+                "name": "61aae604_a95e_4519_9091_bb0bf754a67f"
+              }
+            ],
+            "type": "array"
+          },
+          {
+            "control_type": "text",
+            "label": "Next Page Token",
+            "name": "continuation_token",
+            "type": "string"
+          }
+        ],
+        "extended_input_schema": [
+          {
+            "control_type": "text",
+            "default": "string",
+            "label": "$internal_value_20588582-86a4-4e3e-bf56-1a42078f3420",
+            "name": "20588582-86a4-4e3e-bf56-1a42078f3420",
+            "ngIf": "false",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "control_type": "text",
+            "default": "string",
+            "label": "$internal_value_df96ad44-21ca-4390-8127-06cc77678e4a",
+            "name": "df96ad44-21ca-4390-8127-06cc77678e4a",
+            "ngIf": "false",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "control_type": "text",
+            "default": "string",
+            "label": "$internal_value_d2567845-70b5-4ddd-a161-95dbb9f7187d",
+            "name": "d2567845-70b5-4ddd-a161-95dbb9f7187d",
+            "ngIf": "false",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "control_type": "text",
+            "default": "string",
+            "label": "$internal_value_c349f3a9-a394-472b-a67e-2e73ae0b0dcb",
+            "name": "c349f3a9-a394-472b-a67e-2e73ae0b0dcb",
+            "ngIf": "false",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "control_type": "text",
+            "default": "string",
+            "label": "$internal_value_40f22a87-e8bc-4b33-bebe-fb31cc15c52d",
+            "name": "40f22a87-e8bc-4b33-bebe-fb31cc15c52d",
+            "ngIf": "false",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "control_type": "text",
+            "default": "boolean",
+            "label": "$internal_value_da26d523-b767-44fb-86f6-762fde7da914",
+            "name": "da26d523-b767-44fb-86f6-762fde7da914",
+            "ngIf": "false",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "control_type": "text",
+            "default": "integer",
+            "label": "$internal_value_e56fefe8-283a-45cd-ade9-e8458f99a0ff",
+            "name": "e56fefe8-283a-45cd-ade9-e8458f99a0ff",
+            "ngIf": "false",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "control_type": "text",
+            "default": "id",
+            "label": "$internal_value_11fbe9a6-a16d-4d7e-86ea-afe42ec03005",
+            "name": "11fbe9a6-a16d-4d7e-86ea-afe42ec03005",
+            "ngIf": "false",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "control_type": "text",
+            "default": "date_time",
+            "label": "$internal_value_a5612739-5401-4ae7-bd07-782c1a6fb2d1",
+            "name": "a5612739-5401-4ae7-bd07-782c1a6fb2d1",
+            "ngIf": "false",
+            "optional": true,
+            "type": "string"
+          },
+          {
+            "control_type": "text",
+            "default": "date_time",
+            "label": "$internal_value_61aae604-a95e-4519-9091-bb0bf754a67f",
+            "name": "61aae604-a95e-4519-9091-bb0bf754a67f",
+            "ngIf": "false",
+            "optional": true,
+            "type": "string"
+          }
+        ],
+        "uuid": "e849e389-94a9-402e-9b54-6c470f2b3eb2"
+      },
+      {
+        "number": 2,
+        "provider": "workato_recipe_function",
+        "name": "return_result",
+        "as": "40be913b",
+        "keyword": "action",
+        "input": {
+          "result": {
+            "AppOwner": {
+              "Email": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"bdcb9150\",\"path\":[\"records\",{\"path_element_type\":\"current_item\"},\"d2567845_70b5_4ddd_a161_95dbb9f7187d\"]}')}",
+              "Department": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"bdcb9150\",\"path\":[\"records\",{\"path_element_type\":\"current_item\"},\"40f22a87_e8bc_4b33_bebe_fb31cc15c52d\"]}')}",
+              "Id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"bdcb9150\",\"path\":[\"records\",{\"path_element_type\":\"current_item\"},\"c349f3a9_a394_472b_a67e_2e73ae0b0dcb\"]}')}",
+              "Name": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"bdcb9150\",\"path\":[\"records\",{\"path_element_type\":\"current_item\"},\"df96ad44_21ca_4390_8127_06cc77678e4a\"]}')}"
+            }
+          }
+        },
+        "extended_output_schema": [
+          {
+            "label": "Result",
+            "name": "result",
+            "properties": [
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "ID",
+                    "type": "string",
+                    "name": "Id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Name",
+                    "type": "string",
+                    "name": "Name"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Email",
+                    "type": "string",
+                    "name": "Email"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Phone",
+                    "type": "string",
+                    "name": "Phone",
+                    "optional": true
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Department",
+                    "type": "string",
+                    "name": "Department",
+                    "optional": true
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Job title",
+                    "type": "string",
+                    "name": "JobTitle",
+                    "optional": true
+                  }
+                ],
+                "label": "AppOwner",
+                "type": "object",
+                "name": "AppOwner"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "extended_input_schema": [
+          {
+            "label": "Result",
+            "name": "result",
+            "properties": [
+              {
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "ID",
+                    "type": "string",
+                    "name": "Id"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Name",
+                    "type": "string",
+                    "name": "Name"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Email",
+                    "type": "string",
+                    "name": "Email"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Phone",
+                    "type": "string",
+                    "name": "Phone",
+                    "optional": true
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Department",
+                    "type": "string",
+                    "name": "Department",
+                    "optional": true
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Job title",
+                    "type": "string",
+                    "name": "JobTitle",
+                    "optional": true
+                  }
+                ],
+                "label": "AppOwner",
+                "type": "object",
+                "name": "AppOwner"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "uuid": "5ca73346-e61f-4f4a-85cc-72525fc8e84b"
+      }
+    ],
+    "uuid": "b4b3c217-e4a1-4ef8-8a2d-e12036be7283",
+    "format_version": 2
+  },
+  "config": [
+    {
+      "keyword": "application",
+      "provider": "workato_recipe_function",
+      "skip_validation": false,
+      "account_id": null
+    },
+    {
+      "keyword": "application",
+      "provider": "workato_db_table",
+      "skip_validation": false,
+      "account_id": null
+    }
+  ]
+}
