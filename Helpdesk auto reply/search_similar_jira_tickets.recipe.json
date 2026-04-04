@@ -1,0 +1,71 @@
+{
+  "name": "Search similar Jira tickets",
+  "description": "Genie スキル: 問い合わせテキストから Jira の類似チケットを検索し、チケット情報（タイトル、説明、コメント、ステータス）を返す。",
+  "version": 1,
+  "private": true,
+  "concurrency": 1,
+  "code": {
+    "number": 0,
+    "provider": "workato_genie",
+    "name": "start_workflow",
+    "as": "a7c3e1f9",
+    "keyword": "trigger",
+    "input": {
+      "requires_user_confirmation": "false",
+      "description": "Run this Skill when a user inquiry needs to be matched against existing Jira tickets.\n\nSearch for similar past tickets based on the inquiry text, and return ticket details including title, description, comments, and resolution status.",
+      "parameters_schema_json": "[{\"name\":\"inquiry_text\",\"type\":\"string\",\"optional\":false,\"hint\":\"The user inquiry text from Slack message to search similar tickets for\",\"control_type\":\"text\",\"label\":\"Inquiry text\"}]",
+      "result_schema_json": "[{\"name\":\"response\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Response\"}]"
+    },
+    "extended_output_schema": null,
+    "block": [
+      {
+        "number": 1,
+        "provider": "jira",
+        "name": "search_issues",
+        "as": "b8d4f2e0",
+        "keyword": "action",
+        "input": {
+          "jql": "text ~ \"#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_genie\",\"line\":\"a7c3e1f9\",\"path\":[\"inquiry_text\"]}')}\" ORDER BY updated DESC",
+          "max_results": "5"
+        },
+        "comment": "問い合わせテキストをキーワードに Jira で類似チケットを全文検索。上位5件を取得。",
+        "uuid": "1a2b3c4d-5e6f-4a7b-8c9d-1a2b3c4d5e6f"
+      },
+      {
+        "number": 2,
+        "provider": "workato_genie",
+        "name": "workflow_return_result",
+        "as": "c9e5f3d1",
+        "keyword": "action",
+        "input": {
+          "response": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"jira\",\"line\":\"b8d4f2e0\",\"path\":[\"issues\"]}')}"
+        },
+        "extended_output_schema": null,
+        "extended_input_schema": null,
+        "comment": "検索結果を Genie に返す。Genie が結果を分析して一次回答を生成する。",
+        "uuid": "2b3c4d5e-6f7a-4b8c-9d0e-2b3c4d5e6f7a"
+      }
+    ],
+    "comment": "Jira チケット検索スキル",
+    "uuid": "3c4d5e6f-7a8b-4c9d-0e1f-3c4d5e6f7a8b",
+    "param": {
+    }
+  },
+  "config": [
+    {
+      "keyword": "application",
+      "provider": "workato_genie",
+      "account_id": null
+    },
+    {
+      "keyword": "application",
+      "provider": "jira",
+      "account_id": {
+        "zip_name": "helpdesk_jira.connection.json",
+        "name": "Helpdesk | Jira",
+        "folder": ""
+      },
+      "skip_validation": false
+    }
+  ]
+}

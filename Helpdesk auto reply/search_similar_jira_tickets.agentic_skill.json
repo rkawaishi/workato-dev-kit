@@ -1,0 +1,14 @@
+{
+  "name": "Search similar Jira tickets",
+  "trigger_description": "Run this Skill when a user inquiry needs to be matched against existing Jira tickets.\n\nSearch for similar past tickets based on the inquiry text, and return ticket details including title, description, comments, and resolution status.",
+  "references": {
+    "recipe_id": {
+      "type": "recipe",
+      "id": {
+        "zip_name": "search_similar_jira_tickets.recipe.json",
+        "name": "Search similar Jira tickets",
+        "folder": ""
+      }
+    }
+  }
+}

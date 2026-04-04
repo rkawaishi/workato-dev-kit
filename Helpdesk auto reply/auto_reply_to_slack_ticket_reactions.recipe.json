@@ -445,31 +445,23 @@
       },
       {
         "number": 2,
-        "provider": "jira",
-        "name": "search_issues",
-        "as": "search_issues",
+        "provider": "workato_genie",
+        "name": "ask_genie",
+        "as": "e3f7a2b9",
         "keyword": "action",
         "input": {
+          "genie_id": {
+            "zip_name": "helpdesk_search_agent.agentic_genie.json",
+            "name": "Helpdesk search agent",
+            "folder": ""
+          },
+          "question": "以下の問い合わせについて、類似する過去の Jira チケットを検索し、一次回答を作成してください。\n\n問い合わせ内容:\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"4cc84584\",\"path\":[\"messages\",{\"path_element_type\":\"current_item\"},\"text\"]}')}"
         },
-        "comment": "メッセージ内容をキーワードに Jira で類似チケットを検索（JQL のテキスト検索）。max_results で上位5件に絞る",
+        "comment": "Helpdesk search agent（Genie）を呼び出し、Jira 検索と一次回答生成を AI エージェントに委任する",
         "uuid": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e"
       },
       {
         "number": 3,
-        "provider": "open_ai_utility",
-        "name": "analyse_document",
-        "as": "analyse_document",
-        "keyword": "action",
-        "input": {
-          "_settings_version": "2",
-          "text": "## 問い合わせ内容\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack\",\"line\":\"get_message\",\"path\":[\"text\"]}')}\n\n## 類似チケット検索結果\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"jira\",\"line\":\"search_issues\",\"path\":[\"issues\"]}')}",
-          "question": "あなたは社内ヘルプデスクの一次対応アシスタントです。\n\n上記の「問い合わせ内容」に対して、「類似チケット検索結果」の過去チケット情報（タイトル、説明、コメント、解決方法）を参考にして一次回答を作成してください。\n\nルール:\n- 丁寧で簡潔な日本語で回答する\n- 過去の類似チケットで解決済みの内容があれば、その解決方法を案内する\n- 確信が持てない場合は「担当者に確認中です」と添える\n- 回答の末尾に参考にしたチケット番号を記載する\n- 回答は Slack メッセージとして読みやすいフォーマットにする"
-        },
-        "comment": "AI が過去の類似チケット情報を分析し、一次回答のドラフトを生成する",
-        "uuid": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f"
-      },
-      {
-        "number": 4,
         "provider": "slack_bot",
         "name": "post_bot_message",
         "as": "64c48bb1",
@@ -479,7 +471,7 @@
         },
         "input": {
           "channel": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"fd6582a2\",\"path\":[\"reaction_added\",\"item\",\"channel\"]}')}",
-          "text": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"open_ai_utility\",\"line\":\"analyse_document\",\"path\":[\"response\"]}')}",
+          "text": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_genie\",\"line\":\"e3f7a2b9\",\"path\":[\"response\"]}')}",
           "advanced": {
             "thread_ts": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"fd6582a2\",\"path\":[\"reaction_added\",\"event_ts\"]}')}"
           }
@@ -605,26 +597,6 @@
   "config": [
     {
       "keyword": "application",
-      "provider": "jira",
-      "skip_validation": false,
-      "account_id": {
-        "zip_name": "helpdesk_jira.connection.json",
-        "name": "Helpdesk | Jira",
-        "folder": ""
-      }
-    },
-    {
-      "keyword": "application",
-      "provider": "open_ai_utility",
-      "skip_validation": false,
-      "account_id": {
-        "zip_name": "helpdesk_ai_by_workato.connection.json",
-        "name": "Helpdesk | AI by Workato",
-        "folder": ""
-      }
-    },
-    {
-      "keyword": "application",
       "provider": "slack_bot",
       "skip_validation": false,
       "account_id": {
@@ -632,6 +604,11 @@
         "name": "Helpdesk | Workbot for Slack",
         "folder": ""
       }
+    },
+    {
+      "keyword": "application",
+      "provider": "workato_genie",
+      "account_id": null
     }
   ]
 }
