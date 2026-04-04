@@ -30,6 +30,9 @@ Workato (エンタープライズ iPaaS) の自動化開発を Claude Code / Cur
       api-platform.md        # API Platform（エンドポイント公開、認証、プロキシ）
       insights.md            # Insights（データ可視化・分析）
       data-orchestration.md  # Data Orchestration（ETL/ELT パイプライン）
+      workbot.md             # Workbot（Slack/Teams チャットボットフレームワーク）
+      agent-studio.md        # Agent Studio（Genie AI エージェント構築）
+      mcp.md                 # MCP（Model Context Protocol、AI ↔ 外部ツール接続）
     connectors/              # コネクタナレッジ
       _index.md              # 全コネクタ一覧 + 分類（Pre-built/Universal/Community/Custom）
       slack.md               # Slack + Workbot for Slack
