@@ -15,6 +15,7 @@
 - `line`: ステップの `as` 値
 - `path`: フィールドパス配列。リストの現在アイテムは `{"path_element_type":"current_item"}`
 
+
 ```ruby
 #{_('data.provider.step.field')}                    # ドット記法
 =_('data.provider.step.list').pluck('f').join(', ') # Ruby式

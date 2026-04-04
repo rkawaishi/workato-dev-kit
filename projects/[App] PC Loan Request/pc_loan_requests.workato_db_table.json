@@ -29,8 +29,8 @@
       "read_only": false,
       "hidden": false,
       "required": true,
-      "hint": "Windows / Mac / Linux",
-      "metadata": {}
+      "metadata": {
+      }
     },
     {
       "id": "b1a2c3d4-e5f6-4a7b-8c9d-100000000002",
@@ -39,7 +39,8 @@
       "read_only": false,
       "hidden": false,
       "required": true,
-      "metadata": {}
+      "metadata": {
+      }
     },
     {
       "id": "b1a2c3d4-e5f6-4a7b-8c9d-100000000003",
@@ -48,7 +49,8 @@
       "read_only": false,
       "hidden": false,
       "required": false,
-      "metadata": {}
+      "metadata": {
+      }
     },
     {
       "id": "b1a2c3d4-e5f6-4a7b-8c9d-100000000004",
@@ -57,7 +59,8 @@
       "read_only": false,
       "hidden": false,
       "required": false,
-      "metadata": {}
+      "metadata": {
+      }
     },
     {
       "id": "b1a2c3d4-e5f6-4a7b-8c9d-100000000005",
@@ -66,7 +69,8 @@
       "read_only": false,
       "hidden": false,
       "required": false,
-      "metadata": {}
+      "metadata": {
+      }
     }
   ],
   "project_name": "[App] PC Loan Request"

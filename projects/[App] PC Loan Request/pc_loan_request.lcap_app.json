@@ -1,10 +1,6 @@
 {
   "name": "PC Loan Request",
-  "creation_page": {
-    "zip_name": "submit_pc_loan_request.lcap_page.json",
-    "name": "Submit PC loan request",
-    "folder": ""
-  },
+  "creation_page": null,
   "workato_db_table": {
     "zip_name": "pc_loan_requests.workato_db_table.json",
     "name": "PC Loan Requests",
@@ -17,50 +13,46 @@
     },
     {
       "name": "Manager review",
-      "color": 1,
-      "task_page": {
-        "zip_name": "review_pc_loan_request.lcap_page.json",
-        "name": "Review PC loan request",
-        "folder": ""
-      },
-      "details_page": {
-        "zip_name": "request_details.lcap_page.json",
-        "name": "Request details",
-        "folder": ""
-      }
+      "color": 1
     },
     {
       "name": "Done",
-      "color": 2,
-      "details_page": {
-        "zip_name": "approved_page.lcap_page.json",
-        "name": "Approved page",
-        "folder": ""
-      }
+      "color": 2
     },
     {
       "name": "Canceled",
-      "color": 3,
-      "details_page": {
-        "zip_name": "rejected_page.lcap_page.json",
-        "name": "Rejected page",
-        "folder": ""
-      }
+      "color": 3
     }
   ],
   "tabs": [
     {
-      "name": "New request",
+      "name": "Home",
+      "kind": "user_defined",
+      "visibility": "all",
+      "page": {
+        "zip_name": "blank_page.lcap_page.json",
+        "name": "Blank page",
+        "folder": ""
+      }
+    },
+    {
+      "name": "Workflow requests",
       "kind": "new_request",
       "visibility": "all"
     }
   ],
   "displayed_columns": [
-    { "id": "CURRENT_STAGE", "visibility": "all" },
-    { "id": "ASSIGNED_TO", "visibility": "all" },
-    { "id": "CREATED_BY", "visibility": "all" },
-    { "id": "b1a2c3d4-e5f6-4a7b-8c9d-100000000001", "visibility": "all" },
-    { "id": "b1a2c3d4-e5f6-4a7b-8c9d-100000000002", "visibility": "all" },
-    { "id": "b1a2c3d4-e5f6-4a7b-8c9d-100000000003", "visibility": "all" }
+    {
+      "id": "CURRENT_STAGE",
+      "visibility": "all"
+    },
+    {
+      "id": "ASSIGNED_TO",
+      "visibility": "all"
+    },
+    {
+      "id": "CREATED_BY",
+      "visibility": "all"
+    }
   ]
 }

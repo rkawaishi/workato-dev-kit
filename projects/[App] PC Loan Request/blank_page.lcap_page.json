@@ -1,0 +1,21 @@
+{
+  "name": "Blank page",
+  "path": "blank-page",
+  "content": {
+    "type": "common",
+    "maxWidth": "fixed",
+    "background": {
+      "style": "color",
+      "color": "#fafbfc"
+    },
+    "variables": [
+
+    ],
+    "handlers": {
+      "pageLoad": null
+    },
+    "layout": [
+      1
+    ]
+  }
+}
