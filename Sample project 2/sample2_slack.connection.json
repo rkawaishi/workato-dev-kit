@@ -1,0 +1,5 @@
+{
+  "name": "Sample2 | Slack",
+  "provider": "slack",
+  "root_folder": false
+}

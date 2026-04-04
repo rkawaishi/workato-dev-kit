@@ -1,0 +1,14 @@
+{
+  "name": "Update Contract in Salesforce",
+  "trigger_description": "Use this Skill when a user query involves the analysis of a given contract, or contracts.\n\nSearch for the referenced contract, or contracts, and then perform analysis of the contents of the contract.\n\nIdentify key clauses and liability.",
+  "references": {
+    "recipe_id": {
+      "type": "recipe",
+      "id": {
+        "zip_name": "update_contract_in_salesforce.recipe.json",
+        "name": "Update Contract in Salesforce",
+        "folder": ""
+      }
+    }
+  }
+}
