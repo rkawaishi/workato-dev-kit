@@ -1,1 +1,6 @@
 .workatoenv
+
+# Connector SDK secrets
+master.key
+settings.yaml
+settings.yaml.enc

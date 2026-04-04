@@ -64,4 +64,7 @@ docker-compose.yml
 .DS_Store
 Thumbs.db
 
+# Custom connectors (SDK projects, separate from Platform CLI)
+connectors/
+
 # Add your own patterns below

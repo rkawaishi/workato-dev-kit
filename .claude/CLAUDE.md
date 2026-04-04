@@ -1,78 +1,109 @@
 # Workato Dev Kit
 
 Workato (エンタープライズ iPaaS) の自動化開発を Claude Code / Cursor で行うためのツールキット。
+レシピ開発とカスタムコネクタ開発の両方をカバーする。
 
 ## プロジェクト構造
 
 ```
 <workspace-root>/
-  <project-name>/           # workato pull で取得したプロジェクト
+  <project-name>/           # レシピプロジェクト（Platform CLI 管理）
     *.recipe.json            # レシピ（ワークフロー定義）
     *.connection.json        # コネクション（接続情報）
     *.agentic_genie.json     # Genie（AIエージェント定義）
     *.agentic_skill.json     # Genieスキル定義
+    *.mcp_server.json        # MCP サーバー定義
     .workatoenv              # プロジェクト設定（project_id等）
+  connectors/                # カスタムコネクタ（Connector SDK）
+    <connector-name>/
+      connector.rb           # コネクタ定義（Ruby DSL）
+      settings.yaml          # 認証情報（開発用）
+      spec/                  # テスト
   docs/
-    logic/                   # ロジックパターン（公式ドキュメントベース）
-      triggers.md            # トリガーの種類（Polling/Real-time/Scheduled/CDC）、条件、Since
+    logic/                   # レシピのロジック（公式ドキュメントベース）
+      triggers.md            # トリガーの種類、条件、Since
       if-conditions.md       # IF/ELSE IF/ELSE + 14条件演算子
       loops.md               # repeat-while, repeat-for-each
-      error-handling.md      # Monitor/Error ブロック、Stop Job、Recipe Functions
-      data-pills.md          # データピル、データマッピング、型変換、システムデータピル
-      formulas.md            # フォーミュラモード、文字列/数値/日付/リスト操作
-      file-handling.md       # ファイル処理（テキスト/バイナリ、ストリーミング）
+      error-handling.md      # Monitor/Error ブロック、Recipe Functions
+      data-pills.md          # データピル、マッピング、型変換
+      formulas.md            # フォーミュラ操作
+      file-handling.md       # ファイル処理
+    connectors/              # Pre-built コネクタナレッジ（139件）
+      _index.md              # 全コネクタ一覧 + 分類
     platform/                # Workato プラットフォーム機能
-      data-tables.md         # Data Tables（内蔵データストア）
-      lookup-tables.md       # Lookup Tables（参照テーブル、9アクション）
-      environment-properties.md # Environment Properties（環境変数）
-      event-streams.md       # Event Streams（非同期メッセージング）
-      workflow-apps.md       # Workflow Apps（ノーコードアプリ構築）
-      api-platform.md        # API Platform（エンドポイント公開、認証、プロキシ）
-      insights.md            # Insights（データ可視化・分析）
-      data-orchestration.md  # Data Orchestration（ETL/ELT パイプライン）
-      workbot.md             # Workbot（Slack/Teams チャットボットフレームワーク）
-      agent-studio.md        # Agent Studio（Genie AI エージェント構築）
-      mcp.md                 # MCP（Model Context Protocol、AI ↔ 外部ツール接続）
-    connectors/              # コネクタナレッジ
-      _index.md              # 全コネクタ一覧 + 分類（Pre-built/Universal/Community/Custom）
-      slack.md               # Slack + Workbot for Slack
-      jira.md                # Jira トリガー/アクション一覧
-      salesforce.md          # Salesforce
-    learned-patterns.md      # 公式に載っていない独自知見（UI フィードバックから学習）
+      data-tables.md         # Data Tables
+      lookup-tables.md       # Lookup Tables
+      environment-properties.md # Environment Properties
+      event-streams.md       # Event Streams
+      workflow-apps.md       # Workflow Apps
+      api-platform.md        # API Platform
+      insights.md            # Insights
+      data-orchestration.md  # Data Orchestration
+      workbot.md             # Workbot
+      agent-studio.md        # Agent Studio（Genie）
+      mcp.md                 # MCP
+    connector-sdk/           # Connector SDK リファレンス
+      overview.md            # SDK 概要、CLI コマンド、プロジェクト構造
+      connector-rb.md        # connector.rb 全ブロックリファレンス
+    learned-patterns.md      # 公式に載っていない独自知見
   .claude/
-    rules/                   # JSON フォーマットのリファレンス
-    skills/                  # 開発用スキル
+    rules/                   # フォーマットルール
+      workato-recipe-format.md    # レシピ JSON
+      workato-agentic-format.md   # Genie/Skill/MCP Server JSON
+      workato-connector-sdk.md    # connector.rb (Ruby DSL)
+    skills/                  # 開発スキル
+      create-recipe/         # /create-recipe
+      create-genie/          # /create-genie
+      create-connector/      # /create-connector (NEW)
+      validate-recipe/       # /validate-recipe
+      wpull/                 # /wpull
+      wpush/                 # /wpush
+      learn-recipe/          # /learn-recipe
+      sync-connectors/       # /sync-connectors
 ```
 
 ## ナレッジの参照優先順位
 
-1. `@docs/connectors/` — 使用するコネクタの公式情報（トリガー/アクション一覧）
-2. `@docs/logic/` — ロジックステップの組み方（if, loop, error handling）
-3. `@docs/learned-patterns.md` — 公式に載っていない JSON 構造の独自知見
-4. `@.claude/rules/` — レシピ/Genie JSON のフォーマット定義
+### レシピ開発
+1. `@docs/connectors/` — コネクタのトリガー/アクション/フィールド一覧
+2. `@docs/logic/` — ロジックステップの組み方
+3. `@docs/platform/` — プラットフォーム機能の理解
+4. `@docs/learned-patterns.md` — 非公開の JSON 構造知見
+5. `@.claude/rules/workato-recipe-format.md` / `workato-agentic-format.md`
 
-## Workato Platform CLI
+### カスタムコネクタ開発
+1. `@docs/connector-sdk/connector-rb.md` — connector.rb リファレンス
+2. `@docs/connector-sdk/overview.md` — SDK 概要・CLI コマンド
+3. `@.claude/rules/workato-connector-sdk.md` — フォーマットルール
 
-- インストール済み: `workato` (pipx)
-- プロファイル: `workato profiles list` で確認
-- プロジェクト一覧: `workato projects list --source remote`
+## CLI ツール
+
+### Platform CLI（レシピ管理）
+- インストール: `pipx install workato-platform-cli`
 - Pull: `workato projects use "<name>" && workato pull`
 - Push: `workato push`
 - Init: `workato init --non-interactive --profile <profile> --project-id <id> --folder-name "<name>"`
+
+### Connector SDK CLI（コネクタ開発）
+- インストール: `gem install workato-connector-sdk`
+- 新規作成: `workato new connectors/<name>`
+- テスト: `workato exec connectors/<name>/connector.rb test`
+- Push: `workato push connectors/<name>`
 
 ## コネクタの分類
 
 - **Pre-built**: Workato 公式の標準コネクタ（1,000+）
 - **Universal**: HTTP, OpenAPI, GraphQL, SOAP — 標準にない API 用
 - **Community**: ユーザー共有コネクタ
-- **Custom**: Connector SDK で自作
+- **Custom**: Connector SDK で自作 → `connectors/` ディレクトリ
 - **Custom Action**: コネクタ内の `__adhoc_http_action` で API 直接呼出し
 
 ## 開発ルール
 
-- レシピ JSON を編集する際は `@.claude/rules/workato-recipe-format.md` を参照
-- Genie/Skill を作成する際は `@.claude/rules/workato-agentic-format.md` を参照
-- コネクタの詳細は `@docs/connectors/` を参照。未作成のコネクタは公式ドキュメントを WebFetch で取得
-- 新しい独自知見を発見したら `docs/learned-patterns.md` に追記
-- `*.connection.json` に認証情報は含まれない（名前とプロバイダーのみ）
-- `.workatoenv` はコミットしない（.gitignore 済み）
+- レシピ JSON: `@.claude/rules/workato-recipe-format.md` を参照
+- Genie/Skill/MCP: `@.claude/rules/workato-agentic-format.md` を参照
+- カスタムコネクタ: `@.claude/rules/workato-connector-sdk.md` を参照
+- コネクタ詳細: `@docs/connectors/` を参照。未作成分は WebFetch
+- 新しい独自知見は `docs/learned-patterns.md` に追記
+- `*.connection.json` に認証情報は含まれない
+- `.workatoenv` / `master.key` はコミットしない

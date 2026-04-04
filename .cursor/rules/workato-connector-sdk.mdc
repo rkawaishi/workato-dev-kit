@@ -1,0 +1,37 @@
+---
+description: Workato Connector SDK (connector.rb) のフォーマット定義。connectors/ 配下の Ruby ファイルを編集・生成する際に適用。
+globs: "connectors/**/*.rb"
+alwaysApply: false
+---
+
+# Workato Connector SDK
+
+## connector.rb 構造
+
+```ruby
+{
+  title: 'コネクタ名',
+  connection: { fields: [...], authorization: { type: 'api_key', apply: lambda { } }, base_uri: lambda { } },
+  test: lambda { |connection| get('/me') },
+  actions: { action_name: { execute: lambda { }, input_fields: lambda { }, output_fields: lambda { } } },
+  triggers: { trigger_name: { poll: lambda { }, dedup: lambda { }, input_fields: lambda { }, output_fields: lambda { } } },
+  object_definitions: { obj: { fields: lambda { } } },
+  pick_lists: { list: lambda { } },
+  methods: { name: lambda { } }
+}
+```
+
+## 認証タイプ
+`basic_auth`, `api_key`, `oauth2`, `custom_auth`, `multi`
+
+## アクション必須: `execute`, `input_fields`, `output_fields`
+## ポーリングトリガー必須: `poll` (→ `{events:, can_poll_more:, next_poll:}`), `dedup`, `input_fields`, `output_fields`
+## Webhook トリガー必須: `webhook_subscribe`, `webhook_unsubscribe`, `webhook_notification`, `output_fields`
+
+## フィールド定義
+```ruby
+{ name: 'field', type: 'string', control_type: 'text', label: '表示名', optional: true }
+```
+
+## HTTP: `get`, `post`, `put`, `patch`, `delete` — `base_uri` 自動付与
+## master.key は絶対にコミットしない

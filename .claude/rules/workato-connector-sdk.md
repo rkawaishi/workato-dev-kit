@@ -1,0 +1,83 @@
+---
+paths:
+  - "connectors/**/*.rb"
+  - "connectors/**/connector.rb"
+---
+
+# Workato Connector SDK (connector.rb)
+
+## ファイル構造
+
+```
+connectors/<name>/
+├── connector.rb          # メインのコネクタ定義
+├── settings.yaml         # 認証情報（開発用）
+├── settings.yaml.enc     # 認証情報（暗号化）
+├── master.key            # 暗号化キー（.gitignore 必須）
+├── Gemfile
+└── spec/
+    ├── connector_spec.rb
+    └── cassettes/
+```
+
+## connector.rb のトップレベル構造
+
+```ruby
+{
+  title: 'コネクタ名',
+  connection: { fields: [...], authorization: {...}, base_uri: lambda { } },
+  test: lambda { |connection| },
+  actions: { action_name: { execute: lambda { }, input_fields: lambda { }, output_fields: lambda { } } },
+  triggers: { trigger_name: { poll: lambda { }, dedup: lambda { }, input_fields: lambda { }, output_fields: lambda { } } },
+  object_definitions: { obj_name: { fields: lambda { } } },
+  pick_lists: { list_name: lambda { } },
+  methods: { method_name: lambda { } }
+}
+```
+
+## 認証タイプ
+
+`connection.authorization.type`:
+- `basic_auth` — Basic 認証
+- `api_key` — API キー
+- `oauth2` — OAuth 2.0
+- `custom_auth` — カスタム認証
+- `multi` — 複数方式選択
+
+## アクションの必須キー
+
+- `execute` — 実行ロジック（HTTP リクエスト等）
+- `input_fields` — 入力フィールド定義
+- `output_fields` — 出力フィールド定義
+
+## ポーリングトリガーの必須キー
+
+- `poll` — データ取得。`{ events:, can_poll_more:, next_poll: }` を返す
+- `dedup` — 重複排除キー
+- `input_fields` / `output_fields`
+
+## Webhook トリガーの必須キー
+
+- `webhook_subscribe` / `webhook_unsubscribe` — 動的 Webhook
+- `webhook_notification` — Webhook ペイロード処理
+- `output_fields`
+
+## フィールド定義
+
+```ruby
+{ name: 'field', type: 'string', control_type: 'text', label: '表示名', optional: true, hint: 'ヘルプ' }
+```
+
+型: `string`, `integer`, `number`, `boolean`, `date`, `timestamp`, `object`, `array`
+
+## HTTP メソッド
+
+`get`, `post`, `put`, `patch`, `delete` — `base_uri` が自動付与される
+
+## 注意事項
+
+- 使用可能な Ruby メソッドは許可リストに限定
+- `master.key` は絶対にコミットしない
+- `settings.yaml` に実際の認証情報を含む場合は `.gitignore` に追加
+
+詳細: `@docs/connector-sdk/connector-rb.md`
