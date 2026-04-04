@@ -76,6 +76,41 @@ provider が `workato_genie` の場合:
 }
 ```
 
+## Custom Action (`__adhoc_http_action`)
+
+コネクタに適切なアクションがない場合、API を直接呼び出す:
+
+```json
+{
+  "provider": "<connector>",
+  "name": "__adhoc_http_action",
+  "as": "<任意の参照名>",
+  "keyword": "action",
+  "input": {
+    "mnemonic": "表示名",
+    "verb": "get",
+    "response_type": "json",
+    "path": "api/endpoint",
+    "input": {
+      "schema": "[{...}]",
+      "data": { "param": "#{_dp('...')}" }
+    },
+    "output": "[{...}]"
+  },
+  "extended_output_schema": [...],
+  "extended_input_schema": [...],
+  "visible_config_fields": [...],
+  "wizardFinished": true
+}
+```
+
+- `name` は常に `"__adhoc_http_action"`（全コネクタ共通）
+- `input.verb`: HTTP メソッド（`get`, `post`, `put`, `delete`）
+- `input.path`: API パス（コネクタの base URI に追加）
+- `input.input.schema`: リクエストパラメータスキーマ（JSON文字列）
+- `input.input.data`: パラメータ値（datapill 可）
+- `input.output`: レスポンススキーマ（JSON文字列）
+
 ## Datapill 記法
 
 データ参照は `_dp()` 関数で記述:

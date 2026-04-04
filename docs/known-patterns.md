@@ -11,7 +11,7 @@
 | `google_drive` | `upload_file` | action | ファイルアップロード | Sample project 1 |
 | `jira` | `new_issue` | trigger | 新規チケット作成 | Sample project 2 |
 | `slack` | `new_event` | trigger | Slack イベント（リアクション追加等）。`input.webhook_suffix` でイベント種別指定 | Helpdesk auto reply |
-| `slack` | `get_message` | action | メッセージ内容を取得 | Helpdesk auto reply |
+| `slack` | `__adhoc_http_action` | action | Custom action（Slack API 直接呼出）。標準アクションにない操作に使用 | Helpdesk auto reply |
 | `slack` | `post_message` | action | チャンネルへのメッセージ投稿 | Sample project 2 |
 | `jira` | `search_issues` | action | JQL によるチケット検索 | Helpdesk auto reply |
 | `salesforce` | `search_sobjects` | action | オブジェクト検索 | Sample project 3 |
@@ -81,6 +81,65 @@ trigger (slack/new_event) [webhook_suffix: "reaction_added"]
 - `slack/new_event` トリガーは `input.webhook_suffix` でイベント種別を指定（`reaction_added` 等）
 - **注意**: `event_type` や `reaction` ではなく `webhook_suffix` がフィールド名
 - コネクションは別プロジェクトのものも `folder` 指定で参照可能
+- 出典: `auto_reply_to_slack_ticket_reactions.recipe.json`
+
+## Custom Action パターン (`__adhoc_http_action`)
+
+コネクタに適切なアクションがない場合、Custom Action で API を直接呼び出す。
+
+```json
+{
+  "provider": "slack",
+  "name": "__adhoc_http_action",
+  "as": "get_message",
+  "keyword": "action",
+  "toggleCfg": { "input.data.inclusive": true },
+  "input": {
+    "mnemonic": "Get message",
+    "verb": "get",
+    "response_type": "json",
+    "path": "conversations.history",
+    "input": {
+      "schema": "[{...スキーマJSON文字列...}]",
+      "data": {
+        "channel": "#{_dp('...')}",
+        "latest": "#{_dp('...')}",
+        "oldest": "#{_dp('...')}",
+        "inclusive": "true",
+        "limit": "1"
+      }
+    },
+    "output": "[{...レスポンススキーマJSON文字列...}]"
+  },
+  "extended_output_schema": [...],
+  "extended_input_schema": [...],
+  "visible_config_fields": [...],
+  "wizardFinished": true
+}
+```
+
+### 構造の要点
+
+- `name` は常に `"__adhoc_http_action"`（全コネクタ共通）
+- `as` に任意の参照名を設定（datapill 参照用）
+- `input.mnemonic` — UI 表示名
+- `input.verb` — HTTP メソッド（`get`, `post`, `put`, `delete`）
+- `input.path` — API エンドポイントパス（コネクタの base URI に追加）
+- `input.input.schema` — リクエストパラメータのスキーマ（JSON文字列）
+- `input.input.data` — 実際のパラメータ値（datapill 参照可）
+- `input.output` — レスポンスボディのスキーマ（JSON文字列）
+- `toggleCfg` — UI トグル状態の保持
+- `extended_output_schema` / `extended_input_schema` — UI が生成するフルスキーマ
+- `visible_config_fields` — UI 表示フィールド一覧
+- `wizardFinished: true` — セットアップ完了フラグ
+
+### datapill 参照の注意
+
+custom action の出力を参照する場合、`line` は `as` の値を使う:
+```
+#{_dp('{"pill_type":"output","provider":"slack","line":"get_message","path":["messages",{"path_element_type":"current_item"},"text"]}')}
+```
+
 - 出典: `auto_reply_to_slack_ticket_reactions.recipe.json`
 
 ## Workato のインポート時の挙動

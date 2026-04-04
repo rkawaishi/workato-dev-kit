@@ -118,6 +118,16 @@ foreach 内の current_item:
 }
 ```
 
+## Custom Action (`__adhoc_http_action`)
+
+コネクタに適切なアクションがない場合、API を直接呼び出す:
+- `name`: 常に `"__adhoc_http_action"`
+- `input.mnemonic`: UI 表示名
+- `input.verb`: HTTP メソッド（`get`/`post`/`put`/`delete`）
+- `input.path`: API パス（base URI に追加）
+- `input.input.data`: パラメータ値（datapill 可）
+- `input.output`: レスポンススキーマ（JSON文字列）
+
 ## 生成時のルール
 
 - `number` はトリガーが 0、以降連番
