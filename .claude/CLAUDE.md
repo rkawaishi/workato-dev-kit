@@ -22,7 +22,14 @@ Workato (エンタープライズ iPaaS) の自動化開発を Claude Code / Cur
       formulas.md            # フォーミュラモード、文字列/数値/日付/リスト操作
       file-handling.md       # ファイル処理（テキスト/バイナリ、ストリーミング）
     platform/                # Workato プラットフォーム機能
-      data-tables.md         # Data Tables（内蔵データストア、4トリガー+10アクション）
+      data-tables.md         # Data Tables（内蔵データストア）
+      lookup-tables.md       # Lookup Tables（参照テーブル、9アクション）
+      environment-properties.md # Environment Properties（環境変数）
+      event-streams.md       # Event Streams（非同期メッセージング）
+      workflow-apps.md       # Workflow Apps（ノーコードアプリ構築）
+      api-platform.md        # API Platform（エンドポイント公開、認証、プロキシ）
+      insights.md            # Insights（データ可視化・分析）
+      data-orchestration.md  # Data Orchestration（ETL/ELT パイプライン）
     connectors/              # コネクタナレッジ
       _index.md              # 全コネクタ一覧 + 分類（Pre-built/Universal/Community/Custom）
       slack.md               # Slack + Workbot for Slack
