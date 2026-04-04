@@ -55,6 +55,23 @@
 }
 ```
 
+### Genie スキル: `start_workflow` のスキーマ例
+
+`parameters_schema_json` と `result_schema_json` は JSON 文字列として格納される。
+`extended_output_schema` には `parameters` オブジェクト配下にパラメータが展開される。
+
+**確認済みスキーマ例 (Search similar Jira tickets):**
+
+| スキーマ | フィールド | 型 | 説明 |
+|---|---|---|---|
+| parameters_schema_json | search_keyword | string | 検索キーワード |
+| result_schema_json | issue_key | string | Issue key |
+| result_schema_json | summary | string | Summary |
+| result_schema_json | description | string | Description |
+| result_schema_json | comment | string | Comment |
+
+`workflow_return_result` の `extended_output_schema` / `extended_input_schema` は `result` オブジェクト配下に result_schema_json のフィールドが展開される。
+
 ### Custom Action (`__adhoc_http_action`)
 
 コネクタに適切なアクションがない場合、API を直接呼び出す:

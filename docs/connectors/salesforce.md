@@ -26,6 +26,48 @@
 - カスタムオブジェクト
 - フィールドレベルの権限に基づくアクセス制御
 
+## フィールド詳細
+
+### search_sobjects (Action)
+
+レシピ: Search Contracts in Salesforce
+
+入力・出力スキーマは未設定（コネクション後に動的に決定される）。
+
+> **Note:** このステップは `input: {}` で空のため、Salesforce コネクション設定後にオブジェクト種別とフィールドが動的に生成されます。
+
+---
+
+### update_sobject (Action)
+
+レシピ: Update Contract in Salesforce
+
+入力・出力スキーマは未設定（コネクション後に動的に決定される）。
+
+> **Note:** このステップは `input: {}` で空のため、Salesforce コネクション設定後にオブジェクト種別とフィールドが動的に生成されます。
+
+#### 関連する Genie パラメータ（start_workflow トリガー）
+
+Search Contracts レシピ:
+
+| フィールド | 型 | 必須 | 説明 |
+|---|---|---|---|
+| contract_name | string | Yes | the name of the contract which user is referencing |
+| contract_content | string | Yes | contents of the contract which user is referencing |
+
+Update Contract レシピ:
+
+| フィールド | 型 | 必須 | 説明 |
+|---|---|---|---|
+| contract_name | string | Yes | Contract name |
+| contract_content | string | - | Contract content |
+
+#### Genie Result Schema
+
+| フィールド | 型 | 必須 | 説明 |
+|---|---|---|---|
+| response | string | Yes | Response |
+
 ## 備考
 - Salesforce の全エディション対応
 - ユーザーの権限に基づいてアクセス可能なオブジェクト/フィールドが決まる

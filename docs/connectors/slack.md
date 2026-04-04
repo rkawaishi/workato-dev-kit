@@ -47,6 +47,45 @@
 ### event_name 一覧（確認済み）
 - `reaction_added` — リアクション追加
 
+### new_event (reaction_added)
+
+#### Output fields
+| フィールド | 型 | 説明 |
+|---|---|---|
+| reaction_added.type | string | Type |
+| reaction_added.user | string | User |
+| reaction_added.reaction | string | Reaction |
+| reaction_added.item_user | string | Item user |
+| reaction_added.item.type | string | Type (nested) |
+| reaction_added.item.channel | string | Channel (nested) |
+| reaction_added.item.ts | string | Ts (nested) |
+| reaction_added.event_ts | string | Event ts |
+
+### Custom action: conversations.history (GET)
+
+#### Input fields
+| フィールド | 型 | 必須 | 説明 |
+|---|---|---|---|
+| path | string | Yes | Path (API endpoint) |
+| response_type | string | - | Response type (json, raw, xml2, text) |
+| input.data.channel | string | - | channel |
+| input.data.latest | string | - | latest |
+| input.data.oldest | string | - | oldest |
+| input.data.inclusive | boolean | - | inclusive |
+| input.data.limit | integer | - | limit |
+
+#### Output fields
+| フィールド | 型 | 説明 |
+|---|---|---|
+| ok | boolean | Ok |
+| messages[].type | string | Type |
+| messages[].user | string | User |
+| messages[].text | string | Text |
+| messages[].ts | string | Ts |
+| has_more | boolean | Has more |
+| pin_count | number | Pin count |
+| response_metadata.next_cursor | string | Next cursor (nested) |
+
 ### post_bot_message の主要フィールド
 - `channel` — 投稿先チャンネル
 - `text` — メッセージテキスト
