@@ -28,17 +28,8 @@ Connector SDK を使って自作するコネクタ。プライベートスコー
 
 ## 主要 Pre-built コネクタ（個別ドキュメントあり）
 
-個別のナレッジファイルがあるコネクタ:
-- [Slack](slack.md) — メッセージング、Workbot for Slack
-- [Jira](jira.md) — プロジェクト管理、チケット管理
-- [Salesforce](salesforce.md) — CRM
-- [Gmail](gmail.md) — メール
-- [Google Drive](google-drive.md) — クラウドストレージ
-- [HubSpot](hubspot.md) — CRM / マーケティング
-- [ServiceNow](servicenow.md) — IT サービス管理
-- [Snowflake](snowflake.md) — データウェアハウス
-
-`/sync-connectors <name>` で新しいコネクタのドキュメントを追加・更新できます。
+公式ドキュメントにページがある全 139 コネクタの個別ナレッジファイルを `docs/connectors/` に格納済み。
+`/sync-connectors --check` で公式ドキュメントとの差分を確認、`/sync-connectors <name>` で更新できます。
 
 ## 全 Pre-built コネクタ一覧
 
