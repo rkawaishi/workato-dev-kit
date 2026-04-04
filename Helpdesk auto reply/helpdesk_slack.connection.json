@@ -1,0 +1,5 @@
+{
+  "name": "Helpdesk | Slack",
+  "provider": "slack",
+  "root_folder": false
+}

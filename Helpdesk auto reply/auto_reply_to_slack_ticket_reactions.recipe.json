@@ -1,0 +1,101 @@
+{
+  "name": "Auto reply to Slack ticket reactions",
+  "description": "Slack メッセージに :ticket: リアクションが付いたら起動し、メッセージ内容を読み取り、Jira から類似した過去の問い合わせを検索して一次回答をスレッドに投稿する。\n\n**Trigger**: Slack で :ticket: リアクション追加\n**Actions**:\n1. リアクションが付いたメッセージの内容を取得\n2. Jira で類似チケットを JQL 検索\n3. AI で過去チケットの情報を分析し一次回答を生成\n4. Slack スレッドに一次回答を投稿",
+  "version": 2,
+  "private": true,
+  "concurrency": 1,
+  "code": {
+    "number": 0,
+    "provider": "slack",
+    "name": "new_event",
+    "as": "new_event",
+    "keyword": "trigger",
+    "input": {
+      "webhook_suffix": "reaction_added"
+    },
+    "block": [
+      {
+        "number": 1,
+        "provider": "slack",
+        "name": "get_message",
+        "as": "get_message",
+        "keyword": "action",
+        "input": {
+        },
+        "comment": "リアクションが付いた元メッセージの内容を取得する",
+        "uuid": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
+      },
+      {
+        "number": 2,
+        "provider": "jira",
+        "name": "search_issues",
+        "as": "search_issues",
+        "keyword": "action",
+        "input": {
+        },
+        "comment": "メッセージ内容をキーワードに Jira で類似チケットを検索（JQL のテキスト検索）。max_results で上位5件に絞る",
+        "uuid": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e"
+      },
+      {
+        "number": 3,
+        "provider": "open_ai_utility",
+        "name": "analyse_document",
+        "as": "analyse_document",
+        "keyword": "action",
+        "input": {
+          "_settings_version": "2",
+          "text": "## 問い合わせ内容\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack\",\"line\":\"get_message\",\"path\":[\"text\"]}')}\n\n## 類似チケット検索結果\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"jira\",\"line\":\"search_issues\",\"path\":[\"issues\"]}')}",
+          "question": "あなたは社内ヘルプデスクの一次対応アシスタントです。\n\n上記の「問い合わせ内容」に対して、「類似チケット検索結果」の過去チケット情報（タイトル、説明、コメント、解決方法）を参考にして一次回答を作成してください。\n\nルール:\n- 丁寧で簡潔な日本語で回答する\n- 過去の類似チケットで解決済みの内容があれば、その解決方法を案内する\n- 確信が持てない場合は「担当者に確認中です」と添える\n- 回答の末尾に参考にしたチケット番号を記載する\n- 回答は Slack メッセージとして読みやすいフォーマットにする"
+        },
+        "comment": "AI が過去の類似チケット情報を分析し、一次回答のドラフトを生成する",
+        "uuid": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f"
+      },
+      {
+        "number": 4,
+        "provider": "slack",
+        "name": "post_message",
+        "as": "post_message",
+        "keyword": "action",
+        "input": {
+        },
+        "comment": "AI が生成した一次回答を元メッセージのスレッドに投稿する",
+        "uuid": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f80"
+      }
+    ],
+    "comment": "Slack で :ticket: リアクションが追加されたときに起動",
+    "uuid": "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8091",
+    "format_version": 2
+  },
+  "config": [
+    {
+      "keyword": "application",
+      "provider": "slack",
+      "skip_validation": false,
+      "account_id": {
+        "zip_name": "Sample project 2/sample2_slack.connection.json",
+        "name": "Sample2 | Slack",
+        "folder": "Sample project 2"
+      }
+    },
+    {
+      "keyword": "application",
+      "provider": "jira",
+      "skip_validation": false,
+      "account_id": {
+        "zip_name": "helpdesk_jira.connection.json",
+        "name": "Helpdesk | Jira",
+        "folder": ""
+      }
+    },
+    {
+      "keyword": "application",
+      "provider": "open_ai_utility",
+      "skip_validation": false,
+      "account_id": {
+        "zip_name": "helpdesk_ai_by_workato.connection.json",
+        "name": "Helpdesk | AI by Workato",
+        "folder": ""
+      }
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "name": "Helpdesk | AI by Workato",
+  "provider": "open_ai_utility",
+  "root_folder": false
+}
