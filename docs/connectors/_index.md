@@ -32,7 +32,13 @@ Connector SDK を使って自作するコネクタ。プライベートスコー
 - [Slack](slack.md) — メッセージング、Workbot for Slack
 - [Jira](jira.md) — プロジェクト管理、チケット管理
 - [Salesforce](salesforce.md) — CRM
-- (今後追加)
+- [Gmail](gmail.md) — メール
+- [Google Drive](google-drive.md) — クラウドストレージ
+- [HubSpot](hubspot.md) — CRM / マーケティング
+- [ServiceNow](servicenow.md) — IT サービス管理
+- [Snowflake](snowflake.md) — データウェアハウス
+
+`/sync-connectors <name>` で新しいコネクタのドキュメントを追加・更新できます。
 
 ## 全 Pre-built コネクタ一覧
 
