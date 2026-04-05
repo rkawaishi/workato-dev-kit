@@ -1,7 +1,7 @@
 {
   "name": "PC loan request: manager approval and Jira ticket creation",
   "description": "PC 貸与リクエストが送信されたら、マネージャーに承認タスクをアサインする。\n承認された場合は Jira にチケットを起票し、ワークフローを Done に変更する。\n却下された場合は Canceled に変更する。",
-  "version": 10,
+  "version": 11,
   "private": true,
   "concurrency": 1,
   "code": {
