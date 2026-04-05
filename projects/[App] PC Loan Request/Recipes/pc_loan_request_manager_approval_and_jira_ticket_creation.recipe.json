@@ -539,7 +539,7 @@
               },
               "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
               "parameters": {
-                "b1a2c3d4-e5f6-4a7b-8c9d-100000000005": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"jira\",\"line\":\"create_issue\",\"path\":[\"key\"]}')}"
+                "b1a2c3d4_e5f6_4a7b_8c9d_100000000005": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"jira\",\"line\":\"create_issue\",\"path\":[\"key\"]}')}"
               }
             },
             "extended_output_schema": [
