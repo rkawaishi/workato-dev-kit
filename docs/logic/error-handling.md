@@ -67,3 +67,9 @@ Handle errors
 4. Response のデータピルが後続ステップで利用可能に
 
 > **注意**: 旧 Callable recipes コネクタは非推奨。新規作成は Recipe functions コネクタを使用。
+
+## `try` キーワード（JSON 表現）
+
+レシピ JSON では `keyword: "try"` がエラーハンドリングブロック（try/catch パターン）を示す。UI の Monitor/Error ブロックに対応する JSON 表現。
+
+- try ブロック内のステップでエラーが発生した場合、catch ブロック（エラーハンドラー）に制御が移る

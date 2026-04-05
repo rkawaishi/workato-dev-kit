@@ -58,6 +58,12 @@ Provider: `gmail`
 |---|---|---|
 | content_bytes | string | 添付ファイルのバイナリコンテンツ |
 
+## Custom Action パターン
+
+Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gmail API を直接呼び出せる。
+- パス例: `me/messages/{messageId}?format=full`
+- base URI: `https://gmail.googleapis.com/gmail/v1/users/`
+
 ## 備考
 - OAuth 2.0 認証
 - provider 名: `gmail`
