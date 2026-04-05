@@ -14,9 +14,9 @@
     "ref_0": {
       "type": "agentic_skill",
       "id": {
-        "zip_name": "submit_pc_loan_request_via_mcp.agentic_skill.json",
+        "zip_name": "Agents/submit_pc_loan_request_via_mcp.agentic_skill.json",
         "name": "submit_pc_loan_request_via_mcp",
-        "folder": ""
+        "folder": "Agents"
       }
     }
   }
