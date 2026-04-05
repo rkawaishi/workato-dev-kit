@@ -1,6 +1,15 @@
+# Workato Platform CLI
 .workatoenv
 
 # Connector SDK secrets
 master.key
 settings.yaml
 settings.yaml.enc
+
+# General secrets (prevent accidental commits)
+.env
+.env.*
+*.key
+*.pem
+*.secret
+*.credential*
