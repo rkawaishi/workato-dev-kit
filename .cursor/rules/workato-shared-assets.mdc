@@ -1,0 +1,15 @@
+---
+description: 複数プロジェクトでコネクションや Recipe Function を共有する際のルール。projects/ 配下でクロスプロジェクト参照を行う際に適用。
+globs: "projects/**"
+alwaysApply: false
+---
+
+# 共有アセットルール
+
+- 2つ以上のプロジェクトで同じコネクション → `Shared` プロジェクトに配置
+- 横断的ロジック → `Shared` の Recipe Function (`fnc_<verb>_<noun>`) に切り出し
+- 1プロジェクトのみ → プロジェクト内に保持
+
+参照: `"folder": "Shared"`, `"zip_name": "Shared/Connections/..."`
+
+詳細: `docs/patterns/shared-assets.md`
