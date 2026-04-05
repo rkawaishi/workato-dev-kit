@@ -136,6 +136,28 @@
             ],
             [
               {
+                "type": "date",
+                "id": "e3e3e002",
+                "name": "Preferred delivery date",
+                "x": 0,
+                "width": 6,
+                "visible": true,
+                "dataSource": {
+                  "id": "Preferred delivery date",
+                  "type": "date"
+                },
+                "editable": false,
+                "validations": {
+                  "required": {
+                    "condition": false
+                  }
+                },
+                "label": "Preferred delivery date"
+              },
+              0
+            ],
+            [
+              {
                 "type": "input",
                 "id": "e4e4e002",
                 "name": "Review comments",

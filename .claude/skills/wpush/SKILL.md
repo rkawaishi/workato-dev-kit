@@ -16,7 +16,15 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 
 ## 実行手順
 
-### 1. push
+### 1. バリデーション + 確認
+
+- push 前に `/validate-recipe` 相当のチェックを実行
+  - Error がある場合は push を中断し、問題を報告
+  - Warning のみの場合はユーザーに確認後に push
+- 変更されるファイルをユーザーに表示し、確認を得てから push を実行する
+- push は Workato リモートの内容を上書きする操作のため、必ずユーザーの承認を得ること
+
+### 2. push
 
 ```bash
 # プロジェクト名指定の場合
@@ -25,7 +33,7 @@ workato projects use "<project-name>"
 workato push
 ```
 
-### 2. レシピ起動（--start / --test 指定時）
+### 3. レシピ起動（--start / --test 指定時）
 
 ```bash
 # プロジェクト内のレシピ一覧を取得
@@ -38,7 +46,7 @@ workato recipes start --id <recipe-id>
 workato recipes start --all
 ```
 
-### 3. ジョブ確認（--test 指定時）
+### 4. ジョブ確認（--test 指定時）
 
 レシピ起動後、ジョブの実行結果を確認する:
 
@@ -50,7 +58,7 @@ workato jobs list --recipe-id <recipe-id> --status failed
 workato jobs get --recipe-id <recipe-id> --job-id <job-id>
 ```
 
-### 4. エラー修正サイクル
+### 5. エラー修正サイクル
 
 ジョブが失敗した場合:
 
@@ -64,7 +72,7 @@ workato jobs get --recipe-id <recipe-id> --job-id <job-id>
 4. レシピを再起動してジョブを再確認
 5. 成功するまで繰り返す
 
-### 5. 結果報告
+### 6. 結果報告
 
 - push 結果
 - レシピの起動状態
