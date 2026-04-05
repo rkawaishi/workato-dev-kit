@@ -15,6 +15,17 @@
 - `line`: ステップの `as` 値
 - `path`: フィールドパス配列。リストの現在アイテムは `{"path_element_type":"current_item"}`
 
+### IF / ELSE IF / ELSE の keyword
+
+| keyword | 用途 | 配置 | 条件 |
+|---|---|---|---|
+| `if` | 最初の条件分岐 | block 内のトップレベル | `input.conditions` 必須 |
+| `elsif` | 追加の条件分岐（ELSE IF） | `if` の block 内の末尾 | `input.conditions` 必須 |
+| `else` | 条件なしのデフォルト分岐 | `if` の block 内の末尾 | 条件不要 |
+
+- `else` と `elsif` は `if` の `block` 配列の**末尾**に配置する（`if` と同レベルではない）
+- 条件なしのデフォルト分岐には `else` を使う。`elsif` を条件なしで使うとエラーになる
+
 
 ```ruby
 #{_('data.provider.step.field')}                    # ドット記法

@@ -1,7 +1,7 @@
 {
   "name": "PC loan request: manager approval and Jira ticket creation",
   "description": "PC 貸与リクエストが送信されたら、マネージャーに承認タスクをアサインする。\n承認された場合は Jira にチケットを起票し、ワークフローを Done に変更する。\n却下された場合は Canceled に変更する。",
-  "version": 8,
+  "version": 10,
   "private": true,
   "concurrency": 1,
   "code": {
@@ -220,6 +220,46 @@
             "requestor_email": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"created_by\",\"email\"]}')}"
           }
         },
+        "extended_output_schema": [
+          {
+            "label": "Result",
+            "name": "result",
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Manager name",
+                "name": "manager_name",
+                "type": "string",
+                "optional": false
+              },
+              {
+                "control_type": "text",
+                "label": "Manager email",
+                "name": "manager_email",
+                "type": "string",
+                "optional": false
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "extended_input_schema": [
+          {
+            "label": "Parameters",
+            "name": "parameters",
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Requestor email",
+                "name": "requestor_email",
+                "type": "string",
+                "optional": false,
+                "hint": "リクエスターのメールアドレス"
+              }
+            ],
+            "type": "object"
+          }
+        ],
         "comment": "リクエスターのメールアドレスから HRMS でマネージャーを特定する",
         "uuid": "a1b2c3d4-0010-4a7b-8c9d-000000000001"
       },
@@ -497,7 +537,10 @@
                 "name": "PC Loan Request",
                 "folder": ""
               },
-              "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}"
+              "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
+              "parameters": {
+                "b1a2c3d4-e5f6-4a7b-8c9d-100000000005": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"jira\",\"line\":\"create_issue\",\"path\":[\"key\"]}')}"
+              }
             },
             "extended_output_schema": [
               {
@@ -868,39 +911,41 @@
             },
             "comment": "ワークフローを Done に変更",
             "uuid": "a1b2c3d4-0005-4a7b-8c9d-000000000001"
+          },
+          {
+            "number": 7,
+            "keyword": "else",
+            "input": {
+            },
+            "block": [
+              {
+                "number": 8,
+                "provider": "workato_workflow_task",
+                "name": "change_workflow_stage",
+                "as": "change_stage_canceled",
+                "keyword": "action",
+                "toggleCfg": {
+                  "workflow_stage_id": true
+                },
+                "input": {
+                  "project_id": {
+                    "zip_name": "pc_loan_request.lcap_app.json",
+                    "name": "PC Loan Request",
+                    "folder": ""
+                  },
+                  "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
+                  "workflow_stage_id": {
+                    "name": "Canceled"
+                  }
+                },
+                "comment": "却下: ワークフローを Canceled に変更",
+                "uuid": "a1b2c3d4-0007-4a7b-8c9d-000000000001"
+              }
+            ],
+            "uuid": "212adcbd-98cc-40c0-ac3d-6da0b53b2189"
           }
         ],
         "uuid": "a1b2c3d4-0006-4a7b-8c9d-000000000001"
-      },
-      {
-        "number": 7,
-        "keyword": "elsif",
-        "block": [
-          {
-            "number": 8,
-            "provider": "workato_workflow_task",
-            "name": "change_workflow_stage",
-            "as": "change_stage_canceled",
-            "keyword": "action",
-            "toggleCfg": {
-              "workflow_stage_id": true
-            },
-            "input": {
-              "project_id": {
-                "zip_name": "pc_loan_request.lcap_app.json",
-                "name": "PC Loan Request",
-                "folder": ""
-              },
-              "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
-              "workflow_stage_id": {
-                "name": "Canceled"
-              }
-            },
-            "comment": "却下: ワークフローを Canceled に変更",
-            "uuid": "a1b2c3d4-0007-4a7b-8c9d-000000000001"
-          }
-        ],
-        "uuid": "a1b2c3d4-0008-4a7b-8c9d-000000000001"
       }
     ],
     "comment": "PC 貸与リクエスト送信時に起動",
@@ -927,6 +972,7 @@
     {
       "keyword": "application",
       "provider": "workato_recipe_function",
+      "skip_validation": false,
       "account_id": null
     }
   ]

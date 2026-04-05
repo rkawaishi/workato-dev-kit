@@ -8,7 +8,9 @@
       "style": "pattern",
       "pattern": "light-2"
     },
-    "variables": [],
+    "variables": [
+
+    ],
     "handlers": {
       "pageLoad": null
     },
