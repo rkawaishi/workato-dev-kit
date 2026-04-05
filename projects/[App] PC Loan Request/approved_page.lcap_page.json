@@ -1,0 +1,174 @@
+{
+  "name": "Approved page",
+  "path": "approved-page",
+  "content": {
+    "type": "common",
+    "maxWidth": "fixed",
+    "background": {
+      "style": "pattern",
+      "pattern": "light-1"
+    },
+    "variables": [],
+    "handlers": {
+      "pageLoad": null
+    },
+    "layout": [
+      1,
+      [
+        {
+          "type": "container",
+          "id": "a53cc001",
+          "name": "Main container",
+          "x": 1,
+          "width": 10,
+          "visible": true,
+          "layout": [
+            1,
+            [
+              {
+                "type": "text",
+                "id": "e7038001",
+                "name": "Title",
+                "x": 0,
+                "width": 8,
+                "visible": true,
+                "text": "# Request details",
+                "alignment": "left",
+                "color": "#24434f",
+                "pillsSupportMarkdown": false,
+                "style": "paragraph"
+              },
+              0
+            ],
+            [
+              {
+                "type": "container",
+                "id": "cebca001",
+                "name": "Status badge",
+                "x": 8,
+                "width": 4,
+                "visible": true,
+                "layout": [
+                  1,
+                  [
+                    {
+                      "type": "text",
+                      "id": "ff4ed001",
+                      "name": "Status text",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "text": "## ✅ APPROVED",
+                      "alignment": "center",
+                      "color": "#44791e",
+                      "pillsSupportMarkdown": false,
+                      "style": "paragraph"
+                    },
+                    0
+                  ]
+                ],
+                "backgroundColor": "#e0f5cf",
+                "borderColor": "transparent",
+                "padding": "small"
+              },
+              0
+            ],
+            [
+              {
+                "type": "divider",
+                "id": "b1b1b001",
+                "name": "Divider",
+                "x": 0,
+                "width": 12,
+                "visible": true,
+                "backgroundColor": "#ced5db"
+              },
+              0
+            ],
+            [
+              {
+                "type": "input",
+                "id": "c2c2c001",
+                "name": "PC type",
+                "x": 0,
+                "width": 6,
+                "visible": true,
+                "dataSource": {
+                  "id": "PC type",
+                  "type": "short-text"
+                },
+                "editable": false,
+                "validations": { "required": { "condition": false } },
+                "label": "PC type",
+                "style": "short-text"
+              },
+              0
+            ],
+            [
+              {
+                "type": "input",
+                "id": "d3d3d001",
+                "name": "Reason",
+                "x": 0,
+                "width": 12,
+                "visible": true,
+                "dataSource": {
+                  "id": "Reason",
+                  "type": "long-text"
+                },
+                "editable": false,
+                "validations": { "required": { "condition": false } },
+                "label": "Reason",
+                "textareaHeight": 64,
+                "style": "long-text"
+              },
+              0
+            ],
+            [
+              {
+                "type": "input",
+                "id": "e4e4e001",
+                "name": "Preferred delivery date",
+                "x": 0,
+                "width": 6,
+                "visible": true,
+                "dataSource": {
+                  "id": "Preferred delivery date",
+                  "type": "date"
+                },
+                "editable": false,
+                "validations": { "required": { "condition": false } },
+                "label": "Preferred delivery date",
+                "style": "date"
+              },
+              0
+            ],
+            [
+              {
+                "type": "input",
+                "id": "f5f5f001",
+                "name": "Jira ticket key",
+                "x": 0,
+                "width": 6,
+                "visible": true,
+                "dataSource": {
+                  "id": "Jira ticket key",
+                  "type": "short-text"
+                },
+                "editable": false,
+                "validations": { "required": { "condition": false } },
+                "label": "Jira ticket key",
+                "style": "short-text"
+              },
+              0
+            ]
+          ],
+          "backgroundColor": "#ffffff",
+          "borderColor": "transparent",
+          "padding": "large"
+        },
+        1
+      ]
+    ]
+  }
+}

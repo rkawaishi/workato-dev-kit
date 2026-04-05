@@ -1,6 +1,10 @@
 {
   "name": "PC Loan Request",
-  "creation_page": null,
+  "creation_page": {
+    "zip_name": "submit_pc_loan_request.lcap_page.json",
+    "name": "Submit PC loan request",
+    "folder": ""
+  },
   "workato_db_table": {
     "zip_name": "pc_loan_requests.workato_db_table.json",
     "name": "PC Loan Requests",
@@ -13,15 +17,30 @@
     },
     {
       "name": "Manager review",
-      "color": 1
+      "color": 1,
+      "task_page": {
+        "zip_name": "review_pc_loan_request.lcap_page.json",
+        "name": "Review PC loan request",
+        "folder": ""
+      }
     },
     {
       "name": "Done",
-      "color": 2
+      "color": 2,
+      "details_page": {
+        "zip_name": "approved_page.lcap_page.json",
+        "name": "Approved page",
+        "folder": ""
+      }
     },
     {
       "name": "Canceled",
-      "color": 3
+      "color": 3,
+      "details_page": {
+        "zip_name": "rejected_page.lcap_page.json",
+        "name": "Rejected page",
+        "folder": ""
+      }
     }
   ],
   "tabs": [

@@ -1,0 +1,230 @@
+{
+  "name": "Review PC loan request",
+  "path": "review-pc-loan-request",
+  "content": {
+    "type": "common",
+    "maxWidth": "fixed",
+    "background": {
+      "style": "pattern",
+      "pattern": "light-3"
+    },
+    "variables": [],
+    "handlers": {
+      "pageLoad": null
+    },
+    "layout": [
+      1,
+      [
+        {
+          "type": "container",
+          "id": "28fbe001",
+          "name": "Main container",
+          "x": 1,
+          "width": 10,
+          "visible": true,
+          "layout": [
+            1,
+            [
+              {
+                "type": "container",
+                "id": "76e16001",
+                "name": "Image container",
+                "x": 0,
+                "width": 12,
+                "visible": true,
+                "layout": [
+                  1,
+                  [
+                    {
+                      "type": "image",
+                      "id": "269ce001",
+                      "name": "Image",
+                      "x": 0,
+                      "width": 12,
+                      "height": 14,
+                      "visible": true,
+                      "image": "illustration-11",
+                      "customUrl": "",
+                      "source": "manual",
+                      "fitting": "cover",
+                      "horizontalAlignment": "center",
+                      "verticalAlignment": "center"
+                    },
+                    0
+                  ]
+                ],
+                "backgroundColor": "#eacef7",
+                "borderColor": "transparent",
+                "padding": "none"
+              },
+              0
+            ],
+            [
+              {
+                "type": "container",
+                "id": "d0737001",
+                "name": "Form container",
+                "x": 0,
+                "width": 12,
+                "visible": true,
+                "layout": [
+                  1,
+                  [
+                    {
+                      "type": "text",
+                      "id": "6c855001",
+                      "name": "Form title",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "text": "# ✍️ Review PC loan request\nReview and approve or reject this PC loan request.",
+                      "alignment": "left",
+                      "color": "#24434f",
+                      "pillsSupportMarkdown": false,
+                      "style": "paragraph"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "divider",
+                      "id": "920a0001",
+                      "name": "Divider",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "backgroundColor": "#ced5db"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "input",
+                      "id": "1141b001",
+                      "name": "PC type",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "dataSource": {
+                        "id": "PC type",
+                        "type": "short-text"
+                      },
+                      "editable": false,
+                      "validations": {
+                        "required": {
+                          "condition": false
+                        }
+                      },
+                      "label": "PC type",
+                      "hint": "",
+                      "placeholder": "",
+                      "style": "short-text"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "input",
+                      "id": "2252c001",
+                      "name": "Reason",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "dataSource": {
+                        "id": "Reason",
+                        "type": "long-text"
+                      },
+                      "editable": false,
+                      "validations": {
+                        "required": {
+                          "condition": false
+                        }
+                      },
+                      "label": "Reason",
+                      "hint": "",
+                      "placeholder": "",
+                      "textareaHeight": 96,
+                      "style": "long-text"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "input",
+                      "id": "3363d001",
+                      "name": "Preferred delivery date",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "dataSource": {
+                        "id": "Preferred delivery date",
+                        "type": "date"
+                      },
+                      "editable": false,
+                      "validations": {
+                        "required": {
+                          "condition": false
+                        }
+                      },
+                      "label": "Preferred delivery date",
+                      "hint": "",
+                      "placeholder": "",
+                      "style": "date"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "divider",
+                      "id": "4474e001",
+                      "name": "Divider 2",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "backgroundColor": "#ced5db"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "input",
+                      "id": "5585f001",
+                      "name": "Review comments",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "dataSource": {
+                        "id": "Review comments",
+                        "type": "long-text"
+                      },
+                      "editable": true,
+                      "validations": {
+                        "required": {
+                          "condition": false
+                        }
+                      },
+                      "label": "Review comments",
+                      "hint": "Add your review comments before approving or rejecting.",
+                      "placeholder": "",
+                      "textareaHeight": 96,
+                      "style": "long-text"
+                    },
+                    0
+                  ]
+                ],
+                "backgroundColor": "transparent",
+                "borderColor": "transparent",
+                "padding": "none"
+              },
+              0
+            ]
+          ],
+          "backgroundColor": "#ffffff",
+          "borderColor": "transparent",
+          "padding": "large"
+        },
+        1
+      ]
+    ]
+  }
+}

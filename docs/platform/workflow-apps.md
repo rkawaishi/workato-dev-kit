@@ -120,41 +120,77 @@ app_function_load_dropdown_request → get_records → app_function_return(items
 
 ### 構築の流れ
 
-Workflow App は UI と CLI/JSON の組み合わせで構築する。
+Workflow App 本体の有効化のみ UI 操作が必要。それ以外は全て JSON で定義し push できる。
 
 ```
-1. Workato UI で Workflow App を新規作成（名前のみ）
-2. JSON で Data Table スキーマとステージを定義 → push
-3. Workato UI でページを作成（送信フォーム、レビュー、承認/却下）
-4. JSON でレシピを作成 → push
-5. pull → UI で調整 → pull → 学習のサイクルを繰り返す
+1. Workato UI でプロジェクト内の Workflow App を有効化（1回のみ）
+2. JSON で全構成要素を定義 → push
+   - workato_db_table.json（Data Table スキーマ）
+   - lcap_app.json（ステージ、ページ参照、表示カラム）
+   - lcap_page.json（ページ定義: フォーム、レビュー、承認/却下）
+   - recipe.json（ワークフローレシピ）
+   - connection.json（外部サービスコネクション）
+3. pull → 調整 → push のサイクルを繰り返す
 ```
 
 ### 何が JSON で定義でき、何が UI 必須か
 
 | 要素 | JSON で定義可能 | UI 必須 |
 |---|---|---|
-| Workflow App 本体の作成 | ❌ | ✅ UI で新規作成 |
+| Workflow App の有効化 | ❌ | ✅ UI で1回だけ |
 | ワークフローステージ | ✅ `lcap_app.json` の `workflow_stages` | |
 | Data Table スキーマ | ✅ `workato_db_table.json` | |
 | 表示カラム | ✅ `lcap_app.json` の `displayed_columns` | |
 | タブ | ✅ `lcap_app.json` の `tabs` | |
-| ページ（フォーム、レビュー画面等） | ❌ | ✅ UI で作成 |
-| ページの紐付け | ✅ `creation_page`, `task_page`, `details_page` （ページ存在後） | |
+| ページ（フォーム、レビュー画面等） | ✅ `lcap_page.json` | |
+| ページの紐付け | ✅ `creation_page`, `task_page`, `details_page` | |
 | レシピ | ✅ `.recipe.json` | |
 | コネクション | ✅ `.connection.json`（認証は UI） | |
 
-### ページ参照の扱い
+### ページの JSON 構造
 
-`lcap_app.json` のページ参照（`creation_page`, `task_page`, `details_page`）は、参照先の `.lcap_page.json` が存在しないと push エラーになる。
-
-**対処法**: ページ参照を `null` にして push → UI でページ作成 → pull で参照が自動設定される
+ページ（`lcap_page.json`）は JSON で定義して push できる。既存プロジェクトのページを参考にレイアウトを構成する。
 
 ```json
 {
-  "creation_page": null,
+  "name": "ページ名",
+  "path": "url-slug",
+  "content": {
+    "type": "common",
+    "maxWidth": "fixed",
+    "background": { "style": "pattern", "pattern": "light-2" },
+    "variables": [],
+    "handlers": { "pageLoad": null },
+    "layout": [ /* ネストされたコンポーネントツリー */ ]
+  }
+}
+```
+
+主要コンポーネント:
+- `container` — レイアウトコンテナ（`x`, `width`, `backgroundColor`, `padding`）
+- `text` — テキスト表示（マークダウン対応、`text`, `color`, `alignment`）
+- `input` — 入力フィールド（`dataSource.id` で Data Table フィールド名を参照、`editable`, `validations`）
+- `button` — ボタン（`handlers.click.type: "save-data"` で送信）
+- `image` — 画像（`image: "illustration-N"` でプリセット画像）
+- `divider` — 区切り線
+
+input の `dataSource.id` は Data Table のフィールド **title**（UUID ではない）を指定する。
+
+### ページ参照の扱い
+
+`lcap_app.json` でページファイルと同時に push すれば、ページ参照も正しく解決される。
+
+```json
+{
+  "creation_page": {
+    "zip_name": "submit_form.lcap_page.json",
+    "name": "Submit form",
+    "folder": ""
+  },
   "workflow_stages": [
-    { "name": "Manager review", "color": 1 }
+    { "name": "Manager review", "color": 1,
+      "task_page": { "zip_name": "review.lcap_page.json", "name": "Review", "folder": "" }
+    }
   ]
 }
 ```
