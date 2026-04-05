@@ -3,13 +3,15 @@ paths:
   - "projects/**"
 ---
 
-# 共有アセットルール
+# 共有アセットガイダンス
 
-## コネクションの共有
+複数プロジェクト間でコネクションや Recipe Function を共有する場合の参考パターン。
+**共有化は必須ではない。** プロジェクトごとに個別に持つ方がシンプルなケースも多い。
 
-2つ以上のプロジェクトで同じコネクション（Jira, Slack 等）を使う場合は、`Shared` プロジェクトに配置して参照する。
+## 共有する場合のパターン
 
-参照方法:
+`Shared` プロジェクトに共有アセットを配置し、他プロジェクトから `folder` 参照で利用する:
+
 ```json
 "account_id": {
   "zip_name": "Shared/Connections/shared_jira.connection.json",
@@ -18,18 +20,12 @@ paths:
 }
 ```
 
-## Recipe Function の共有
+## 判断の目安
 
-横断的なロジック（マネージャー取得、通知送信等）は `Shared` プロジェクトの Recipe Function として切り出す。
-
-命名: `fnc_<動詞>_<名詞>` (例: `fnc_get_line_manager`, `fnc_send_notification`)
-
-## 共有化の判断
-
-- 2つ以上のプロジェクトで使う → Shared に移動
-- HRMS / 通知 / 認証など横断的機能 → 最初から Shared に作成
-- 1つのプロジェクトでのみ使用 → プロジェクト内に保持
+- 同じコネクションやロジックが複数プロジェクトで重複している → 共有を**検討**
+- 1つのプロジェクトでしか使わない → プロジェクト内に保持
+- 共有すると変更時の影響範囲が広がる → トレードオフを考慮
 
 ## 詳細
 
-具体的な実装パターン、インターフェース設計、注意事項は `@docs/patterns/shared-assets.md` を参照。
+命名規則、Recipe Function のインターフェース設計、注意事項は `@docs/patterns/shared-assets.md` を参照。
