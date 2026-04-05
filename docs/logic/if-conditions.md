@@ -13,8 +13,9 @@ ELSE → actions                   ← デフォルト分岐
 - 順次評価され、最初に true になった分岐のみ実行される
 - ELSE IF / ELSE は省略可
 
-## JSON 構造（推定）
+## JSON 構造
 
+### if（条件分岐）
 ```json
 {
   "number": N,
@@ -31,9 +32,41 @@ ELSE → actions                   ← デフォルト分岐
     "operand": "and",
     "type": "compound"
   },
-  "block": [ /* true 時のアクション */ ]
+  "block": [
+    /* true 時のアクション */
+    { /* else または elsif — block の末尾に配置 */ }
+  ]
 }
 ```
+
+### else（条件なしのデフォルト分岐）
+```json
+{
+  "number": N,
+  "keyword": "else",
+  "block": [ /* デフォルトのアクション */ ]
+}
+```
+
+### elsif（追加の条件分岐 = ELSE IF）
+```json
+{
+  "number": N,
+  "keyword": "elsif",
+  "input": {
+    "conditions": [ /* 条件必須 */ ],
+    "operand": "and",
+    "type": "compound"
+  },
+  "block": [ /* 条件 true 時のアクション */ ]
+}
+```
+
+### 配置ルール
+
+- `else` / `elsif` は `if` の **block 配列の末尾** に配置する
+- 条件なしのデフォルト分岐には `else` を使う（`elsif` を条件なしで使うのは誤り）
+- `elsif` は複数チェーン可能（`if` → `elsif` → `elsif` → `else`）
 
 ## 条件演算子一覧（14種）
 

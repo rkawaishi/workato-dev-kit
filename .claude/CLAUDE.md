@@ -55,7 +55,8 @@ Workato (エンタープライズ iPaaS) の自動化開発を Claude Code / Cur
     skills/                  # 開発スキル
       create-recipe/         # /create-recipe
       create-genie/          # /create-genie
-      create-connector/      # /create-connector (NEW)
+      create-workflow-app/    # /create-workflow-app
+      create-connector/      # /create-connector
       validate-recipe/       # /validate-recipe
       wpull/                 # /wpull
       wpush/                 # /wpush

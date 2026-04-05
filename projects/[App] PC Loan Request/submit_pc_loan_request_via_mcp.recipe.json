@@ -1,0 +1,285 @@
+{
+  "name": "submit_pc_loan_request_via_mcp",
+  "description": "MCP 経由で PC 貸与リクエストを送信する。PC type、Reason、Preferred delivery date を受け取り、Data Table にレコードを作成する。",
+  "version": 4,
+  "private": true,
+  "concurrency": 1,
+  "code": {
+    "number": 0,
+    "provider": "workato_genie",
+    "name": "start_workflow",
+    "as": "d4e5f6a7",
+    "keyword": "trigger",
+    "input": {
+      "requires_user_confirmation": "false",
+      "description": "Submit a PC loan request with PC type, reason, and optional preferred delivery date.",
+      "parameters_schema_json": "[{\"name\":\"pc_type\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"PC type\",\"hint\":\"Type of PC requested: Windows, Mac, or Linux\"},{\"name\":\"reason\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Reason\",\"hint\":\"Why do you need a PC loan?\"},{\"name\":\"preferred_delivery_date\",\"type\":\"date\",\"optional\":true,\"control_type\":\"date\",\"label\":\"Preferred delivery date\",\"hint\":\"When do you need the PC? (optional)\",\"render_input\":\"date_conversion\",\"parse_output\":\"date_conversion\"}]",
+      "result_schema_json": "[{\"name\":\"status\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Status\"},{\"name\":\"record_id\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Record ID\"},{\"name\":\"message\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Message\"}]"
+    },
+    "extended_output_schema": [
+      {
+        "label": "Parameters",
+        "name": "parameters",
+        "properties": [
+          {
+            "control_type": "text",
+            "label": "PC type",
+            "name": "pc_type",
+            "type": "string",
+            "optional": false,
+            "hint": "Type of PC requested: Windows, Mac, or Linux"
+          },
+          {
+            "control_type": "text",
+            "label": "Reason",
+            "name": "reason",
+            "type": "string",
+            "optional": false,
+            "hint": "Why do you need a PC loan?"
+          },
+          {
+            "control_type": "date",
+            "label": "Preferred delivery date",
+            "render_input": "date_conversion",
+            "parse_output": "date_conversion",
+            "name": "preferred_delivery_date",
+            "type": "date",
+            "optional": true,
+            "hint": "When do you need the PC? (optional)"
+          }
+        ],
+        "type": "object"
+      }
+    ],
+    "block": [
+      {
+        "number": 1,
+        "provider": "workato_db_table",
+        "name": "add_record",
+        "as": "e5f6a7b8",
+        "keyword": "action",
+        "input": {
+          "table_id": {
+            "zip_name": "pc_loan_requests.workato_db_table.json",
+            "name": "PC Loan Requests",
+            "folder": ""
+          },
+          "parameters": {
+            "b1a2c3d4_e5f6_4a7b_8c9d_100000000001": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_genie\",\"line\":\"d4e5f6a7\",\"path\":[\"parameters\",\"pc_type\"]}')}",
+            "b1a2c3d4_e5f6_4a7b_8c9d_100000000002": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_genie\",\"line\":\"d4e5f6a7\",\"path\":[\"parameters\",\"reason\"]}')}",
+            "b1a2c3d4_e5f6_4a7b_8c9d_100000000003": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_genie\",\"line\":\"d4e5f6a7\",\"path\":[\"parameters\",\"preferred_delivery_date\"]}')}"
+          }
+        },
+        "extended_output_schema": [
+          {
+            "label": "Record",
+            "name": "record",
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Record ID",
+                "type": "string",
+                "name": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
+              },
+              {
+                "control_type": "text",
+                "label": "PC type",
+                "type": "string",
+                "name": "b1a2c3d4_e5f6_4a7b_8c9d_100000000001"
+              },
+              {
+                "control_type": "text",
+                "label": "Reason",
+                "type": "string",
+                "name": "b1a2c3d4_e5f6_4a7b_8c9d_100000000002"
+              },
+              {
+                "control_type": "date",
+                "label": "Preferred delivery date",
+                "render_input": "date_conversion",
+                "parse_output": "date_conversion",
+                "type": "date",
+                "name": "b1a2c3d4_e5f6_4a7b_8c9d_100000000003"
+              },
+              {
+                "control_type": "text",
+                "label": "Review comments",
+                "type": "string",
+                "name": "b1a2c3d4_e5f6_4a7b_8c9d_100000000004"
+              },
+              {
+                "control_type": "text",
+                "label": "Jira ticket key",
+                "type": "string",
+                "name": "b1a2c3d4_e5f6_4a7b_8c9d_100000000005"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Created at",
+                "render_input": "date_time_conversion",
+                "parse_output": "date_time_conversion",
+                "type": "date_time",
+                "name": "a5612739_5401_4ae7_bd07_782c1a6fb2d1"
+              },
+              {
+                "control_type": "date_time",
+                "label": "Updated at",
+                "render_input": "date_time_conversion",
+                "parse_output": "date_time_conversion",
+                "type": "date_time",
+                "name": "61aae604_a95e_4519_9091_bb0bf754a67f"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "extended_input_schema": [
+          {
+            "hint": "Fill the fields for the new record",
+            "label": "New record fields",
+            "name": "parameters",
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "PC type",
+                "optional": false,
+                "sticky": true,
+                "type": "string",
+                "name": "b1a2c3d4_e5f6_4a7b_8c9d_100000000001"
+              },
+              {
+                "control_type": "text-area",
+                "label": "Reason",
+                "optional": false,
+                "sticky": true,
+                "type": "string",
+                "name": "b1a2c3d4_e5f6_4a7b_8c9d_100000000002"
+              },
+              {
+                "control_type": "date",
+                "label": "Preferred delivery date",
+                "render_input": "date_conversion",
+                "parse_output": "date_conversion",
+                "optional": true,
+                "sticky": true,
+                "type": "date",
+                "name": "b1a2c3d4_e5f6_4a7b_8c9d_100000000003"
+              },
+              {
+                "control_type": "text-area",
+                "label": "Review comments",
+                "optional": true,
+                "sticky": true,
+                "type": "string",
+                "name": "b1a2c3d4_e5f6_4a7b_8c9d_100000000004"
+              },
+              {
+                "control_type": "text",
+                "label": "Jira ticket key",
+                "optional": true,
+                "sticky": true,
+                "type": "string",
+                "name": "b1a2c3d4_e5f6_4a7b_8c9d_100000000005"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "comment": "PC Loan Requests Data Table にレコードを作成",
+        "uuid": "a1b2c3d4-0020-4a7b-8c9d-000000000001"
+      },
+      {
+        "number": 2,
+        "provider": "workato_genie",
+        "name": "workflow_return_result",
+        "as": "f6a7b8c9",
+        "keyword": "action",
+        "input": {
+          "result": {
+            "status": "submitted",
+            "record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"e5f6a7b8\",\"path\":[\"record\",\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}",
+            "message": "PC loan request submitted successfully. Your request for a #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_genie\",\"line\":\"d4e5f6a7\",\"path\":[\"parameters\",\"pc_type\"]}')} PC has been recorded and will be reviewed by your manager."
+          }
+        },
+        "extended_output_schema": [
+          {
+            "label": "Result",
+            "name": "result",
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Status",
+                "name": "status",
+                "type": "string",
+                "optional": false
+              },
+              {
+                "control_type": "text",
+                "label": "Record ID",
+                "name": "record_id",
+                "type": "string",
+                "optional": false
+              },
+              {
+                "control_type": "text",
+                "label": "Message",
+                "name": "message",
+                "type": "string",
+                "optional": false
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "extended_input_schema": [
+          {
+            "label": "Result",
+            "name": "result",
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Status",
+                "name": "status",
+                "type": "string",
+                "optional": false
+              },
+              {
+                "control_type": "text",
+                "label": "Record ID",
+                "name": "record_id",
+                "type": "string",
+                "optional": false
+              },
+              {
+                "control_type": "text",
+                "label": "Message",
+                "name": "message",
+                "type": "string",
+                "optional": false
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "comment": "リクエスト送信結果を MCP クライアントに返す",
+        "uuid": "a1b2c3d4-0021-4a7b-8c9d-000000000001"
+      }
+    ],
+    "comment": "MCP 経由の PC 貸与リクエスト送信",
+    "uuid": "a1b2c3d4-0022-4a7b-8c9d-000000000001"
+  },
+  "config": [
+    {
+      "keyword": "application",
+      "provider": "workato_genie",
+      "skip_validation": false,
+      "account_id": null
+    },
+    {
+      "keyword": "application",
+      "provider": "workato_db_table",
+      "skip_validation": false,
+      "account_id": null
+    }
+  ]
+}

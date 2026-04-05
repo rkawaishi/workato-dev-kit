@@ -139,6 +139,16 @@ agentic_genie.json
 - `workflow_stages` でステージごとに task_page / details_page を参照
 - `displayed_columns.id` は Data Table の UUID フィールド ID、または大文字のシステムカラム
 
+### ページコンポーネントの type（重要）
+
+| フィールド型 | コンポーネント `type` | `style` |
+|---|---|---|
+| short-text | `"input"` | `"short-text"` |
+| long-text | `"input"` | `"long-text"` |
+| date / date-time | **`"date"`** | 不要 |
+
+**date 型に `"type": "input"` を使うとページエディタが壊れる。必ず `"type": "date"` を使うこと。**
+
 ## Data Table: *.workato_db_table.json
 
 ```json

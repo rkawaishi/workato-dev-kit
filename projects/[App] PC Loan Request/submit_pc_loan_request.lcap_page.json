@@ -1,0 +1,210 @@
+{
+  "name": "Submit PC loan request",
+  "path": "submit-pc-loan-request",
+  "content": {
+    "type": "common",
+    "maxWidth": "fixed",
+    "background": {
+      "style": "pattern",
+      "pattern": "light-2"
+    },
+    "variables": [
+
+    ],
+    "handlers": {
+      "pageLoad": null
+    },
+    "layout": [
+      1,
+      [
+        {
+          "type": "container",
+          "id": "f01be001",
+          "name": "Main container",
+          "x": 1,
+          "width": 10,
+          "visible": true,
+          "layout": [
+            1,
+            [
+              {
+                "type": "container",
+                "id": "d8add001",
+                "name": "Image container",
+                "x": 0,
+                "width": 5,
+                "visible": true,
+                "layout": [
+                  1,
+                  [
+                    {
+                      "type": "image",
+                      "id": "48a06001",
+                      "name": "Image",
+                      "x": 0,
+                      "width": 12,
+                      "height": 36,
+                      "visible": true,
+                      "image": "illustration-10",
+                      "customUrl": "",
+                      "source": "manual",
+                      "fitting": "cover",
+                      "horizontalAlignment": "center",
+                      "verticalAlignment": "center"
+                    },
+                    0
+                  ]
+                ],
+                "backgroundColor": "#c8e2f8",
+                "borderColor": "transparent",
+                "padding": "none"
+              },
+              0
+            ],
+            [
+              {
+                "type": "container",
+                "id": "1353f001",
+                "name": "Form container",
+                "x": 5,
+                "width": 7,
+                "visible": true,
+                "layout": [
+                  1,
+                  [
+                    {
+                      "type": "text",
+                      "id": "2a8d5001",
+                      "name": "Form title",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "text": "# 💻 PC Loan Request\nUse this form to request a PC loan.",
+                      "alignment": "left",
+                      "color": "#24434f",
+                      "pillsSupportMarkdown": false,
+                      "style": "paragraph"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "divider",
+                      "id": "1bb63001",
+                      "name": "Divider",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "backgroundColor": "#ced5db"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "input",
+                      "id": "ec2aa001",
+                      "name": "PC type",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "dataSource": {
+                        "id": "PC type",
+                        "type": "short-text"
+                      },
+                      "editable": true,
+                      "validations": {
+                        "required": {
+                          "condition": true
+                        }
+                      },
+                      "label": "PC type",
+                      "hint": "Windows / Mac / Linux",
+                      "placeholder": "e.g. Mac",
+                      "style": "short-text"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "input",
+                      "id": "0dcfb001",
+                      "name": "Reason",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "dataSource": {
+                        "id": "Reason",
+                        "type": "long-text"
+                      },
+                      "editable": true,
+                      "validations": {
+                        "required": {
+                          "condition": true
+                        }
+                      },
+                      "label": "Reason",
+                      "hint": "",
+                      "placeholder": "Why do you need a PC loan?",
+                      "textareaHeight": 96,
+                      "style": "long-text"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "date",
+                      "id": "a1b2c001",
+                      "name": "Preferred delivery date",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "dataSource": {
+                        "id": "Preferred delivery date",
+                        "type": "date"
+                      },
+                      "editable": true,
+                      "validations": {
+                        "required": {
+                          "condition": false
+                        }
+                      },
+                      "label": "Preferred delivery date"
+                    },
+                    0
+                  ],
+                  [
+                    {
+                      "type": "button",
+                      "id": "09dcd001",
+                      "name": "Submit button",
+                      "x": 0,
+                      "width": 12,
+                      "visible": true,
+                      "handlers": {
+                        "click": {
+                          "type": "save-data"
+                        }
+                      },
+                      "label": "Submit",
+                      "style": "filled",
+                      "enabled": true
+                    },
+                    0
+                  ]
+                ],
+                "backgroundColor": "transparent",
+                "borderColor": "transparent",
+                "padding": "none"
+              },
+              0
+            ]
+          ],
+          "backgroundColor": "#ffffff",
+          "borderColor": "transparent",
+          "padding": "large"
+        },
+        1
+      ]
+    ]
+  }
+}
