@@ -1,6 +1,7 @@
 ---
 description: ローカルのプロジェクト変更を Workato リモートに push する。新規コネクションがあればコネクション先行 push → 認証 → 残り push のフローを実行。
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep
+disable-model-invocation: true
 ---
 
 # /wpush
