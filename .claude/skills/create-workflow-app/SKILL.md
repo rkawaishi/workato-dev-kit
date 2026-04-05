@@ -130,7 +130,7 @@ pull した lcap_app.json を更新。Data Table、ステージ、ページ参�
 {
   "name": "<App名>",
   "creation_page": { "zip_name": "Pages/submit_<name>.lcap_page.json", "name": "...", "folder": "Pages" },
-  "workato_db_table": { "zip_name": "<table>.workato_db_table.json", "name": "...", "folder": "" },
+  "workato_db_table": { "zip_name": "Data Tables/<table>.workato_db_table.json", "name": "...", "folder": "Data Tables" },
   "workflow_stages": [
     { "name": "New", "color": 0 },
     { "name": "<承認ステージ>", "color": 1,
