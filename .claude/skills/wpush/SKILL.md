@@ -1,5 +1,5 @@
 ---
-description: ローカルのプロジェクト変更を Workato リモートに push する。push 後にレシピの起動・ジョブ確認・エラー修正のサイクルを実行。
+description: ローカルのプロジェクト変更を Workato リモートに push する。新規コネクションがあればコネクション先行 push → 認証 → 残り push のフローを実行。
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 ---
 
@@ -16,16 +16,43 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 
 ## 実行手順
 
-### 1. push
+### 1. 新規コネクションの検出
+
+push 前にプロジェクト内の `.connection.json` ファイルを確認し、Workato リモートにまだ存在しない新規コネクションがあるか検出する。
+
+検出方法:
+- ローカルの `*.connection.json` ファイルを一覧
+- `workato pull` 時に取得済みのコネクション（既に Workato 上に存在）と比較
+- 新規に作成されたコネクションファイルを特定
+
+### 2. push（2段階 or 通常）
+
+**新規コネクションがある場合 — 2段階 push:**
+
+1. **まずコネクションファイルのみを push**: レシピ等を一時的に `.workato-ignore` に追加するか、コネクションファイルだけのディレクトリで push する。ただし **`--delete` オプションは絶対に使わない**（既存リモートアセットが削除される）
+2. ユーザーに認証設定を依頼:
+
+```
+新しいコネクションを Workato にプッシュしました:
+- <connection_name> (<provider>)
+
+Workato UI で認証を設定してください:
+1. プロジェクト「<project>」を開く
+2. 各コネクションの認証情報を入力して接続
+
+認証が完了したら教えてください。残りのアセットを push します。
+```
+
+3. 認証完了後、全アセットを push
+
+**新規コネクションがない場合 — 通常 push:**
 
 ```bash
-# プロジェクト名指定の場合
 workato projects use "<project-name>"
-# push
 workato push
 ```
 
-### 2. レシピ起動（--start / --test 指定時）
+### 4. レシピ起動（--start / --test 指定時）
 
 ```bash
 # プロジェクト内のレシピ一覧を取得
@@ -38,9 +65,7 @@ workato recipes start --id <recipe-id>
 workato recipes start --all
 ```
 
-### 3. ジョブ確認（--test 指定時）
-
-レシピ起動後、ジョブの実行結果を確認する:
+### 5. ジョブ確認（--test 指定時）
 
 ```bash
 # レシピのジョブ一覧を取得（失敗のみ）
@@ -50,7 +75,7 @@ workato jobs list --recipe-id <recipe-id> --status failed
 workato jobs get --recipe-id <recipe-id> --job-id <job-id>
 ```
 
-### 4. エラー修正サイクル
+### 6. エラー修正サイクル
 
 ジョブが失敗した場合:
 
@@ -64,7 +89,7 @@ workato jobs get --recipe-id <recipe-id> --job-id <job-id>
 4. レシピを再起動してジョブを再確認
 5. 成功するまで繰り返す
 
-### 5. 結果報告
+### 7. 結果報告
 
 - push 結果
 - レシピの起動状態
@@ -74,5 +99,5 @@ workato jobs get --recipe-id <recipe-id> --job-id <job-id>
 ## 注意
 
 - push は Workato リモートの内容を上書きする操作
-- レシピ起動前にコネクションの認証設定が必要
+- **新規コネクションは必ず先に push して認証を済ませる** — 未認証コネクションでレシピを push するとエラーになる
 - Workflow App のトリガー（new_requests_realtime 等）はフォーム送信でテスト
