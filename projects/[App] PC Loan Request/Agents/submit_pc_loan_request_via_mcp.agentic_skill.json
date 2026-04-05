@@ -5,9 +5,9 @@
     "recipe_id": {
       "type": "recipe",
       "id": {
-        "zip_name": "submit_pc_loan_request_via_mcp.recipe.json",
+        "zip_name": "Recipes/submit_pc_loan_request_via_mcp.recipe.json",
         "name": "submit_pc_loan_request_via_mcp",
-        "folder": ""
+        "folder": "Recipes"
       }
     }
   }

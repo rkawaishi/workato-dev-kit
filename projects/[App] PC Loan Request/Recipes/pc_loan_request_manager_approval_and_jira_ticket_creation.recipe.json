@@ -212,9 +212,9 @@
         },
         "input": {
           "flow_id": {
-            "zip_name": "fnc_get_line_manager.recipe.json",
+            "zip_name": "Recipes/fnc_get_line_manager.recipe.json",
             "name": "fnc: Get line manager",
-            "folder": ""
+            "folder": "Recipes"
           },
           "parameters": {
             "requestor_email": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_workflow_task\",\"line\":\"new_requests_realtime\",\"path\":[\"request\",\"created_by\",\"email\"]}')}"
@@ -915,8 +915,7 @@
           {
             "number": 7,
             "keyword": "else",
-            "input": {
-            },
+            "input": {},
             "block": [
               {
                 "number": 8,
@@ -964,9 +963,9 @@
       "provider": "jira",
       "skip_validation": false,
       "account_id": {
-        "zip_name": "pc_loan_jira.connection.json",
+        "zip_name": "Connections/pc_loan_jira.connection.json",
         "name": "PC Loan | Jira",
-        "folder": ""
+        "folder": "Connections"
       }
     },
     {
