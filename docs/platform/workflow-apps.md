@@ -169,12 +169,25 @@ Workflow App 本体の有効化のみ UI 操作が必要。それ以外は全て
 主要コンポーネント:
 - `container` — レイアウトコンテナ（`x`, `width`, `backgroundColor`, `padding`）
 - `text` — テキスト表示（マークダウン対応、`text`, `color`, `alignment`）
-- `input` — 入力フィールド（`dataSource.id` で Data Table フィールド名を参照、`editable`, `validations`）
+- `input` — テキスト系入力フィールド（short-text, long-text, number）
+- `date` — 日付入力フィールド（**`"input"` ではなく `"date"` を使う**）
 - `button` — ボタン（`handlers.click.type: "save-data"` で送信）
 - `image` — 画像（`image: "illustration-N"` でプリセット画像）
 - `divider` — 区切り線
 
-input の `dataSource.id` は Data Table のフィールド **title**（UUID ではない）を指定する。
+**コンポーネント type とフィールド型の対応**（重要）:
+
+| Data Table フィールド型 | コンポーネント `type` | `style` |
+|---|---|---|
+| `short-text` | `"input"` | `"short-text"` |
+| `long-text` | `"input"` | `"long-text"` |
+| `number` | `"input"` | `"number"` |
+| `date` | **`"date"`** | 不要 |
+| `date-time` | **`"date"`** | 不要 |
+
+> **注意**: date 型に `"type": "input"` + `"style": "date"` を使うとページエディタが壊れる（無限ロード）。
+
+`dataSource.id` は Data Table のフィールド **title**（UUID ではない）を指定する。
 
 ### ページ参照の扱い
 

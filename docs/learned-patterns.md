@@ -282,6 +282,22 @@ search_threads, search_messages, list_labels, get_thread, get_message, list_atta
 - フィールド ID は UUID v4 形式。レシピの output やページ内で UUID がカラム名として使われる
 - `project_name`: このテーブルが属するプロジェクト名
 
+### ページコンポーネントの `type` とフィールド型の対応
+
+ページの input コンポーネントは、Data Table フィールドの型に応じて `type` を使い分ける必要がある:
+
+| Data Table フィールド型 | コンポーネント `type` | 備考 |
+|---|---|---|
+| `short-text` | `"input"` | `style: "short-text"` |
+| `long-text` | `"input"` | `style: "long-text"`, `textareaHeight` 指定可 |
+| `number` | `"input"` | `style: "number"` |
+| `boolean` | `"input"` | `style: "checkbox"` (要確認) |
+| `date` | `"date"` | **`"input"` ではない。`style` 不要** |
+| `date-time` | `"date"` | (要確認) |
+| `file` | (要確認) | |
+
+**注意**: date 型フィールドに `"type": "input"` + `"style": "date"` を使うとページエディタが無限ロードになる。必ず `"type": "date"` を使うこと。
+
 ### `.lcap_page.json` — Workflow App ページ定義
 
 ```json

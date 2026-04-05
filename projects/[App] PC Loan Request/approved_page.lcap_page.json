@@ -98,7 +98,11 @@
                   "type": "short-text"
                 },
                 "editable": false,
-                "validations": { "required": { "condition": false } },
+                "validations": {
+                  "required": {
+                    "condition": false
+                  }
+                },
                 "label": "PC type",
                 "style": "short-text"
               },
@@ -117,7 +121,11 @@
                   "type": "long-text"
                 },
                 "editable": false,
-                "validations": { "required": { "condition": false } },
+                "validations": {
+                  "required": {
+                    "condition": false
+                  }
+                },
                 "label": "Reason",
                 "textareaHeight": 64,
                 "style": "long-text"
@@ -126,7 +134,7 @@
             ],
             [
               {
-                "type": "input",
+                "type": "date",
                 "id": "e4e4e001",
                 "name": "Preferred delivery date",
                 "x": 0,
@@ -137,9 +145,12 @@
                   "type": "date"
                 },
                 "editable": false,
-                "validations": { "required": { "condition": false } },
-                "label": "Preferred delivery date",
-                "style": "date"
+                "validations": {
+                  "required": {
+                    "condition": false
+                  }
+                },
+                "label": "Preferred delivery date"
               },
               0
             ],
@@ -156,7 +167,11 @@
                   "type": "short-text"
                 },
                 "editable": false,
-                "validations": { "required": { "condition": false } },
+                "validations": {
+                  "required": {
+                    "condition": false
+                  }
+                },
                 "label": "Jira ticket key",
                 "style": "short-text"
               },

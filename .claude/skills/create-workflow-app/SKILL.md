@@ -78,12 +78,21 @@ workato projects use "[App] <Name>" && echo "y" | workato pull
 4ページを生成:
 
 **送信フォーム** (`submit_<name>.lcap_page.json`):
-- input コンポーネント（`editable: true`）で各フィールド
+- テキスト系: `"type": "input"` + `"style": "short-text"` or `"long-text"`
+- 日付系: **`"type": "date"`**（`"input"` + `"style": "date"` は NG — エディタが壊れる）
 - button コンポーネント（`handlers.click.type: "save-data"`）で送信
 - `dataSource.id` には Data Table フィールドの **title**（UUID ではない）を指定
 
+**コンポーネント type の対応表（重要）**:
+| フィールド型 | `type` | `style` |
+|---|---|---|
+| short-text | `"input"` | `"short-text"` |
+| long-text | `"input"` | `"long-text"` |
+| number | `"input"` | `"number"` |
+| date / date-time | **`"date"`** | 不要 |
+
 **レビューページ** (`review_<name>.lcap_page.json`):
-- input コンポーネント（`editable: false`）でリクエスト内容を読み取り表示
+- input / date コンポーネント（`editable: false`）でリクエスト内容を読み取り表示
 - Review comments フィールドのみ `editable: true`
 
 **承認済みページ** (`approved_page.lcap_page.json`):

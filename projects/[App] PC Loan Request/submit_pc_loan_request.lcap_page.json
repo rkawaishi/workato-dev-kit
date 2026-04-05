@@ -150,7 +150,7 @@
                   ],
                   [
                     {
-                      "type": "input",
+                      "type": "date",
                       "id": "a1b2c001",
                       "name": "Preferred delivery date",
                       "x": 0,
@@ -166,10 +166,7 @@
                           "condition": false
                         }
                       },
-                      "label": "Preferred delivery date",
-                      "hint": "",
-                      "placeholder": "",
-                      "style": "date"
+                      "label": "Preferred delivery date"
                     },
                     0
                   ],
