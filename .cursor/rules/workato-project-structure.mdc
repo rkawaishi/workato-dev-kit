@@ -1,0 +1,29 @@
+---
+description: Workato プロジェクト内のディレクトリ構成ルール。projects/ 配下のファイルを新規作成・整理する際に適用。
+globs: "projects/**"
+alwaysApply: false
+---
+
+# Workato プロジェクト内ディレクトリ構成
+
+```
+projects/<project-name>/
+├── <app>.lcap_app.json / .png         # Workflow App（ルート）
+├── Recipes/                           # レシピ + Recipe Function
+│   └── *.recipe.json
+├── Pages/                             # Workflow App ページ
+│   └── *.lcap_page.json / .zip
+├── Connections/                        # コネクション
+│   └── *.connection.json
+├── Data Tables/                        # Data Table スキーマ
+│   └── *.workato_db_table.json
+├── Insights/                           # Insights クエリ
+│   └── *.insights_query.json
+├── Agents/                             # Genie / MCP / Skills
+│   └── *.agentic_genie.json / .agentic_skill.json / .mcp_server.json
+```
+
+- `zip_name` にフォルダパスを含める: `"Recipes/my_recipe.recipe.json"`
+- `folder` フィールドもフォルダ名に合わせる: `"folder": "Recipes"`
+- ルート配置のファイル（lcap_app, .workatoenv）は `"folder": ""`
+- ファイル数が少ないプロジェクトはフラット構成でも可
