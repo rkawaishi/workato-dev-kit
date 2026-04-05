@@ -29,6 +29,8 @@ Workato (エンタープライズ iPaaS) の自動化開発を Claude Code / Cur
       data-pills.md          # データピル、マッピング、型変換
       formulas.md            # フォーミュラ操作
       file-handling.md       # ファイル処理
+    patterns/                # 設計パターン
+      shared-assets.md       # 共有アセット（Shared プロジェクト、Recipe Function 設計）
     connectors/              # Pre-built コネクタナレッジ（139件）
       _index.md              # 全コネクタ一覧 + 分類
     platform/                # Workato プラットフォーム機能
