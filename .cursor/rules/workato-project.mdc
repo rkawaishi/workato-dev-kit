@@ -7,40 +7,47 @@ alwaysApply: true
 # Workato Dev Kit
 
 Workato (エンタープライズ iPaaS) の自動化開発を AI エディタで行うためのツールキット。
+レシピ開発、Workflow App 構築、AI エージェント (Genie / MCP)、カスタムコネクタ開発をカバー。
 
 ## プロジェクト構造
 
-- `<project-name>/*.recipe.json` — レシピ（ワークフロー定義）
-- `<project-name>/*.connection.json` — コネクション（接続情報、認証なし）
-- `<project-name>/*.agentic_genie.json` — Genie（AIエージェント定義）
-- `<project-name>/*.agentic_skill.json` — Genieスキル定義
-- `docs/logic/` — ロジックパターン（if, loop, error handling）
-- `docs/connectors/` — コネクタナレッジ（トリガー/アクション一覧）
+- `projects/<project-name>/` — Workato レシピプロジェクト（Platform CLI 管理）
+  - `Recipes/` — レシピ、Recipe Function
+  - `Pages/` — Workflow App ページ
+  - `Connections/` — コネクション
+  - `Data Tables/` — Data Table スキーマ
+  - `Agents/` — Genie / MCP / Skills
+  - `Insights/` — Insights クエリ
+- `connectors/` — カスタムコネクタ（Connector SDK）
+- `docs/logic/` — レシピのロジック（if, loop, error handling, formulas, triggers 等）
+- `docs/connectors/` — Pre-built コネクタナレッジ（139件）
+- `docs/platform/` — プラットフォーム機能（Workflow Apps, MCP, Agent Studio 等）
+- `docs/patterns/` — 設計パターン（共有アセット等）
+- `docs/connector-sdk/` — Connector SDK リファレンス
 - `docs/learned-patterns.md` — 公式に載っていない独自知見
 
 ## コネクタの分類
 
-- **Pre-built**: Workato 公式の標準コネクタ（1,000+）
-- **Universal**: HTTP, OpenAPI, GraphQL, SOAP — 標準にない API 用
-- **Community**: ユーザー共有コネクタ
+- **Pre-built**: Workato 公式（1,000+）
+- **Universal**: HTTP, OpenAPI, GraphQL, SOAP
+- **Community**: ユーザー共有
 - **Custom**: Connector SDK で自作
-- **Custom Action** (`__adhoc_http_action`): コネクタ認証を利用した API 直接呼出し
+- **Custom Action** (`__adhoc_http_action`): コネクタ認証で API 直接呼出し
 
-## Workato Platform CLI
+## Platform CLI
 
 ```bash
-workato projects list --source remote    # リモートプロジェクト一覧
-workato projects use "<name>"            # プロジェクト切り替え
-workato pull                             # リモートから取得
-workato push                             # リモートへ反映
-workato recipes list                     # レシピ一覧
-workato init --non-interactive --profile default --project-id <id> --folder-name "<name>"
+workato projects list --source remote
+workato projects use "<name>" && workato pull
+workato push
+workato init --non-interactive --profile default --project-id <id> --folder-name "projects/<name>"
 ```
 
 ## 開発ルール
 
-- コネクタの詳細は `docs/connectors/` を参照。未作成分は公式ドキュメントを確認
-- ロジックは `docs/logic/` を参照（if, loop, error handling）
-- 公式に載っていない独自知見は `docs/learned-patterns.md` を参照
-- `*.connection.json` に認証情報は含まれない（名前とプロバイダーのみ）
-- `.workatoenv` は編集しない
+- コネクタ詳細: `docs/connectors/` を参照
+- ロジック: `docs/logic/` を参照
+- プラットフォーム機能: `docs/platform/` を参照
+- 独自知見: `docs/learned-patterns.md` を参照
+- `*.connection.json` に認証情報は含まれない
+- `.workatoenv` / `master.key` はコミットしない

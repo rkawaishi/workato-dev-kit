@@ -116,6 +116,14 @@ mcp_server.json
 
 MCP サーバーは Genie とは異なる経路でスキルを外部 AI エージェント（Claude Desktop, Cursor, ChatGPT 等）に公開する。Genie が自身の `references` でスキルを直接参照するのに対し、MCP サーバーは `tools[]` 配列で順序付き・説明付きでスキルを公開する。
 
+### スキル名の自動リネーム
+
+MCP サーバーにスキルを紐付けると、Workato がスキルの `zip_name` をレシピ名ベースにリネームすることがある:
+- push 時: `submit_pc_loan_request.agentic_skill.json`
+- pull 後: `submit_pc_loan_request_via_mcp.agentic_skill.json`（レシピ名に合わせてリネーム）
+
+スキルのファイル名はレシピ名と一致させておくのが安全。
+
 ### Gmail MCP Server の実例
 
 Gmail サーバーでは 20 個のツール/スキルが定義されている:

@@ -50,10 +50,12 @@ Workato (エンタープライズ iPaaS) の自動化開発を Claude Code / Cur
       connector-rb.md        # connector.rb 全ブロックリファレンス
     learned-patterns.md      # 公式に載っていない独自知見
   .claude/
-    rules/                   # フォーマットルール
+    rules/                   # フォーマットルール + ガイダンス
       workato-recipe-format.md    # レシピ JSON
-      workato-agentic-format.md   # Genie/Skill/MCP Server JSON
+      workato-agentic-format.md   # Genie/Skill/MCP Server/Workflow App JSON
       workato-connector-sdk.md    # connector.rb (Ruby DSL)
+      workato-project-structure.md # プロジェクト内ディレクトリ構成
+      workato-shared-assets.md    # 共有アセットガイダンス
     skills/                  # 開発スキル
       create-recipe/         # /create-recipe
       create-genie/          # /create-genie

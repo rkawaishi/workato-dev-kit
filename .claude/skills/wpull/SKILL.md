@@ -1,6 +1,7 @@
 ---
 description: Workato リモートからプロジェクトを pull する。引数なしで現在のプロジェクト、プロジェクト名指定で切り替え後 pull。
 allowed-tools: Bash, Read, Glob
+disable-model-invocation: true
 ---
 
 # /wpull
