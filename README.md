@@ -121,4 +121,6 @@ workato jobs list --recipe-id <id>      # ジョブ一覧
 
 ## ライセンス
 
-Private repository. 利用規約については Workato Terms of Service を確認してください。
+MIT License. 詳細は [LICENSE](LICENSE) を参照。
+
+> **注意**: このツールキットは Workato の公式製品ではありません。Workato の利用については [Workato Terms of Service](https://www.workato.com/legal/terms-of-service) を確認してください。

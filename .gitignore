@@ -1,6 +1,9 @@
 # Workato Platform CLI
 .workatoenv
 
+# Workato recipe projects (user-specific, not shared)
+projects/
+
 # Connector SDK secrets
 master.key
 settings.yaml
