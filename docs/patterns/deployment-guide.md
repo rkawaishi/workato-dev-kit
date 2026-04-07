@@ -152,3 +152,4 @@ push 完了。Workato UI で MCP サーバーを確認してください:
 | `Unresolved reference` | 参照先ファイルが存在しない | 参照先を先に push するか、参照を null にする |
 | ページエディタが無限ロード | コンポーネント type の誤り（date 型に input を使った等） | `type: "date"` に修正 |
 | `parameters` が空にリセット | push 時にコネクション未設定のフィールドがリセットされた | コネクション認証 → UI で再設定 → pull |
+| datapill がリロードまで認識されない | `return_result` に `extended_output_schema` / `extended_input_schema` がない | `result_schema_json` と同じフィールド定義を extended スキーマに展開する |
