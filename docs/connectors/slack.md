@@ -86,6 +86,16 @@
 | pin_count | number | Pin count |
 | response_metadata.next_cursor | string | Next cursor (nested) |
 
+### `slack` vs `slack_bot` のイベント指定フィールド
+
+| | `slack`（標準） | `slack_bot`（Workbot） |
+|---|---|---|
+| イベント種別フィールド | `input.webhook_suffix` | `input.event_name` |
+| dynamicPickListSelection | なし | あり |
+
+- 標準コネクタ: `"webhook_suffix": "reaction_added"` のように直接値を指定
+- Workbot: `"event_name": "reaction_added"` + `dynamicPickListSelection` が付与される
+
 ### post_bot_message の主要フィールド
 - `channel` — 投稿先チャンネル
 - `text` — メッセージテキスト

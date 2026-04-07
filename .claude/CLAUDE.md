@@ -48,7 +48,7 @@ Workato (エンタープライズ iPaaS) の自動化開発を Claude Code / Cur
     connector-sdk/           # Connector SDK リファレンス
       overview.md            # SDK 概要、CLI コマンド、プロジェクト構造
       connector-rb.md        # connector.rb 全ブロックリファレンス
-    learned-patterns.md      # 公式に載っていない独自知見
+    learned-patterns.md      # 一時保管用（分類先が不明な知見のみ。通常は各ドキュメントに直接追記）
   .claude/
     rules/                   # フォーマットルール + ガイダンス
       workato-recipe-format.md    # レシピ JSON
@@ -72,10 +72,10 @@ Workato (エンタープライズ iPaaS) の自動化開発を Claude Code / Cur
 
 ### レシピ開発
 1. `@docs/connectors/` — コネクタのトリガー/アクション/フィールド一覧
-2. `@docs/logic/` — ロジックステップの組み方
+2. `@docs/logic/` — ロジックステップの組み方（datapill 記法含む）
 3. `@docs/platform/` — プラットフォーム機能の理解
-4. `@docs/learned-patterns.md` — 非公開の JSON 構造知見
-5. `@.claude/rules/workato-recipe-format.md` / `workato-agentic-format.md`
+4. `@.claude/rules/workato-recipe-format.md` / `workato-agentic-format.md`
+5. `@docs/patterns/` — デプロイガイド、共有アセットパターン
 
 ### カスタムコネクタ開発
 1. `@docs/connector-sdk/connector-rb.md` — connector.rb リファレンス
@@ -133,6 +133,6 @@ Workato (エンタープライズ iPaaS) の自動化開発を Claude Code / Cur
 - Genie/Skill/MCP: `@.claude/rules/workato-agentic-format.md` を参照
 - カスタムコネクタ: `@.claude/rules/workato-connector-sdk.md` を参照
 - コネクタ詳細: `@docs/connectors/` を参照。未作成分は WebFetch
-- 新しい独自知見は `docs/learned-patterns.md` に追記
+- 新しい独自知見は適切なドキュメントに直接追記（`docs/learned-patterns.md` は一時保管のみ）
 - `*.connection.json` に認証情報は含まれない
 - `.workatoenv` / `master.key` はコミットしない

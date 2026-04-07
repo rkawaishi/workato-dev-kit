@@ -16,7 +16,7 @@ Workato Workflow App を構築するスキル。UI 操作は Workflow App の有
 
 以下を参照する:
 - `@docs/platform/workflow-apps.md` — 構築パターン、プロバイダー/アクション
-- `@docs/learned-patterns.md` — Workflow App ファイル種別、レシピパターン
+- `@docs/patterns/deployment-guide.md` — デプロイ手順、よくあるエラー
 - `@.claude/rules/workato-agentic-format.md` — lcap_app / workato_db_table / lcap_page の JSON 構造
 
 ## Phase 1: 設計 + App 有効化
