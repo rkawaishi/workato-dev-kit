@@ -168,7 +168,7 @@ MCP サーバーにスキルを紐付けると、Workato がスキルの `zip_na
 - `task_instructions`: Genie に渡すタスク指示（datapill でコンテキストを注入可能）
 - 用途: 承認フロー内で Genie に分析を依頼、イベント駆動で Genie にタスクを振る等
 
-## 出力
+## 出力とデプロイガイド
 
 生成完了後、以下を表示:
 - 生成ファイル一覧
@@ -177,3 +177,10 @@ MCP サーバーにスキルを紐付けると、Workato がスキルの `zip_na
   - MCP 付き: `Genie → Skills → Recipes ← MCP Server`
 - 各スキルの trigger_description サマリー
 - MCP 公開の場合: MCP サーバーの tools[] サマリー
+
+`@docs/patterns/deployment-guide.md` に従い、デプロイを段階的に案内する:
+1. コネクション先行 push → UI 認証（新規コネクションがある場合）
+2. 全アセット push
+3. UI でスキルレシピのフィールドマッピング確認を案内
+4. MCP の場合: サーバー有効化と AI クライアント設定を案内
+5. テスト実行を案内

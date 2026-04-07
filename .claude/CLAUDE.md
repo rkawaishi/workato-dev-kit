@@ -31,6 +31,7 @@ Workato (エンタープライズ iPaaS) の自動化開発を Claude Code / Cur
       file-handling.md       # ファイル処理
     patterns/                # 設計パターン
       shared-assets.md       # 共有アセット（Shared プロジェクト、Recipe Function 設計）
+      deployment-guide.md    # デプロイメントガイド（UI 操作手順、よくあるエラー）
     connectors/              # Pre-built コネクタナレッジ（139件）
       _index.md              # 全コネクタ一覧 + 分類
     platform/                # Workato プラットフォーム機能
