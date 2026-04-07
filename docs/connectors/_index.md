@@ -24,7 +24,7 @@ Connector SDK を使って自作するコネクタ。プライベートスコー
 
 ### Custom Action (`__adhoc_http_action`)
 コネクタ内に適切なアクションがない場合、コネクタの認証を利用しつつ API を直接呼び出す。
-- 詳細: `@docs/learned-patterns.md` の Custom Action セクション参照
+- 詳細: `@.claude/rules/workato-recipe-format.md` の Custom Action セクション参照
 
 ## 主要 Pre-built コネクタ（個別ドキュメントあり）
 
