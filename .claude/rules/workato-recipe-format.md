@@ -102,13 +102,36 @@ provider が `workato_genie` の場合:
 
 - パラメータは `parameters` オブジェクト配下にネスト:
   `path:["parameters","<param_name>"]`
-- `workflow_return_result` は `input.result.<field>` に個別マッピング:
+- `workflow_return_result` / `return_result` は `input.result.<field>` に個別マッピング
+- **`extended_output_schema` と `extended_input_schema` を必ず設定する** — 省略するとエディタでリロードが必要になる
   ```json
-  "input": {
-    "result": {
-      "field1": "#{_dp('...')}",
-      "field2": "#{_dp('...')}"
-    }
+  {
+    "provider": "workato_genie",
+    "name": "workflow_return_result",
+    "input": {
+      "result": {
+        "field1": "#{_dp('...')}",
+        "field2": "#{_dp('...')}"
+      }
+    },
+    "extended_output_schema": [
+      {
+        "label": "Result", "name": "result", "type": "object",
+        "properties": [
+          { "name": "field1", "type": "string", "label": "Field 1" },
+          { "name": "field2", "type": "string", "label": "Field 2" }
+        ]
+      }
+    ],
+    "extended_input_schema": [
+      {
+        "label": "Result", "name": "result", "type": "object",
+        "properties": [
+          { "name": "field1", "type": "string", "label": "Field 1" },
+          { "name": "field2", "type": "string", "label": "Field 2" }
+        ]
+      }
+    ]
   }
   ```
 

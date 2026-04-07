@@ -57,6 +57,7 @@
 
 - パラメータ参照: `path:["parameters","<param_name>"]` — `parameters` 配下にネスト
 - `workflow_return_result` の入力: `input.result.<field>` に個別マッピング
+- **`workflow_return_result` / `return_result` には `extended_output_schema` と `extended_input_schema` を必ず設定する** — 省略するとエディタでリロードしないとフィールドが認識されない。`result_schema_json` と同じフィールド定義を `result` オブジェクト配下に展開する
 ```json
 "input": {
   "result": {
