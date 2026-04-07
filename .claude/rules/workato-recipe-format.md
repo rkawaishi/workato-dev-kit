@@ -38,6 +38,14 @@ paths:
 | `extended_output_schema` | array/null | カスタム出力スキーマ（optional） |
 | `extended_input_schema` | array/null | カスタム入力スキーマ（optional） |
 
+### `as` フィールドの命名規則
+
+| コンテキスト | `as` の値 |
+|---|---|
+| 通常レシピ | アクション名と同じ値（例: `new_email`, `post_message`） |
+| Genie スキルレシピ | ランダム 8文字 hex（例: `a7c3e1f9`） |
+| `slack_bot` コネクタ | 通常レシピでもランダム 8文字 hex |
+
 ### Slack イベントトリガー
 
 ```json
@@ -201,6 +209,17 @@ operand: `contains`, `equals`, `not_equals`, `starts_with`, `ends_with`, `greate
 ```
 
 `account_id` が `null` の場合はコネクション未設定。
+
+### クロスプロジェクト参照
+
+別プロジェクトのコネクションを参照する場合、`folder` にプロジェクト名を指定:
+```json
+"account_id": {
+  "zip_name": "Other Project/Connections/shared_jira.connection.json",
+  "name": "Shared | Jira",
+  "folder": "Other Project"
+}
+```
 
 ## スキーマ定義（extended_output_schema / parameters_schema_json）
 
