@@ -70,7 +70,28 @@
 ## レシピからの呼び出し
 
 `workato_genie/assign_task_to_genie` アクションでレシピから Genie を呼び出し可能。
-詳細: `@docs/learned-patterns.md`
+
+```json
+{
+  "provider": "workato_genie",
+  "name": "assign_task_to_genie",
+  "keyword": "action",
+  "dynamicPickListSelection": { "genie_handle": "Genie名" },
+  "toggleCfg": { "genie_handle": true },
+  "input": {
+    "genie_handle": {
+      "zip_name": "genie.agentic_genie.json",
+      "name": "Genie名",
+      "folder": ""
+    },
+    "task_instructions": "タスク指示文（datapill 可）"
+  }
+}
+```
+
+- `genie_handle.zip_name`: 同一プロジェクト内の Genie JSON ファイル名
+- `task_instructions`: Genie に渡すタスク指示。datapill で動的に構成可能
+- レシピ JSON フォーマットの詳細: `@.claude/rules/workato-recipe-format.md`
 
 ## 利用可能リージョン
 

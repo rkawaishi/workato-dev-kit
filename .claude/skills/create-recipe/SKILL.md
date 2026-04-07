@@ -31,8 +31,9 @@ Workato レシピ JSON ファイルを対話的に生成するスキル。
    - `@.claude/rules/workato-recipe-format.md`
    - ロジックステップが必要なら `@docs/logic/` の該当ファイル
 
-5. 独自知見と既存パターンを参照:
-   - `@docs/learned-patterns.md` で JSON 構造の独自知見を確認
+5. 既存パターンを参照:
+   - `@docs/logic/data-pills.md` で datapill 記法を確認
+   - `@docs/patterns/deployment-guide.md` でデプロイ時の注意事項を確認
    - 同じプロジェクト内の既存レシピがあれば参照
 
 6. ファイルを生成（`@.claude/rules/workato-project-structure.md` に従う）:

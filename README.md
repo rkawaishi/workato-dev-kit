@@ -49,7 +49,8 @@ workato-dev-kit/
 │   ├── connectors/              # Pre-built コネクタのナレッジ (139件)
 │   ├── platform/                # プラットフォーム機能 (11件)
 │   ├── connector-sdk/           # Connector SDK リファレンス
-│   └── learned-patterns.md      # 非公開の独自知見
+│   ├── patterns/                # 設計パターン (デプロイガイド, 共有アセット)
+│   └── learned-patterns.md      # 一時保管用 (通常は各ドキュメントに直接追記)
 ├── .claude/                     # Claude Code ハーネス
 │   ├── rules/                   # フォーマットルール
 │   └── skills/                  # 開発スキル

@@ -1,11 +1,12 @@
 ---
-description: レシピ JSON を分析してコネクタのフィールド情報やパターン知識を蓄積する。pull したレシピから input/output フィールドを抽出し docs/connectors/ に反映。
+description: レシピ JSON を分析してフィールド情報やパターン知識を適切なドキュメントに直接追記する。pull したレシピから学習し、ナレッジベースを拡充する。
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 
 # /learn-recipe
 
-レシピ JSON を分析し、コネクタのフィールド情報とパターン知識を蓄積・更新するスキル。
+レシピ JSON を分析し、発見した知見を **適切なドキュメントに直接追記** するスキル。
+中間ファイルへの蓄積ではなく、各ドキュメントを直接拡充する。
 
 ## 使い方
 
@@ -13,127 +14,94 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 - `/learn-recipe <project-name>` — プロジェクト内の全レシピを分析
 - `/learn-recipe` — 全プロジェクトの全レシピを分析
 
-## 分析対象
+## 分析対象と追記先
 
-### 1. フィールド情報の抽出（最重要）
+### 1. フィールド情報（最重要）
 
 各ステップから input/output フィールドスキーマを抽出する。
 
-#### 抽出元フィールド
+抽出元:
+- `extended_output_schema` — アクション/トリガーの出力フィールド
+- `extended_input_schema` — アクション/トリガーの入力フィールド
+- `input` — 実際の入力値（datapill 参照含む）
+- `parameters_schema_json` — Genie/Function のパラメータ（JSON 文字列）
+- `result_schema_json` — Genie/Function の結果（JSON 文字列）
+- `input.input.schema` — Custom Action のリクエストスキーマ
+- `input.output` — Custom Action のレスポンススキーマ
 
-| JSON フィールド | 内容 |
-|---|---|
-| `extended_output_schema` | アクション/トリガーの出力フィールド定義（配列） |
-| `extended_input_schema` | アクション/トリガーの入力フィールド定義（配列） |
-| `input` | 実際に設定された入力値（datapill 参照を含む） |
-| `input.parameters_schema_json` | Genie スキルのパラメータスキーマ（JSON 文字列） |
-| `input.result_schema_json` | Genie スキルの結果スキーマ（JSON 文字列） |
-| `input.input.schema` | Custom Action のリクエストパラメータスキーマ（JSON 文字列） |
-| `input.output` | Custom Action のレスポンススキーマ（JSON 文字列） |
+**追記先**: `docs/connectors/<provider>.md` の該当アクション/トリガーセクション
 
-#### 抽出するフィールド情報
-
-各フィールドから以下を抽出:
-```json
-{
-  "name": "フィールド名",
-  "type": "string|number|boolean|object|array|integer",
-  "label": "表示名",
-  "control_type": "text|number|select|checkbox|...",
-  "optional": true/false,
-  "properties": [...],  // type=object の場合の子フィールド
-  "of": "object"         // type=array の場合の要素型
-}
-```
-
-#### コネクタドキュメントへの反映フォーマット
-
-`docs/connectors/<provider>.md` の該当アクション/トリガーの下にフィールド情報を追記:
-
+フォーマット:
 ```markdown
-## Actions
-
-| 名前 | 説明 |
-|---|---|
-| search_issues | JQL でチケット検索 |
-
-### search_issues
+### <action_name>
 
 #### Input fields
 | フィールド | 型 | 必須 | 説明 |
 |---|---|---|---|
-| Description | string | - | 検索キーワード |
-| Key | string | - | チケットキー |
+| field_name | type | Yes/- | label |
 
 #### Output fields
 | フィールド | 型 | 説明 |
 |---|---|---|
-| issues | array of object | 検索結果のチケット一覧 |
-| issues[].id | string | チケット ID |
-| issues[].key | string | チケットキー（例: PROJ-123） |
-| issues[].fields.summary | string | チケットのサマリー |
-| issues[].fields.description | string | チケットの説明 |
-| issues[].fields.status.name | string | ステータス名 |
-| issues[].fields.priority.name | string | 優先度名 |
-| issues[].fields.comment | object | コメント情報 |
+| field_name | type | label |
+| parent.child | type | label (nested) |
 ```
 
-ネストされたオブジェクトは `parent.child` 形式でフラット化して記載する。
-`properties` を再帰的に展開し、datapill の `path` 指定に直接使える形式にする。
+### 2. 新しいプロバイダー/アクション
 
-### 2. プロバイダーとアクション
+レシピ内で未知の provider/name の組み合わせを発見した場合。
 
-各レシピから以下を抽出:
-- `provider` 名（コネクタ）
-- `name`（アクション/トリガー名）
-- `keyword`（trigger/action/foreach）
-- コネクタドキュメントに未登録のアクション/トリガーがあれば追加
+**追記先**:
+- Pre-built コネクタ → `docs/connectors/<provider>.md` のトリガー/アクション一覧テーブル
+- Workato 内部プロバイダー → `docs/platform/workflow-apps.md` または `docs/platform/agent-studio.md`
 
-### 3. datapill パターン
+### 3. JSON 構造の知見
 
-- `_dp()` の使用パターン
-- `_()` ドット記法の使用パターン
-- Ruby 式（`=_(...).method()`）の使用パターン
-- 新しい記法があれば `docs/learned-patterns.md` に記録
+レシピ JSON の構造に関する新しい発見（新しい keyword、未知のフィールド、特殊な構造等）。
 
-### 4. レシピ構成パターン
+**追記先**:
+- レシピ構造全般 → `.claude/rules/workato-recipe-format.md`
+- Genie/MCP/Skill 構造 → `.claude/rules/workato-agentic-format.md`
+- ロジック（if/loop/error）→ `docs/logic/` の該当ファイル
 
-- トリガー → アクションのフロー構成
-- foreach ループの使い方
-- filter 条件の書き方
-- error handling の構造
-- Genie ワークフローの構成
+### 4. datapill パターン
 
-### 5. 命名規則
+新しい datapill 記法や参照パターンの発見。
 
-- ファイル名の命名パターン
-- コネクション名の命名パターン（`prefix | Provider`）
-- ステップの `as` フィールドの値パターン
+**追記先**: `docs/logic/data-pills.md`
 
-## 更新先
+### 5. デプロイ関連の知見
 
-分析結果を適切なファイルに振り分ける:
+push/pull 時の挙動に関する新発見（フィールドリセット、スキーマ展開、バージョン変更等）。
 
-| 知見の種類 | 更新先 |
-|---|---|
-| **フィールド情報（input/output）** | `docs/connectors/<provider>.md` の該当アクションセクション |
-| 新しいコネクタ/トリガー/アクション | `docs/connectors/<connector>.md`（なければ新規作成） |
-| ロジックパターンの新知見 | `docs/logic/` の該当ファイル |
-| 公式に載っていない JSON 構造の独自知見 | `docs/learned-patterns.md` |
-| フォーマット定義の修正 | `.claude/rules/` の該当ファイル |
+**追記先**: `docs/patterns/deployment-guide.md`
 
-### 更新ルール
+### 6. 分類が不明な知見
 
-- フィールド情報は既存の一覧テーブルの下にサブセクションとして追記
-- 同じアクションのフィールド情報が既にある場合、新しいフィールドのみ追加
-- `extended_output_schema` / `extended_input_schema` が null や空の場合はスキップ
-- JSON 文字列として格納されているスキーマ（`parameters_schema_json` 等）はパースして展開
-- 発見元のレシピ名を出典として記録
+上記のどこにも当てはまらない新発見。
+
+**追記先**: `docs/learned-patterns.md`（一時保管。後で適切なファイルに移動する）
+
+## 分析手順
+
+1. 対象レシピの `.recipe.json` を読み込む
+2. 全ステップを再帰的に走査
+3. 各ステップについて:
+   a. `provider` と `name` が既知か確認（`docs/connectors/<provider>.md` を参照）
+   b. `extended_output_schema` / `extended_input_schema` があればフィールド情報を抽出
+   c. 新しい構造パターンがあれば記録
+4. 追記先ファイルを読み、既存内容と重複しないか確認
+5. 新しい知見のみ追記
+
+## 重複チェック
+
+追記前に必ず対象ファイルを Grep で検索し、同じ内容が既にないか確認する。
+- 同じアクション名のフィールド情報がある → 新しいフィールドのみ追加
+- 同じルールが既にある → スキップ
 
 ## 出力
 
 分析完了後、以下を報告:
 - 分析したファイル数
-- 抽出したフィールド情報の件数（コネクタ × アクション）
-- 更新したコネクタドキュメント一覧
+- 追記したドキュメント一覧と追記内容のサマリー
 - 新たに発見したパターン（あれば）

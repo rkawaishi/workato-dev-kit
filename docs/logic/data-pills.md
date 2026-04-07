@@ -63,13 +63,40 @@
 | Errored action | エラー発生アクション |
 | Inner message | サードパーティの生レスポンス |
 
-## JSON 内での datapill 表現
+## JSON 内での datapill 表現（レシピ解析から得た知見）
+
+> 以下は Workato の公式ドキュメントには記載されていない構造情報であり、
+> 実際のレシピ JSON を解析して得た知見である。
+
+### `_dp()` 関数（構造化参照）
 
 ```
-#{_dp('{"pill_type":"output","provider":"<provider>","line":"<as>","path":["field","nested"]}')}
+#{_dp('{"pill_type":"output","provider":"<provider>","line":"<as>","path":["field"]}')}
 ```
 
-詳細は `@docs/learned-patterns.md` の Datapill 記法セクション参照。
+- `pill_type`: 通常 `"output"`
+- `provider`: 参照元ステップの provider 名
+- `line`: 参照元ステップの `as` 値
+- `path`: フィールドパス配列。リストの現在アイテムは `{"path_element_type":"current_item"}` を使用
+
+### `_()` ドット記法
+
+```ruby
+#{_('data.provider.step.field')}                    # ドット記法
+```
+
+### `=_()` フォーミュラ付き参照
+
+```ruby
+=_('data.provider.step.list').pluck('f').join(', ') # Ruby式（先頭に = を付ける）
+```
+
+### foreach での path_element_type
+
+ループ内で現在アイテムを参照する場合、`path` 配列内に `{"path_element_type":"current_item"}` を使用する:
+```json
+"path": [{"path_element_type":"current_item"}, "field_name"]
+```
 
 ## 注意事項
 
