@@ -1,17 +1,26 @@
 # JDBC コネクタ
 
-公式: https://docs.workato.com/en/connectors/jdbc.html
+Provider: `jdbc`
 
 ## Triggers
-| 名前 | 説明 |
-|---|---|
-| New row | テーブルまたはビューに新しい行が追加された際にトリガーされる |
-| New row (batch) | 新しく追加された複数行をバッチで処理する |
+
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| New row | `new_row` | - |  |
+| New rows | `new_rows_batch` | Yes |  |
+| New rows via custom SQL | `new_rows_sql_batch` | Yes |  |
+| Scheduled query | `scheduled_select` | Yes |  |
+| New/updated rows via custom SQL | `updated_rows_sql_batch` | Yes |  |
 
 ## Actions
-| 名前 | 説明 |
-|---|---|
-| Select rows | フィルタ条件を使用してテーブル/ビューから行を取得する |
-| Insert | データベーステーブルに新しいレコードを追加する |
-| Delete rows | 指定したWHERE条件に一致する行を削除する |
-| Create objects in bulk | 複数レコードのバッチ挿入を実行する |
+
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| Export query result | `export_csv` | Yes |  [deprecated] |
+| Export query result | `export_csv_v2` | - |  |
+| Insert rows | `insert_rows_batch` | Yes |  |
+| Run custom SQL | `run_custom_sql` | Yes |  |
+| Run long query using custom SQL | `run_custom_sql_async` | Yes |  [deprecated] |
+| Run long query using custom SQL | `run_custom_sql_async_v2` | - |  |
+| Select rows | `search_rows` | Yes |  |
+| Select rows using custom SQL | `search_rows_sql` | Yes |  |

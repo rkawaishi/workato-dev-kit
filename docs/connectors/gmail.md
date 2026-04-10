@@ -1,18 +1,20 @@
 # Gmail コネクタ
 
-公式: https://docs.workato.com/en/connectors/gmail.html
 Provider: `gmail`
 
 ## Triggers
-| 名前 | 説明 |
-|---|---|
-| New email | 新着メール受信 |
+
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| New email | `new_email` | - |  |
 
 ## Actions
-| 名前 | 説明 |
-|---|---|
-| Download attachment | 添付ファイルダウンロード |
-| Send email | メール送信 |
+
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| Custom action | `__adhoc_http_action` | - |  |
+| Download attachment | `download_attachment` | - |  |
+| Send email | `send_mail` | - |  |
 
 ## フィールド詳細
 

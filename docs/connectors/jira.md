@@ -1,44 +1,48 @@
 # Jira コネクタ
 
-公式: https://docs.workato.com/en/connectors/jira.html
+Provider: `jira`
 
-## Triggers (11種)
+## Triggers
 
-| 名前 | provider 内名称 | 説明 |
-|---|---|---|
-| New issue | `new_issue` | 新規チケット（ポーリング） |
-| New issue (batch) | — | 新規チケット（バッチ取得） |
-| Updated issue | — | 更新チケット（ポーリング） |
-| Updated issue (batch) | — | 更新チケット（バッチ取得） |
-| New/updated issue (real-time) | — | 新規/更新チケット（リアルタイム、Webhook 必要） |
-| New/updated comment (real-time) | — | 新規/更新コメント（リアルタイム） |
-| New/updated worklog (real-time) | — | 新規/更新ワークログ（リアルタイム） |
-| New event (real-time) | — | 新規イベント（リアルタイム） |
-| Deleted object (real-time) | — | オブジェクト削除（リアルタイム） |
-| Export new issues | — | 新規チケット（スケジュール取得） |
-| Export new/updated issues | — | 新規/更新チケット（スケジュール取得） |
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| Deleted object | `deleted_object` | - |  |
+| Export new issues in Jira | `issue_created_bulk` | - |  |
+| Export new/updated issues in Jira | `issue_created_or_updated_bulk` | - |  |
+| New event | `new_event` | - |  |
+| New issue | `new_issue` | - |  |
+| New issue | `new_issue_batch` | Yes |  |
+| Updated issue priority | `new_issue_priority` | - |  [deprecated] |
+| New project | `new_project` | - |  [deprecated] |
+| New/updated comment | `updated_comment_webhook` | - |  |
+| Updated issue | `updated_issue` | - |  |
+| Updated issue | `updated_issue_batch` | Yes |  |
+| Updated issue status | `updated_issue_status` | - |  [deprecated] |
+| New/updated issue | `updated_issue_webhook` | - |  |
+| New/updated worklog | `updated_worklog_webhook` | - |  |
 
-## Actions (17種)
+## Actions
 
-| 名前 | provider 内名称 | 説明 |
-|---|---|---|
-| Create issue | — | チケット作成 |
-| Update issue | — | チケット更新 |
-| Update issue status | — | チケットのステータス変更 |
-| Get issue | — | チケット取得 |
-| Get changelog of an issue | — | チケットの変更履歴取得 |
-| Get issue schema | — | フィールドスキーマ取得 |
-| Search issues (batch) | `search_issues` | 条件一致チケット検索 |
-| Search issues by JQL (batch) | — | JQL クエリでチケット検索 |
-| Create comment | — | コメント作成 |
-| Update comment | — | コメント更新 |
-| Get issue comments (batch) | — | チケットのコメント一覧取得 |
-| Create user | — | ユーザー作成 |
-| Get user details | — | ユーザー詳細取得 |
-| Search assignable users (batch) | — | アサイン可能ユーザー検索 |
-| Assign user to issue | — | チケットにユーザーをアサイン |
-| Upload attachment | — | 添付ファイルアップロード |
-| Download attachment | — | 添付ファイルダウンロード |
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| Custom action | `__adhoc_http_action` | - |  |
+| Assign user to issue | `assign_issue` | - |  |
+| Create comment | `create_comment` | - |  |
+| Create issue | `create_issue` | - |  |
+| Create user | `create_user` | - |  |
+| Get user details | `find_user` | - |  |
+| Download attachment | `get_attachment` | - |  |
+| Get changelog of an issue | `get_changelog` | - |  |
+| Get issue | `get_issue` | - |  |
+| Get issue comments | `get_issue_comments` | Yes |  |
+| Get issue schema | `get_object_schema` | - |  |
+| Search assignable users | `search_assignable_users` | Yes |  |
+| Search issues | `search_issues` | Yes |  |
+| Search issues by JQL | `search_issues_by_JQL` | Yes |  |
+| Update comment | `update_comment` | - |  |
+| Update issue | `update_issue` | - |  |
+| Update issue status | `update_issue_status` | - |  |
+| Upload attachment | `upload_attachment` | - |  |
 
 ## フィールド詳細
 

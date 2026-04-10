@@ -1,12 +1,21 @@
 # Smartsheet コネクタ
 
-公式: https://docs.workato.com/en/connectors/smartsheet.html
+Provider: `smartsheet`
 
 ## Triggers
-| 名前 | 説明 |
-|---|---|
-| New or updated row in a sheet | シート内の行が作成または変更された時に検知する |
+
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| New or updated row in a sheet | `new_or_updated_row` | - |  |
+| New or updated row in report | `new_or_updated_row_in_report` | - |  |
+| New row in report | `new_row_in_report` | - |  |
 
 ## Actions
 
-公式ドキュメント参照
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| Custom action | `__adhoc_http_action` | - |  |
+| Create row | `create_row` | - |  |
+| Get row by ID | `get_row_by_id` | - |  |
+| Search rows | `search_rows` | Yes |  |
+| Update row | `update_row` | - |  |

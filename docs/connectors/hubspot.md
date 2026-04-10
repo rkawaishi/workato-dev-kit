@@ -1,62 +1,66 @@
 # HubSpot コネクタ
 
-公式: https://docs.workato.com/en/connectors/hubspot.html
 Provider: `hubspot`
 
-## Triggers (6種)
-| 名前 | 説明 |
-|---|---|
-| New record | 新規レコード作成時 |
-| New records (batch) | 新規レコードのバッチ取得 |
-| New/updated record | 新規/更新レコード |
-| New/updated records (batch) | 新規/更新レコードのバッチ取得 |
-| New contact in list | リストにコンタクト追加時 |
-| New form submission | フォーム送信時 |
+## Triggers
 
-## Actions (22種)
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| New company | `new_company` | - |  [deprecated] |
+| New contact | `new_contact` | - |  [deprecated] |
+| New contact in contact list | `new_contact_in_list` | - |  [deprecated] |
+| New contact in list | `new_contact_in_list_v3` | - |  |
+| New contact | `new_contact_v2` | - |  [deprecated] |
+| New form submission | `new_form_submission` | - |  |
+| New record | `new_object` | - |  |
+| New records | `new_object_batch` | Yes |  |
+| New/updated company | `new_or_updated_company` | - |  [deprecated] |
+| New/updated contacts | `new_or_updated_contact` | - |  [deprecated] |
+| New/updated deal | `new_or_updated_deal` | - |  [deprecated] |
+| New/updated record | `new_or_updated_object` | - |  |
+| New/updated records | `new_or_updated_object_batch` | Yes |  |
+| New/updated records | `updated_object_batch` | Yes |  [deprecated] |
 
-### Universal Actions
-| 名前 | 説明 |
-|---|---|
-| Get record | ID でレコード取得 |
-| Search record (batch) | 条件に合うレコード検索 |
-| Create record | レコード作成 |
-| Create records (batch) | 複数レコード一括作成 |
-| Update record | レコード更新 |
-| Update records (batch) | 複数レコード一括更新 |
+## Actions
 
-### Association Actions
-| 名前 | 説明 |
-|---|---|
-| Get associations (batch) | 関連レコード一括取得 |
-| Get contacts associated with a company (batch) | 企業に紐づくコンタクト取得 |
-| List associations (batch) | 関連一覧取得 |
-| Associate records | レコード間の関連付け |
-| Associate records (batch) | 複数レコード一括関連付け |
-| Delete associations (batch) | 関連の一括削除 |
-
-### Export/Import Actions
-| 名前 | 説明 |
-|---|---|
-| Export object data (file) | データをファイルでエクスポート |
-| Import CRM data (file) | ファイルからデータインポート |
-
-### Contact Actions
-| 名前 | 説明 |
-|---|---|
-| Get contacts in list (batch) | リスト内コンタクト取得 |
-| Add contact to list (batch) | コンタクトをリストに一括追加 |
-| Add contact to workflow | ワークフローにコンタクト登録 |
-| Remove contact from list (batch) | リストからコンタクト一括削除 |
-| Delete contact | コンタクト削除 |
-
-### Other Actions
-| 名前 | 説明 |
-|---|---|
-| Create engagement | エンゲージメント（活動）記録 |
-| Get owner details | メールでオーナー情報取得 |
-| Get owner details by ID | ID でオーナー情報取得 |
-| Search pipeline stages (batch) | パイプラインステージ検索 |
-
-## 備考
-- 旧トリガー（contacts, companies, deals 個別）は非推奨。Universal record triggers を使用
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| Custom action | `__adhoc_http_action` | - |  |
+| Add contact to list | `add_contact_to_list` | - |  [deprecated] |
+| Add contact to list | `add_contact_to_list_v3` | Yes |  |
+| Add contact to workflow | `add_contact_to_workflow` | - |  |
+| Associate records | `associate_records` | - |  |
+| Associate records | `associate_records_batch` | Yes |  |
+| Import CRM Data | `bulk_import_crm` | - |  |
+| Create company | `create_company` | - |  [deprecated] |
+| Create contact | `create_contact` | - |  [deprecated] |
+| Create deal | `create_deal` | - |  [deprecated] |
+| Create engagement | `create_engagement` | - |  |
+| Create record | `create_object` | - |  |
+| Create records | `create_object_batch` | Yes |  |
+| Create/update contact | `create_or_update_contact` | - |  [deprecated] |
+| Delete associations | `delete_associations` | Yes |  |
+| Delete contact | `delete_contact` | - |  |
+| Export object data | `export_file` | - |  |
+| Get associations | `get_associations` | Yes |  |
+| Get company details by ID | `get_company_by_id` | - |  [deprecated] |
+| Get contact details by email | `get_contact_by_email` | - |  [deprecated] |
+| Get contact details by VID | `get_contact_by_id` | - |  [deprecated] |
+| Get contacts associated with a company | `get_contacts_at_a_company` | Yes |  |
+| Get contacts in contact list | `get_contacts_in_contact_list` | Yes |  [deprecated] |
+| Get contacts in list | `get_contacts_in_list_v3` | Yes |  |
+| Get deal by ID | `get_deal_by_id` | - |  [deprecated] |
+| Get owner details | `get_owner` | - |  |
+| Get owner details by ID | `get_owner_v3` | - |  |
+| Get record | `get_record` | - |  |
+| List associations | `list_associations` | Yes |  |
+| Remove contact from contact list  | `remove_contact_from_contact_list` | Yes |  [deprecated] |
+| Remove contact from list | `remove_contact_from_list_v3` | Yes |  |
+| Search for companies | `search_companies` | - |  [deprecated] |
+| Search contacts | `search_contacts` | - |  [deprecated] |
+| Search pipeline stages | `search_pipeline_stages` | Yes |  |
+| Search record | `search_record` | Yes |  |
+| Update company | `update_company` | - |  [deprecated] |
+| Update deal | `update_deal` | - |  [deprecated] |
+| Update record | `update_object` | - |  |
+| Update records | `update_object_batch` | Yes |  |

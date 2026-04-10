@@ -1,24 +1,27 @@
 # Workday コネクタ
 
-公式: https://docs.workato.com/en/connectors/workday.html
+Provider: `workday`
 
 ## Triggers
 
-| 名前 | 説明 |
-|---|---|
-| New/updated business object | Workdayのビジネスオブジェクトが新規作成または変更されたときに検出する |
-| New/updated business object (batch) | 複数の新規または更新されたビジネスオブジェクトをバッチとして処理する |
-| Scheduled report | スケジュールされたWorkdayレポートに基づいてワークフローを実行する |
-| Scheduled report using WQL | Workday Query Languageレポートをスケジュールで実行してトリガーする |
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| New/updated business object | `new_updated_object` | - |  |
+| New/updated business object | `new_updated_object_batch` | Yes |  |
+| Scheduled report fetch | `scheduled_report_batch` | Yes |  |
+| Scheduled report fetch using WQL | `scheduled_wql_report_batch` | Yes |  |
 
 ## Actions
 
-| 名前 | 説明 |
-|---|---|
-| Call operation | 特定のWorkday Webサービス操作を実行する |
-| Get custom object | Workdayからカスタムオブジェクトデータを取得する |
-| Get report | Workdayレポートからデータを取得する |
-| Get report using WQL | Workday Query Languageクエリを使用してレポートデータを取得する |
-| List custom object definitions | Workdayで利用可能なカスタムオブジェクト定義を表示する |
-| Create/update custom object | Workdayにカスタムオブジェクトを新規作成または既存のものを変更する |
-| Search business objects (batch) | Workdayビジネスオブジェクト全体でバッチ検索を実行する |
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| Get business object details | `Get_business_object_details` | Yes |  |
+| Search business object | `Search_business_object` | Yes |  |
+| Update business object | `Update_business_object` | - |  |
+| Custom action | `__adhoc_http_action` | - |  |
+| Call operation | `call_operation` | - |  |
+| Get custom objects | `get_custom_object` | - |  |
+| Get report | `get_report` | - |  |
+| Get report using WQL | `get_wql_report` | Yes |  |
+| List custom object definitions | `list_custom_objects` | Yes |  |
+| Create/update custom object | `post_custom_object` | - |  |

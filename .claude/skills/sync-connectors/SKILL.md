@@ -1,114 +1,125 @@
 ---
-description: Workato 公式ドキュメントからコネクタ情報を取得し docs/connectors/ を差分更新する。新規コネクタ追加や既存コネクタの更新に使用。
-allowed-tools: Read, Write, Edit, Glob, Grep, WebFetch, Agent
+description: Workato API からコネクタのトリガー/アクション一覧を取得し docs/connectors/ を更新する。CLI の connectors list コマンドを使用。
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch
 ---
 
 # /sync-connectors
 
-Workato 公式ドキュメントからコネクタのトリガー/アクション情報を取得し、`docs/connectors/` を更新するスキル。
+Workato API からコネクタ情報を取得し、`docs/connectors/` を更新するスキル。
 
 ## 使い方
 
-- `/sync-connectors <connector-name>` — 指定コネクタの情報を取得・更新
+- `/sync-connectors <provider-name>` — 指定コネクタの情報を取得・更新
 - `/sync-connectors <name1> <name2> ...` — 複数コネクタを一括更新
-- `/sync-connectors --all` — 未作成の主要コネクタをすべて取得
-- `/sync-connectors --check` — 既存ドキュメントと公式の差分を確認
+- `/sync-connectors --all` — 全コネクタを一括更新
+- `/sync-connectors --check` — 既存ドキュメントと API の差分を確認
+
+## データソース
+
+### 1次ソース: Workato API（CLI 経由）
+
+```bash
+# 特定コネクタのトリガー/アクション一覧（JSON）
+workato connectors list --platform --provider <name> --output-mode json
+
+# カスタムコネクタ一覧
+workato connectors list --custom --output-mode json
+```
+
+API から取得できる情報:
+- コネクタ名 (`name`), 表示名 (`title`)
+- カテゴリ, OAuth 対応, deprecated フラグ
+- **トリガー一覧**: `name`, `title`, `deprecated`, `bulk`, `batch`
+- **アクション一覧**: `name`, `title`, `deprecated`, `bulk`, `batch`
+
+API から取得 **できない** 情報:
+- input/output フィールドの定義（コネクション接続後のみ）
+- フィールドの型、必須/任意
+
+### 2次ソース: 公式ドキュメント（WebFetch）
+
+API で取得できない説明文や備考を補完する場合に使用。
+URL パターン: `https://docs.workato.com/en/connectors/<name>.html`
+
+### 3次ソース: pull 済みレシピ
+
+`extended_output_schema` / `extended_input_schema` からフィールド情報を抽出。
+これは `/learn-recipe` スキルの役割。
 
 ## 実行手順
 
-### 1. コネクタ名から公式ドキュメント URL を特定
+### 単一コネクタの更新
 
-`@docs/connectors/_index.md` の全コネクタ一覧からドキュメント URL を検索する。
-URL パターン: `https://docs.workato.com/en/connectors/<path>.html`
-
-### 2. 公式ドキュメントからトリガー/アクション情報を取得
-
-コネクタのドキュメントは以下のパターンがある:
-
-**パターン A**: トップページにトリガー/アクション一覧がある
-- URL: `/en/connectors/<name>.html`
-- WebFetch で直接取得
-
-**パターン B**: サブページに分かれている
-- トリガー: `/en/connectors/<name>/triggers.html`
-- アクション: `/en/connectors/<name>/actions.html`
-- 両方を WebFetch で取得
-
-**パターン C**: トリガー/アクションごとに個別ページ
-- トップページのナビゲーションリンクから個別ページを特定
-- 各ページから情報を取得
-
-WebFetch のプロンプト例:
-```
-Extract ALL available triggers and actions for this connector.
-For each, list the exact name and a one-line description.
-Also note the provider name used in Workato recipes if visible.
+1. CLI でコネクタ情報を取得:
+```bash
+workato connectors list --platform --provider <name> --output-mode json 2>/dev/null
 ```
 
-### 3. docs/connectors/<name>.md を作成/更新
+2. JSON をパースし、triggers/actions を抽出
 
-以下のフォーマットで作成:
+3. `docs/connectors/<name>.md` を作成または更新:
 
 ```markdown
-# <コネクタ名> コネクタ
+# <Title> コネクタ
 
-公式: <ドキュメントURL>
-Provider: `<provider_name>`
+Provider: `<name>`
 
 ## Triggers
-| 名前 | 説明 |
-|---|---|
-| <trigger_name> | <説明> |
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| <title> | `<name>` | Yes/- | |
 
 ## Actions
-| 名前 | 説明 |
-|---|---|
-| <action_name> | <説明> |
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| <title> | `<name>` | Yes/- | |
 
-## 備考
-- <認証方式、制限事項、重要な注意点>
+## フィールド詳細
+
+（/learn-recipe で蓄積）
 ```
 
-### 4. 差分更新のルール
+### 差分更新のルール
 
 - **新規作成**: ファイルが存在しなければ新規作成
 - **更新**: 既存ファイルがある場合:
-  - 公式から取得したトリガー/アクションと比較
+  - API から取得したトリガー/アクションと比較
   - 新しいものがあれば追加
-  - 削除されたものがあれば注記（即削除しない）
-  - 「備考」セクションの独自追記は保持する
-- **Provider 名の確認**: 実際のレシピ JSON で使用される provider 名がわかっている場合は記載。不明な場合は `(要確認)` と注記
+  - `## フィールド詳細` 以降のセクション（/learn-recipe で蓄積した情報）は保持
+  - deprecated フラグが立ったものに注記を追加
+- **provider 名の確定**: API の `name` フィールドが正式な provider 名
 
-### 5. _index.md の更新
+### --all の実行
 
-新しくドキュメントを作成したコネクタがあれば、`docs/connectors/_index.md` の「個別ドキュメントあり」セクションにリンクを追加する。
+```bash
+# 全 Pre-built コネクタを取得
+workato connectors list --platform --output-mode json 2>/dev/null
 
-## --all の対象
+# 全 Custom コネクタを取得
+workato connectors list --custom --output-mode json 2>/dev/null
+```
 
-以下のカテゴリで未作成のコネクタを優先的に取得:
+全コネクタの JSON を取得し、各コネクタの `docs/connectors/<name>.md` を生成・更新する。
 
-1. **CRM**: Salesforce, HubSpot, Zoho CRM, Microsoft Dynamics 365
-2. **HR**: Workday, BambooHR, ADP Workforce Now
-3. **コミュニケーション**: Slack, Gmail, Outlook, Microsoft Teams
-4. **プロジェクト管理**: Jira, Asana, Trello, Wrike
-5. **クラウドストレージ**: Google Drive, Dropbox, Box, OneDrive, SharePoint
-6. **データベース**: Snowflake, PostgreSQL, MySQL, Oracle, SQL Server, Redshift
-7. **Finance**: NetSuite, QuickBooks, Xero, Stripe
-8. **Workato 内部**: AI by Workato, Recipe function, RecipeOps, Workbot for Slack
+### --check の動作
 
-## --check の動作
+1. API から全コネクタのトリガー/アクションを取得
+2. `docs/connectors/` 内の既存ファイルと比較
+3. 差分を報告:
+   - ✅ 一致
+   - ⚠️ API に存在するがドキュメントにない（新しいトリガー/アクション）
+   - ❌ ドキュメントにあるが API にない（削除 or 名前変更）
+   - 📄 ドキュメントファイルが存在しないコネクタ
 
-1. `docs/connectors/` 内の全 `.md` ファイルを読み取り
-2. 各ファイルの公式 URL を取得
-3. WebFetch で公式ページの現在のトリガー/アクション一覧を取得
-4. ローカルとの差分を報告:
-   - ✅ 変更なし
-   - ⚠️ 新しいトリガー/アクションが公式に追加
-   - ❌ ローカルにあるが公式から削除された項目
+## `docs/connectors/_index.md` の更新
+
+`--all` 実行時に `_index.md` も更新:
+- 全コネクタの一覧を API データで正確に更新
+- provider 名（`name` フィールド）を記載
 
 ## 出力
 
 更新完了後、以下を報告:
 - 作成/更新したファイル一覧
 - 追加されたトリガー/アクションの数
-- 取得できなかった情報（要手動確認）
+- deprecated になったトリガー/アクション
