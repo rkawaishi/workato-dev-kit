@@ -29,16 +29,16 @@ WARNINGS=()
 
 # 1. Validate JSON syntax (blocking)
 while IFS= read -r -d '' file; do
-  if ! python3 -c "import json; json.load(open('$file'))" 2>/dev/null; then
+  if ! VALIDATE_FILE="$file" python3 -c "import json,os; json.load(open(os.environ['VALIDATE_FILE']))" 2>/dev/null; then
     ERRORS+=("JSON syntax error: $(basename "$file")")
   fi
 done < <(find "$PROJECT_DIR" -type f \( -name "*.recipe.json" -o -name "*.lcap_app.json" -o -name "*.lcap_page.json" -o -name "*.workato_db_table.json" -o -name "*.agentic_skill.json" -o -name "*.agentic_genie.json" -o -name "*.mcp_server.json" -o -name "*.connection.json" \) -print0 2>/dev/null)
 
 # 2. Check for missing extended_output_schema on triggers (warning only)
 while IFS= read -r -d '' file; do
-  HAS_EOS=$(python3 -c "
-import json
-with open('$file') as f:
+  HAS_EOS=$(VALIDATE_FILE="$file" python3 -c "
+import json,os
+with open(os.environ['VALIDATE_FILE']) as f:
     d = json.load(f)
 print('yes' if d.get('code',{}).get('extended_output_schema') else 'no')
 " 2>/dev/null)
@@ -49,8 +49,8 @@ done < <(find "$PROJECT_DIR" -type f -name "*.recipe.json" -print0 2>/dev/null)
 
 # 3. Check for dropdown with null dataSource in pages (warning only)
 while IFS= read -r -d '' file; do
-  NULL_DS=$(python3 -c "
-import json
+  NULL_DS=$(VALIDATE_FILE="$file" python3 -c "
+import json,os
 def find_dropdowns(obj):
     if isinstance(obj, dict):
         if obj.get('type') == 'dropdown' and obj.get('dataSource') is None:
@@ -60,7 +60,7 @@ def find_dropdowns(obj):
     elif isinstance(obj, list):
         for item in obj:
             find_dropdowns(item)
-with open('$file') as f:
+with open(os.environ['VALIDATE_FILE']) as f:
     find_dropdowns(json.load(f))
 " 2>/dev/null)
   if [ -n "$NULL_DS" ]; then
