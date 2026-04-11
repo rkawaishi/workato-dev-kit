@@ -23,7 +23,7 @@ Workato (エンタープライズ iPaaS) の自動化開発を [Claude Code](htt
 
 ## セットアップ
 
-> 詳しい手順は **[Quick Start Guide](docs/QUICKSTART.md)** を参照してください。
+> 詳しい手順は **[Quick Start Guide (Claude Code)](docs/QUICKSTART-CLAUDE-CODE.md)** を参照してください。
 
 ```bash
 # リポジトリをクローン

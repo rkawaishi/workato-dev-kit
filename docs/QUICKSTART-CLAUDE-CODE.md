@@ -1,6 +1,6 @@
-# Quick Start Guide
+# Quick Start Guide (Claude Code)
 
-このガイドでは、Workato Dev Kit をセットアップして最初のレシピを作るまでの手順を説明します。
+Claude Code で Workato Dev Kit をセットアップして最初のレシピを作るまでの手順を説明します。
 
 ## 1. 前提条件を確認
 
