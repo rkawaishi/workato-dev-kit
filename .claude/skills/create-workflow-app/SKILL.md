@@ -178,17 +178,25 @@ Recipe Function:
 
 `@docs/patterns/deployment-guide.md` の「Workflow App のデプロイフロー」に従い、段階的に案内する:
 
-1. **コネクション認証**: 新規コネクションがあれば先行 push → UI で認証を依頼
-2. **全アセット push**: 認証完了後（または新規コネクションがない場合）に `workato push` で全アセットを push
-3. **push 後にプロジェクト URL を案内**:
+1. **push**: `workato push` で全アセットを push
+2. **コネクション認証を最初に案内**（push 直後、レシピ確認より先）:
    ```
-   push 完了。Workato UI で確認してください:
+   push 完了。まずコネクションの認証を行ってください:
    URL: https://<region>/recipes?fid=<folder_id>
 
+   以下のコネクションを開いて認証情報を設定してください:
+   - <connection_name_1> (<provider_1>)
+   - <connection_name_2> (<provider_2>)
+   ...
+
+   認証が完了したら教えてください。
+   ```
+3. **認証完了後に UI 確認を案内**:
+   ```
+   次に以下を確認してください:
    1. Workflow App にステージ・ページが反映されているか
    2. 送信フォームのフィールド確認
-   3. コネクション認証の設定
-   4. レシピのフィールドマッピング確認
+   3. レシピを開いてフィールドマッピング確認
    ```
 4. **テスト実行を案内**: フォーム送信 → 承認フロー全体のテスト
 5. **調整があった場合**: pull → `/learn-recipe` で学習
