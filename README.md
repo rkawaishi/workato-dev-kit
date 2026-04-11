@@ -11,16 +11,19 @@ Workato (エンタープライズ iPaaS) の自動化開発を [Claude Code](htt
 - **MCP サーバーの構築** — AI エージェントが使えるツールを MCP プロトコルで公開
 - **Genie (AI エージェント)** — スキル付き AI エージェントの構成を生成
 - **カスタムコネクタ** — Connector SDK (Ruby DSL) の開発支援
-- **ナレッジベース** — 139 コネクタ、7 ロジックパターン、11 プラットフォーム機能のドキュメント
+- **ナレッジベース** — 139+ コネクタ、7 ロジックパターン、11 プラットフォーム機能のドキュメント
 - **学習サイクル** — pull → 分析 → パターン蓄積 → 次回生成に反映
+- **設計書管理** — プロジェクトごとの DESIGN.md でセッション跨ぎの計画・進捗追跡
 
 ## 前提条件
 
 - [Workato](https://www.workato.com/) アカウント + API トークン
-- [Workato Platform CLI](https://docs.workato.com/en/platform-cli.html) (`pipx install workato-platform-cli`)
+- [Workato Platform CLI (フォーク版推奨)](https://github.com/rkawaishi/workato-platform-cli) (`pipx install git+https://github.com/rkawaishi/workato-platform-cli.git`)
 - [Claude Code](https://claude.com/claude-code) または [Cursor](https://cursor.com)
 
 ## セットアップ
+
+> 詳しい手順は **[Quick Start Guide (Claude Code)](docs/QUICKSTART-CLAUDE-CODE.md)** を参照してください。
 
 ```bash
 # リポジトリをクローン
@@ -31,31 +34,70 @@ cd workato-dev-kit
 workato init
 ```
 
-## ディレクトリ構成
+## 使い方 — デュアルリポジトリ構造
+
+このリポジトリは **開発フレームワーク** です。組織固有のレシピプロジェクトは `projects/` 配下に別の git リポジトリとして管理します。
 
 ```
-workato-dev-kit/
-├── projects/                    # Workato レシピプロジェクト (Platform CLI)
-│   └── <project-name>/
-│       ├── Recipes/             # レシピ (.recipe.json)
-│       ├── Pages/               # Workflow App ページ (.lcap_page.json)
-│       ├── Connections/         # コネクション (.connection.json)
-│       ├── Data Tables/         # Data Table (.workato_db_table.json)
-│       ├── Agents/              # Genie / MCP / Skills
-│       └── Insights/            # Insights クエリ
-├── connectors/                  # カスタムコネクタ (Connector SDK)
-├── docs/
-│   ├── logic/                   # レシピのロジック (if, loop, error handling 等)
-│   ├── connectors/              # Pre-built コネクタのナレッジ (139件)
-│   ├── platform/                # プラットフォーム機能 (11件)
-│   ├── connector-sdk/           # Connector SDK リファレンス
-│   ├── patterns/                # 設計パターン (デプロイガイド, 共有アセット)
-│   └── learned-patterns.md      # 一時保管用 (通常は各ドキュメントに直接追記)
-├── .claude/                     # Claude Code ハーネス
-│   ├── rules/                   # フォーマットルール
-│   └── skills/                  # 開発スキル
-└── .cursor/                     # Cursor ルール
-    └── rules/
+workato-dev-kit/                ← このリポジトリ（フレームワーク）
+├── .claude/                    ← スキル、ルール、hooks
+├── docs/                       ← ナレッジベース
+├── connectors/                 ← カスタムコネクタ
+│
+└── projects/                   ← 組織の別リポジトリ（gitignore 対象）
+    └── <project-name>/
+        ├── DESIGN.md           ← 設計書
+        ├── Recipes/
+        ├── Pages/
+        └── ...
+```
+
+### フレームワーク (workato-dev-kit)
+
+スキル、ルール、ドキュメントを含む。開発中に新しいパターンを学んだら PR で反映して育てる。
+
+```bash
+# スキルの改善を PR
+git checkout -b feature/improve-create-recipe
+# ... スキルやドキュメントを更新 ...
+git push origin feature/improve-create-recipe
+# GitHub で PR を作成
+```
+
+### レシピプロジェクト (projects/)
+
+組織固有のレシピ・ページ・コネクションを管理。`projects/` 配下で別途 git init する。
+
+```bash
+# 組織リポジトリの初期化
+cd projects
+git init
+git remote add origin <org-repo-url>
+
+# Workato からプロジェクトを pull
+cd ..
+workato projects use "<project-name>"
+workato pull
+
+# 開発 → コミット
+cd projects
+git add -A && git commit -m "Add IT Onboarding workflow"
+```
+
+### 設計書 (DESIGN.md)
+
+各プロジェクトに `DESIGN.md` を配置して設計・進捗・意思決定を記録。
+`.workatoignore` に含めて `workato pull` で消えないようにする。
+
+```bash
+# Claude Code で設計書を作成
+/design new "[App] IT Onboarding"
+
+# 設計書を参照
+/design "[App] IT Onboarding"
+
+# 実装状況を自動更新
+/design update
 ```
 
 ## スキル一覧
@@ -64,59 +106,73 @@ workato-dev-kit/
 |---|---|
 | `/create-recipe` | レシピ JSON を対話的に生成 |
 | `/create-workflow-app` | Workflow App を段階的に構築 (Data Table, ページ, レシピ) |
-| `/create-genie` | Genie + スキル + レシピの構成を生成 |
+| `/create-genie` | Genie / MCP サーバー + スキルの構成を生成 |
 | `/create-connector` | カスタムコネクタをスキャフォールド |
 | `/validate-recipe` | レシピ JSON の構造を検証 |
 | `/wpull` | Workato リモートからプロジェクトを pull |
 | `/wpush` | ローカル変更を push (バリデーション + レシピ起動対応) |
 | `/learn-recipe` | pull したレシピからフィールド情報とパターンを学習 |
-| `/sync-connectors` | 公式ドキュメントからコネクタ情報を差分更新 |
+| `/sync-connectors` | API からコネクタ情報を差分更新 |
+| `/design` | プロジェクト設計書の作成・更新・参照 |
 
 ## 開発フロー
 
-### レシピ開発
+### 新規プロジェクト
 
 ```
-/create-recipe → workato push → Workato UI で調整 → workato pull → /learn-recipe
-```
-
-### Workflow App 構築
-
-```
-/create-workflow-app
-  Phase 1: 設計 + UI で App 有効化
-  Phase 2: JSON 生成 (Data Table, ページ, レシピ) → workato push
-  Phase 3: 動作確認
+/design new "<project-name>"     ← 設計書を作成
+/create-workflow-app             ← Workflow App を構築（またはレシピ単体）
+/wpush --start                   ← push + レシピ起動
+Workato UI で確認・調整
+/wpull → /learn-recipe           ← 学習サイクル
+/design update                   ← 設計書の進捗を更新
 ```
 
 ### 学習サイクル
 
 ```
-workato pull → /learn-recipe → docs 更新 → 次回の /create-recipe がより正確に
+workato pull → /learn-recipe → docs/ 更新 → 次回の生成がより正確に
+                                            → workato-dev-kit に PR
 ```
 
-## ナレッジ構成
+## ディレクトリ構成
 
-| ディレクトリ | 内容 | ファイル数 |
-|---|---|---|
-| `docs/logic/` | レシピ制御構造 (triggers, if, loops, error handling, formulas 等) | 7 |
-| `docs/connectors/` | Pre-built コネクタのトリガー/アクション/フィールド | 143 |
-| `docs/platform/` | Data Tables, Workflow Apps, MCP, Agent Studio 等 | 11 |
-| `docs/connector-sdk/` | Connector SDK (Ruby DSL) リファレンス | 2 |
-| `docs/learned-patterns.md` | UI フィードバックから学んだ非公開の JSON 構造知見 | 1 |
+```
+workato-dev-kit/
+├── .claude/
+│   ├── CLAUDE.md                # プロジェクト規約（常時ロード）
+│   ├── rules/                   # パス別フォーマットルール（7ファイル）
+│   │   ├── workato-recipe-format.md     # *.recipe.json
+│   │   ├── workato-agentic-format.md    # *.agentic_*.json, *.mcp_server.json
+│   │   ├── workato-page-components.md   # *.lcap_page.json
+│   │   ├── workato-connector-sdk.md     # connector.rb
+│   │   ├── workato-project-structure.md # projects/**
+│   │   ├── workato-shared-assets.md     # projects/**
+│   │   └── workato-cli.md               # .workatoenv, projects/**, connectors/**
+│   ├── skills/                  # 開発スキル（10個）
+│   └── hooks/                   # 自動化フック
+│       └── validate-before-push.sh  # push 前 JSON バリデーション
+├── docs/
+│   ├── logic/                   # レシピロジック (7ファイル)
+│   ├── connectors/              # コネクタナレッジ (139+件)
+│   ├── platform/                # プラットフォーム機能 (11ファイル)
+│   ├── connector-sdk/           # Connector SDK リファレンス
+│   └── patterns/                # デプロイガイド、共有アセット
+├── connectors/                  # カスタムコネクタ (Connector SDK)
+└── projects/                    # レシピプロジェクト (gitignore)
+```
 
-## CLI
-
-### Platform CLI (レシピ管理)
+## CLI クイックリファレンス
 
 ```bash
 workato projects list --source remote   # プロジェクト一覧
 workato projects use "<name>"           # プロジェクト切替
 workato pull                            # リモートから取得
 workato push                            # リモートへ反映
+workato push --restart-recipes          # push + 実行中レシピを再起動
 workato push --delete                   # 不要なリモートアセットも削除
-workato recipes list                    # レシピ一覧
-workato recipes start --all             # 全レシピ起動
+workato assets                          # プロジェクトのアセット一覧（ID 付き）
+workato recipes start --id <id>         # レシピ起動
 workato jobs list --recipe-id <id>      # ジョブ一覧
 ```
 

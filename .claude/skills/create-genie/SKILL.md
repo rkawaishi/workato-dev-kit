@@ -146,6 +146,24 @@ MCP 公開する場合、`<project>/Agents/<name>.mcp_server.json` を生成:
 
 MCP サーバーにスキルを紐付けると、Workato がスキルの `zip_name` をレシピ名ベースにリネームすることがある。スキルのファイル名はレシピ名と一致させておくのが安全。
 
+### MCP サーバーのデプロイ注意事項
+
+- **初回 push**: MCP サーバー、スキル、スキルレシピが一括で作成される
+- **更新時の `PG::UniqueViolation` エラー**: スキルが既に存在する状態で再 push するとこのエラーが発生する。CLI の `--delete` では `agentic_skill` と `mcp_server` は削除できない（`Skipped` になる）。**ユーザーに UI で手動削除してもらってから再 push** する必要がある
+- **スキルレシピの `extended_output_schema`**: `add_record` 等のアクションに `extended_output_schema` がないと、後続ステップで datapill が認識されず起動エラーになる。全アクションに設定すること
+
+### MCP のみの場合（Genie なし）
+
+Genie を作らず MCP サーバーだけを作る場合:
+1. スキル用レシピ（`workato_genie/start_workflow` トリガー）を生成
+2. スキル定義（`.agentic_skill.json`）を生成
+3. MCP サーバー定義（`.mcp_server.json`）を生成
+4. Genie 本体（`.agentic_genie.json`）は不要
+
+```
+MCP Server → Skills → Recipes（Genie なし）
+```
+
 ## レシピから Genie を呼び出す: `assign_task_to_genie`
 
 レシピ内から Genie にタスクを委譲するアクション:
