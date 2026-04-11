@@ -118,14 +118,15 @@ workato-dev-kit では以下の命名規則を使用している:
 | 環境 | 同じ本番環境を参照 | Sandbox / テスト環境を使用 |
 | リスク | 変更の影響範囲を許容 | 他プロジェクトへの影響を避けたい |
 
-### 環境ごとのコネクション
+### 環境とコネクション
 
-開発環境と本番環境でコネクションを分離する:
+Workato はワークスペース単位で Dev / Test / Prod 環境が分離されている。コネクション名に環境名を付ける必要はなく、各ワークスペースで同じ名前のコネクションを異なる認証情報で設定する。
+
+接続先サービス側に Sandbox 環境がある場合（例: Salesforce Sandbox）は、用途を名前で区別する:
 
 ```
-Dev: IT Onboarding | Jira - Dev
-Test: IT Onboarding | Jira - Test
-Prod: IT Onboarding | Jira
+IT Onboarding | Salesforce           ← 本番
+IT Onboarding | Salesforce - Sandbox ← テスト用
 ```
 
 ## エラーハンドリング
