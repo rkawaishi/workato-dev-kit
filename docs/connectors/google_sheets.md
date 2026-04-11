@@ -28,6 +28,22 @@ Provider: `google_sheets`
 | Search rows by query | `search_spreadsheet_rows` | - |  [deprecated] |
 | Search rows using query (old version) | `search_spreadsheet_rows_v3_new` | - |  [deprecated] |
 | Search rows | `search_spreadsheet_rows_v4_new` | Yes |  |
+
+### search_spreadsheet_rows_v4_new
+
+#### Input fields
+| フィールド | 型 | 必須 | 説明 |
+|---|---|---|---|
+| spreadsheet_id | string | Yes | スプレッドシート ID（URL の /d/ と /edit の間） |
+| sheet | string | Yes | シート名 |
+| team_drives | string | - | `my_drive` or Team Drive ID |
+| count | integer | - | 取得件数（デフォルト: 200） |
+
+#### Output fields
+| フィールド | 型 | 説明 |
+|---|---|---|
+| rows[] | array of object | 検索結果の行一覧 |
+| rows[].col_<カラム名> | string | スプレッドシートのヘッダー名が `col_` プレフィックス付きでフィールド名になる |
 | Update rows in bulk | `update_row_v4_bulk` | Yes |  |
 | Update row | `update_row_v4_new` | - |  |
 | Update a row | `update_spreadsheet_row` | - |  [deprecated] |

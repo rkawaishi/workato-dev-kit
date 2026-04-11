@@ -32,3 +32,63 @@ Provider: `slack_bot`
 | Post command reply | `post_bot_reply_v2` | - |  |
 | Update blocks by block id | `update_blocks_by_block_id` | - |  |
 | Return menu options | `upload_file` | - |  |
+
+## フィールド詳細
+
+### post_bot_message
+
+#### Input fields
+| フィールド | 型 | 説明 |
+|---|---|---|
+| channel | string | 投稿先（チャンネル名 `#channel` or ユーザー ID で DM） |
+| text | string | メッセージテキスト |
+| advanced.thread_ts | string | スレッド返信先のタイムスタンプ |
+| blocks | array | Block Kit ブロック定義 |
+| attachment_buttons | array | ボタン付きメッセージ（下記参照） |
+
+#### attachment_buttons の構造
+
+```json
+"attachment_buttons": [
+  {
+    "title": "ボタン表示名",
+    "bot_command": "<domain> <name> <scope>",
+    "params": "key1: value1\nkey2: value2"
+  }
+]
+```
+
+- ボタンクリックで `bot_command_v2` トリガーが発火
+- `bot_command` は `"<domain> <name> <scope>"` 形式（スペース区切り）
+- `params` は改行区切りの key: value 形式
+
+### bot_command_v2 (trigger)
+
+#### Input fields
+| フィールド | 型 | 説明 |
+|---|---|---|
+| domain | string | コマンドのカテゴリ（例: `it_onboarding`） |
+| name | string | コマンド名（例: `approve`） |
+| scope | string | スコープ（例: `request`） |
+| allow_dialog | string | ダイアログ許可（`true` / `false`） |
+
+### bot_command_v2 の params 参照
+
+ボタンの `params` で渡した値はトリガー出力の `parameters.<key>` で参照可能:
+```
+ボタン定義: "params": "record_id: #{_dp('...')}"
+トリガー出力: path:["parameters","record_id"]
+```
+
+### get_user_by_email
+
+#### Input fields
+| フィールド | 型 | 説明 |
+|---|---|---|
+| email | string | ユーザーのメールアドレス |
+
+#### Output fields
+| フィールド | 型 | 説明 |
+|---|---|---|
+| id | string | Slack ユーザー ID（DM の channel に使用） |
+| name | string | ユーザー名 |

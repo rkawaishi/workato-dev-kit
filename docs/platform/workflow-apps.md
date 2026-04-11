@@ -64,6 +64,17 @@ Workflow App 専用のトリガーとアクション。
 - `change_workflow_stage` — ワークフローステージの変更（例: New → In progress → Done）
 - `update_request` — リクエストレコードのフィールド更新
 - `app_function_return` — アプリ関数の結果を UI に返却（`rows` でテーブル、`items` でドロップダウン）
+- `complete_task` — タスクをプログラマティックに完了する（Slack ボタン等の外部トリガーから使用）
+
+### complete_task のフィールド
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `app_id` | reference | Workflow App の lcap_app.json を参照 |
+| `record_id` | datapill | リクエストの Record ID |
+| `status` | string | `"Approved"` or `"Rejected"` |
+
+`complete_task` は `human_review_on_existing_record` で待機中のタスクを外部から完了させるアクション。Slack ボタンクリック等で承認/却下を Workflow App に反映する際に使用する。
 
 ### `workato_db_table` プロバイダー
 
@@ -321,28 +332,158 @@ Workflow App 本体の有効化のみ UI 操作が必要。それ以外は全て
 }
 ```
 
-主要コンポーネント:
-- `container` — レイアウトコンテナ（`x`, `width`, `backgroundColor`, `padding`）
-- `text` — テキスト表示（マークダウン対応、`text`, `color`, `alignment`）
-- `input` — テキスト系入力フィールド（short-text, long-text, number）
-- `date` — 日付入力フィールド（**`"input"` ではなく `"date"` を使う**）
-- `button` — ボタン（`handlers.click.type: "save-data"` で送信）
-- `image` — 画像（`image: "illustration-N"` でプリセット画像）
-- `divider` — 区切り線
+#### 共通プロパティ
+
+全コンポーネントに共通:
+- `type` — コンポーネント種別
+- `id` — 8桁 hex の一意 ID
+- `name` — コンポーネント名
+- `x`, `width` — グリッド位置（12カラムレイアウト）
+- `visible` — 表示制御（`true` / 条件式）
+
+データ入力コンポーネント共通:
+- `dataSource` — **Data Table カラムへの保存先**。`dataSource.id` には Data Table フィールドの **title**（UUID ではない）を指定。`null` だと送信時に値が保存されない
+- `editable` — 編集可否（`true` / `false` / 条件式）
+- `validations.required.condition` — 必須入力（`true` / `false` / 条件式）
+- `label`, `hint`, `placeholder` — 表示テキスト
+
+#### 条件付きプロパティ（Conditional）
+
+公式: https://docs.workato.com/features/conditions.html（ページコンポーネントの条件制御）
+
+以下の3つのプロパティは条件式で動的に制御可能:
+
+| プロパティ | 選択肢 | 対象コンポーネント |
+|---|---|---|
+| **Visible** | Always show / Conditional | ほぼ全コンポーネント |
+| **Editable** | Yes / No / Conditional | 入力系、dropdown、checkbox、table |
+| **Required** | Yes / No / Conditional | 入力系、dropdown、checkbox |
+
+- レシピの IF 条件と同様の構文で条件を設定（AND / OR チェーン可能）
+- **Page data modal** を通じて以下のデータを条件に参照可能:
+  - App user 情報（ユーザー、ロール）
+  - Request メタデータ（ステージ等）
+  - 他のページコンポーネントの値
+  - ワークフローステージ
+- 典型的な使い方: 「特定のユーザーが特定のワークフローステージにいるときだけ表示/編集可能にする」
+- JSON での条件式の構造は UI で設定後に pull して確認推奨（※ドキュメントに JSON 形式の記載なし）
+
+#### データ入力コンポーネント
 
 **コンポーネント type とフィールド型の対応**（重要）:
 
-| Data Table フィールド型 | コンポーネント `type` | `style` |
-|---|---|---|
-| `short-text` | `"input"` | `"short-text"` |
-| `long-text` | `"input"` | `"long-text"` |
-| `number` | `"input"` | `"number"` |
-| `date` | **`"date"`** | 不要 |
-| `date-time` | **`"date"`** | 不要 |
+| 用途 | コンポーネント `type` | `style` | Data Table フィールド型 |
+|---|---|---|---|
+| 短いテキスト | `"input"` | `"short-text"` | `short-text` |
+| 長いテキスト | `"input"` | `"long-text"` | `long-text` |
+| 数値 | `"input"` | `"number"` | `number` |
+| メール | `"input"` | `"email"` | `short-text` |
+| 電話番号 | `"input"` | `"phone"` | `short-text` |
+| URL | `"input"` | `"url"` | `short-text` |
+| 日付 | **`"date"`** | 不要 | `date` |
+| 日時 | **`"date"`** | `"date-time"` (※要確認) | `date-time` |
+| 選択式（単一） | **`"dropdown"`** | 不要 | `short-text` |
+| 選択式（複数） | **`"dropdown"`** + `"multiValue": true` | 不要 | `short-text` |
+| チェックボックス | **`"checkbox"`** (※要確認) | 不要 | `boolean` |
+| ファイル | **`"file"`** (※要確認) | 不要 | `file` |
 
 > **注意**: date 型に `"type": "input"` + `"style": "date"` を使うとページエディタが壊れる（無限ロード）。
 
-`dataSource.id` は Data Table のフィールド **title**（UUID ではない）を指定する。
+※要確認: JSON の `type` 値は実物で未検証。UI で作成→pull して確認推奨。
+
+**input コンポーネント** — テキスト・数値・連絡先入力:
+- `style`: `"short-text"`, `"long-text"`, `"number"`, `"email"`, `"phone"`, `"url"`
+- Contact 系（email, phone, url）は自動バリデーション付き
+- short-text は正規表現バリデーション対応、number は min/max 対応
+
+**dropdown コンポーネント** — 選択式入力:
+```json
+{
+  "type": "dropdown",
+  "id": "abca2e40",
+  "name": "PC type",
+  "dataSource": { "id": "PC type", "type": "short-text" },
+  "editable": true,
+  "appFunctionOptions": null,
+  "options": [
+    { "title": "Windows", "value": "Windows" },
+    { "title": "Mac", "value": "Mac" }
+  ],
+  "dataSourceOptions": null,
+  "labelDataSource": null,
+  "multiValue": false
+}
+```
+- `options`: 静的な選択肢リスト（`title` が表示名、`value` が保存値）
+- `dataSource`: 選択値の保存先（Data Table カラム）。**必ず設定すること**
+- `appFunctionOptions`: レシピで動的にオプションを返す場合に使用（`app_function_load_dropdown_request` トリガー）
+- `dataSourceOptions`: Data Table の別カラムを選択肢ソースにする場合
+- `multiValue`: `true` で複数選択（最大20件）。複数選択時のデータソースは手動 or レシピのみ
+- Data Table 側のフィールド型は `short-text` のままでよい
+
+**file コンポーネント** — ファイルアップロード/ダウンロード:
+- アップロード: ファイルタイプ制限、最大サイズ（デフォルト10MB、最大500MB）
+- ダウンロード: Data Table の file カラムから表示
+- 公開フォームではマルウェアスキャンあり
+
+#### 表示コンポーネント
+
+- `container` — レイアウトコンテナ（`backgroundColor`, `borderColor`, `padding`: large/medium/small/none）
+- `text` — テキスト表示（マークダウン対応: 見出し、太字、斜体、リンク、リスト）
+- `image` — 画像（プリセット `"illustration-N"` / アップロード / URL）
+- `divider` — 区切り線（`backgroundColor` で色指定）
+
+#### データテーブルコンポーネント
+
+- **Data Table** — アプリの主データテーブルのカラムを表示・編集。承認/リクエスト機能のあるアプリのみ
+- **Linked Data Tables / View** — リンクされた別テーブルの表示・編集。フィルタ、カラム並び替え、レコード追加/削除の制御可能
+
+#### ビジュアルコンポーネント
+
+- **Chart** — データの可視化（テーブル、棒グラフ、折れ線、円グラフ、KPI）。**ダッシュボードページのみ**（承認/送信/ブランクページでは使用不可）
+
+#### アクションコンポーネント
+
+- `button` — ボタン。`style`: `"filled"` (主要) / `"outline"` (補助)
+  - `handlers.click.type` のアクション種別:
+    - `"save-data"` — Data Table にデータ保存（送信フォーム）
+    - `"complete-task"` — タスク完了（承認/却下）
+    - `"open-url"` — URL を開く
+    - `"run-recipe"` — レシピを実行
+    - `"reset-reload"` — コンポーネントのリセット/リロード
+
+#### URL パラメータによるフォームプリフィル
+
+公式: https://docs.workato.com/en/workflow-apps/prefill-forms.html
+
+フォーム URL に `?prefilled_values=<URL エンコード済み JSON>` を付与してデフォルト値を設定できる。
+
+**JSON 構造:**
+```json
+{
+  "コンポーネントの Title": {
+    "value": "値",
+    "disabled": false
+  }
+}
+```
+- キーはコンポーネントの **Title**（ビルダー向け名前）を使用。ユーザー向けの Label ではない
+- `disabled`: `true`（デフォルト）で読み取り専用、`false` で編集可能
+- URL 最大長: 8,000 文字
+
+**対応コンポーネントと値の形式:**
+
+| コンポーネント | value の型 | 例 |
+|---|---|---|
+| Text (short/long) | string | `"value": "Peter"` |
+| Number (integer) | number | `"value": 10` |
+| Number (decimal) | number | `"value": 0.2` |
+| Date | string `"YYYY-MM-DD"` | `"value": "2024-07-26"` |
+| Date and Time | string `"YYYY-MM-DD HH:MM"` | `"value": "2024-07-25 16:00"` |
+| Checkbox | boolean | `"value": true` |
+| Dropdown (手動) | string | `"value": "Sales"` |
+| Dropdown (テーブル) | object | `"value": {"record_id": "uuid", "value": "123"}` |
+| Description | string | `"value": "Description"` |
 
 ### ページ参照の扱い
 
