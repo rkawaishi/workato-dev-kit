@@ -28,4 +28,5 @@ paths:
 
 ## 詳細
 
-命名規則、Recipe Function のインターフェース設計、注意事項は `@docs/patterns/shared-assets.md` を参照。
+- 命名規則、Recipe Function のインターフェース設計、注意事項は `@docs/patterns/shared-assets.md` を参照
+- ワークスペース構成、アセット命名規則、コネクション管理は `@docs/patterns/workspace-management.md` を参照
