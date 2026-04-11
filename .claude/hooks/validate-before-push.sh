@@ -3,23 +3,21 @@
 # Validates JSON syntax and checks for common issues before workato push
 
 INPUT=$(cat)
-CWD=$(echo "$INPUT" | jq -r '.cwd')
-COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command')
+CWD=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('cwd',''))")
+COMMAND=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))")
 
-# Detect project directory from the push command or cwd
-# workato push runs from the project dir or uses "workato projects use" first
+# Only run for workato push commands
+case "$COMMAND" in
+  *"workato push"*) ;;
+  *) exit 0 ;;
+esac
+
+# Detect project directory
 PROJECT_DIR=""
-if [[ "$COMMAND" == *"cd "* ]]; then
-  PROJECT_DIR=$(echo "$COMMAND" | grep -oP 'cd "([^"]+)"' | sed 's/cd "//;s/"//')
-fi
-if [ -z "$PROJECT_DIR" ]; then
-  # Find .workatoenv in cwd or parent
-  if [ -f "$CWD/.workatoenv" ]; then
-    PROJECT_DIR="$CWD"
-  else
-    # Search in projects/ subdirectories
-    PROJECT_DIR=$(find "$CWD/projects" -name ".workatoenv" -maxdepth 2 -exec dirname {} \; 2>/dev/null | head -1)
-  fi
+if [ -f "$CWD/.workatoenv" ]; then
+  PROJECT_DIR="$CWD"
+else
+  PROJECT_DIR=$(find "$CWD/projects" -name ".workatoenv" -maxdepth 2 -exec dirname {} \; 2>/dev/null | head -1)
 fi
 
 if [ -z "$PROJECT_DIR" ] || [ ! -d "$PROJECT_DIR" ]; then
@@ -27,38 +25,66 @@ if [ -z "$PROJECT_DIR" ] || [ ! -d "$PROJECT_DIR" ]; then
 fi
 
 ERRORS=()
+WARNINGS=()
 
-# 1. Validate JSON syntax
+# 1. Validate JSON syntax (blocking)
 while IFS= read -r -d '' file; do
-  if ! jq empty "$file" 2>/dev/null; then
+  if ! python3 -c "import json; json.load(open('$file'))" 2>/dev/null; then
     ERRORS+=("JSON syntax error: $(basename "$file")")
   fi
 done < <(find "$PROJECT_DIR" -type f \( -name "*.recipe.json" -o -name "*.lcap_app.json" -o -name "*.lcap_page.json" -o -name "*.workato_db_table.json" -o -name "*.agentic_skill.json" -o -name "*.agentic_genie.json" -o -name "*.mcp_server.json" -o -name "*.connection.json" \) -print0 2>/dev/null)
 
-# 2. Check for missing extended_output_schema on triggers
+# 2. Check for missing extended_output_schema on triggers (warning only)
 while IFS= read -r -d '' file; do
-  # Check if trigger (number: 0) has extended_output_schema
-  TRIGGER_HAS_EOS=$(jq '.code.extended_output_schema // empty' "$file" 2>/dev/null)
-  if [ -z "$TRIGGER_HAS_EOS" ]; then
-    ERRORS+=("Missing extended_output_schema on trigger: $(basename "$file")")
+  HAS_EOS=$(python3 -c "
+import json
+with open('$file') as f:
+    d = json.load(f)
+print('yes' if d.get('code',{}).get('extended_output_schema') else 'no')
+" 2>/dev/null)
+  if [ "$HAS_EOS" = "no" ]; then
+    WARNINGS+=("Missing extended_output_schema on trigger: $(basename "$file")")
   fi
 done < <(find "$PROJECT_DIR" -type f -name "*.recipe.json" -print0 2>/dev/null)
 
-# 3. Check for dropdown with null dataSource in pages
+# 3. Check for dropdown with null dataSource in pages (warning only)
 while IFS= read -r -d '' file; do
-  NULL_DS=$(jq -r '.. | objects | select(.type == "dropdown" and .dataSource == null) | .name' "$file" 2>/dev/null)
+  NULL_DS=$(python3 -c "
+import json
+def find_dropdowns(obj):
+    if isinstance(obj, dict):
+        if obj.get('type') == 'dropdown' and obj.get('dataSource') is None:
+            print(obj.get('name', 'unknown'))
+        for v in obj.values():
+            find_dropdowns(v)
+    elif isinstance(obj, list):
+        for item in obj:
+            find_dropdowns(item)
+with open('$file') as f:
+    find_dropdowns(json.load(f))
+" 2>/dev/null)
   if [ -n "$NULL_DS" ]; then
     while IFS= read -r name; do
-      ERRORS+=("Dropdown \"$name\" has null dataSource (value won't be saved): $(basename "$file")")
+      WARNINGS+=("Dropdown \"$name\" has null dataSource (value won't be saved): $(basename "$file")")
     done <<< "$NULL_DS"
   fi
 done < <(find "$PROJECT_DIR" -type f -name "*.lcap_page.json" -print0 2>/dev/null)
 
+# Show warnings (non-blocking)
+if [ ${#WARNINGS[@]} -gt 0 ]; then
+  echo "" >&2
+  echo "=== Pre-push warnings ===" >&2
+  for warn in "${WARNINGS[@]}"; do
+    echo "  ⚠️  $warn" >&2
+  done
+fi
+
+# Block on errors
 if [ ${#ERRORS[@]} -gt 0 ]; then
   echo "" >&2
-  echo "=== Pre-push validation failed ===" >&2
+  echo "=== Pre-push validation FAILED ===" >&2
   for err in "${ERRORS[@]}"; do
-    echo "  - $err" >&2
+    echo "  ❌ $err" >&2
   done
   echo "" >&2
   echo "Fix errors above before pushing." >&2

@@ -31,7 +31,7 @@ push 前にプロジェクト内の JSON ファイルを検証する。`--valida
 ```bash
 # 対象: *.recipe.json, *.connection.json, *.agentic_genie.json,
 #        *.agentic_skill.json, *.mcp_server.json, *.lcap_app.json,
-#        *.lcap_page.json, *.data_table.json
+#        *.lcap_page.json, *.workato_db_table.json
 for f in projects/<project-name>/*.json; do
   python3 -c "import json; json.load(open('$f'))" 2>&1 || echo "INVALID: $f"
 done

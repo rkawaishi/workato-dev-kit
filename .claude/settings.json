@@ -3,7 +3,6 @@
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "if": "Bash(workato push*)",
         "hooks": [
           {
             "type": "command",
@@ -21,8 +20,7 @@
       "Bash(uuidgen)",
       "Bash(echo \"y\" | workato:*)",
       "Bash(git:*)",
-      "Bash(cat:*)",
-      "Bash(cd:*)"
+      "Bash(cat:*)"
     ],
     "deny": [
       "Bash(rm -rf:*)",
