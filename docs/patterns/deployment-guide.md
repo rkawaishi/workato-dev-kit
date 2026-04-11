@@ -154,3 +154,4 @@ push 完了。Workato UI で MCP サーバーを確認してください:
 | `parameters` が空にリセット | push 時にコネクション未設定のフィールドがリセットされた | コネクション認証 → UI で再設定 → pull |
 | datapill がリロードまで認識されない | `return_result` に `extended_output_schema` / `extended_input_schema` がない | `result_schema_json` と同じフィールド定義を extended スキーマに展開する |
 | トリガーのフィールドがリフレッシュまで認識されない | トリガーに `extended_output_schema` がない | トリガー出力のフィールド定義を `extended_output_schema` に展開する。特に Workflow App の `new_requests_realtime` は Data Table のフィールドをスキーマに含める |
+| `PG::UniqueViolation` (agentic_skill) | スキルが既に存在する状態で再 push | CLI の `--delete` では MCP サーバー・スキルは削除できない（`Skipped` になる）。UI で手動削除してから再 push |
