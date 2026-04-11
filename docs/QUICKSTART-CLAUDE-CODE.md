@@ -145,12 +145,26 @@ Claude が以下を実行します:
 
 ## 10. 学習サイクル
 
+### なぜ学習サイクルが必要か
+
+Workato のレシピ JSON には公式ドキュメントに記載されていない構造が多くあります。たとえば:
+
+- コネクタごとのフィールド名やスキーマ（`extended_output_schema` の中身）
+- UI で設定した際に自動生成される `dynamicPickListSelection` や `toggleCfg`
+- コネクション依存のフィールド（push しただけでは空になり、UI で設定→pull して初めて判明する）
+
+これらは **実際にレシピを作って Workato UI でフィードバックし、pull して初めてわかる情報** です。`/learn-recipe` はこれらの情報を分析し、ツールキットのナレッジベース（`docs/`）やルール（`.claude/rules/`）に反映します。学習が蓄積されるほど、次回の `/create-recipe` や `/create-workflow-app` の生成精度が上がります。
+
+### やり方
+
 Workato UI でレシピを調整したら、その変更を取り込んでナレッジを育てます。
 
 ```
 あなた: /wpull
 あなた: /learn-recipe
 ```
+
+### ツールキットへの還元
 
 学んだパターンがツールキットの改善になる場合は、workato-dev-kit に PR を出してください:
 
