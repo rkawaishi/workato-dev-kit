@@ -35,8 +35,8 @@ paths:
 | `filter` | object | 条件フィルタ（optional） |
 | `comment` | string | ステップのコメント（optional） |
 | `uuid` | string | UUID v4 |
-| `extended_output_schema` | array/null | カスタム出力スキーマ（optional） |
-| `extended_input_schema` | array/null | カスタム入力スキーマ（optional） |
+| `extended_output_schema` | array/null | カスタム出力スキーマ。**トリガーとアクションの両方に設定推奨** — 省略すると UI でリフレッシュが必要 |
+| `extended_input_schema` | array/null | カスタム入力スキーマ。`return_result` 等では必須 |
 
 ### `as` フィールドの命名規則
 
