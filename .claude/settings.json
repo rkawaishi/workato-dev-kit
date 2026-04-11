@@ -18,7 +18,6 @@
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(uuidgen)",
-      "Bash(echo \"y\" | workato:*)",
       "Bash(git:*)",
       "Bash(cat:*)"
     ],

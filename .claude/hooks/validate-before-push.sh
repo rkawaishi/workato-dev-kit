@@ -3,14 +3,14 @@
 # Validates JSON syntax and checks for common issues before workato push
 
 INPUT=$(cat)
-CWD=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('cwd',''))")
-COMMAND=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))")
 
-# Only run for workato push commands
-case "$COMMAND" in
+# Fast exit: skip if not a workato push command (avoids python3 overhead)
+case "$INPUT" in
   *"workato push"*) ;;
   *) exit 0 ;;
 esac
+
+CWD=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('cwd',''))")
 
 # Detect project directory
 PROJECT_DIR=""
