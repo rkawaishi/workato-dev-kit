@@ -1,9 +1,28 @@
 {
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "if": "Bash(workato push*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/validate-before-push.sh"
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "allow": [
       "Bash(workato:*)",
       "Bash(ls:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(uuidgen)",
+      "Bash(echo \"y\" | workato:*)",
+      "Bash(git:*)",
+      "Bash(cat:*)",
+      "Bash(cd:*)"
     ],
     "deny": [
       "Bash(rm -rf:*)",
