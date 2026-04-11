@@ -64,6 +64,17 @@ Workflow App 専用のトリガーとアクション。
 - `change_workflow_stage` — ワークフローステージの変更（例: New → In progress → Done）
 - `update_request` — リクエストレコードのフィールド更新
 - `app_function_return` — アプリ関数の結果を UI に返却（`rows` でテーブル、`items` でドロップダウン）
+- `complete_task` — タスクをプログラマティックに完了する（Slack ボタン等の外部トリガーから使用）
+
+### complete_task のフィールド
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `app_id` | reference | Workflow App の lcap_app.json を参照 |
+| `record_id` | datapill | リクエストの Record ID |
+| `status` | string | `"Approved"` or `"Rejected"` |
+
+`complete_task` は `human_review_on_existing_record` で待機中のタスクを外部から完了させるアクション。Slack ボタンクリック等で承認/却下を Workflow App に反映する際に使用する。
 
 ### `workato_db_table` プロバイダー
 

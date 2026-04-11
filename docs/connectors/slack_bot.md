@@ -72,6 +72,14 @@ Provider: `slack_bot`
 | scope | string | スコープ（例: `request`） |
 | allow_dialog | string | ダイアログ許可（`true` / `false`） |
 
+### bot_command_v2 の params 参照
+
+ボタンの `params` で渡した値はトリガー出力の `parameters.<key>` で参照可能:
+```
+ボタン定義: "params": "record_id: #{_dp('...')}"
+トリガー出力: path:["parameters","record_id"]
+```
+
 ### get_user_by_email
 
 #### Input fields
