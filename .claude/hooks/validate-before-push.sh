@@ -13,12 +13,35 @@ esac
 # Use CLAUDE_PROJECT_DIR (set by Claude Code) or fall back to pwd
 CWD="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
-# Detect project directory
+# Extract command to find cd target (e.g., cd "projects/[App] Foo" && workato push)
+COMMAND=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" 2>/dev/null)
+
+# Detect project directory from command or current active project
 PROJECT_DIR=""
-if [ -f "$CWD/.workatoenv" ]; then
-  PROJECT_DIR="$CWD"
-else
-  PROJECT_DIR=$(find "$CWD/projects" -name ".workatoenv" -maxdepth 2 -exec dirname {} \; 2>/dev/null | head -1)
+
+# 1. Check if command contains cd to a project directory
+CD_TARGET=$(echo "$COMMAND" | python3 -c "
+import sys,re
+cmd = sys.stdin.read()
+m = re.search(r'cd\s+[\"'\''](.*?)[\"'\'']\s*&&', cmd) or re.search(r'cd\s+(\S+)\s*&&', cmd)
+print(m.group(1) if m else '')
+" 2>/dev/null)
+
+if [ -n "$CD_TARGET" ] && [ -f "$CD_TARGET/.workatoenv" ]; then
+  PROJECT_DIR="$CD_TARGET"
+elif [ -n "$CD_TARGET" ] && [ -f "$CWD/$CD_TARGET/.workatoenv" ]; then
+  PROJECT_DIR="$CWD/$CD_TARGET"
+fi
+
+# 2. Fall back to finding the active project via workato CLI state
+if [ -z "$PROJECT_DIR" ]; then
+  # Check each project for .workatoenv and find the one matching current CLI state
+  for env_file in "$CWD"/projects/*/.workatoenv; do
+    if [ -f "$env_file" ]; then
+      PROJECT_DIR="$(dirname "$env_file")"
+      break
+    fi
+  done
 fi
 
 if [ -z "$PROJECT_DIR" ] || [ ! -d "$PROJECT_DIR" ]; then
