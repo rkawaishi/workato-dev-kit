@@ -39,8 +39,12 @@ ELSE → actions                   ← デフォルト分岐
 ### 注意事項
 
 - 全テキスト比較は **大文字小文字を区別する**
-- null 値を数値演算子で比較するとエラー
+- null 値を `greater_than` / `less_than` で比較するとエラー → `is_present` と組み合わせること
+- `equals` は文字列を float に変換して数値比較する。8進数表記に注意（`"0123"` → `83`）。15桁超の float は精度落ちの可能性あり
+- `contains` / `does not contain` は null に対して false を返す（エラーにはならない）
+- `starts_with` / `ends_with` は非文字列型を直接比較するとトリガーエラー（datapill は自動変換される）
 - 複数条件は `and` / `or` で結合可能
+- 条件は IF 分岐、While ループ、トリガーフィルタの3箇所で使用される
 - トリガーの `filter` と同じ条件構造を使用
 
 ---

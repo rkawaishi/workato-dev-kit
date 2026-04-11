@@ -214,7 +214,24 @@ provider が `workato_genie` の場合:
 }
 ```
 
-operand: `contains`, `equals`, `not_equals`, `starts_with`, `ends_with`, `greater_than`, `less_than`, `is_true`, `is_false`, `is_present`, `is_not_present`
+operand 値（JSON 内の文字列）:
+
+| 表示名 | JSON operand |
+|---|---|
+| contains | `contains` |
+| doesn't contain | `not_contains` |
+| starts with | `starts_with` |
+| doesn't start with | `not_starts_with` (※要確認) |
+| ends with | `ends_with` |
+| doesn't end with | `not_ends_with` (※要確認) |
+| equals | **`equals_to`** (※ `equals` ではない) |
+| doesn't equal | `not_equals` |
+| greater than | `greater_than` |
+| less than | `less_than` |
+| is true | `is_true` |
+| is not true | `is_false` |
+| is present | `is_present` |
+| is not present | `is_not_present` |
 
 ## config: コネクション参照
 
