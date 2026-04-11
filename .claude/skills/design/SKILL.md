@@ -76,6 +76,13 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 
 ユーザー体験が確定したら、Workato の具体的な構成に変換する。
 
+**まず `projects/CATALOG.md` を確認**し、既存の共有アセットで対応可能な部分を特定する:
+- 共有 Recipe Function（マネージャー取得、通知送信等）が使えるか
+- 共有コネクション（Slack, Jira 等）が使えるか
+- 既存の Workflow App やパターンを参考にできるか
+
+カタログがない場合は `/catalog scan` で生成できることを案内。
+
 **判断ポイント:**
 
 | ユーザー体験 | Workato 構成要素 |
@@ -126,6 +133,11 @@ Last updated: <YYYY-MM-DD>
 
 ## Architecture
 
+### 既存アセットの再利用
+<!-- カタログ (projects/CATALOG.md) から該当するアセットを記載 -->
+- <共有 Function / コネクション名>: <用途>
+
+### 新規作成
 - **Data Table**: <テーブル名>
   - フィールド: <一覧>
 - **ステージ**: <ステージ遷移>
