@@ -5,21 +5,72 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 
 # /catalog
 
-組織の `projects/` 配下にある共有アセットをスキャンし、カタログファイルを生成・更新するスキル。
+組織の `projects/` 配下にある **共有プロジェクト** のアセットをスキャンし、カタログファイルを生成・更新するスキル。
 他のスキル（`/create-recipe`, `/design`）がカタログを参照して、既存アセットの再利用を提案する。
+
+**重要**: private スコープのプロジェクトはスキャンしない。部門限定の閲覧制御を尊重する。
 
 ## 使い方
 
 - `/catalog` — カタログを表示
-- `/catalog scan` — `projects/` 配下をスキャンしてカタログを再生成
-- `/catalog scan <project-name>` — 特定プロジェクトのみスキャン
+- `/catalog scan` — 共有プロジェクトをスキャンしてカタログを再生成
+- `/catalog config` — スコープ設定を表示・編集
 - `/catalog add <file-path>` — 手動でアセットをカタログに追加
 
-## カタログファイル
+## ファイル構成
 
-`projects/CATALOG.md`
+```
+projects/
+├── CATALOG.md              ← 共有アセットカタログ（自動生成）
+├── CATALOG_CONFIG.yaml     ← プロジェクトのスコープ定義
+├── Shared/                 ← scope: global
+├── Finance - Common/       ← scope: team:finance
+├── [App] IT Onboarding/    ← scope: private（カタログ対象外）
+└── [App] Expense Report/   ← scope: private
+```
 
-組織リポジトリ（`projects/` 内）に配置。`.workatoignore` で保護。
+いずれも `.workatoignore` で保護する。
+
+## プロジェクトスコープ
+
+### CATALOG_CONFIG.yaml
+
+各プロジェクトの公開範囲を定義する:
+
+```yaml
+# projects/CATALOG_CONFIG.yaml
+projects:
+  Shared:
+    scope: global          # 全チーム公開、カタログに掲載
+    description: 組織横断の共通ロジック・コネクション
+
+  "Finance - Common":
+    scope: team:finance    # Finance チーム内で共有、カタログに掲載
+    description: 経理部門の共通レシピ
+
+  "[App] IT Onboarding":
+    scope: private         # カタログ対象外
+    description: IT部門の入社オンボーディング
+
+# 未記載のプロジェクトは private として扱う
+```
+
+### スコープの種類
+
+| スコープ | カタログ掲載 | 用途 |
+|---|---|---|
+| `global` | 全アセットを掲載 | 全チーム共通（Shared プロジェクト等） |
+| `team:<name>` | 全アセットを掲載（チーム名付き） | 部門内共通（Finance - Common 等） |
+| `private` | **掲載しない** | プロジェクト固有（Workflow App 等） |
+
+### 初回セットアップ
+
+`/catalog config` で対話的に設定:
+
+1. `projects/` 配下のプロジェクト一覧を表示
+2. 各プロジェクトのスコープをユーザーに確認
+3. `CATALOG_CONFIG.yaml` を生成
+4. `.workatoignore` に `CATALOG_CONFIG.yaml` と `CATALOG.md` を追加
 
 ## カタログの構造
 
@@ -29,54 +80,45 @@ Last updated: <YYYY-MM-DD>
 
 ## Connections
 
-| 名前 | Provider | プロジェクト | 共有スコープ |
+| 名前 | Provider | プロジェクト | スコープ |
 |---|---|---|---|
-| Shared \| Slack | slack_bot | Shared | 全プロジェクト |
-| Shared \| Jira | jira | Shared | 全プロジェクト |
+| Shared \| Slack | slack_bot | Shared | global |
+| Shared \| Jira | jira | Shared | global |
+| Finance \| SAP | sap | Finance - Common | team:finance |
 
 ## Recipe Functions
 
 ### fnc: Get line manager
-- **プロジェクト**: Shared
+- **プロジェクト**: Shared (global)
 - **ファイル**: `Shared/Recipes/fnc_get_line_manager.recipe.json`
 - **入力**: `employee_email` (string) — 従業員のメールアドレス
 - **出力**: `manager_name` (string), `manager_email` (string)
 - **用途**: HRMS / Google Sheets からマネージャー情報を取得
 
-### fnc: Send Slack notification
-- **プロジェクト**: Shared
-- **ファイル**: `Shared/Recipes/fnc_send_slack_notification.recipe.json`
-- **入力**: `channel` (string), `message` (string), `thread_ts` (string, optional)
-- **出力**: `ok` (boolean), `ts` (string)
-- **用途**: Slack チャンネルに通知を送信
+## MCP Servers
 
-## Workflow Apps
-
-| 名前 | プロジェクト | Data Table | ステージ |
+| 名前 | プロジェクト | スコープ | ツール数 |
 |---|---|---|---|
-| IT Onboarding | [App] IT Onboarding | IT Onboarding Requests | New → Manager review → Done / Canceled |
+| IT Onboarding | Shared | global | 1 |
 ```
 
 ## `/catalog scan` — スキャン手順
 
-### 1. プロジェクト一覧の取得
+### 1. スコープ設定の読み込み
 
-`projects/` 配下のサブディレクトリを走査:
-```bash
-find projects/ -name ".workatoenv" -maxdepth 2 -exec dirname {} \;
-```
+`projects/CATALOG_CONFIG.yaml` を読む。存在しなければ `/catalog config` を案内。
 
-### 2. コネクションの収集
+### 2. 対象プロジェクトのフィルタ
 
-各プロジェクトの `*.connection.json` をスキャン:
-```
-projects/<project>/Connections/*.connection.json
-projects/<project>/*.connection.json
-```
+`scope` が `global` または `team:*` のプロジェクトのみスキャン対象。
+`private` および未記載のプロジェクトはスキップ。
 
+### 3. コネクションの収集
+
+対象プロジェクトの `*.connection.json` をスキャン。
 各ファイルから `name` と `provider` を抽出。
 
-### 3. Recipe Function の収集
+### 4. Recipe Function の収集
 
 `fnc_*.recipe.json` または `fnc: *` という名前のレシピをスキャン。
 各ファイルから以下を抽出:
@@ -88,49 +130,31 @@ projects/<project>/*.connection.json
 
 パラメータスキーマから各フィールドの `name`, `type`, `label`, `optional` を抽出してカタログに記載。
 
-### 4. Workflow App の収集
+### 5. Workflow App / MCP サーバーの収集
 
-`*.lcap_app.json` をスキャン。各ファイルから以下を抽出:
-- `name` — アプリ名
-- `workato_db_table.name` — Data Table 名
-- `workflow_stages[].name` — ステージ一覧
-
-### 5. MCP サーバーの収集
-
-`*.mcp_server.json` をスキャン。各ファイルから以下を抽出:
-- `name` — サーバー名
-- `tools[].description` — ツールの説明
+対象プロジェクトの `*.lcap_app.json` と `*.mcp_server.json` をスキャン。
 
 ### 6. カタログファイルの生成
 
 収集した情報を `projects/CATALOG.md` に書き出す。
 既存のカタログがあれば差分更新（手動で追加した `用途` 等の記述は保持）。
 
-## `/catalog add <file-path>` — 手動追加
-
-スキャン対象外のアセットや、用途の説明を手動で追加する場合に使用。
-
-1. 指定ファイルを読む
-2. アセット種別を判定（connection / recipe / lcap_app / mcp_server）
-3. カタログの該当セクションに追記
-4. Recipe Function の場合はインターフェース（入力/出力）を自動抽出
-
 ## 他スキルからの参照
 
 ### `/create-recipe` からの参照
 
-`/create-recipe` がレシピを生成する際、以下のステップを追加:
+`/create-recipe` がレシピを生成する際:
 
 1. `projects/CATALOG.md` が存在するか確認
-2. 存在すれば読み込み、要件に合致する既存アセットを検索:
-   - コネクション: 同じ provider のコネクションが共有されているか
-   - Recipe Function: 必要なロジック（マネージャー取得、通知送信等）が既に存在するか
+2. 存在すれば読み込み、要件に合致する既存の **共有** アセットを検索:
+   - コネクション: 同じ provider の共有コネクションがあるか
+   - Recipe Function: 必要なロジックが既に存在するか
 3. 合致するアセットがあれば提案:
    ```
    既存の共有アセットが利用可能です:
-   - fnc: Get line manager (Shared) — マネージャー検索が必要な場合
-   - Shared | Slack (slack_bot) — Slack 通知用コネクション
-   
+   - fnc: Get line manager (Shared / global) — マネージャー検索
+   - Shared | Slack (slack_bot / global) — Slack コネクション
+
    これらを使用しますか？
    ```
 4. ユーザーが承認すれば、`call_recipe` や `config` で共有アセットを参照するレシピを生成
@@ -141,15 +165,13 @@ projects/<project>/*.connection.json
 
 1. カタログを読み込み
 2. ユーザー体験から必要な機能を特定
-3. 既存の共有アセットで対応可能な部分を明示:
-   ```
-   ## Architecture
-   
-   ### 既存アセットの再利用
-   - マネージャー取得: `fnc: Get line manager` (Shared) を使用
-   - Slack 通知: `Shared | Slack` コネクションを使用
-   
-   ### 新規作成が必要
-   - メインレシピ（承認フロー）
-   - Jira チケット起票ロジック
-   ```
+3. 共有アセットで対応可能な部分を明示
+4. 対応できない部分について新規作成を計画
+
+## 共通化の提案
+
+private プロジェクト間でロジックの重複を検出した場合（`/learn-recipe` や `/design` 時）:
+- 具体的なコード内容は露出しない
+- 「同様のロジックが複数プロジェクトで使われているため、共通の Recipe Function への切り出しを検討してはどうか」と提案する
+- 共通化するかどうかはユーザーが判断
+- 共通化する場合は scope: global / team の共有プロジェクトに配置し、カタログに登録
