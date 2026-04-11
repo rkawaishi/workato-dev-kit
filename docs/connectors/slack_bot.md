@@ -354,3 +354,152 @@ post_bot_message（初期メッセージ + blocks）
 ```
 
 適用例: 進捗表示、ステータス変更の反映
+
+---
+
+## モーダル詳細
+
+### モーダル操作タイプ
+
+| タイプ | 用途 | 必要な ID |
+|---|---|---|
+| Open | 新規モーダルを開く | Trigger ID |
+| Update | 既存モーダルを更新 | Trigger ID + View ID |
+| Push | 現在のモーダルの上に新しいビューを重ねる | Trigger ID（アクティブビューから） |
+
+Trigger ID はボタン、メニュー、セレクトメニュー、日付ピッカー、ショートカット、スラッシュコマンド、モーダル送信から生成される。
+
+### モーダル専用の入力ブロック
+
+通常のメッセージでは使えないモーダル専用の入力要素:
+- Single-line input
+- Multi-line input
+- Select menu input
+- Datepicker input
+- Checkboxes input
+
+**重要**: 入力ブロックはビュー送信時にのみコマンドを発火する（クリック時ではない）。
+
+### モーダル間のデータ受け渡し
+
+`bot_command_v2` トリガーの出力に含まれる Modals オブジェクト:
+
+| フィールド | 説明 |
+|---|---|
+| View ID | アクティブビューの ID |
+| Root View ID | 最初のビューの ID |
+| Previous View ID | 直前のビューの ID |
+| Private metadata | 暗号化データ（最大3000文字） |
+| Hash | 非同期更新の検証トークン |
+
+### モーダルの注意点
+
+- タイトルは最大24文字、ボタンラベルも最大24文字
+- CamelCase やカンマ区切りの name-value ペアは非対応 → **JSON 形式を使用**
+  - 例: `{"OpportunityId": "OPP1234567"}`
+- ビュー送信するとアクティブビューの ID は無効になる → Root View ID または Previous View ID を使用
+- Push は最大3段まで
+- 入力ブロックを使う場合は submit / close ボタンの定義が必須
+
+---
+
+## ダイアログ（レガシー）
+
+モーダルの前身。3つのレシピで構成される:
+
+1. **トリガーレシピ** — ボタン/メニュークリックでダイアログ表示レシピを起動
+2. **ダイアログ表示レシピ** — `open_bot_dialog` でダイアログを表示（最大5フィールド）
+3. **実行レシピ** — ダイアログ送信でトリガーされ処理を実行
+
+### ダイアログ vs モーダル
+
+| | ダイアログ | モーダル |
+|---|---|---|
+| フィールド数 | 最大5 | 制限なし（blocks で構成） |
+| UI の柔軟性 | テキスト/セレクトのみ | Block Kit の全要素 |
+| スタック | 不可 | 最大3段 |
+| 推奨 | レガシー互換 | **新規開発はモーダルを使用** |
+
+---
+
+## 動的メニュー詳細
+
+2つのレシピで構成される:
+
+### 1. プライマリレシピ（コマンドレシピ）
+- パラメータの dialog control type を `Select` に設定
+- Menu options で `Dynamic` を選択
+- 動的メニューレシピ ID を指定
+- `Dynamic menu recipe params` でコンテキストパラメータを渡す（カンマ区切り key-value）
+
+### 2. 動的メニューレシピ
+```
+dynamic_menu トリガー → 外部システム検索（typeahead 値でフィルタ）→ generate_menu_options
+```
+
+- ユーザーが3文字以上入力するとイベント発火
+- `typeahead.value` に入力文字列が格納
+- `generate_menu_options` で検索結果を選択肢として返却
+
+### Post dialog での JSON 設定
+
+```json
+{
+  "type": "select",
+  "name": "your_parameter",
+  "data_source": "external",
+  "dynamic_menu_recipe": "28748",
+  "dynamic_menu_recipe_params": "stagename: Closed Won",
+  "min_query_length": 3
+}
+```
+
+---
+
+## メッセージメニュー
+
+ドロップダウン形式で複数のアクションを提供。ボタンの代替。
+
+### 静的メニュー
+
+| フィールド | 説明 |
+|---|---|
+| Menu Name | メニュー表示ラベル |
+| Display Text | 選択肢の表示テキスト |
+| Submit Command | 実行するコマンド（bot_command_v2 と一致） |
+| Input Values | 下流レシピに渡す name-value ペア |
+
+### 動的メニュー
+
+リスト datapill からオプションを動的生成:
+- Menu options source list: リスト datapill
+- Display text: リスト要素のフィールド
+- Submit command: 実行するコマンド
+- Input values: 渡すパラメータ
+
+推奨: メニューオプション数は **5個以下**。
+
+---
+
+## スラッシュコマンド
+
+`/createissue` のような Slack スラッシュコマンドで Workbot レシピをトリガー。
+
+### 設定手順
+
+1. **Workato**: レシピのトリガーでスラッシュコマンドを有効化し、コマンド名を入力
+2. **Workato**: 生成された Request URL をコピー
+3. **Slack API**: アプリの Slash Commands セクションで新規コマンドを作成
+4. **Slack API**: Request URL を貼り付け、説明とヒントを追加
+5. **Slack API**: "Escape channels, users, and links" を有効化
+
+### パラメータ入力方法
+
+- ダイアログボックス（設定時）
+- インライン: `/createissue project_issue_type: UI--Bug summary: バグの説明`
+- 会話プロンプト
+
+### 注意
+
+- スラッシュコマンドは名前空間がないため、Enterprise Workbot 全体でユニークな名前にすること
+- Enterprise Grid 環境では組織レベルでのインストールが必要
