@@ -9,37 +9,88 @@ Workato レシピ JSON ファイルを対話的に生成するスキル。
 
 ## 手順
 
-1. ユーザーに以下を確認:
-   - **レシピの目的**: 何を自動化したいか
-   - **トリガー**: どのアプリのどのイベントで起動するか（例: Gmail で新着メール受信）
-   - **アクション**: トリガー後に何をするか（例: Google Drive にファイルをアップロード）
-   - **条件**: フィルタ条件があるか
-   - **格納先プロジェクト**: どのプロジェクトディレクトリに作成するか
+### 1. レシピの設計をヒアリング
 
-2. コネクタのナレッジを確認:
-   - `@docs/connectors/_index.md` で利用するコネクタを特定
-   - `@docs/connectors/<connector>.md` を読み、利用可能なトリガー/アクションとフィールド情報を確認
+ユーザーに以下を確認:
+- **レシピの目的**: 何を自動化したいか
+- **トリガー**: どのアプリのどのイベントで起動するか（例: Gmail で新着メール受信）
+- **アクション**: トリガー後に何をするか（例: Google Drive にファイルをアップロード）
+- **条件**: フィルタ条件があるか
+- **格納先プロジェクト**: どのプロジェクトディレクトリに作成するか
 
-3. フィールド情報の確認（重要）:
-   - コネクタドキュメントに該当アクションの Input/Output fields セクションがあればそれを使用
-   - **フィールド情報が未蓄積の場合**: 公式ドキュメントを WebFetch で取得
-     - URL パターン: `https://docs.workato.com/en/connectors/<name>/<action-name>.html`
-     - または: `https://docs.workato.com/en/connectors/<name>/actions.html`
-   - 取得したフィールド情報は `docs/connectors/<connector>.md` に追記して蓄積する
+### 2. コネクタのナレッジを確認
 
-4. JSON 構造のリファレンスを読む:
-   - `@.claude/rules/workato-recipe-format.md`
-   - ロジックステップが必要なら `@docs/logic/` の該当ファイル
+- `@docs/connectors/_index.md` で利用するコネクタを特定
+- `@docs/connectors/<connector>.md` を読み、利用可能なトリガー/アクションとフィールド情報を確認
 
-5. 既存パターンを参照:
-   - `@docs/logic/data-pills.md` で datapill 記法を確認
-   - `@docs/patterns/deployment-guide.md` でデプロイ時の注意事項を確認
-   - 同じプロジェクト内の既存レシピがあれば参照
+### 3. フィールド情報の確認
 
-6. ファイルを生成（`@.claude/rules/workato-project-structure.md` に従う）:
-   - `<project>/Recipes/<snake_case_name>.recipe.json` — レシピ本体
-   - `<project>/Connections/<prefix>_<provider>.connection.json` — コネクション（未存在の場合のみ）
-   - JSON 内の `zip_name` / `folder` もサブフォルダパスに合わせる
+- コネクタドキュメントに該当アクションの Input/Output fields セクションがあればそれを使用
+- **フィールド情報が未蓄積の場合**: 公式ドキュメントを WebFetch で取得
+  - URL パターン: `https://docs.workato.com/en/connectors/<name>/<action-name>.html`
+  - または: `https://docs.workato.com/en/connectors/<name>/actions.html`
+- 取得したフィールド情報は `docs/connectors/<connector>.md` に追記して蓄積する
+
+### 4. 入力値の決定とヒアリング（重要）
+
+各ステップの `input` フィールドについて、値の決定方法を分類する:
+
+#### A. 自動決定できる値（ヒアリング不要）
+- **datapill 参照**: 前のステップの出力を参照する値
+  - 例: Jira の description に Slack メッセージの text を入れる
+- **固定値**: レシピのロジックから一意に決まる値
+  - 例: `"type": "expense"`, `"status": "active"`
+
+#### B. ユーザーに確認が必要な値
+以下のような入力値は、レシピのロジックだけでは決定できない。**JSON 生成前にユーザーにヒアリングする**:
+
+| カテゴリ | 例 | ヒアリング例 |
+|---|---|---|
+| **送信先・投稿先** | Slack のチャンネル名/ID、メール宛先 | 「どのチャンネルに投稿しますか？」 |
+| **プロジェクト・スペース** | Jira プロジェクト、Confluence スペース | 「どの Jira プロジェクトに起票しますか？」 |
+| **カテゴリ・タイプ選択** | Jira イシュータイプ、優先度 | 「イシュータイプは Task, Bug, Story のどれですか？」 |
+| **テンプレート・フォーマット** | メッセージテンプレート、件名フォーマット | 「メッセージの形式はどうしますか？」 |
+| **閾値・条件値** | フィルタの閾値、日数指定 | 「何日以内のチケットを対象にしますか？」 |
+| **認証・接続先固有** | API エンドポイント、データベース名 | 「接続先の環境はどれですか？」 |
+
+#### C. コネクション接続後に決まる値
+- Salesforce のオブジェクト種別やカスタムフィールドなど、コネクション接続後に動的に取得される値
+- これらは `input: {}` にしてデプロイ後に UI で設定する
+
+#### ヒアリングの進め方
+
+1. 全ステップの input フィールドを洗い出す
+2. 各フィールドを A/B/C に分類
+3. B に該当するフィールドをまとめてユーザーに質問する（1フィールドずつではなく一括で）
+4. 回答を得てから JSON 生成に進む
+
+ヒアリング例:
+```
+レシピ生成の前に、いくつかの設定値を確認させてください:
+
+1. **Slack 投稿先チャンネル**: どのチャンネルに通知を投稿しますか？（例: #general, #it-helpdesk）
+2. **Jira プロジェクト**: チケットをどのプロジェクトに作成しますか？（例: IT, HELPDESK）
+3. **Jira イシュータイプ**: イシュータイプは何にしますか？（例: Task, Bug, Story）
+4. **承認期限**: 承認タスクの期限は何日ですか？（デフォルト: 7日）
+```
+
+### 5. JSON 構造のリファレンスを読む
+
+- `@.claude/rules/workato-recipe-format.md`
+- ロジックステップが必要なら `@docs/logic/` の該当ファイル
+
+### 6. 既存パターンを参照
+
+- `@docs/logic/data-pills.md` で datapill 記法を確認
+- `@docs/patterns/deployment-guide.md` でデプロイ時の注意事項を確認
+- 同じプロジェクト内の既存レシピがあれば参照
+
+### 7. ファイルを生成
+
+`@.claude/rules/workato-project-structure.md` に従う:
+- `<project>/Recipes/<snake_case_name>.recipe.json` — レシピ本体
+- `<project>/Connections/<prefix>_<provider>.connection.json` — コネクション（未存在の場合のみ）
+- JSON 内の `zip_name` / `folder` もサブフォルダパスに合わせる
 
 ## 生成ルール
 
@@ -54,7 +105,10 @@ Workato レシピ JSON ファイルを対話的に生成するスキル。
 
 ## input フィールドの設定
 
-各ステップの `input` にはコネクタドキュメントのフィールド情報を参照して正しいフィールド名を使う。
+- **A（自動決定）**: datapill や固定値で埋める
+- **B（ヒアリング済み）**: Step 4 で確認した値を使う
+- **C（コネクション依存）**: `input` に含めない（デプロイ後に UI で設定）
+
 フィールド情報がドキュメントにない場合は、`input` を空 `{}` にして push し、UI で設定後に pull して学習する。
 
 ## datapill 生成
@@ -73,6 +127,8 @@ Workato レシピ JSON ファイルを対話的に生成するスキル。
 生成完了後、以下を表示:
 - 生成したファイル一覧
 - レシピの構造サマリー（トリガー → アクションのフロー）
+- ヒアリングで埋めた値のサマリー
+- C（コネクション依存）で空にしたフィールドがあればその旨を明記
 
 その後、`@docs/patterns/deployment-guide.md` の「レシピのデプロイフロー」に従い、段階的にデプロイを案内する:
 
