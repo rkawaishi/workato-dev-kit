@@ -19,7 +19,7 @@ Workato Workflow App を構築するスキル。UI 操作は Workflow App の有
 - `@docs/patterns/deployment-guide.md` — デプロイ手順、よくあるエラー
 - `@.claude/rules/workato-agentic-format.md` — lcap_app / workato_db_table / lcap_page の JSON 構造
 
-## Phase 1: 設計 + App 有効化
+## Phase 1: 設計 + プロジェクト作成
 
 ### ユーザーに確認
 
@@ -29,30 +29,32 @@ Workato Workflow App を構築するスキル。UI 操作は Workflow App の有
 - **承認者の特定方法**: 固定ユーザー / HRMS から動的取得 / フォームで指定
 - **外部連携**: 承認後に何をするか（Jira 起票、Slack 通知、メール送信等）
 
-### ユーザーに依頼（唯一の UI 操作）
+### プロジェクト作成（CLI）
+
+**ファイル生成前に** プロジェクトを CLI で作成する（ディレクトリ非空エラーを防ぐ）:
+
+```bash
+workato init --non-interactive --profile default --project-name "[App] <Name>" --folder-name "projects/[App] <Name>"
+```
+
+### Workflow App 有効化（唯一の UI 操作）
+
+プロジェクト作成後、`.workatoenv` から `folder_id` を取得し、プロジェクト URL を案内:
 
 ```
-Workato UI で以下を実行してください:
-1. Projects にプロジェクト「[App] <Name>」を作成（未作成の場合）
-2. プロジェクト内で Workflow App を有効化
+Workato UI で Workflow App を有効化してください:
+
+  URL: https://app.trial.workato.com/recipes?fid=<folder_id>
+
+  1. プロジェクトを開く
+  2. 「Workflow App」を有効化する（アプリ名は何でもOK、push で上書きされます）
 
 完了したら教えてください。
 ```
 
-### プロジェクト初期化
-
-```bash
-workato init --non-interactive --profile default --project-id <id> --folder-name "projects/[App] <Name>"
-```
-
-または:
-```bash
-workato projects use "[App] <Name>" && echo "y" | workato pull
-```
+> **補足**: Workato のリージョンによって URL のドメインが異なる（US: www.workato.com, EU: app.eu.workato.com, JP: app.jp.workato.com, Trial: app.trial.workato.com）。`workato profiles list` でリージョンを確認し、正しい URL を生成する。
 
 ## Phase 2: 全構成要素を JSON で生成 → push
-
-以下のファイルを一括生成する。
 
 ファイル配置は `@.claude/rules/workato-project-structure.md` に従う。
 
@@ -178,11 +180,16 @@ Recipe Function:
 
 1. **コネクション認証**: 新規コネクションがあれば先行 push → UI で認証を依頼
 2. **全アセット push**: 認証完了後（または新規コネクションがない場合）に `workato push` で全アセットを push
-3. **UI 確認を案内**:
-   - Workflow App のステージ・ページの反映
-   - 送信フォームのフィールド確認
-   - レシピのフィールドマッピング確認
-   - コネクション選択の確認
+3. **push 後にプロジェクト URL を案内**:
+   ```
+   push 完了。Workato UI で確認してください:
+   URL: https://<region>/recipes?fid=<folder_id>
+
+   1. Workflow App にステージ・ページが反映されているか
+   2. 送信フォームのフィールド確認
+   3. コネクション認証の設定
+   4. レシピのフィールドマッピング確認
+   ```
 4. **テスト実行を案内**: フォーム送信 → 承認フロー全体のテスト
 5. **調整があった場合**: pull → `/learn-recipe` で学習
 
@@ -191,4 +198,5 @@ Recipe Function:
 各 Phase 完了時に:
 - 生成したファイル一覧
 - push 結果
+- **プロジェクト URL**（`.workatoenv` の `folder_id` + リージョンから生成）
 - ユーザーが UI で行うべき操作を具体的に案内（デプロイガイド参照）
