@@ -10,7 +10,8 @@ case "$INPUT" in
   *) exit 0 ;;
 esac
 
-CWD=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('cwd',''))")
+# Use CLAUDE_PROJECT_DIR (set by Claude Code) or fall back to pwd
+CWD="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
 # Detect project directory
 PROJECT_DIR=""
