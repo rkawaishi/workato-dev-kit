@@ -30,3 +30,21 @@ Provider: `google_drive`
 | Update permission of a file | `update_permission` | - |  |
 | Upload small file | `upload_file` | - |  [deprecated] |
 | Upload file | `upload_file_stream` | - |  |
+
+## フィールド詳細
+
+### upload_file (Action)
+
+レシピ: Upload Gmail attachments to Google Drive
+
+#### Input fields
+| フィールド | 型 | 必須 | 説明 |
+|---|---|---|---|
+| fileContent | string | Yes | アップロードするファイルのコンテンツ（バイナリ） |
+| name | string | Yes | アップロード先のファイル名 |
+
+## 備考
+- OAuth 2.0 またはサービスアカウント認証
+- Google Drive API v3 使用
+- provider 名: `google_drive`
+
