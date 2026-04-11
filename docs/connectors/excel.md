@@ -1,20 +1,23 @@
 # Excel コネクタ
 
-公式: https://docs.workato.com/en/connectors/excel.html
+Provider: `excel`
 
 ## Triggers
-公式ドキュメント参照
+
+なし
 
 ## Actions
-| 名前 | 説明 |
-|---|---|
-| Get cells | Excelワークシートからセル値を取得する |
-| Get rows | Excelテーブルから行データを取得する |
-| List tables | ワークブック内のすべてのテーブルを一覧表示する |
-| List worksheets | ワークブック内のすべてのワークシートを一覧表示する |
-| Search workbooks | 特定のExcelファイルを検索する |
-| Add a table | ワークシートに新しいテーブルを作成する |
-| Add a worksheet | ワークブックに新しいワークシートを追加する |
-| Add rows in batch | 複数の行を一括で挿入する |
-| Delete row | テーブルから行を削除する |
-| Update row | 既存の行のデータを更新する |
+
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| Custom action | `__adhoc_http_action` | - |  |
+| Add rows in batch | `add_rows_batch` | Yes |  |
+| Add a table | `add_table` | - |  |
+| Add a worksheet | `add_worksheet` | - |  |
+| Delete a row | `delete_row` | - |  |
+| Get cells | `get_range_cells` | Yes |  |
+| Get rows | `get_table_rows` | Yes |  |
+| List tables | `list_tables` | Yes |  |
+| List worksheets | `list_worksheets` | Yes |  |
+| Search workbooks | `search_workbooks` | Yes |  |
+| Update a row | `update_row` | - |  |

@@ -1,19 +1,35 @@
 # Slack コネクタ
 
-公式: https://docs.workato.com/en/connectors/slack.html
+Provider: `slack`
 
-## 2つの Slack コネクタ
+## Triggers
 
-| | Slack (標準) | Workbot for Slack (slack_bot) |
-|---|---|---|
-| provider 名 | `slack` | `slack_bot` |
-| 認証 | OAuth 2.0 | Custom OAuth profile |
-| 用途 | 基本的な Slack 連携 | 高度なイベント、Bot メッセージ、Block Kit |
-| 公式ドキュメント | /connectors/slack.html | /workbot/workbot.html |
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| Button click | `button_action` | - |  |
+| New event | `new_event` | - |  |
 
-**使い分け**: 標準コネクタにないイベント（`reaction_added` 等）や権限（`channels.history` 等）が必要な場合は `slack_bot` + Custom OAuth を使用する。
+## Actions
 
-## Slack（標準コネクタ）
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| Custom action | `__adhoc_http_action` | - |  |
+| Archive channel | `archive_channel` | - |  [deprecated] |
+| Archive conversation | `archive_conversation` | - |  |
+| Create channel | `create_channel` | - |  [deprecated] |
+| Create conversation (channels and groups) | `create_conversation` | - |  |
+| Get user info | `get_user_by_email` | - |  |
+| Invite users to channel | `invite_user_to_channel` | - |  [deprecated] |
+| Invite users to conversation | `invite_user_to_conversation` | - |  |
+| Invite users to group | `invite_user_to_group` | - |  [deprecated] |
+| Respond to button click | `post_button_action_reply` | - |  |
+| Post message | `post_message_to_channel` | - |  |
+| Set channel purpose | `set_channel_purpose` | - |  [deprecated] |
+| Set channel topic | `set_channel_topic` | - |  [deprecated] |
+| Set conversation purpose | `set_conversation_purpose` | - |  |
+| Set conversation topic | `set_conversation_topic` | - |  |
+| Unarchive channel | `unarchive_channel` | - |  [deprecated] |
+| Unarchive conversation | `unarchive_conversation` | - |  |
 
 ### Triggers
 | 名前 | 説明 |

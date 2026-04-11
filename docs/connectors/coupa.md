@@ -1,19 +1,27 @@
 # Coupa コネクタ
 
-公式: https://docs.workato.com/en/connectors/coupa.html
+Provider: `coupa`
 
 ## Triggers
 
-| 名前 | 説明 |
-|---|---|
-| New/updated record | 以下のオブジェクトの新規作成・更新をトリガー可能: Account, Address, Approvals, Contract, Department, Exchange Rate, Expense Report, Invoice, Inventory Transaction, Item, Lookup Value, Purchase Order, Purchase Order Line, Requisition, Supplier, Supplier Information, Supplier Item, Supplier Site, User |
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| New or updated object | `new_or_updated_object` | - |  |
 
 ## Actions
 
-| 名前 | 説明 |
-|---|---|
-| Create record | オブジェクト(Account, Address, Contract, Department, Exchange Rate, Expense Report, Invoice, Item, Lookup Value, Purchase Order, Supplier等)を作成する |
-| Update record | オブジェクト(Account, Address, Contract, Department, Exchange Rate, Expense Report, Invoice, Item, Lookup Value, Supplier等)を更新する |
-| Query record | オブジェクト(Account, Address, Approvals, Contract, Department, Exchange Rate, Expense Report, Invoice, Expense Line, Item, Lookup Value, Purchase Order, Requisition, Supplier等)を検索する |
-
-> カスタムアクションでカスタムHTTPリクエストも送信可能です。詳細は公式ドキュメント参照。
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| Custom action | `__adhoc_http_action` | - |  |
+| Cancel purchase order | `cancel_purchase_order` | - |  |
+| Close purchase order | `close_purchase_order` | - |  |
+| Add file attachment to object | `create_attachment_on_object` | - |  |
+| Create object | `create_object` | - |  |
+| Get object by ID | `get_object_by_id` | - |  |
+| Get remit to addresses by object ID | `get_remit_to_addresses_by_object_id` | - |  |
+| Get supplier sites by supplier | `get_supplier_sites_by_supplier` | - |  |
+| Grant approval | `grant_approval` | - |  |
+| Reject approval | `reject_approval` | - |  |
+| Search objects | `search_objects` | Yes |  |
+| Set integration run status | `set_integration_run_status` | - |  |
+| Update object | `update_object` | - |  |

@@ -1,13 +1,13 @@
 # Celonis コネクタ
 
-公式: https://docs.workato.com/en/connectors/celonis.html
+Provider: `celonis`
 
 ## Triggers
 
-| 名前 | 説明 |
-|---|---|
-| New event | CelonisプロセスオートメーションエンジンからWorkatoに送信されたイベントを受信する |
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| New Event in Celonis | `new_event` | - |  |
 
 ## Actions
 
-公式ドキュメント参照
+なし

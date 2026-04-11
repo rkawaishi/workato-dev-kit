@@ -1,22 +1,27 @@
 # SFTP コネクタ
 
-公式: https://docs.workato.com/en/connectors/sftp.html
+Provider: `sftp`
 
 ## Triggers
-| 名前 | 説明 |
-|---|---|
-| New/updated file | SFTPサーバー上の新規または変更されたファイルを監視する |
-| New/updated CSV file (batch) | ディレクトリ内のCSVファイルの変更をバッチ処理用に検知する |
+
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| New/updated CSV file in directory | `new_csv_file` | Yes |  |
+| New/updated file in directory | `new_file_in_dir` | - |  |
 
 ## Actions
-| 名前 | 説明 |
-|---|---|
-| Create folder | SFTPサーバー上に新しいディレクトリを作成する |
-| Delete file | SFTPサーバーからファイルを削除する |
-| Delete folder | SFTPサーバーからディレクトリを削除する |
-| Download file | SFTPサーバーからファイルをダウンロードする |
-| Get file information | 特定のファイルのメタデータと詳細を取得する |
-| List folder | SFTPサーバー上のディレクトリの内容を表示する |
-| Rename/move file | ファイル名を変更またはサーバー内で移動する |
-| Search files/folders | 指定した条件に一致するファイルとフォルダを検索する |
-| Upload file | SFTPサーバーにファイルをアップロードする |
+
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| Copy file | `copy` | - |  [deprecated] |
+| List folder | `dir` | Yes |  |
+| Download file | `download` | - |  [deprecated] |
+| Create folder | `mkdir` | - |  |
+| Delete file | `remove` | - |  |
+| Delete folder | `remove_folder` | - |  |
+| Rename/move file | `rename` | - |  |
+| Search files/folders | `search_files_folders` | Yes |  |
+| Change permission of a file or a folder | `set_permissions` | - |  |
+| Get file information | `stat` | - |  |
+| Download file | `streamable_download` | - |  |
+| Upload file | `upload` | - |  |

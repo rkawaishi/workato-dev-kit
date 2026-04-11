@@ -1,29 +1,33 @@
 # Asana コネクタ
 
-公式: https://docs.workato.com/en/connectors/asana.html
+Provider: `asana`
 
 ## Triggers
-| 名前 | 説明 |
-|---|---|
-| New event | Asanaで新しいイベントが発生したときにトリガーされる |
-| New/updated task | Asanaでタスクが作成または更新されたときにトリガーされる |
+
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| New  event | `new_event` | - |  |
+| New or updated task | `new_or_updated_task` | - |  [deprecated] |
+| New or updated tasks trigger | `new_or_updated_task_v2` | - |  |
 
 ## Actions
-| 名前 | 説明 |
-|---|---|
-| Add task to section | タスクをプロジェクト内の特定のセクションに移動する |
-| Create subtask | 既存のタスクの下にサブタスクを作成する |
-| Create tag | タスク整理用の新しいタグを作成する |
-| Create task | Asanaに新しいタスクを作成する |
-| Get people details by ID | IDを使用してユーザープロフィール情報を取得する |
-| Get project detail by ID | プロジェクトIDで詳細なプロジェクト情報を取得する |
-| Get project sections | プロジェクト内のすべてのセクションを取得する |
-| Get task details by ID | タスクIDで完全なタスク情報を取得する |
-| List all tasks with tag | 特定のタグに関連付けられたタスクを取得する |
-| List people | すべてのチームメンバーまたはユーザーを取得する |
-| List project tasks | プロジェクト内のすべてのタスクを取得する |
-| List workspaces | 利用可能なすべてのワークスペースを取得する |
-| Search projects | 指定された条件に一致するプロジェクトを検索する |
-| Search tags | 検索パラメータに基づいてタグを検索する |
-| Search tasks | 指定された条件に一致するタスクを検索する |
-| Update task | 既存のタスクのプロパティと詳細を更新する |
+
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| Custom action | `__adhoc_http_action` | - |  |
+| Add task to section | `add_task_to_section` | - |  |
+| Create subtask | `create_subtask` | - |  |
+| Create tag | `create_tag` | - |  |
+| Create task | `create_task` | - |  |
+| Get people details by ID | `get_people_details_by_id` | - |  |
+| Get project detail by ID | `get_project_detail_by_id` | - |  |
+| Get project sections | `get_project_sections` | Yes |  |
+| Get task details by ID | `get_task_details_by_id` | - |  |
+| List all tasks with tag | `list_all_tasks_with_tag` | Yes |  |
+| List people | `list_people` | Yes |  |
+| List project tasks | `list_project_tasks` | Yes |  |
+| List workspaces | `list_workspaces` | Yes |  |
+| Search projects | `search_projects` | Yes |  |
+| Search tags | `search_tags` | Yes |  |
+| Search tasks | `search_tasks` | Yes |  |
+| Update task | `update_task` | - |  |

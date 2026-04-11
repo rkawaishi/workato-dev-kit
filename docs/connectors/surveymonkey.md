@@ -1,16 +1,18 @@
 # SurveyMonkey コネクタ
 
-公式: https://docs.workato.com/en/connectors/surveymonkey.html
+Provider: `surveymonkey`
 
 ## Triggers
 
-| 名前 | 説明 |
-|---|---|
-| Completed survey response | SurveyMonkeyでアンケート回答が完了したときにトリガーされる |
-| New survey responses | アンケートに新しい回答が送信されたときにトリガーされる |
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| New survey respondent(deprecated) | `new_survey_respondent` | - |  [deprecated] |
+| Completed survey response | `new_survey_response` | - |  |
 
 ## Actions
 
-| 名前 | 説明 |
-|---|---|
-| Send survey invite via email and wait for response | メールでアンケート招待を送信し、受信者の回答を待つ |
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| Custom action | `__adhoc_http_action` | - |  |
+| Search surveys | `lookup_survey` | - |  |
+| Send survey invite via email | `send_flow` | - |  |

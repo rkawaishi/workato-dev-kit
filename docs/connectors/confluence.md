@@ -1,15 +1,24 @@
 # Confluence コネクタ
 
-公式: https://docs.workato.com/en/connectors/confluence.html
+Provider: `confluence`
 
 ## Triggers
 
-公式ドキュメント参照
+なし
 
 ## Actions
 
-| 名前 | 説明 |
-|---|---|
-| Create page | Confluenceに新しいページを作成する |
-
-> 上記は公式ドキュメントのトップページで確認できたもののみです。追加のトリガー・アクションについては公式ドキュメント参照。
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| Custom action | `__adhoc_http_action` | - |  |
+| Create page | `create_page` | - |  [deprecated] |
+| Create page (API v2) | `create_page_v2` | - |  |
+| Create task | `create_task` | - |  [deprecated] |
+| Get ancestors for page | `get_ancestors_for_page` | Yes |  |
+| Get attachments for page | `get_attachments_for_page` | Yes |  |
+| Get children for page | `get_children_for_page` | Yes |  |
+| Get page by ID | `get_page_by_id` | - |  |
+| Search labels | `search_labels` | Yes |  |
+| Search pages | `search_pages` | Yes |  |
+| Search spaces | `search_spaces` | Yes |  |
+| Update page | `update_page` | - |  |

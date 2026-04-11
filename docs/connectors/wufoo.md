@@ -1,13 +1,13 @@
 # Wufoo コネクタ
 
-公式: https://docs.workato.com/en/connectors/wufoo.html
+Provider: `wufoo`
 
 ## Triggers
 
-| 名前 | 説明 |
-|---|---|
-| New entry | Wufooで新しいフォームエントリが送信されたときにワークフローを起動する |
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| New entry | `new_entry` | - |  |
 
 ## Actions
 
-公式ドキュメント参照
+なし

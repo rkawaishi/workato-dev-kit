@@ -1,12 +1,14 @@
-# JWT コネクタ
+# JWT tools by Workato コネクタ
 
-公式: https://docs.workato.com/en/connectors/jwt.html
+Provider: `jwt`
 
 ## Triggers
-公式ドキュメント参照
+
+なし
 
 ## Actions
-| 名前 | 説明 |
-|---|---|
-| Generate JWT | 設定されたアルゴリズムと共有秘密鍵を使用して署名付きJWTを生成する |
-| Decode JWT | 既存のJWTを解析してクレームを抽出する |
+
+| 名前 | provider 内名称 | Batch | 説明 |
+|---|---|---|---|
+| Decode JWT | `decode` | - |  |
+| Generate JWT | `encode` | - |  |
