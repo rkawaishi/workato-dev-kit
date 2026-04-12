@@ -1,37 +1,90 @@
 ---
-description: Workato Connector SDK (connector.rb) のフォーマット定義。connectors/ 配下の Ruby ファイルを編集・生成する際に適用。
-globs: "connectors/**/*.rb"
+description: Workato Connector SDK (connector.rb) のフォーマット定義とナレッジ管理ルール。
+globs: "connectors/**/*.rb,connectors/**/connector.rb"
 alwaysApply: false
 ---
 
-# Workato Connector SDK
+# Workato Connector SDK (connector.rb)
 
-## connector.rb 構造
+## ファイル構造
+
+```
+connectors/<name>/
+├── connector.rb          # メインのコネクタ定義
+├── settings.yaml         # 認証情報（開発用）
+├── settings.yaml.enc     # 認証情報（暗号化）
+├── master.key            # 暗号化キー（.gitignore 必須）
+├── Gemfile
+└── spec/
+    ├── connector_spec.rb
+    └── cassettes/
+```
+
+## connector.rb のトップレベル構造
 
 ```ruby
 {
   title: 'コネクタ名',
-  connection: { fields: [...], authorization: { type: 'api_key', apply: lambda { } }, base_uri: lambda { } },
-  test: lambda { |connection| get('/me') },
+  connection: { fields: [...], authorization: {...}, base_uri: lambda { } },
+  test: lambda { |connection| },
   actions: { action_name: { execute: lambda { }, input_fields: lambda { }, output_fields: lambda { } } },
   triggers: { trigger_name: { poll: lambda { }, dedup: lambda { }, input_fields: lambda { }, output_fields: lambda { } } },
-  object_definitions: { obj: { fields: lambda { } } },
-  pick_lists: { list: lambda { } },
-  methods: { name: lambda { } }
+  object_definitions: { obj_name: { fields: lambda { } } },
+  pick_lists: { list_name: lambda { } },
+  methods: { method_name: lambda { } }
 }
 ```
 
 ## 認証タイプ
-`basic_auth`, `api_key`, `oauth2`, `custom_auth`, `multi`
 
-## アクション必須: `execute`, `input_fields`, `output_fields`
-## ポーリングトリガー必須: `poll` (→ `{events:, can_poll_more:, next_poll:}`), `dedup`, `input_fields`, `output_fields`
-## Webhook トリガー必須: `webhook_subscribe`, `webhook_unsubscribe`, `webhook_notification`, `output_fields`
+`connection.authorization.type`:
+- `basic_auth` — Basic 認証
+- `api_key` — API キー
+- `oauth2` — OAuth 2.0
+- `custom_auth` — カスタム認証
+- `multi` — 複数方式選択
+
+## アクションの必須キー
+
+- `execute` — 実行ロジック（HTTP リクエスト等）
+- `input_fields` — 入力フィールド定義
+- `output_fields` — 出力フィールド定義
+
+## ポーリングトリガーの必須キー
+
+- `poll` — データ取得。`{ events:, can_poll_more:, next_poll: }` を返す
+- `dedup` — 重複排除キー
+- `input_fields` / `output_fields`
+
+## Webhook トリガーの必須キー
+
+- `webhook_subscribe` / `webhook_unsubscribe` — 動的 Webhook
+- `webhook_notification` — Webhook ペイロード処理
+- `output_fields`
 
 ## フィールド定義
+
 ```ruby
-{ name: 'field', type: 'string', control_type: 'text', label: '表示名', optional: true }
+{ name: 'field', type: 'string', control_type: 'text', label: '表示名', optional: true, hint: 'ヘルプ' }
 ```
 
-## HTTP: `get`, `post`, `put`, `patch`, `delete` — `base_uri` 自動付与
-## master.key は絶対にコミットしない
+型: `string`, `integer`, `number`, `boolean`, `date`, `timestamp`, `object`, `array`
+
+## HTTP メソッド
+
+`get`, `post`, `put`, `patch`, `delete` — `base_uri` が自動付与される
+
+## ナレッジ管理
+
+カスタムコネクタのトリガー/アクション/フィールド情報は `connectors/docs/<name>.md` に格納。
+`/sync-connectors --custom` で `connector.rb` をパースして自動生成。
+Pre-built コネクタ（`docs/connectors/`）と同じ形式。
+
+## 注意事項
+
+- 使用可能な Ruby メソッドは許可リストに限定
+- `master.key` は絶対にコミットしない
+- `settings.yaml` に実際の認証情報を含む場合は `.gitignore` に追加
+- `connectors/` は組織固有（gitignore 対象）。フレームワークリポジトリにはコミットしない
+
+詳細: `@docs/connector-sdk/connector-rb.md`

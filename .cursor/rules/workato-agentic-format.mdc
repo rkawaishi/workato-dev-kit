@@ -1,5 +1,5 @@
 ---
-description: Workato Genie/Skill JSON のフォーマット定義。*.agentic_genie.json, *.agentic_skill.json を編集・生成する際に適用。
+description: Workato Genie/Skill/MCP Server JSON のフォーマット定義。Agentic 関連ファイル編集時に適用。
 globs: "**/*.agentic_genie.json,**/*.agentic_skill.json,**/*.mcp_server.json,**/*.lcap_app.json,**/*.workato_db_table.json"
 alwaysApply: false
 ---
@@ -13,7 +13,7 @@ alwaysApply: false
   "name": "Genie名",
   "logo_file_name": "logo.png",
   "logo_content_type": "image/png",
-  "description": "短い説明",
+  "description": "Genieの短い説明",
   "instructions": "システムプロンプト（マークダウン）",
   "ai_provider": "anthropic",
   "ai_model": null,
@@ -23,7 +23,7 @@ alwaysApply: false
     "ref_0": {
       "type": "agentic_skill",
       "id": {
-        "zip_name": "skill.agentic_skill.json",
+        "zip_name": "skill_name.agentic_skill.json",
         "name": "スキル表示名",
         "folder": ""
       }
@@ -32,26 +32,34 @@ alwaysApply: false
 }
 ```
 
-### instructions のセクション構成
+### フィールド詳細
 
-```markdown
-You are a [Role] Agent
+| フィールド | 説明 |
+|---|---|
+| `instructions` | Genie のシステムプロンプト。役割、対象ユーザー、行動指針、禁止事項などを記述 |
+| `ai_provider` | `"anthropic"` / `"openai"` 等 |
+| `ai_model` | null でデフォルト、または具体的モデル名 |
+| `matrix` | マトリクスモード（複数スキル並行実行） |
+| `mcp_servers` | 接続する MCP サーバー一覧 |
+| `references` | `ref_0`, `ref_1`... で使用するスキルを参照 |
 
-**What's my job?** — 主な責務
-**Who will need my help?** — 対象ユーザー
-**How do I get things done?** — 行動パターン
-**What should I avoid?** — 禁止事項
-**What results do you want me to track?** — 追跡指標
-**How should I talk to people?** — スタイル
-**Any extra tips?** — ヒント
-```
+### instructions のベストプラクティス
+
+Genie のプロンプトは以下のセクションで構成:
+- **What's my job?** — 主な責務
+- **Who will need my help?** — 対象ユーザー
+- **How do I get things done?** — 行動パターン
+- **What should I avoid?** — 禁止事項
+- **What results do you want me to track?** — 追跡すべき指標
+- **How should I talk to people?** — コミュニケーションスタイル
+- **Any extra tips?** — その他のヒント
 
 ## Agentic Skill: *.agentic_skill.json
 
 ```json
 {
   "name": "スキル名",
-  "trigger_description": "いつこのスキルを使うかの説明",
+  "trigger_description": "このスキルをいつ使うかの説明\n\n具体的な実行条件",
   "references": {
     "recipe_id": {
       "type": "recipe",
@@ -65,7 +73,7 @@ You are a [Role] Agent
 }
 ```
 
-## 構造の関係
+### スキルとレシピの関係
 
 ```
 agentic_genie.json
@@ -73,40 +81,22 @@ agentic_genie.json
                       └── references.recipe_id → recipe.json
 ```
 
-- スキル用レシピは `workato_genie/start_workflow` トリガーを使用
-- 最終ステップは `workato_genie/workflow_return_result` で結果を返す
+- Genie は複数のスキルを持てる
+- 各スキルは1つのレシピに紐づく
+- スキル用レシピは `workato_genie` プロバイダーの `start_workflow` トリガーを使用
+- スキル用レシピの最終ステップは `workflow_return_result` で結果を Genie に返す
 
 ## Connection: *.connection.json
 
 ```json
-{ "name": "表示名", "provider": "プロバイダー名", "root_folder": false }
-```
-
-## MCP Server: *.mcp_server.json
-
-```json
 {
-  "name": "サーバー名",
-  "description": "サーバー説明（AI用）",
-  "auth_type": "workato_idp",
-  "tools_type": "project_assets",
-  "tools": [
-    { "tool": "ref_0", "description": "AI向けツール使用指示", "vua_required": true }
-  ],
-  "references": {
-    "ref_0": {
-      "type": "agentic_skill",
-      "id": { "zip_name": "Folder/skill.agentic_skill.json", "name": "skill_name", "folder": "Folder" }
-    }
-  }
+  "name": "接続名（例: Sample1 | Gmail）",
+  "provider": "プロバイダー名",
+  "root_folder": false
 }
 ```
 
-### 構造: mcp_server → agentic_skill → recipe
-
-- `auth_type`: `"workato_idp"` / `tools_type`: `"project_assets"`
-- `vua_required`: Verified User Access（エンドユーザー認証で API 呼出し）
-- tools[].description は AI がツール選択に使う詳細指示
+認証情報は含まれない。名前とプロバイダーのみ。
 
 ## ファイル命名規則
 
@@ -114,6 +104,7 @@ agentic_genie.json
 - コネクション: `<prefix>_<provider>.connection.json`
 - Genie: `<snake_case_name>.agentic_genie.json`
 - スキル: `<snake_case_name>.agentic_skill.json`
+- ロゴ: `<genie_name>.agentic_genie.png`
 - MCP サーバー: `<name>.mcp_server.json`
 - Workflow App: `<snake_case_name>.lcap_app.json`
 - Data Table: `<snake_case_name>.workato_db_table.json`
@@ -136,13 +127,24 @@ agentic_genie.json
     { "name": "Tab", "kind": "new_request|user_defined", "visibility": "all|managers" }
   ],
   "displayed_columns": [
-    { "id": "UUID or CURRENT_STAGE|...", "visibility": "all|managers|nobody" }
+    { "id": "UUID or CURRENT_STAGE|CURRENT_TASK|ASSIGNED_TO|EXPIRES_AT|CREATED_BY", "visibility": "all|managers|nobody" }
   ]
 }
 ```
 
 - `creation_page` → 送信フォーム、`workato_db_table` → バックエンド Data Table
 - `workflow_stages` でステージごとに task_page / details_page を参照
+- `displayed_columns.id` は Data Table の UUID フィールド ID、または大文字のシステムカラム
+
+### ページコンポーネントの type（重要）
+
+| フィールド型 | コンポーネント `type` | `style` |
+|---|---|---|
+| short-text | `"input"` | `"short-text"` |
+| long-text | `"input"` | `"long-text"` |
+| date / date-time | **`"date"`** | 不要 |
+
+**date 型に `"type": "input"` を使うとページエディタが壊れる。必ず `"type": "date"` を使うこと。**
 
 ## Data Table: *.workato_db_table.json
 
@@ -158,4 +160,58 @@ agentic_genie.json
 ```
 
 - `type: "relation"` は `relation.table_id` で外部テーブルを参照
-- フィールド ID は UUID v4。レシピやページで UUID がカラム名として使われる
+- システムフィールド（Record ID, Created time, Last modified time）は read_only + hidden
+- フィールド ID は UUID v4。レシピ output やページで UUID がカラム名として使われる
+
+## MCP Server: *.mcp_server.json
+
+```json
+{
+  "name": "サーバー名",
+  "description": "MCP サーバーの説明（AI がサーバー選択に使用）",
+  "auth_type": "workato_idp",
+  "tools_type": "project_assets",
+  "tools": [
+    {
+      "tool": "ref_0",
+      "description": "ツールの使用条件と指示（Use this tool when... / Do not use this tool when...）",
+      "vua_required": true
+    }
+  ],
+  "references": {
+    "ref_0": {
+      "type": "agentic_skill",
+      "id": {
+        "zip_name": "Folder/skill_name.agentic_skill.json",
+        "name": "skill_name",
+        "folder": "Folder"
+      }
+    }
+  }
+}
+```
+
+### フィールド詳細
+
+| フィールド | 説明 |
+|---|---|
+| `name` | MCP サーバーの表示名 |
+| `description` | サーバー全体の説明。AI がどのサーバーを使うか判断する際に参照 |
+| `auth_type` | 認証方式。確認済み: `"workato_idp"`（Workato Identity Provider） |
+| `tools_type` | ツール種別。確認済み: `"project_assets"`（プロジェクト内アセット） |
+| `tools[].tool` | `references` 内の参照キー（`ref_0`, `ref_1`, ...） |
+| `tools[].description` | AI がツール選択に使う詳細指示 |
+| `tools[].vua_required` | Verified User Access が必要か。`true` = エンドユーザーの認証情報で API 呼出し |
+| `references` | `ref_N` → agentic_skill へのマッピング |
+
+### 構造の関係
+
+```
+mcp_server.json
+  └── tools[] → references → agentic_skill.json (複数可)
+                                └── references.recipe_id → recipe.json
+```
+
+- MCP サーバーは Genie とは別の経路でスキルを公開する仕組み
+- Genie が `references` でスキルを直接参照するのに対し、MCP サーバーは `tools[]` 配列で順序・説明付きで参照
+- 各ツールの `description` は Genie スキルの `trigger_description` に相当するが、より詳細な AI 向け指示を含む

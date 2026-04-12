@@ -1,0 +1,217 @@
+---
+description: Workato Page Component JSON のフォーマット定義。Workflow App ページ編集時に適用。
+globs: "**/*.lcap_page.json"
+alwaysApply: false
+---
+
+# Workato Page Component JSON Format
+
+## トップレベル構造
+
+```json
+{
+  "name": "ページ名",
+  "path": "url-slug",
+  "content": {
+    "type": "common",
+    "maxWidth": "fixed",
+    "background": { "style": "pattern", "pattern": "light-2" },
+    "variables": [],
+    "handlers": { "pageLoad": null },
+    "layout": [ /* ネストされたコンポーネントツリー */ ]
+  }
+}
+```
+
+## layout 構造
+
+`layout` は行の配列。各行は `[component, colSpan]` のペアで、行頭に行番号（1始まり）を持つ:
+
+```json
+"layout": [
+  1,                          // 行番号
+  [{ /* component */ }, 0],   // [コンポーネント, colSpan（通常0）]
+  [{ /* component */ }, 0]
+]
+```
+
+`container` は入れ子の `layout` を持てる。
+
+## コンポーネント共通プロパティ
+
+| プロパティ | 説明 |
+|---|---|
+| `type` | コンポーネント種別 |
+| `id` | **8桁 hex** の一意 ID（例: `"cb33ba2c"`） |
+| `name` | コンポーネント名（ビルダー向け） |
+| `x` | グリッド開始位置（0-11、12カラムレイアウト） |
+| `width` | グリッド幅（1-12） |
+| `visible` | `true` / `false` / 条件式 |
+
+入力系コンポーネント追加:
+
+| プロパティ | 説明 |
+|---|---|
+| `dataSource` | **保存先**（後述）。選択肢ソースではない |
+| `editable` | `true` / `false` / 条件式 |
+| `validations.required.condition` | `true` / `false` / 条件式 |
+| `label` | ユーザー向け表示ラベル |
+| `hint` | 入力ヒント |
+| `placeholder` | プレースホルダー |
+
+## dataSource（重要）
+
+`dataSource` は **Data Table カラムへの保存先** を指定する。選択肢のソースではない。
+
+```json
+"dataSource": {
+  "id": "Employee name",   // Data Table フィールドの title（UUID ではない）
+  "type": "short-text"     // フィールド型
+}
+```
+
+`dataSource: null` → 送信時に値が保存されない。
+
+## コンポーネント type マッピング
+
+| 用途 | `type` | `style` | Data Table フィールド型 |
+|---|---|---|---|
+| 短いテキスト | `"input"` | `"short-text"` | `short-text` |
+| 長いテキスト | `"input"` | `"long-text"` | `long-text` |
+| 数値 | `"input"` | `"number"` | `number` |
+| メール | `"input"` | `"email"` | `short-text` |
+| 電話番号 | `"input"` | `"phone"` | `short-text` |
+| URL | `"input"` | `"url"` | `short-text` |
+| 日付 | **`"date"`** | `"date"` | `date` |
+| 日時 | **`"date"`** | `"date-time"` | `date-time` |
+| 選択式（単一） | **`"dropdown"`** | 不要 | `short-text` |
+| 選択式（複数） | **`"dropdown"`** + `multiValue: true` | 不要 | `short-text` |
+| チェックボックス | **`"checkbox"`** | 不要 | `boolean` |
+| ファイル | **`"file"`** | 不要 | `file` |
+
+> **CRITICAL: 日付には必ず `"type": "date"` を使うこと。`"type": "input"` + `"style": "date"` を使うとページエディタが無限ロードで壊れる。**
+
+## input コンポーネント
+
+```json
+{
+  "type": "input",
+  "id": "cb33ba2c",
+  "name": "Employee name",
+  "x": 0, "width": 6,
+  "visible": true,
+  "dataSource": { "id": "Employee name", "type": "short-text" },
+  "editable": true,
+  "validations": { "required": { "condition": true } },
+  "label": "Employee name",
+  "hint": "",
+  "placeholder": "",
+  "style": "short-text"
+}
+```
+
+`"long-text"` の場合は `"textareaHeight": 72` を追加。
+
+## date コンポーネント
+
+```json
+{
+  "type": "date",
+  "id": "28d047c9",
+  "name": "Start date",
+  "x": 0, "width": 6,
+  "visible": true,
+  "dataSource": { "id": "Start date", "type": "date" },
+  "editable": true,
+  "validations": { "required": { "condition": true } },
+  "handlers": { "change": null },
+  "label": "Start date",
+  "hint": "",
+  "style": "date"
+}
+```
+
+## dropdown コンポーネント
+
+```json
+{
+  "type": "dropdown",
+  "id": "abca2e40",
+  "name": "PC type",
+  "x": 0, "width": 6,
+  "visible": true,
+  "dataSource": { "id": "PC type", "type": "short-text" },
+  "editable": true,
+  "validations": { "required": { "condition": true } },
+  "handlers": { "change": null },
+  "label": "PC type",
+  "hint": "",
+  "placeholder": "",
+  "options": [
+    { "title": "Windows", "value": "Windows" },
+    { "title": "Mac", "value": "Mac" }
+  ],
+  "appFunctionOptions": null,
+  "dataSourceOptions": null,
+  "labelDataSource": null,
+  "multiValue": false
+}
+```
+
+| プロパティ | 説明 |
+|---|---|
+| `options` | 静的な選択肢リスト（`title` = 表示名、`value` = 保存値） |
+| `appFunctionOptions` | レシピで動的にオプションを返す場合（`app_function_load_dropdown_request` トリガー） |
+| `dataSourceOptions` | Data Table の別カラムを選択肢ソースにする場合 |
+| `multiValue` | `true` で複数選択（最大20件） |
+| `labelDataSource` | ラベル用データソース（通常 `null`） |
+
+## button コンポーネント
+
+```json
+{
+  "type": "button",
+  "id": "f433af82",
+  "name": "Submit",
+  "x": 0, "width": 12,
+  "visible": true,
+  "handlers": {
+    "click": {
+      "type": "save-data",
+      "navigateTo": { "target": "default", "url": "" }
+    }
+  },
+  "label": "Submit",
+  "style": "filled",
+  "enabled": true
+}
+```
+
+`style`: `"filled"`（主要）/ `"outline"`（補助）
+
+### click handler types
+
+| type | 用途 |
+|---|---|
+| `"save-data"` | Data Table にデータ保存（送信フォーム） |
+| `"complete-task"` | タスク完了（承認/却下） |
+| `"open-url"` | URL を開く |
+| `"run-recipe"` | レシピを実行 |
+| `"reset-reload"` | コンポーネントのリセット/リロード |
+
+## 表示コンポーネント
+
+| type | 用途 | 主要プロパティ |
+|---|---|---|
+| `"container"` | レイアウトコンテナ | `layout`, `backgroundColor`, `borderColor`, `padding` (large/medium/small/none) |
+| `"text"` | テキスト表示（マークダウン対応） | `text`, `alignment`, `color` |
+| `"divider"` | 区切り線 | `backgroundColor` |
+| `"image"` | 画像 | プリセット `"illustration-N"` / URL |
+
+## 条件付きプロパティ
+
+`visible`, `editable`, `validations.required.condition` は条件式で動的に制御可能:
+
+- レシピの IF 条件と同様の構文（AND / OR チェーン可能）
+- 参照可能データ: App user 情報、Request メタデータ、他コンポーネントの値、ワークフローステージ
+- JSON での条件式構造は UI で設定後に pull して確認推奨

@@ -1,5 +1,5 @@
 ---
-description: Workato レシピ JSON のフォーマット定義。*.recipe.json を編集・生成する際に適用。
+description: Workato レシピ JSON のフォーマット定義。レシピファイル編集時に適用。
 globs: "**/*.recipe.json"
 alwaysApply: false
 ---
@@ -22,19 +22,30 @@ alwaysApply: false
 
 ## code: ステップツリー（再帰構造）
 
-各ステップのフィールド:
+各ステップは以下のフィールドを持つ:
 
-- `number` (int) — ステップ番号（0始まり、トリガーが0）
-- `provider` (string) — コネクタ名（例: `gmail`, `slack`, `salesforce`）
-- `name` (string) — アクション名（例: `new_email`, `post_message`）
-- `as` (string) — ステップの参照名（datapill で使用）
-- `keyword` (string) — `"trigger"` / `"action"` / `"foreach"`
-- `input` (object) — 入力パラメータ（datapill 参照を含む）
-- `block` (array) — 子ステップの配列（ネスト可）
-- `filter` (object) — 条件フィルタ（optional）
-- `comment` (string) — ステップのコメント（optional）
-- `uuid` (string) — UUID v4
-- `extended_output_schema` (array/null) — カスタム出力スキーマ（optional）
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `number` | int | ステップ番号（0始まり、トリガーが0） |
+| `provider` | string | コネクタ名（例: `gmail`, `slack`, `salesforce`） |
+| `name` | string | アクション名（例: `new_email`, `post_message`） |
+| `as` | string | ステップの参照名（datapill で使用） |
+| `keyword` | string | `"trigger"` / `"action"` / `"foreach"` |
+| `input` | object | 入力パラメータ（datapill 参照を含む） |
+| `block` | array | 子ステップの配列（ネスト可） |
+| `filter` | object | 条件フィルタ（optional） |
+| `comment` | string | ステップのコメント（optional） |
+| `uuid` | string | UUID v4 |
+| `extended_output_schema` | array/null | カスタム出力スキーマ。**トリガーとアクションの両方に設定推奨** — 省略すると UI でリフレッシュが必要 |
+| `extended_input_schema` | array/null | カスタム入力スキーマ。`return_result` 等では必須 |
+
+### `as` フィールドの命名規則
+
+| コンテキスト | `as` の値 |
+|---|---|
+| 通常レシピ | アクション名と同じ値（例: `new_email`, `post_message`） |
+| Genie スキルレシピ | ランダム 8文字 hex（例: `a7c3e1f9`） |
+| `slack_bot` コネクタ | 通常レシピでもランダム 8文字 hex |
 
 ### Slack イベントトリガー
 
@@ -43,17 +54,19 @@ alwaysApply: false
   "provider": "slack",
   "name": "new_event",
   "keyword": "trigger",
-  "input": { "webhook_suffix": "reaction_added" }
+  "input": {
+    "webhook_suffix": "reaction_added"
+  }
 }
 ```
 
-- イベント種別は `webhook_suffix` で指定（`event_type` ではない）
+- イベント種別は `webhook_suffix` フィールドで指定（`event_type` ではない）
 
 ### keyword の種別
 
-- `"trigger"` — レシピの起点（number: 0）
+- `"trigger"` — レシピの起点（number: 0 のステップ）
 - `"action"` — 通常のアクションステップ
-- `"foreach"` — ループ。`source` でイテレート対象を指定、`block` に子ステップ
+- `"foreach"` — ループ。`source` フィールドでイテレート対象を指定、`block` に子ステップ
 
 ### Genie ワークフロー用トリガー
 
@@ -72,36 +85,154 @@ provider が `workato_genie` の場合:
 }
 ```
 
+## Genie 呼び出し (`assign_task_to_genie`)
+
+レシピから AI エージェント（Genie）を呼び出す:
+
+```json
+{
+  "provider": "workato_genie",
+  "name": "assign_task_to_genie",
+  "keyword": "action",
+  "dynamicPickListSelection": { "genie_handle": "Genie名" },
+  "toggleCfg": { "genie_handle": true },
+  "input": {
+    "genie_handle": {
+      "zip_name": "genie.agentic_genie.json",
+      "name": "Genie名",
+      "folder": ""
+    },
+    "task_instructions": "タスク指示文（datapill 可）"
+  }
+}
+```
+
+## Genie スキルレシピのパラメータ参照
+
+- パラメータは `parameters` オブジェクト配下にネスト:
+  `path:["parameters","<param_name>"]`
+- `workflow_return_result` / `return_result` は `input.result.<field>` に個別マッピング
+- **`extended_output_schema` と `extended_input_schema` を必ず設定する** — 省略するとエディタでリロードが必要になる
+  ```json
+  {
+    "provider": "workato_genie",
+    "name": "workflow_return_result",
+    "input": {
+      "result": {
+        "field1": "#{_dp('...')}",
+        "field2": "#{_dp('...')}"
+      }
+    },
+    "extended_output_schema": [
+      {
+        "label": "Result", "name": "result", "type": "object",
+        "properties": [
+          { "name": "field1", "type": "string", "label": "Field 1" },
+          { "name": "field2", "type": "string", "label": "Field 2" }
+        ]
+      }
+    ],
+    "extended_input_schema": [
+      {
+        "label": "Result", "name": "result", "type": "object",
+        "properties": [
+          { "name": "field1", "type": "string", "label": "Field 1" },
+          { "name": "field2", "type": "string", "label": "Field 2" }
+        ]
+      }
+    ]
+  }
+  ```
+
+## Custom Action (`__adhoc_http_action`)
+
+コネクタに適切なアクションがない場合、API を直接呼び出す:
+
+```json
+{
+  "provider": "<connector>",
+  "name": "__adhoc_http_action",
+  "as": "<任意の参照名>",
+  "keyword": "action",
+  "input": {
+    "mnemonic": "表示名",
+    "verb": "get",
+    "response_type": "json",
+    "path": "api/endpoint",
+    "input": {
+      "schema": "[{...}]",
+      "data": { "param": "#{_dp('...')}" }
+    },
+    "output": "[{...}]"
+  },
+  "extended_output_schema": [...],
+  "extended_input_schema": [...],
+  "visible_config_fields": [...],
+  "wizardFinished": true
+}
+```
+
+- `name` は常に `"__adhoc_http_action"`（全コネクタ共通）
+- `input.verb`: HTTP メソッド（`get`, `post`, `put`, `delete`）
+- `input.path`: API パス（コネクタの base URI に追加）
+- `input.input.schema`: リクエストパラメータスキーマ（JSON文字列）
+- `input.input.data`: パラメータ値（datapill 可）
+- `input.output`: レスポンススキーマ（JSON文字列）
+
 ## Datapill 記法
 
+データ参照は `_dp()` 関数で記述:
 ```
-#{_dp('{"pill_type":"output","provider":"<provider>","line":"<as>","path":["field"]}')}
+#{_dp('{"pill_type":"output","provider":"<provider>","line":"<as>","path":["field","nested_field"]}')}
 ```
 
+- `pill_type`: 通常 `"output"`
 - `provider`: 参照元ステップの `provider`
 - `line`: 参照元ステップの `as` 値
-- `path`: フィールドパス配列
+- `path`: フィールドパス配列。リストの現在アイテムは `{"path_element_type":"current_item"}` を使用
 
-foreach 内の current_item:
-```
-#{_dp('{"pill_type":"output","provider":"foreach","line":"foreach","path":["fieldName"]}')}
-```
+### その他のデータ参照
 
-その他の記法:
 ```ruby
-#{_('data.provider.step.field')}                    # ドット記法
-=_('data.provider.step.list').pluck('f').join(', ') # Ruby式
+#{_('data.gmail.new_email.subject')}                          # ドット記法
+=_('data.gmail.new_email.attachments').pluck('filename').join(', ')  # Ruby式
 ```
 
 ## filter: 条件フィルタ
 
 ```json
 {
-  "conditions": [{ "operand": "contains", "lhs": "#{_dp('...')}", "rhs": "値", "uuid": "..." }],
+  "conditions": [
+    {
+      "operand": "contains",
+      "lhs": "#{_dp('...')}",
+      "rhs": "High",
+      "uuid": "..."
+    }
+  ],
   "operand": "and",
   "type": "compound"
 }
 ```
+
+operand 値（JSON 内の文字列）:
+
+| 表示名 | JSON operand |
+|---|---|
+| contains | `contains` |
+| doesn't contain | `not_contains` |
+| starts with | `starts_with` |
+| doesn't start with | `not_starts_with` (※要確認) |
+| ends with | `ends_with` |
+| doesn't end with | `not_ends_with` (※要確認) |
+| equals | **`equals_to`** (※ `equals` ではない) |
+| doesn't equal | `not_equals` |
+| greater than | `greater_than` |
+| less than | `less_than` |
+| is true | `is_true` |
+| is not true | `is_false` |
+| is present | `is_present` |
+| is not present | `is_not_present` |
 
 ## config: コネクション参照
 
@@ -110,39 +241,51 @@ foreach 内の current_item:
   "keyword": "application",
   "provider": "gmail",
   "account_id": {
-    "zip_name": "conn.connection.json",
-    "name": "Display Name",
+    "zip_name": "sample1_gmail.connection.json",
+    "name": "Sample1 | Gmail",
     "folder": ""
   },
   "skip_validation": false
 }
 ```
 
-## Genie 呼び出し (`assign_task_to_genie`)
+`account_id` が `null` の場合はコネクション未設定。
 
-レシピから Genie を呼び出す:
-- `name`: `"assign_task_to_genie"`
-- `input.genie_handle`: Genie ファイル参照（zip_name 形式）
-- `input.task_instructions`: タスク指示テキスト（datapill 可）
+### クロスプロジェクト参照
 
-スキルレシピのパラメータ参照:
-- `path:["parameters","<param_name>"]`（parameters 配下にネスト）
-- `workflow_return_result`: `input.result.<field>` に個別マッピング
+別プロジェクトのコネクションを参照する場合、`folder` にプロジェクト名を指定:
+```json
+"account_id": {
+  "zip_name": "Other Project/Connections/shared_jira.connection.json",
+  "name": "Shared | Jira",
+  "folder": "Other Project"
+}
+```
 
-## Custom Action (`__adhoc_http_action`)
+## スキーマ定義（extended_output_schema / parameters_schema_json）
 
-コネクタに適切なアクションがない場合、API を直接呼び出す:
-- `name`: 常に `"__adhoc_http_action"`
-- `input.mnemonic`: UI 表示名
-- `input.verb`: HTTP メソッド（`get`/`post`/`put`/`delete`）
-- `input.path`: API パス（base URI に追加）
-- `input.input.data`: パラメータ値（datapill 可）
-- `input.output`: レスポンススキーマ（JSON文字列）
+```json
+{
+  "name": "field_name",
+  "type": "string",           // string, number, boolean, object, array
+  "label": "表示名",
+  "control_type": "text",     // text, number, url, select, multiselect, checkbox
+  "optional": false,
+  "hint": "入力のヒント",
+  "properties": [],           // type=object の場合の子フィールド
+  "of": "object",             // type=array の場合の要素型
+  "parse_output": "float_conversion"  // 出力パース方法（optional）
+}
+```
 
-## 生成時のルール
+## job_report_schema / job_report_config
 
-- `number` はトリガーが 0、以降連番
-- 各ステップに UUID v4 を生成
-- 通常レシピの `as` は `name` と同じ値、Genie ワークフローではランダム8文字 hex
-- `config` には使用する全プロバイダーのコネクション参照を含める
-- 新規作成時の `version` は 1
+レシピ実行レポートのカスタムカラム:
+```json
+"job_report_schema": [
+  { "name": "custom_column_1", "label": "表示名" }
+],
+"job_report_config": {
+  "custom_column_1": "#{_('data.provider.step.field')}"
+}
+```
