@@ -2,6 +2,15 @@
 
 全 12 スキルの用途・使い方・オプションをまとめたリファレンス。
 
+## スキルの呼び出し方
+
+| エディタ | 呼び出し方 | スキル定義の場所 |
+|---|---|---|
+| **Claude Code** | プロンプトで `/skill-name` を入力 | `.claude/skills/` |
+| **Cursor** | Agent モードで `/skill-name` を入力 | `.cursor/skills/`（`.claude/skills/` から同期） |
+
+Cursor ではスキルファイルが `.cursor/skills/` にも同期されている。ツールキット側でスキルを更新した場合は `bash scripts/sync-cursor-rules.sh` を実行して反映する。
+
 ## 設計フェーズ
 
 ### /design — 設計書の作成・更新

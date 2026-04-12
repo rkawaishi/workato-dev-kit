@@ -1,11 +1,15 @@
 # Workato Dev Kit ガイド
 
+本ツールキットは **Claude Code** と **Cursor** の両方に対応している。スキル (`/create-recipe` 等) やルールはどちらのエディタでも同じ形式で利用できる。
+
 ## はじめに
 
 | ガイド | 内容 |
 |---|---|
 | [Claude Code クイックスタート](quickstart-claude-code.md) | Claude Code でのセットアップと初回開発 |
 | [Cursor クイックスタート](quickstart-cursor.md) | Cursor でのセットアップとルール同期 |
+
+> **Note:** スキル・ルールの正本は `.claude/` にあり、Cursor 用の `.cursor/` は `bash scripts/sync-cursor-rules.sh` で同期される。詳細は [設計思想・アーキテクチャ](architecture.md) を参照。
 
 ## 設計思想
 

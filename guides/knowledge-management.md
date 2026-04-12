@@ -12,6 +12,8 @@ Workato のレシピ JSON には以下の特性がある:
 
 これらは開発を重ねるうちに判明するが、個人の記憶に留まりがち。本ツールキットでは、この暗黙知をドキュメントとして蓄積し、次のレシピ生成に活用する。
 
+Claude Code と Cursor のどちらで学習しても、ナレッジは `docs/` と `.claude/rules/` に蓄積されるため、両エディタで共有される。Cursor 利用時は学習後に `bash scripts/sync-cursor-rules.sh` を実行して `.cursor/rules/` にも反映すること。
+
 ## ナレッジの構造
 
 ```
