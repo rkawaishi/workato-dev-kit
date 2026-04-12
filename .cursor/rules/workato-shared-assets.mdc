@@ -1,5 +1,5 @@
 ---
-description: 複数プロジェクトでアセットを共有する場合の参考パターン。
+description: 共有アセットガイダンス
 globs: "projects/**"
 alwaysApply: false
 ---

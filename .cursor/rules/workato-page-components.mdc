@@ -1,5 +1,5 @@
 ---
-description: Workato Page Component JSON のフォーマット定義。Workflow App ページ編集時に適用。
+description: Workato Page Component JSON Format
 globs: "**/*.lcap_page.json"
 alwaysApply: false
 ---

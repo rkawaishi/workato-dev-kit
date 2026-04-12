@@ -1,5 +1,5 @@
 ---
-description: Workato プロジェクト内のディレクトリ構成ルール。プロジェクトファイル編集時に適用。
+description: Workato プロジェクト内ディレクトリ構成ルール
 globs: "projects/**"
 alwaysApply: false
 ---

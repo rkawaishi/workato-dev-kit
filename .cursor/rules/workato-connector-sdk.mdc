@@ -1,5 +1,5 @@
 ---
-description: Workato Connector SDK (connector.rb) のフォーマット定義とナレッジ管理ルール。
+description: Workato Connector SDK (connector.rb)
 globs: "connectors/**/*.rb,connectors/**/connector.rb"
 alwaysApply: false
 ---

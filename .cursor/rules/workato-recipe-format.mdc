@@ -1,5 +1,5 @@
 ---
-description: Workato レシピ JSON のフォーマット定義。レシピファイル編集時に適用。
+description: Workato Recipe JSON Format
 globs: "**/*.recipe.json"
 alwaysApply: false
 ---

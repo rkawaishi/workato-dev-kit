@@ -1,5 +1,5 @@
 ---
-description: Workato CLI ツール（Platform CLI / Connector SDK CLI）のコマンドリファレンス。
+description: Workato CLI ツール
 globs: ".workatoenv,projects/**,connectors/**"
 alwaysApply: false
 ---

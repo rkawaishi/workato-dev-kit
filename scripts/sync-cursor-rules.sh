@@ -20,25 +20,16 @@ CURSOR_SKILLS="$REPO_ROOT/.cursor/skills"
 
 mkdir -p "$CURSOR_RULES" "$CURSOR_SKILLS"
 
-# --- ルール変換用の description 取得 ---
+# --- ルール: description をファイルの最初の # 見出しから自動生成 ---
 get_description() {
-  case "$1" in
-    workato-agentic-format)
-      echo "Workato Genie/Skill/MCP Server JSON のフォーマット定義。Agentic 関連ファイル編集時に適用。" ;;
-    workato-cli)
-      echo "Workato CLI ツール（Platform CLI / Connector SDK CLI）のコマンドリファレンス。" ;;
-    workato-connector-sdk)
-      echo "Workato Connector SDK (connector.rb) のフォーマット定義とナレッジ管理ルール。" ;;
-    workato-page-components)
-      echo "Workato Page Component JSON のフォーマット定義。Workflow App ページ編集時に適用。" ;;
-    workato-project-structure)
-      echo "Workato プロジェクト内のディレクトリ構成ルール。プロジェクトファイル編集時に適用。" ;;
-    workato-recipe-format)
-      echo "Workato レシピ JSON のフォーマット定義。レシピファイル編集時に適用。" ;;
-    workato-shared-assets)
-      echo "複数プロジェクトでアセットを共有する場合の参考パターン。" ;;
-    *) echo "" ;;
-  esac
+  awk '
+    /^---$/ { fm++; next }
+    fm >= 2 && /^# / {
+      sub(/^# */, "")
+      print
+      exit
+    }
+  ' "$1"
 }
 
 # ============================================================
@@ -49,10 +40,10 @@ echo "=== Syncing rules ==="
 for claude_file in "$CLAUDE_RULES"/*.md; do
   basename_no_ext="$(basename "$claude_file" .md)"
   cursor_file="$CURSOR_RULES/${basename_no_ext}.mdc"
-  desc="$(get_description "$basename_no_ext")"
+  desc="$(get_description "$claude_file")"
 
   if [ -z "$desc" ]; then
-    echo "WARN: No description for $basename_no_ext, skipping"
+    echo "WARN: No heading found in $basename_no_ext, skipping"
     continue
   fi
 

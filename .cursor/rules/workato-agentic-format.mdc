@@ -1,5 +1,5 @@
 ---
-description: Workato Genie/Skill/MCP Server JSON のフォーマット定義。Agentic 関連ファイル編集時に適用。
+description: Workato Agentic JSON Format
 globs: "**/*.agentic_genie.json,**/*.agentic_skill.json,**/*.mcp_server.json,**/*.lcap_app.json,**/*.workato_db_table.json"
 alwaysApply: false
 ---
