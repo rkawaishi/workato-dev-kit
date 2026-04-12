@@ -79,6 +79,11 @@ workato init --non-interactive --profile default --project-id <id> --folder-name
 - 独自知見: 各ドキュメントに直接追記
 - `*.connection.json` に認証情報は含まれない
 - `.workatoenv` / `master.key` はコミットしない
+
+## ツールキット開発ルール
+
+このリポジトリ自体（スキル、ルール、ドキュメント）を変更する際のルール。
+
 - **エディタ間同期**: スキルやルールの正（canonical source）は `.claude/` 側。変更は `.claude/rules/` や `.claude/skills/` に対して行い、`bash scripts/sync-cursor-rules.sh` で `.cursor/` に反映する（一方向: .claude/ → .cursor/）。`.cursor/` 側を直接編集しない
 
 ## スキル一覧
