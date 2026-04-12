@@ -23,7 +23,7 @@ Workato (エンタープライズ iPaaS) の自動化開発を [Claude Code](htt
 
 ## セットアップ
 
-> 詳しい手順は **[Quick Start Guide (Claude Code)](docs/QUICKSTART-CLAUDE-CODE.md)** または **[Quick Start Guide (Cursor)](docs/QUICKSTART-CURSOR.md)** を参照してください。
+> 詳しい手順は **[Quick Start Guide (Claude Code)](guides/quickstart-claude-code.md)** または **[Quick Start Guide (Cursor)](guides/quickstart-cursor.md)** を参照してください。
 
 ```bash
 # リポジトリをクローン
@@ -127,7 +127,7 @@ git add -A && git commit -m "Add IT Onboarding workflow"
 Cursor では `.cursor/rules/` にルールが、`.cursor/skills/` にスキルが配置されています。
 スキルの呼び出し方は Claude Code と同じ `/skill-name` 形式です（例: `/create-recipe`）。
 
-> 詳しくは **[Quick Start Guide (Cursor)](docs/QUICKSTART-CURSOR.md)** を参照。
+> 詳しくは **[Quick Start Guide (Cursor)](guides/quickstart-cursor.md)** を参照。
 
 ### ルールの同期
 
