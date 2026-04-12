@@ -23,7 +23,7 @@ Workato (エンタープライズ iPaaS) の自動化開発を [Claude Code](htt
 
 ## セットアップ
 
-> 詳しい手順は **[Quick Start Guide (Claude Code)](docs/QUICKSTART-CLAUDE-CODE.md)** を参照してください。
+> 詳しい手順は **[Quick Start Guide (Claude Code)](docs/QUICKSTART-CLAUDE-CODE.md)** または **[Quick Start Guide (Cursor)](docs/QUICKSTART-CURSOR.md)** を参照してください。
 
 ```bash
 # リポジトリをクローン
@@ -40,7 +40,8 @@ workato init
 
 ```
 workato-dev-kit/                ← このリポジトリ（フレームワーク）
-├── .claude/                    ← スキル、ルール、hooks
+├── .claude/                    ← Claude Code 用（スキル、ルール、hooks）
+├── .cursor/                    ← Cursor 用（ルール、スキル相当のルール）
 ├── docs/                       ← ナレッジベース
 │
 ├── connectors/                 ← 組織の別リポジトリ（gitignore 対象）
@@ -119,6 +120,21 @@ git add -A && git commit -m "Add IT Onboarding workflow"
 | `/sync-connectors` | コネクタ情報を収集・更新（Pre-built: API、カスタム: connector.rb パース） |
 | `/design` | プロジェクト設計書の作成・更新・参照 |
 
+### Cursor での使い方
+
+Cursor では `.cursor/rules/` にルールが、`.cursor/skills/` にスキルが配置されています。
+スキルの呼び出し方は Claude Code と同じ `/skill-name` 形式です（例: `/create-recipe`）。
+
+> 詳しくは **[Quick Start Guide (Cursor)](docs/QUICKSTART-CURSOR.md)** を参照。
+
+### ルールの同期
+
+Claude ルール（`.claude/rules/`）が正（canonical source）です。Cursor ルールは同期スクリプトで自動生成できます:
+
+```bash
+bash scripts/sync-cursor-rules.sh
+```
+
 ## 開発フロー
 
 ### 新規プロジェクト
@@ -146,16 +162,14 @@ workato-dev-kit/
 ├── .claude/
 │   ├── CLAUDE.md                # プロジェクト規約（常時ロード）
 │   ├── rules/                   # パス別フォーマットルール（7ファイル）
-│   │   ├── workato-recipe-format.md     # *.recipe.json
-│   │   ├── workato-agentic-format.md    # *.agentic_*.json, *.mcp_server.json
-│   │   ├── workato-page-components.md   # *.lcap_page.json
-│   │   ├── workato-connector-sdk.md     # connector.rb
-│   │   ├── workato-project-structure.md # projects/**
-│   │   ├── workato-shared-assets.md     # projects/**
-│   │   └── workato-cli.md               # .workatoenv, projects/**, connectors/**
-│   ├── skills/                  # 開発スキル（10個）
+│   ├── skills/                  # 開発スキル（11個）
 │   └── hooks/                   # 自動化フック
-│       └── validate-before-push.sh  # push 前 JSON バリデーション
+├── .cursor/
+│   ├── rules/                   # Cursor 用ルール（.claude/rules/ から自動生成）
+│   │   └── workato-project.mdc          # 常時適用（プロジェクトコンテキスト）
+│   └── skills/                  # Cursor 用スキル（.claude/skills/ から自動生成、11個）
+├── scripts/
+│   └── sync-cursor-rules.sh     # .claude/ → .cursor/ 同期スクリプト
 ├── docs/
 │   ├── logic/                   # レシピロジック (7ファイル)
 │   ├── connectors/              # コネクタナレッジ (139+件)

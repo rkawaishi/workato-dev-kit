@@ -1,29 +1,68 @@
 ---
-description: Workato プロジェクト内のディレクトリ構成ルール。projects/ 配下のファイルを新規作成・整理する際に適用。
+description: Workato プロジェクト内ディレクトリ構成ルール
 globs: "projects/**"
 alwaysApply: false
 ---
 
-# Workato プロジェクト内ディレクトリ構成
+# Workato プロジェクト内ディレクトリ構成ルール
+
+## 推奨構成
+
+プロジェクト内のアセットは種別ごとにサブフォルダに整理する。
 
 ```
 projects/<project-name>/
-├── <app>.lcap_app.json / .png         # Workflow App（ルート）
-├── Recipes/                           # レシピ + Recipe Function
-│   └── *.recipe.json
+├── .workatoenv                        # プロジェクト設定（自動生成）
+├── <app-name>.lcap_app.json           # Workflow App 定義（ルート）
+├── <app-name>.lcap_app.png            # Workflow App アイコン（ルート）
+├── Recipes/                           # レシピ
+│   ├── <name>.recipe.json
+│   └── fnc_<name>.recipe.json         # Recipe Function
 ├── Pages/                             # Workflow App ページ
-│   └── *.lcap_page.json / .zip
+│   ├── <name>.lcap_page.json
+│   └── <name>.lcap_page.zip
 ├── Connections/                        # コネクション
-│   └── *.connection.json
+│   └── <prefix>_<provider>.connection.json
 ├── Data Tables/                        # Data Table スキーマ
-│   └── *.workato_db_table.json
+│   └── <name>.workato_db_table.json
 ├── Insights/                           # Insights クエリ
-│   └── *.insights_query.json
-├── Agents/                             # Genie / MCP / Skills
-│   └── *.agentic_genie.json / .agentic_skill.json / .mcp_server.json
+│   └── <name>.insights_query.json
+├── Agents/                             # Genie / MCP Server / Skills
+│   ├── <name>.agentic_genie.json
+│   ├── <name>.agentic_genie.png
+│   ├── <name>.agentic_skill.json
+│   └── <name>.mcp_server.json
 ```
 
-- `zip_name` にフォルダパスを含める: `"Recipes/my_recipe.recipe.json"`
-- `folder` フィールドもフォルダ名に合わせる: `"folder": "Recipes"`
-- ルート配置のファイル（lcap_app, .workatoenv）は `"folder": ""`
-- ファイル数が少ないプロジェクトはフラット構成でも可
+## ルート配置するファイル
+
+以下のファイルはプロジェクトルートに配置する:
+- `.workatoenv` — Platform CLI の設定
+- `*.lcap_app.json` / `*.lcap_app.png` — Workflow App 定義とアイコン
+
+## フォルダ名と Workato 側の対応
+
+ローカルのフォルダ構造は `workato push` で Workato 側にも反映される。
+JSON 内の `zip_name` と `folder` フィールドはフォルダパスを含む必要がある:
+
+```json
+{
+  "zip_name": "Recipes/my_recipe.recipe.json",
+  "name": "My recipe",
+  "folder": "Recipes"
+}
+```
+
+ルート配置のファイルは `folder: ""` のまま。
+
+## 新規プロジェクトへの適用
+
+`/create-recipe`, `/create-workflow-app`, `/create-genie` スキルで新規ファイルを生成する際は、この構成に従ってサブフォルダに配置する。
+
+## 既存プロジェクトの整理
+
+既存プロジェクトは `workato pull` の結果を正とする。Workato UI 側でフォルダを整理してから pull するのが安全。ローカルでファイルを移動する場合は、全ての `zip_name` と `folder` 参照を更新すること。
+
+## 簡素なプロジェクトの例外
+
+ファイル数が少ないプロジェクト（レシピ1〜2個 + コネクション程度）はフラット構成でもよい。サブフォルダが不要な場合は無理に分けない。
