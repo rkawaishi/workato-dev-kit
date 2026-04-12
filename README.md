@@ -117,7 +117,8 @@ git add -A && git commit -m "Add IT Onboarding workflow"
 | `/validate-recipe` | レシピ JSON の構造を検証 |
 | `/wpull` | Workato リモートからプロジェクトを pull |
 | `/wpush` | ローカル変更を push (バリデーション + レシピ起動対応) |
-| `/learn-recipe` | pull したレシピからフィールド情報とパターンを学習 |
+| `/learn-recipe` | pull したレシピからフィールド情報を学習 |
+| `/learn-pattern` | レシピ構築パターンをカタログに記録・更新 |
 | `/sync-connectors` | コネクタ情報を収集・更新（Pre-built: API、カスタム: connector.rb パース） |
 | `/design` | プロジェクト設計書の作成・更新・参照 |
 
@@ -136,6 +137,52 @@ Claude ルール（`.claude/rules/`）が正（canonical source）です。Curso
 bash scripts/sync-cursor-rules.sh
 ```
 
+## レシピ構築パターン
+
+Workato エキスパートが持つ構築ノウハウを「パターン」としてカタログ化し、レシピ生成時に自動参照される仕組み。
+
+### パターンとは
+
+レシピを構築する際に繰り返し使われる定石のこと。レシピ全体の構成（承認ワークフロー等）にも、レシピ内の一部のロジック（ページネーションループ等）にもなりうる。
+
+### 2つのカタログ
+
+| カタログ | 場所 | 内容 |
+|---|---|---|
+| 汎用 | `docs/patterns/recipe-patterns/` | Workato プラットフォーム共通のパターン。どの組織でも使える |
+| 組織ドメイン | `projects/docs/patterns/` | 組織固有の構築パターン。社内の SaaS 連携や業務フローに紐づく |
+
+### パターンの流れ
+
+```
+エキスパートがノウハウを持っている
+  → /learn-pattern で対話的にパターンを記録
+  → カタログに蓄積
+
+別の開発者がレシピを作成する
+  → /create-recipe がカタログを自動参照
+  → パターンに基づいたステップ構成を提案
+  → /design でもプロジェクト設計時にパターンを提案
+```
+
+### /learn-pattern の使い方
+
+```bash
+# 新しいパターンを記録
+/learn-pattern ページネーションループ
+
+# 既存パターンに注意点を追記
+/learn-pattern 承認ワークフロー 注意点追加
+
+# レシピを参考にしながらパターンを記録
+/learn-pattern projects/[App] IT Onboarding/Recipes/main.recipe.json
+
+# 対話で始める
+/learn-pattern
+```
+
+エキスパートがパターンの要点（場面、構成、理由、ハマりどころ）を話すと、スキルがテンプレートに沿ってドキュメント化する。
+
 ## 開発フロー
 
 ### 新規プロジェクト
@@ -153,7 +200,7 @@ Workato UI で確認・調整
 
 ```
 workato pull → /learn-recipe → docs/ 更新 → 次回の生成がより正確に
-                                            → workato-dev-kit に PR
+             → /learn-pattern → パターンカタログ更新 → workato-dev-kit に PR
 ```
 
 ## ディレクトリ構成
@@ -163,12 +210,12 @@ workato-dev-kit/
 ├── .claude/
 │   ├── CLAUDE.md                # プロジェクト規約（常時ロード）
 │   ├── rules/                   # パス別フォーマットルール（7ファイル）
-│   ├── skills/                  # 開発スキル（11個）
+│   ├── skills/                  # 開発スキル（12個）
 │   └── hooks/                   # 自動化フック
 ├── .cursor/
 │   ├── rules/                   # Cursor 用ルール（.claude/rules/ から自動生成）
 │   │   └── workato-project.mdc          # 常時適用（プロジェクトコンテキスト）
-│   └── skills/                  # Cursor 用スキル（.claude/skills/ から自動生成、11個）
+│   └── skills/                  # Cursor 用スキル（.claude/skills/ から自動生成、12個）
 ├── scripts/
 │   └── sync-cursor-rules.sh     # .claude/ → .cursor/ 同期スクリプト
 ├── docs/
@@ -176,11 +223,13 @@ workato-dev-kit/
 │   ├── connectors/              # コネクタナレッジ (316件)
 │   ├── platform/                # プラットフォーム機能 (11ファイル)
 │   ├── connector-sdk/           # Connector SDK リファレンス
-│   └── patterns/                # デプロイガイド、共有アセット
+│   └── patterns/                # デプロイガイド、共有アセット、構築パターン
+│       └── recipe-patterns/     # 汎用レシピ構築パターン
 ├── connectors/                  # カスタムコネクタ (gitignore, 組織リポジトリ)
 │   ├── docs/                    # カスタムコネクタのナレッジ（自動生成）
 │   └── <name>/connector.rb     # Connector SDK ソース
 └── projects/                    # レシピプロジェクト (gitignore, 組織リポジトリ)
+    ├── docs/patterns/           # 組織ドメインのレシピ構築パターン
 ```
 
 ## CLI クイックリファレンス
