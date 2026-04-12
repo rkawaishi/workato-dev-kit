@@ -43,4 +43,4 @@
 ## MCP との関連
 
 API Collections のエンドポイントは MCP サーバーとしても公開可能。
-詳細は `@docs/platform/mcp.md`（今後追加）を参照。
+詳細は `@docs/platform/mcp.md` を参照。
