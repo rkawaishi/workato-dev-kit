@@ -110,7 +110,10 @@ B. 既存パターンに知見を追記（注意点、バリエーション etc.
 
 ### 4. インデックスの更新
 
-新しいパターンを作成した場合、`docs/patterns/recipe-patterns/_index.md` のパターン一覧テーブルに行を追加する。
+新しいパターンを作成した場合、蓄積先に応じたインデックスを更新する:
+
+- **汎用パターン**: `docs/patterns/recipe-patterns/_index.md` のパターン一覧テーブルに行を追加
+- **組織ドメインパターン**: `projects/docs/patterns/_index.md` に行を追加（ファイルが存在しなければ `docs/patterns/recipe-patterns/_index.md` と同じ形式で作成）
 
 ### 5. 確認
 
