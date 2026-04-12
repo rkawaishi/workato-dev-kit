@@ -17,7 +17,7 @@ Workato Workflow App を構築するスキル。UI 操作は Workflow App の有
 以下を参照する:
 - `docs/platform/workflow-apps.md` — 構築パターン、プロバイダー/アクション
 - `docs/patterns/deployment-guide.md` — デプロイ手順、よくあるエラー
-- `.cursor/rules/workato-agentic-format.md` — lcap_app / workato_db_table / lcap_page の JSON 構造
+- `.cursor/rules/workato-agentic-format.mdc` — lcap_app / workato_db_table / lcap_page の JSON 構造
 
 ## Phase 1: 設計 + プロジェクト作成
 
@@ -56,7 +56,7 @@ Workato UI で Workflow App を有効化してください:
 
 ## Phase 2: 全構成要素を JSON で生成 → push
 
-ファイル配置は `.cursor/rules/workato-project-structure.md` に従う。
+ファイル配置は `.cursor/rules/workato-project-structure.mdc` に従う。
 
 ### 1. Data Tables/workato_db_table.json（Data Table スキーマ）
 

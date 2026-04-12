@@ -88,7 +88,7 @@ Workato レシピ JSON ファイルを対話的に生成するスキル。
 
 ### 5. JSON 構造のリファレンスを読む
 
-- `.cursor/rules/workato-recipe-format.md`
+- `.cursor/rules/workato-recipe-format.mdc`
 - ロジックステップが必要なら `docs/logic/` の該当ファイル
 
 ### 6. 既存パターンを参照
@@ -99,7 +99,7 @@ Workato レシピ JSON ファイルを対話的に生成するスキル。
 
 ### 7. ファイルを生成
 
-`.cursor/rules/workato-project-structure.md` に従う:
+`.cursor/rules/workato-project-structure.mdc` に従う:
 - `<project>/Recipes/<snake_case_name>.recipe.json` — レシピ本体
 - `<project>/Connections/<prefix>_<provider>.connection.json` — コネクション（未存在の場合のみ）
 - JSON 内の `zip_name` / `folder` もサブフォルダパスに合わせる

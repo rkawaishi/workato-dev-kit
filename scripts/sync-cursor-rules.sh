@@ -117,7 +117,8 @@ for skill_dir in "$CLAUDE_SKILLS"/*/; do
   ' "$skill_file" | sed \
     -e 's|@docs/|docs/|g' \
     -e 's|@connectors/|connectors/|g' \
-    -e 's|@\.claude/rules/|.cursor/rules/|g' \
+    -e 's|@\.claude/rules/\([^.]*\)\.md|.cursor/rules/\1.mdc|g' \
+    -e 's|\.claude/rules/\([^.]*\)\.md|.cursor/rules/\1.mdc|g' \
   )
 
   # Cursor スキル形式で出力
