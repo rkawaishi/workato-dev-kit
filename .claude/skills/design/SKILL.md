@@ -84,7 +84,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 カタログがない場合は `/catalog scan` で生成できることを案内。
 
 **次にパターンカタログを確認**し、ユーザー体験に合致する構築パターンを特定する:
-- `docs/patterns/recipe-patterns/_index.md` を読み、該当パターンを検索
+- `docs/patterns/recipe-patterns/_index.md`（汎用）と `projects/docs/patterns/`（組織ドメイン）を読み、該当パターンを検索
 - 合致するパターンがあればユーザーに提案:
   ```
   このプロジェクトには以下のパターンが使えそうです:
