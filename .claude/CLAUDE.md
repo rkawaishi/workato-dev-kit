@@ -10,11 +10,11 @@ Workato (エンタープライズ iPaaS) の自動化開発を Claude Code / Cur
 workato-dev-kit/              ← このリポジトリ（スキル・ルール・ナレッジ）
 ├── .claude/
 │   ├── rules/                # パス別フォーマットルール（7ファイル）
-│   ├── skills/               # 開発スキル（10個）
+│   ├── skills/               # 開発スキル（11個）
 │   └── hooks/                # 自動化フック
 ├── docs/                     # ナレッジベース
 │   ├── logic/                # レシピロジック（7ファイル）
-│   ├── connectors/           # コネクタ知識（139+件）
+│   ├── connectors/           # コネクタ知識（316件）
 │   ├── platform/             # プラットフォーム機能（11ファイル）
 │   ├── patterns/             # 設計パターン・デプロイガイド
 │   └── connector-sdk/        # Connector SDK リファレンス
