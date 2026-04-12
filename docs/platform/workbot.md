@@ -11,7 +11,7 @@ Workato のチャットボットフレームワーク。Slack / Microsoft Teams 
 | プラットフォーム | ドキュメント | provider |
 |---|---|---|
 | Slack | https://docs.workato.com/en/workbot/workbot.html | `slack_bot` |
-| Microsoft Teams | https://docs.workato.com/en/workbot-for-teams/workbot.html | (要確認) |
+| Microsoft Teams | https://docs.workato.com/en/workbot-for-teams/workbot.html | `teams_bot` |
 
 ## 主な機能
 
