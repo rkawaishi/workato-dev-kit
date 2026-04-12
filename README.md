@@ -42,7 +42,11 @@ workato init
 workato-dev-kit/                ← このリポジトリ（フレームワーク）
 ├── .claude/                    ← スキル、ルール、hooks
 ├── docs/                       ← ナレッジベース
-├── connectors/                 ← カスタムコネクタ
+│
+├── connectors/                 ← 組織の別リポジトリ（gitignore 対象）
+│   ├── docs/                   ← カスタムコネクタのナレッジ（自動生成）
+│   └── <name>/
+│       └── connector.rb        ← Connector SDK ソース
 │
 └── projects/                   ← 組織の別リポジトリ（gitignore 対象）
     └── <project-name>/
@@ -112,7 +116,7 @@ git add -A && git commit -m "Add IT Onboarding workflow"
 | `/wpull` | Workato リモートからプロジェクトを pull |
 | `/wpush` | ローカル変更を push (バリデーション + レシピ起動対応) |
 | `/learn-recipe` | pull したレシピからフィールド情報とパターンを学習 |
-| `/sync-connectors` | API からコネクタ情報を差分更新 |
+| `/sync-connectors` | コネクタ情報を収集・更新（Pre-built: API、カスタム: connector.rb パース） |
 | `/design` | プロジェクト設計書の作成・更新・参照 |
 
 ## 開発フロー
@@ -158,8 +162,10 @@ workato-dev-kit/
 │   ├── platform/                # プラットフォーム機能 (11ファイル)
 │   ├── connector-sdk/           # Connector SDK リファレンス
 │   └── patterns/                # デプロイガイド、共有アセット
-├── connectors/                  # カスタムコネクタ (Connector SDK)
-└── projects/                    # レシピプロジェクト (gitignore)
+├── connectors/                  # カスタムコネクタ (gitignore, 組織リポジトリ)
+│   ├── docs/                    # カスタムコネクタのナレッジ（自動生成）
+│   └── <name>/connector.rb     # Connector SDK ソース
+└── projects/                    # レシピプロジェクト (gitignore, 組織リポジトリ)
 ```
 
 ## CLI クイックリファレンス

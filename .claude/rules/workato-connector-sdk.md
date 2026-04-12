@@ -74,10 +74,17 @@ connectors/<name>/
 
 `get`, `post`, `put`, `patch`, `delete` — `base_uri` が自動付与される
 
+## ナレッジ管理
+
+カスタムコネクタのトリガー/アクション/フィールド情報は `connectors/docs/<name>.md` に格納。
+`/sync-connectors --custom` で `connector.rb` をパースして自動生成。
+Pre-built コネクタ（`docs/connectors/`）と同じ形式。
+
 ## 注意事項
 
 - 使用可能な Ruby メソッドは許可リストに限定
 - `master.key` は絶対にコミットしない
 - `settings.yaml` に実際の認証情報を含む場合は `.gitignore` に追加
+- `connectors/` は組織固有（gitignore 対象）。フレームワークリポジトリにはコミットしない
 
 詳細: `@docs/connector-sdk/connector-rb.md`
