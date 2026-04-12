@@ -48,6 +48,30 @@ Workspace/
 | **Team Shared** | チーム内の全プロジェクト | チーム固有のコネクション、業務ロジック |
 | **Project** | 単一プロジェクト | プロジェクト固有のレシピ・コネクション |
 
+### LLM 開発でのスコープ管理
+
+`/catalog` スキルと連携して、LLM がアクセスできるプロジェクトの範囲を制御する。
+`projects/CATALOG_CONFIG.yaml` で各プロジェクトのスコープを定義:
+
+```yaml
+projects:
+  Shared:
+    scope: global          # 全チーム公開、カタログに掲載
+  "Finance - Common":
+    scope: team:finance    # チーム内共有、カタログに掲載
+  "[App] IT Onboarding":
+    scope: private         # カタログ対象外
+```
+
+| スコープ | カタログ掲載 | LLM からの参照 |
+|---|---|---|
+| `global` | 全アセット | `/create-recipe` や `/design` が共有アセットとして提案 |
+| `team:<name>` | 全アセット（チーム名付き） | 同上（チーム情報付きで提案） |
+| `private` | **掲載しない** | LLM はカタログ経由ではアクセスしない |
+
+未記載のプロジェクトは `private` として扱う。
+private プロジェクト間でコードの重複が検出された場合は、共通化の **提案** のみ行い、具体的なコード内容はカタログに露出しない。
+
 ## アセット命名規則
 
 ### 共通ボキャブラリーを使う理由

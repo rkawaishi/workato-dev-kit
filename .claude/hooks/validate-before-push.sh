@@ -20,13 +20,12 @@ COMMAND=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin
 PROJECT_DIR=""
 
 # 1. Check if command contains cd to a project directory
-CD_TARGET=$(echo "$COMMAND" | python3 - <<'PYEOF'
+CD_TARGET=$(echo "$COMMAND" | python3 -c "
 import sys, re
 cmd = sys.stdin.read()
-m = re.search(r'cd\s+["\'](.*?)["\']\s*&&', cmd) or re.search(r'cd\s+(\S+)\s*&&', cmd)
+m = re.search(r'cd\s+[\"\\x27](.*?)[\"\\x27]\s*&&', cmd) or re.search(r'cd\s+(\S+)\s*&&', cmd)
 print(m.group(1) if m else '')
-PYEOF
-)
+")
 
 if [ -n "$CD_TARGET" ] && [ -f "$CD_TARGET/.workatoenv" ]; then
   PROJECT_DIR="$CD_TARGET"
