@@ -11,7 +11,7 @@ Workato (エンタープライズ iPaaS) の自動化開発を [Claude Code](htt
 - **MCP サーバーの構築** — AI エージェントが使えるツールを MCP プロトコルで公開
 - **Genie (AI エージェント)** — スキル付き AI エージェントの構成を生成
 - **カスタムコネクタ** — Connector SDK (Ruby DSL) の開発支援
-- **ナレッジベース** — 139+ コネクタ、7 ロジックパターン、11 プラットフォーム機能のドキュメント
+- **ナレッジベース** — 316 コネクタ、7 ロジックパターン、11 プラットフォーム機能のドキュメント
 - **学習サイクル** — pull → 分析 → パターン蓄積 → 次回生成に反映
 - **設計書管理** — プロジェクトごとの DESIGN.md でセッション跨ぎの計画・進捗追跡
 
@@ -113,6 +113,7 @@ git add -A && git commit -m "Add IT Onboarding workflow"
 | `/create-workflow-app` | Workflow App を段階的に構築 (Data Table, ページ, レシピ) |
 | `/create-genie` | Genie / MCP サーバー + スキルの構成を生成 |
 | `/create-connector` | カスタムコネクタをスキャフォールド |
+| `/catalog` | 共有アセットのスキャン・カタログ化 |
 | `/validate-recipe` | レシピ JSON の構造を検証 |
 | `/wpull` | Workato リモートからプロジェクトを pull |
 | `/wpush` | ローカル変更を push (バリデーション + レシピ起動対応) |
@@ -172,7 +173,7 @@ workato-dev-kit/
 │   └── sync-cursor-rules.sh     # .claude/ → .cursor/ 同期スクリプト
 ├── docs/
 │   ├── logic/                   # レシピロジック (7ファイル)
-│   ├── connectors/              # コネクタナレッジ (139+件)
+│   ├── connectors/              # コネクタナレッジ (316件)
 │   ├── platform/                # プラットフォーム機能 (11ファイル)
 │   ├── connector-sdk/           # Connector SDK リファレンス
 │   └── patterns/                # デプロイガイド、共有アセット

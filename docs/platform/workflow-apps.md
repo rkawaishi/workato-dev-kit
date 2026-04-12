@@ -381,15 +381,13 @@ Workflow App 本体の有効化のみ UI 操作が必要。それ以外は全て
 | 電話番号 | `"input"` | `"phone"` | `short-text` |
 | URL | `"input"` | `"url"` | `short-text` |
 | 日付 | **`"date"`** | 不要 | `date` |
-| 日時 | **`"date"`** | `"date-time"` (※要確認) | `date-time` |
+| 日時 | **`"date"`** | `"date-time"` | `date-time` |
 | 選択式（単一） | **`"dropdown"`** | 不要 | `short-text` |
 | 選択式（複数） | **`"dropdown"`** + `"multiValue": true` | 不要 | `short-text` |
-| チェックボックス | **`"checkbox"`** (※要確認) | 不要 | `boolean` |
-| ファイル | **`"file"`** (※要確認) | 不要 | `file` |
+| チェックボックス | **`"checkbox"`** | 不要 | `boolean` |
+| ファイル | **`"file"`** | 不要 | `file` |
 
 > **注意**: date 型に `"type": "input"` + `"style": "date"` を使うとページエディタが壊れる（無限ロード）。
-
-※要確認: JSON の `type` 値は実物で未検証。UI で作成→pull して確認推奨。
 
 **input コンポーネント** — テキスト・数値・連絡先入力:
 - `style`: `"short-text"`, `"long-text"`, `"number"`, `"email"`, `"phone"`, `"url"`
