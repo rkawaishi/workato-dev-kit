@@ -21,12 +21,12 @@ cd workato-dev-kit
 ## 3. Workato Platform CLI をインストール
 
 ```bash
-pipx install git+https://github.com/rkawaishi/workato-platform-cli.git
+pipx install workato-platform-cli
 ```
 
 > `pipx` がない場合: `brew install pipx && pipx ensurepath`
 
-> **Note**: 公式 CLI (`workato-platform-cli`) も利用可能ですが、本ツールキットでは [rkawaishi/workato-platform-cli](https://github.com/rkawaishi/workato-platform-cli)（フォーク版）を推奨します。ジョブ管理、アセット一覧、レシピ起動など、開発に必要なコマンドが追加されています。
+> **Note**: 公式 CLI でプロジェクトの pull/push を行います。ジョブ管理やコネクタ情報取得など CLI にない機能は、付属の API ヘルパー (`python3 scripts/workato-api.py`) で補完します。詳細は `.claude/rules/workato-cli.md` を参照。
 
 ## 4. CLI の初期認証
 

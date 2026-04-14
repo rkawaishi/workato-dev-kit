@@ -83,8 +83,8 @@ pull 後に `/learn-recipe` でフィールド情報を抽出・蓄積する。
 CLI でテスト結果を確認する場合:
 ```bash
 workato recipes start --id <recipe-id>
-workato jobs list --recipe-id <recipe-id> --status failed
-workato jobs get --recipe-id <recipe-id> --job-id <job-id>
+python3 scripts/workato-api.py jobs list --recipe-id <recipe-id> --status failed
+python3 scripts/workato-api.py jobs get --recipe-id <recipe-id> --job-id <job-id>
 ```
 
 ## Workflow App のデプロイフロー
