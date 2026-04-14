@@ -304,7 +304,10 @@ def cmd_profile_show(_api: WorkatoAPI, args: argparse.Namespace):
             "explicit --profile"
             if args.profile
             else "workspace_id from .workatoenv"
-            if env and env.get("workspace_id") == profile.get("workspace_id")
+            if env
+            and "workspace_id" in env
+            and env["workspace_id"] is not None
+            and env["workspace_id"] == profile.get("workspace_id")
             else "current_profile"
         ),
     }
@@ -412,10 +415,10 @@ def main():
         handler(api, args)
     else:
         # Print subcommand help
-        for action in subparsers._group_actions:
-            if action.choices and args.command in action.choices:
-                action.choices[args.command].print_help()
-                break
+        if hasattr(subparsers, "choices") and args.command in subparsers.choices:
+            subparsers.choices[args.command].print_help()
+        else:
+            parser.print_help()
 
 
 if __name__ == "__main__":
