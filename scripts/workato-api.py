@@ -229,7 +229,11 @@ class WorkatoAPI:
     # -- Connectors --
 
     def connectors_list_platform(self, provider: str | None = None) -> list:
-        """Get Pre-built connector metadata. Paginates automatically."""
+        """Get Pre-built connector metadata. Paginates automatically.
+
+        When --provider is given, checks each page for a match and returns
+        early to avoid fetching all 1000+ connectors.
+        """
         all_connectors = []
         page = 1
         per_page = 100
@@ -245,18 +249,20 @@ class WorkatoAPI:
             )
             if not items:
                 break
+
+            if provider:
+                matched = [
+                    c for c in items
+                    if c.get("name", "").lower() == provider.lower()
+                    or c.get("provider", "").lower() == provider.lower()
+                ]
+                if matched:
+                    return matched
+
             all_connectors.extend(items)
             if len(items) < per_page:
                 break
             page += 1
-
-        if provider:
-            all_connectors = [
-                c
-                for c in all_connectors
-                if c.get("name", "").lower() == provider.lower()
-                or c.get("provider", "").lower() == provider.lower()
-            ]
 
         return all_connectors
 
