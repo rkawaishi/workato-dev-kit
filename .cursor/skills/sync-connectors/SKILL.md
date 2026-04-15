@@ -27,10 +27,10 @@ description: コネクタ情報を収集しドキュメントを更新する。P
 
 ```bash
 # 特定コネクタのトリガー/アクション一覧（JSON）
-workato connectors list --platform --provider <name> --output-mode json
+python3 scripts/workato-api.py connectors list-platform --provider <name>
 
 # カスタムコネクタ一覧
-workato connectors list --custom --output-mode json
+python3 scripts/workato-api.py connectors list-custom
 ```
 
 API から取得できる情報:
@@ -140,7 +140,7 @@ Source: Custom (Connector SDK)
 
 1. CLI でコネクタ情報を取得:
 ```bash
-workato connectors list --platform --provider <name> --output-mode json 2>/dev/null
+python3 scripts/workato-api.py connectors list-platform --provider <name>
 ```
 
 2. JSON をパースし、triggers/actions を抽出
@@ -182,7 +182,7 @@ Provider: `<name>`
 #### Pre-built コネクタ
 ```bash
 # 全 Pre-built コネクタを取得
-workato connectors list --platform --output-mode json 2>/dev/null
+python3 scripts/workato-api.py connectors list-platform
 ```
 全コネクタの JSON を取得し、各コネクタの `docs/connectors/<name>.md` を生成・更新する。
 
