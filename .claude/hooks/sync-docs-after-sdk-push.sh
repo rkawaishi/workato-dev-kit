@@ -1,8 +1,12 @@
 #!/bin/bash
-# PostToolUse hook: after sdk push, remind Claude to sync connector docs
+# PostToolUse hook: after sdk push, remind AI to sync connector docs
+#
+# Compatible with both Claude Code and Cursor:
+#   Claude Code: tool_name="Bash", tool_response={exitCode,stdout,stderr}
+#   Cursor:      tool_name="Shell", tool_output="{\"exitCode\":0,...}" (JSON string)
 #
 # When `sdk push` completes successfully, this hook detects the connector path
-# from the command and outputs a message for Claude to update connectors/docs/.
+# from the command and outputs a message to update connectors/docs/.
 
 INPUT=$(cat)
 
@@ -12,42 +16,51 @@ case "$INPUT" in
   *) exit 0 ;;
 esac
 
-# Extract the command string
-COMMAND=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" 2>/dev/null)
+# Parse tool input and check exit code (handles both Claude Code and Cursor formats)
+RESULT=$(echo "$INPUT" | python3 -c "
+import sys, json, re
 
-# Verify it's actually an sdk push command
-case "$COMMAND" in
-  *"workato-api.py sdk push"*) ;;
-  *) exit 0 ;;
-esac
+data = json.load(sys.stdin)
+command = data.get('tool_input', {}).get('command', '')
 
-# Check exit code (success = 0)
-EXIT_CODE=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('tool_response',{}).get('exitCode',1))" 2>/dev/null)
-if [ "$EXIT_CODE" != "0" ]; then
-  exit 0
-fi
+# Verify it's an sdk push command
+if 'workato-api.py sdk push' not in command:
+    sys.exit(0)
+
+# Get exit code: Claude Code uses tool_response (dict), Cursor uses tool_output (JSON string)
+exit_code = 1
+resp = data.get('tool_response')
+if isinstance(resp, dict):
+    exit_code = resp.get('exitCode', 1)
+else:
+    raw = data.get('tool_output', '')
+    if isinstance(raw, str) and raw:
+        try:
+            exit_code = json.loads(raw).get('exitCode', 1)
+        except (json.JSONDecodeError, AttributeError):
+            pass
+
+if exit_code != 0:
+    sys.exit(0)
 
 # Extract connector path from --connector argument
-CONNECTOR_PATH=$(echo "$COMMAND" | python3 -c "
-import sys, re
-cmd = sys.stdin.read()
-m = re.search(r'--connector\s+[\"\\x27](.*?)[\"\\x27]', cmd) or re.search(r'--connector\s+(\S+)', cmd)
-print(m.group(1) if m else '')
-")
+m = re.search(r'--connector\s+[\"\\x27](.*?)[\"\\x27]', command) or re.search(r'--connector\s+(\S+)', command)
+if not m:
+    sys.exit(0)
 
-if [ -z "$CONNECTOR_PATH" ]; then
+from pathlib import Path
+p = Path(m.group(1))
+name = p.parent.name if p.name == 'connector.rb' else p.stem
+print(name)
+" 2>/dev/null)
+
+if [ -z "$RESULT" ]; then
   exit 0
 fi
 
-# Derive connector name from path (parent directory of connector.rb)
-CONNECTOR_NAME=$(echo "$CONNECTOR_PATH" | python3 -c "
-from pathlib import Path
-import sys
-p = Path(sys.stdin.read().strip())
-print(p.parent.name if p.name == 'connector.rb' else p.stem)
-")
+CONNECTOR_NAME="$RESULT"
 
-# Output feedback for Claude (stdout is shown to Claude as hook feedback)
+# Output feedback (stdout is shown to the AI as hook feedback)
 echo "sdk push completed. Please update connector docs: read connectors/${CONNECTOR_NAME}/connector.rb and generate/update connectors/docs/${CONNECTOR_NAME}.md following the custom connector doc format defined in the /sync-connectors skill."
 
 exit 0
