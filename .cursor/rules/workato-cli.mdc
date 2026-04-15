@@ -6,40 +6,49 @@ alwaysApply: false
 
 # Workato CLI ツール
 
-## Platform CLI（レシピ管理）
+3つのツールを使い分ける:
 
-2つのバリアントがある。インストール済みの方を使用する:
+## 1. Platform CLI（プロジェクト管理）
 
-| | 本家 | フォーク (rkawaishi) |
-|---|---|---|
-| インストール | `pipx install workato-platform-cli` | `pipx install git+https://github.com/rkawaishi/workato-platform-cli.git` |
-| 追加機能 | — | Jobs, SDK統合, OAuth Profile管理, workspace_id自動解決 |
-| リポジトリ | [workato-devs/workato-platform-cli](https://github.com/workato-devs/workato-platform-cli) | [rkawaishi/workato-platform-cli](https://github.com/rkawaishi/workato-platform-cli) |
+インストール: `pipx install workato-platform-cli`
 
-共通コマンド:
+主なコマンド:
+- Init: `workato init --non-interactive --profile <profile> --project-id <id> --folder-name "projects/<name>"`
 - Pull: `workato projects use "<name>" && workato pull`
 - Push: `workato push`
-- Init: `workato init --non-interactive --profile <profile> --project-id <id> --folder-name "projects/<name>"`
+- Push (再起動付き): `workato push --restart-recipes`
+- Push (削除付き): `workato push --delete`
+- レシピ起動: `workato recipes start --id <id>` / `workato recipes start --all`
 
-フォーク版の追加コマンド:
-- Jobs: `workato jobs list` / `workato jobs get <id>`
-- SDK: `workato sdk new <path>` / `workato sdk push` / `workato sdk exec` / `workato sdk generate schema`
-- OAuth: `workato oauth-profiles list` / `create` / `update` / `delete`
-- Connectors: `workato connectors` 管理
+## 2. API ヘルパー（CLI にない機能の補完）
 
-## Connector SDK CLI（コネクタ開発）
+Platform CLI にないAPI操作を補完するスクリプト。workspace_id ベースでプロファイルを自動解決する。
 
-本家 CLI の場合:
-- インストール: `gem install workato-connector-sdk`
-- 新規作成: `workato new connectors/<name>`
-- テスト: `workato exec connectors/<name>/connector.rb test`
-- Push: `workato push connectors/<name>`
+```bash
+python3 scripts/workato-api.py <command>
+```
 
-フォーク版 CLI の場合（SDK コマンド統合済み）:
-- 新規作成: `workato sdk new connectors/<name>`
-- テスト: `workato sdk exec connectors/<name>/connector.rb test`
-- Push: `workato sdk push connectors/<name>`
-- スキーマ生成: `workato sdk generate schema connectors/<name>`
+| コマンド | 用途 |
+|---|---|
+| `jobs list --recipe-id <id> [--status <s>]` | ジョブ一覧 |
+| `jobs get --recipe-id <id> --job-id <id>` | ジョブ詳細 |
+| `connectors list-platform [--provider <name>]` | Pre-built コネクタ情報 |
+| `connectors list-custom` | カスタムコネクタ一覧 |
+| `recipes list [--folder-id <id>]` | レシピ一覧（JSON） |
+| `profile show` | プロファイル解決結果 |
+
+## 3. Connector SDK CLI（カスタムコネクタ開発）
+
+インストール: `gem install workato-connector-sdk`
+
+**注意:** Platform CLI と同じ `workato` コマンド名を使うため、`bundle exec` でスコープして衝突を避ける。
+
+```bash
+cd connectors/<name>
+bundle exec workato new <PATH>           # 新規作成
+bundle exec workato exec <PATH> test     # テスト
+bundle exec workato push <FOLDER>        # push
+```
 
 ## コネクタの分類
 

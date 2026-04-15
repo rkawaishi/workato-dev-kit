@@ -101,11 +101,19 @@ settings.yaml.enc
 生成完了後、以下を表示:
 - 生成したファイル一覧
 - コネクタの構成サマリー（認証方式、アクション数、トリガー数）
-- 次のステップ（本家 CLI の場合）:
-  1. `settings.yaml` に認証情報を設定
-  2. `workato exec connectors/<name>/connector.rb test` でテスト
-  3. `workato push connectors/<name>` でアップロード
-- 次のステップ（フォーク版 CLI の場合）:
-  1. `settings.yaml` に認証情報を設定
-  2. `workato sdk exec connectors/<name>/connector.rb test` でテスト
-  3. `workato sdk push connectors/<name>` でアップロード
+- 次のステップ:
+  1. `settings.yaml` に認証情報を設定（ローカルテスト用）
+  2. テスト（Ruby gem CLI）:
+     ```bash
+     cd connectors/<name>
+     bundle install                              # 初回のみ
+     bundle exec workato exec connector.rb test  # テスト
+     ```
+     > **Note**: `bundle exec workato` を使うのは、Platform CLI と `workato` コマンド名が競合するため
+  3. Workato へアップロード（API ヘルパー — Ruby 不要、Platform CLI のプロファイルで認証）:
+     ```bash
+     # 新規作成
+     python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb --title "<Title>"
+     # 既存コネクタの更新
+     python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb --connector-id <id>
+     ```

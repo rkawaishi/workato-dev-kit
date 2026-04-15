@@ -21,32 +21,30 @@ Workato が標準で提供していないアプリケーションに接続する
 
 ## SDK CLI コマンド
 
-### 本家 CLI (`gem install workato-connector-sdk`)
+### SDK CLI (`gem install workato-connector-sdk`)
+
+ローカルでのテスト・開発に使用する。Platform CLI と `workato` コマンド名が競合するため、`bundle exec` で実行する。
 
 | コマンド | 説明 |
 |---|---|
-| `workato new <PATH>` | 新規コネクタプロジェクト作成 |
-| `workato exec <PATH>` | コネクタの lambda ブロックを実行・テスト |
-| `workato push <FOLDER>` | コネクタコードを Workato にアップロード |
-| `workato edit <PATH>` | 暗号化ファイルを編集 |
-| `workato generate <SUBCOMMAND>` | テンプレートからコード生成 |
+| `bundle exec workato new <PATH>` | 新規コネクタプロジェクト作成 |
+| `bundle exec workato exec <PATH>` | コネクタの lambda ブロックを実行・テスト |
+| `bundle exec workato edit <PATH>` | 暗号化ファイルを編集 |
+| `bundle exec workato generate <SUBCOMMAND>` | テンプレートからコード生成 |
 
-### フォーク版 CLI (`rkawaishi/workato-platform-cli`)
+### Workato へのアップロード（API ヘルパー推奨）
 
-SDK コマンドが Platform CLI に統合されており、Ruby gem 不要:
+コネクタの push は API ヘルパーを使う。Platform CLI のプロファイルで認証するため、gem 側の認証設定（API Client トークン）が不要。
 
-| コマンド | 説明 |
-|---|---|
-| `workato sdk new <PATH>` | 新規コネクタプロジェクト作成 |
-| `workato sdk exec <PATH>` | コネクタの lambda ブロックを実行・テスト |
-| `workato sdk push <FOLDER>` | コネクタコードを Workato にアップロード |
-| `workato sdk generate schema <PATH>` | コネクタからスキーマ生成 |
-| `workato sdk oauth2 <PATH>` | OAuth2 フロー実行 |
+```bash
+# 新規作成
+python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb --title "<Title>"
 
-フォーク版にはさらに以下の追加機能がある:
-- `workato jobs list` / `workato jobs get` — ジョブ一覧・詳細
-- `workato oauth-profiles` — Custom OAuth Profile の CRUD
-- `workspace_id` による自動プロファイル解決（`.workatoenv` の Git 共有対応）
+# 既存コネクタの更新
+python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb --connector-id <id>
+```
+
+> **Note**: `bundle exec workato push` も引き続き使用可能だが、別途 API Client トークンの設定が必要。
 
 ## プロジェクト構造
 
@@ -68,5 +66,6 @@ SDK コマンドが Platform CLI に統合されており、Ruby gem 不要:
 
 ## 前提条件
 
-- Ruby 2.7.x / 3.0.x / 3.1.x
-- `workato push` には API クライアント（"Get details" 権限）が必要
+- Ruby 2.7.x / 3.0.x / 3.1.x（ローカルテスト用）
+- API ヘルパーでの push は Platform CLI のプロファイル認証のみで可能（Ruby 不要）
+- `bundle exec workato push` を使う場合は API クライアント（"Get details" 権限）が別途必要
