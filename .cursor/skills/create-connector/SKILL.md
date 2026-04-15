@@ -101,11 +101,13 @@ settings.yaml.enc
 生成完了後、以下を表示:
 - 生成したファイル一覧
 - コネクタの構成サマリー（認証方式、アクション数、トリガー数）
-- 次のステップ（本家 CLI の場合）:
+- 次のステップ:
   1. `settings.yaml` に認証情報を設定
-  2. `workato exec connectors/<name>/connector.rb test` でテスト
-  3. `workato push connectors/<name>` でアップロード
-- 次のステップ（フォーク版 CLI の場合）:
-  1. `settings.yaml` に認証情報を設定
-  2. `workato sdk exec connectors/<name>/connector.rb test` でテスト
-  3. `workato sdk push connectors/<name>` でアップロード
+  2. SDK CLI でテスト・アップロード:
+     ```bash
+     cd connectors/<name>
+     bundle install                              # 初回のみ
+     bundle exec workato exec connector.rb test  # テスト
+     bundle exec workato push .                  # push
+     ```
+  > **Note**: `bundle exec workato` を使うのは、Platform CLI (`pipx install workato-platform-cli`) と `workato` コマンド名が競合するため
