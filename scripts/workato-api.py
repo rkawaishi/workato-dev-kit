@@ -15,6 +15,9 @@ Usage:
   python3 scripts/workato-api.py connectors list-platform [--provider <name>]
   python3 scripts/workato-api.py connectors list-custom
   python3 scripts/workato-api.py recipes list [--folder-id <id>]
+  python3 scripts/workato-api.py sdk push --connector <path> [--title <t>]
+  python3 scripts/workato-api.py sdk edit <file> [--key <master.key>]
+  python3 scripts/workato-api.py sdk decrypt <file> [--key <master.key>]
   python3 scripts/workato-api.py profile show
 
 Global options:
@@ -22,9 +25,13 @@ Global options:
 """
 
 import argparse
+import base64
 import json
 import os
+import secrets
+import subprocess
 import sys
+import tempfile
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -291,6 +298,142 @@ def cmd_recipes_list(api: WorkatoAPI, args: argparse.Namespace):
     print(json.dumps(recipes, indent=2, ensure_ascii=False))
 
 
+# ---------------------------------------------------------------------------
+# Encrypted File Support (aes-128-gcm, compatible with fork CLI)
+# Format: base64(ciphertext)--base64(iv)--base64(auth_tag)
+# ---------------------------------------------------------------------------
+
+
+def _enc_decrypt(encrypted_data: bytes, key_hex: str) -> bytes:
+    """Decrypt data encrypted with aes-128-gcm."""
+    try:
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    except ImportError:
+        print(
+            "Error: 'cryptography' package required for .enc file support.\n"
+            "Install: pip install cryptography",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    parts = encrypted_data.split(b"--")
+    if len(parts) != 3:
+        print(
+            "Error: Invalid .enc file format. "
+            "Expected: base64(ciphertext)--base64(iv)--base64(auth_tag)",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    ciphertext = base64.b64decode(parts[0])
+    iv = base64.b64decode(parts[1])
+    auth_tag = base64.b64decode(parts[2])
+
+    key = bytes.fromhex(key_hex)
+    aesgcm = AESGCM(key)
+    return aesgcm.decrypt(iv, ciphertext + auth_tag, None)
+
+
+def _enc_encrypt(plaintext: bytes, key_hex: str) -> bytes:
+    """Encrypt data using aes-128-gcm."""
+    try:
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    except ImportError:
+        print(
+            "Error: 'cryptography' package required for .enc file support.\n"
+            "Install: pip install cryptography",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    key = bytes.fromhex(key_hex)
+    iv = os.urandom(12)
+    aesgcm = AESGCM(key)
+    ct_and_tag = aesgcm.encrypt(iv, plaintext, None)
+    ciphertext = ct_and_tag[:-16]
+    auth_tag = ct_and_tag[-16:]
+
+    return (
+        base64.b64encode(ciphertext)
+        + b"--"
+        + base64.b64encode(iv)
+        + b"--"
+        + base64.b64encode(auth_tag)
+    )
+
+
+def _resolve_key_path(key_arg: str | None, enc_file: Path) -> Path:
+    """Resolve master.key path: explicit arg, or same directory as .enc file."""
+    if key_arg:
+        return Path(key_arg)
+    return enc_file.parent / "master.key"
+
+
+def cmd_sdk_decrypt(_api: WorkatoAPI, args: argparse.Namespace):
+    """Decrypt a .enc file and print to stdout."""
+    enc_path = Path(args.file)
+    if not enc_path.exists():
+        print(f"Error: File not found: {enc_path}", file=sys.stderr)
+        sys.exit(1)
+
+    key_path = _resolve_key_path(args.key, enc_path)
+    if not key_path.exists():
+        print(f"Error: Key file not found: {key_path}", file=sys.stderr)
+        sys.exit(1)
+
+    key_hex = key_path.read_text().strip()
+    decrypted = _enc_decrypt(enc_path.read_bytes(), key_hex)
+    print(decrypted.decode("utf-8"))
+
+
+def cmd_sdk_edit(_api: WorkatoAPI, args: argparse.Namespace):
+    """Decrypt a .enc file, open in $EDITOR, re-encrypt on save."""
+    enc_path = Path(args.file)
+    key_path = _resolve_key_path(args.key, enc_path)
+
+    if not key_path.exists():
+        if not enc_path.exists():
+            # New file: generate key
+            key_hex = secrets.token_hex(16)
+            key_path.write_text(key_hex + "\n")
+            print(f"Generated new key: {key_path}", file=sys.stderr)
+            original = ""
+        else:
+            print(f"Error: Key file not found: {key_path}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        key_hex = key_path.read_text().strip()
+        if enc_path.exists():
+            original = _enc_decrypt(enc_path.read_bytes(), key_hex).decode("utf-8")
+        else:
+            original = ""
+
+    editor = os.environ.get("EDITOR", "vi")
+
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+    ) as tmp:
+        tmp.write(original)
+        tmp_path = tmp.name
+
+    try:
+        result = subprocess.run([editor, tmp_path])
+        if result.returncode != 0:
+            print("Editor exited with error. File not saved.", file=sys.stderr)
+            sys.exit(1)
+
+        edited = Path(tmp_path).read_text()
+        if edited == original:
+            print("No changes made.", file=sys.stderr)
+            return
+
+        encrypted = _enc_encrypt(edited.encode("utf-8"), key_hex)
+        enc_path.write_bytes(encrypted)
+        print(f"Encrypted and saved: {enc_path}", file=sys.stderr)
+    finally:
+        Path(tmp_path).unlink(missing_ok=True)
+
+
 def cmd_profile_show(_api: WorkatoAPI, args: argparse.Namespace):
     """Show resolved profile info (without token)."""
     profile_name, profile = resolve_profile(args.profile)
@@ -364,6 +507,47 @@ def main():
         "--folder-id", type=int, default=None, help="Filter by folder ID"
     )
 
+    # -- sdk --
+    sdk_parser = subparsers.add_parser(
+        "sdk", help="Connector SDK commands (uses Platform API token)"
+    )
+    sdk_sub = sdk_parser.add_subparsers(dest="sdk_command")
+
+    sdk_push_p = sdk_sub.add_parser(
+        "push", help="Push connector source code to Workato"
+    )
+    sdk_push_p.add_argument(
+        "--connector", required=True, help="Path to connector.rb file"
+    )
+    sdk_push_p.add_argument(
+        "--title", default=None, help="Connector title (auto-detected from source)"
+    )
+    sdk_push_p.add_argument(
+        "--connector-id", type=int, default=None,
+        help="Existing connector ID (for updates)"
+    )
+    sdk_push_p.add_argument("--description", default=None, help="Description (markdown)")
+    sdk_push_p.add_argument("--notes", default=None, help="Release notes")
+    sdk_push_p.add_argument(
+        "--no-release", action="store_true", help="Upload without releasing"
+    )
+
+    sdk_decrypt_p = sdk_sub.add_parser(
+        "decrypt", help="Decrypt a .enc file and print to stdout"
+    )
+    sdk_decrypt_p.add_argument("file", help="Path to .enc file")
+    sdk_decrypt_p.add_argument(
+        "--key", default=None, help="Path to master.key (default: same dir as .enc)"
+    )
+
+    sdk_edit_p = sdk_sub.add_parser(
+        "edit", help="Decrypt .enc file, open in $EDITOR, re-encrypt on save"
+    )
+    sdk_edit_p.add_argument("file", help="Path to .enc file (created if not exists)")
+    sdk_edit_p.add_argument(
+        "--key", default=None, help="Path to master.key (default: same dir as .enc)"
+    )
+
     # -- profile --
     profile_parser = subparsers.add_parser(
         "profile", help="Show resolved profile info"
@@ -377,12 +561,17 @@ def main():
         parser.print_help()
         sys.exit(0)
 
-    # profile show doesn't need API connection
+    # Commands that don't need API connection
     if args.command == "profile":
         if getattr(args, "profile_command", None) == "show":
             cmd_profile_show(None, args)
         else:
             profile_parser.print_help()
+        return
+
+    if args.command == "sdk" and getattr(args, "sdk_command", None) in ("decrypt", "edit"):
+        handler = {"decrypt": cmd_sdk_decrypt, "edit": cmd_sdk_edit}[args.sdk_command]
+        handler(None, args)
         return
 
     # Resolve profile and create API client
@@ -404,6 +593,9 @@ def main():
         ("connectors", "list-platform"): cmd_connectors_list_platform,
         ("connectors", "list-custom"): cmd_connectors_list_custom,
         ("recipes", "list"): cmd_recipes_list,
+        ("sdk", "push"): cmd_sdk_push,
+        ("sdk", "decrypt"): cmd_sdk_decrypt,
+        ("sdk", "edit"): cmd_sdk_edit,
     }
 
     sub_cmd = getattr(args, f"{args.command}_command", None)
