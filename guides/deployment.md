@@ -86,14 +86,18 @@ Workflow App は UI での有効化が必要な唯一のケース。
 
 ## カスタムコネクタのデプロイ
 
-カスタムコネクタは Connector SDK CLI で直接プッシュする。
+カスタムコネクタは API ヘルパーで push する（Platform CLI のプロファイルで認証）:
 
 ```bash
-# 本家 gem CLI の場合
-workato push connectors/<name>
+# Workato へアップロード
+python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb --title "<Title>"
 
-# テスト実行
-workato exec connectors/<name>/connector.rb test
+# 既存コネクタの更新
+python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb --connector-id <id>
+
+# ローカルテスト（Ruby gem CLI）
+cd connectors/<name>
+bundle exec workato exec connector.rb test
 ```
 
 ## プッシュ前バリデーション

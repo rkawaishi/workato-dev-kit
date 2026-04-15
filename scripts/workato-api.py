@@ -15,6 +15,9 @@ Usage:
   python3 scripts/workato-api.py connectors list-platform [--provider <name>]
   python3 scripts/workato-api.py connectors list-custom
   python3 scripts/workato-api.py recipes list [--folder-id <id>]
+  python3 scripts/workato-api.py sdk push --connector <path> [--title <t>]
+  python3 scripts/workato-api.py sdk edit <file> [--key <master.key>]
+  python3 scripts/workato-api.py sdk decrypt <file> [--key <master.key>]
   python3 scripts/workato-api.py profile show
 
 Global options:
@@ -22,9 +25,13 @@ Global options:
 """
 
 import argparse
+import base64
 import json
 import os
+import secrets
+import subprocess
 import sys
+import tempfile
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -171,7 +178,7 @@ class WorkatoAPI:
 
     def _request(
         self, path: str, params: dict | None = None, method: str = "GET",
-        body: dict | None = None,
+        body: dict | list | None = None,
     ) -> dict | list:
         url = f"{self.base_url}{path}"
         if params:
@@ -194,7 +201,7 @@ class WorkatoAPI:
                 return json.loads(resp.read().decode())
         except urllib.error.HTTPError as e:
             body = e.read().decode() if e.fp else ""
-            safe_url = url.split("?")[0]  # Strip query params from logs
+            safe_url = url.split("?")[0]
             print(
                 f"Error: HTTP {e.code} {e.reason}\n"
                 f"URL: {safe_url}\n"
@@ -274,11 +281,7 @@ class WorkatoAPI:
         notes: str | None = None,
         no_release: bool = False,
     ) -> dict:
-        """Push connector source code to Workato.
-
-        Creates a new custom connector or updates an existing one.
-        Uses the same Platform API token (no separate gem auth needed).
-        """
+        """Push connector source code to Workato."""
         payload: dict = {"source_code": source_code}
         if description:
             payload["description"] = description
@@ -288,22 +291,80 @@ class WorkatoAPI:
             payload["release"] = False
 
         if connector_id is not None:
-            # Update existing connector
             result = self._request(
                 f"/api/custom_connectors/{connector_id}",
-                method="PUT",
-                body=payload,
+                method="PUT", body=payload,
             )
         else:
-            # Create new connector
             payload["title"] = title
             result = self._request(
                 "/api/custom_connectors",
-                method="POST",
-                body=payload,
+                method="POST", body=payload,
             )
 
         return result.get("data", result) if isinstance(result, dict) else result
+
+    # -- OAuth Profiles --
+
+    def oauth_profiles_list(self) -> list:
+        result = self._request("/api/custom_oauth_profiles")
+        if isinstance(result, dict):
+            return result.get("result", result.get("items", []))
+        return result
+
+    def oauth_profiles_get(self, profile_id: int) -> dict:
+        return self._request(f"/api/custom_oauth_profiles/{profile_id}")
+
+    def oauth_profiles_create(
+        self, name: str, provider: str, client_id: str, client_secret: str,
+        token: str | None = None,
+    ) -> dict:
+        body: dict = {
+            "name": name,
+            "provider": provider,
+            "data": {"client_id": client_id, "client_secret": client_secret},
+        }
+        if token is not None:
+            body["data"]["token"] = token
+        result = self._request(
+            "/api/custom_oauth_profiles", method="POST", body=body,
+        )
+        return result.get("data", result) if isinstance(result, dict) else result
+
+    def oauth_profiles_update(
+        self, profile_id: int, name: str, provider: str,
+        client_id: str, client_secret: str, token: str | None = None,
+    ) -> dict:
+        body: dict = {
+            "name": name,
+            "provider": provider,
+            "data": {"client_id": client_id, "client_secret": client_secret},
+        }
+        if token is not None:
+            body["data"]["token"] = token
+        result = self._request(
+            f"/api/custom_oauth_profiles/{profile_id}", method="PUT", body=body,
+        )
+        return result.get("data", result) if isinstance(result, dict) else result
+
+    def oauth_profiles_delete(self, profile_id: int) -> dict:
+        return self._request(
+            f"/api/custom_oauth_profiles/{profile_id}", method="DELETE",
+        )
+
+    # -- SDK Generate Schema --
+
+    def sdk_generate_schema_json(self, raw_json: str) -> dict:
+        return self._request(
+            "/api/sdk/generate_schema/json", method="POST",
+            body={"sample": raw_json},
+        )
+
+    def sdk_generate_schema_csv(self, csv_content: str, col_sep: str = ",") -> dict:
+        return self._request(
+            "/api/sdk/generate_schema/csv", method="POST",
+            body={"sample": csv_content, "col_sep": col_sep},
+        )
 
     # -- Recipes --
 
@@ -360,6 +421,129 @@ def cmd_recipes_list(api: WorkatoAPI, args: argparse.Namespace):
     print(json.dumps(recipes, indent=2, ensure_ascii=False))
 
 
+def cmd_oauth_profiles_list(api: WorkatoAPI, args: argparse.Namespace):
+    profiles = api.oauth_profiles_list()
+    print(json.dumps(profiles, indent=2, ensure_ascii=False))
+
+
+def cmd_oauth_profiles_get(api: WorkatoAPI, args: argparse.Namespace):
+    profile = api.oauth_profiles_get(args.id)
+    print(json.dumps(profile, indent=2, ensure_ascii=False))
+
+
+def cmd_oauth_profiles_create(api: WorkatoAPI, args: argparse.Namespace):
+    result = api.oauth_profiles_create(
+        name=args.name, provider=args.provider,
+        client_id=args.client_id, client_secret=args.client_secret,
+        token=args.token,
+    )
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    print(f"\nCreated OAuth profile: {result.get('name', args.name)}", file=sys.stderr)
+
+
+def cmd_oauth_profiles_update(api: WorkatoAPI, args: argparse.Namespace):
+    result = api.oauth_profiles_update(
+        profile_id=args.id, name=args.name, provider=args.provider,
+        client_id=args.client_id, client_secret=args.client_secret,
+        token=args.token,
+    )
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    print(f"\nUpdated OAuth profile: {result.get('name', args.name)}", file=sys.stderr)
+
+
+def cmd_oauth_profiles_delete(api: WorkatoAPI, args: argparse.Namespace):
+    result = api.oauth_profiles_delete(args.id)
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    print(f"\nDeleted OAuth profile id={args.id}", file=sys.stderr)
+
+
+def cmd_sdk_generate_schema(api: WorkatoAPI, args: argparse.Namespace):
+    file_path = Path(args.file)
+    if not file_path.exists():
+        print(f"Error: File not found: {file_path}", file=sys.stderr)
+        sys.exit(1)
+
+    content = file_path.read_text()
+    if file_path.suffix == ".csv":
+        result = api.sdk_generate_schema_csv(content)
+    else:
+        # API expects raw JSON string, not parsed object
+        result = api.sdk_generate_schema_json(content)
+
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+
+
+# ---------------------------------------------------------------------------
+# Encrypted File Support (aes-128-gcm, compatible with fork CLI)
+# Format: base64(ciphertext)--base64(iv)--base64(auth_tag)
+# ---------------------------------------------------------------------------
+
+
+def _enc_decrypt(encrypted_data: bytes, key_hex: str) -> bytes:
+    """Decrypt data encrypted with aes-128-gcm."""
+    try:
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    except ImportError:
+        print(
+            "Error: 'cryptography' package required for .enc file support.\n"
+            "Install: pip install cryptography",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    parts = encrypted_data.split(b"--")
+    if len(parts) != 3:
+        print(
+            "Error: Invalid .enc file format. "
+            "Expected: base64(ciphertext)--base64(iv)--base64(auth_tag)",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    ciphertext = base64.b64decode(parts[0])
+    iv = base64.b64decode(parts[1])
+    auth_tag = base64.b64decode(parts[2])
+
+    key = bytes.fromhex(key_hex)
+    aesgcm = AESGCM(key)
+    return aesgcm.decrypt(iv, ciphertext + auth_tag, None)
+
+
+def _enc_encrypt(plaintext: bytes, key_hex: str) -> bytes:
+    """Encrypt data using aes-128-gcm."""
+    try:
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    except ImportError:
+        print(
+            "Error: 'cryptography' package required for .enc file support.\n"
+            "Install: pip install cryptography",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    key = bytes.fromhex(key_hex)
+    iv = os.urandom(12)
+    aesgcm = AESGCM(key)
+    ct_and_tag = aesgcm.encrypt(iv, plaintext, None)
+    ciphertext = ct_and_tag[:-16]
+    auth_tag = ct_and_tag[-16:]
+
+    return (
+        base64.b64encode(ciphertext)
+        + b"--"
+        + base64.b64encode(iv)
+        + b"--"
+        + base64.b64encode(auth_tag)
+    )
+
+
+def _resolve_key_path(key_arg: str | None, enc_file: Path) -> Path:
+    """Resolve master.key path: explicit arg, or same directory as .enc file."""
+    if key_arg:
+        return Path(key_arg)
+    return enc_file.parent / "master.key"
+
+
 def cmd_sdk_push(api: WorkatoAPI, args: argparse.Namespace):
     connector_path = Path(args.connector)
     if not connector_path.exists():
@@ -368,10 +552,8 @@ def cmd_sdk_push(api: WorkatoAPI, args: argparse.Namespace):
 
     source_code = connector_path.read_text()
 
-    # Determine title from source code or argument
     title = args.title
     if not title:
-        # Try to extract from connector.rb
         import re
         match = re.search(r"title:\s*['\"](.+?)['\"]", source_code)
         title = match.group(1) if match else connector_path.parent.name
@@ -389,6 +571,72 @@ def cmd_sdk_push(api: WorkatoAPI, args: argparse.Namespace):
     action = "Updated" if args.connector_id else "Created"
     cid = result.get("id", "?")
     print(f"\n{action} connector: {result.get('title', title)} (id={cid})", file=sys.stderr)
+
+
+def cmd_sdk_decrypt(_api: WorkatoAPI, args: argparse.Namespace):
+    """Decrypt a .enc file and print to stdout."""
+    enc_path = Path(args.file)
+    if not enc_path.exists():
+        print(f"Error: File not found: {enc_path}", file=sys.stderr)
+        sys.exit(1)
+
+    key_path = _resolve_key_path(args.key, enc_path)
+    if not key_path.exists():
+        print(f"Error: Key file not found: {key_path}", file=sys.stderr)
+        sys.exit(1)
+
+    key_hex = key_path.read_text().strip()
+    decrypted = _enc_decrypt(enc_path.read_bytes(), key_hex)
+    print(decrypted.decode("utf-8"))
+
+
+def cmd_sdk_edit(_api: WorkatoAPI, args: argparse.Namespace):
+    """Decrypt a .enc file, open in $EDITOR, re-encrypt on save."""
+    enc_path = Path(args.file)
+    key_path = _resolve_key_path(args.key, enc_path)
+
+    if not key_path.exists():
+        if not enc_path.exists():
+            # New file: generate key
+            key_hex = secrets.token_hex(16)
+            key_path.write_text(key_hex + "\n")
+            print(f"Generated new key: {key_path}", file=sys.stderr)
+            original = ""
+        else:
+            print(f"Error: Key file not found: {key_path}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        key_hex = key_path.read_text().strip()
+        if enc_path.exists():
+            original = _enc_decrypt(enc_path.read_bytes(), key_hex).decode("utf-8")
+        else:
+            original = ""
+
+    editor = os.environ.get("EDITOR", "vi")
+
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+    ) as tmp:
+        tmp.write(original)
+        tmp_path = tmp.name
+
+    try:
+        import shlex
+        result = subprocess.run(shlex.split(editor) + [tmp_path])
+        if result.returncode != 0:
+            print("Editor exited with error. File not saved.", file=sys.stderr)
+            sys.exit(1)
+
+        edited = Path(tmp_path).read_text(encoding="utf-8")
+        if edited == original:
+            print("No changes made.", file=sys.stderr)
+            return
+
+        encrypted = _enc_encrypt(edited.encode("utf-8"), key_hex)
+        enc_path.write_bytes(encrypted)
+        print(f"Encrypted and saved: {enc_path}", file=sys.stderr)
+    finally:
+        Path(tmp_path).unlink(missing_ok=True)
 
 
 def cmd_profile_show(_api: WorkatoAPI, args: argparse.Namespace):
@@ -493,6 +741,56 @@ def main():
         "--no-release", action="store_true", help="Upload without releasing"
     )
 
+    sdk_decrypt_p = sdk_sub.add_parser(
+        "decrypt", help="Decrypt a .enc file and print to stdout"
+    )
+    sdk_decrypt_p.add_argument("file", help="Path to .enc file")
+    sdk_decrypt_p.add_argument(
+        "--key", default=None, help="Path to master.key (default: same dir as .enc)"
+    )
+
+    sdk_edit_p = sdk_sub.add_parser(
+        "edit", help="Decrypt .enc file, open in $EDITOR, re-encrypt on save"
+    )
+    sdk_edit_p.add_argument("file", help="Path to .enc file (created if not exists)")
+    sdk_edit_p.add_argument(
+        "--key", default=None, help="Path to master.key (default: same dir as .enc)"
+    )
+
+    sdk_gen_p = sdk_sub.add_parser(
+        "generate-schema", help="Generate Workato schema from JSON/CSV sample"
+    )
+    sdk_gen_p.add_argument("file", help="Path to JSON or CSV sample file")
+
+    # -- oauth-profiles --
+    oauth_parser = subparsers.add_parser(
+        "oauth-profiles", help="Manage custom OAuth profiles"
+    )
+    oauth_sub = oauth_parser.add_subparsers(dest="oauth_profiles_command")
+
+    oauth_sub.add_parser("list", help="List custom OAuth profiles")
+
+    oauth_get_p = oauth_sub.add_parser("get", help="Get OAuth profile by ID")
+    oauth_get_p.add_argument("--id", type=int, required=True)
+
+    oauth_create_p = oauth_sub.add_parser("create", help="Create OAuth profile")
+    oauth_create_p.add_argument("--name", required=True)
+    oauth_create_p.add_argument("--provider", required=True)
+    oauth_create_p.add_argument("--client-id", required=True)
+    oauth_create_p.add_argument("--client-secret", required=True)
+    oauth_create_p.add_argument("--token", default=None, help="Token (Slack only)")
+
+    oauth_update_p = oauth_sub.add_parser("update", help="Update OAuth profile")
+    oauth_update_p.add_argument("--id", type=int, required=True)
+    oauth_update_p.add_argument("--name", required=True)
+    oauth_update_p.add_argument("--provider", required=True)
+    oauth_update_p.add_argument("--client-id", required=True)
+    oauth_update_p.add_argument("--client-secret", required=True)
+    oauth_update_p.add_argument("--token", default=None, help="Token (Slack only)")
+
+    oauth_delete_p = oauth_sub.add_parser("delete", help="Delete OAuth profile")
+    oauth_delete_p.add_argument("--id", type=int, required=True)
+
     # -- profile --
     profile_parser = subparsers.add_parser(
         "profile", help="Show resolved profile info"
@@ -506,12 +804,17 @@ def main():
         parser.print_help()
         sys.exit(0)
 
-    # profile show doesn't need API connection
+    # Commands that don't need API connection
     if args.command == "profile":
         if getattr(args, "profile_command", None) == "show":
             cmd_profile_show(None, args)
         else:
             profile_parser.print_help()
+        return
+
+    if args.command == "sdk" and getattr(args, "sdk_command", None) in ("decrypt", "edit"):
+        handler = {"decrypt": cmd_sdk_decrypt, "edit": cmd_sdk_edit}[args.sdk_command]
+        handler(None, args)
         return
 
     # Resolve profile and create API client
@@ -534,9 +837,16 @@ def main():
         ("connectors", "list-custom"): cmd_connectors_list_custom,
         ("recipes", "list"): cmd_recipes_list,
         ("sdk", "push"): cmd_sdk_push,
+        ("sdk", "generate-schema"): cmd_sdk_generate_schema,
+        ("oauth-profiles", "list"): cmd_oauth_profiles_list,
+        ("oauth-profiles", "get"): cmd_oauth_profiles_get,
+        ("oauth-profiles", "create"): cmd_oauth_profiles_create,
+        ("oauth-profiles", "update"): cmd_oauth_profiles_update,
+        ("oauth-profiles", "delete"): cmd_oauth_profiles_delete,
     }
 
-    sub_cmd = getattr(args, f"{args.command}_command", None)
+    cmd_key = args.command.replace("-", "_")
+    sub_cmd = getattr(args, f"{cmd_key}_command", None)
     handler = commands.get((args.command, sub_cmd))
     if handler:
         handler(api, args)
