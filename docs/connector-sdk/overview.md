@@ -23,15 +23,28 @@ Workato が標準で提供していないアプリケーションに接続する
 
 ### SDK CLI (`gem install workato-connector-sdk`)
 
-> **Note**: Platform CLI (`pipx install workato-platform-cli`) も `workato` コマンドを登録するため、`push` 等のサブコマンドが競合する。SDK CLI は必ず `bundle exec workato` 形式で実行すること。
+ローカルでのテスト・開発に使用する。Platform CLI と `workato` コマンド名が競合するため、`bundle exec` で実行する。
 
 | コマンド | 説明 |
 |---|---|
 | `bundle exec workato new <PATH>` | 新規コネクタプロジェクト作成 |
 | `bundle exec workato exec <PATH>` | コネクタの lambda ブロックを実行・テスト |
-| `bundle exec workato push <FOLDER>` | コネクタコードを Workato にアップロード |
 | `bundle exec workato edit <PATH>` | 暗号化ファイルを編集 |
 | `bundle exec workato generate <SUBCOMMAND>` | テンプレートからコード生成 |
+
+### Workato へのアップロード（API ヘルパー推奨）
+
+コネクタの push は API ヘルパーを使う。Platform CLI のプロファイルで認証するため、gem 側の認証設定（API Client トークン）が不要。
+
+```bash
+# 新規作成
+python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb --title "<Title>"
+
+# 既存コネクタの更新
+python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb --connector-id <id>
+```
+
+> **Note**: `bundle exec workato push` も引き続き使用可能だが、別途 API Client トークンの設定が必要。
 
 ## プロジェクト構造
 
@@ -53,5 +66,6 @@ Workato が標準で提供していないアプリケーションに接続する
 
 ## 前提条件
 
-- Ruby 2.7.x / 3.0.x / 3.1.x
-- `workato push` には API クライアント（"Get details" 権限）が必要
+- Ruby 2.7.x / 3.0.x / 3.1.x（ローカルテスト用）
+- API ヘルパーでの push は Platform CLI のプロファイル認証のみで可能（Ruby 不要）
+- `bundle exec workato push` を使う場合は API クライアント（"Get details" 権限）が別途必要
