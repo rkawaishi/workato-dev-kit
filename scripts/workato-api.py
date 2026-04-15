@@ -96,10 +96,10 @@ def resolve_profile(explicit_profile: str | None) -> tuple[str, dict]:
 
     # 2. workspace_id from .workatoenv
     env = find_workatoenv()
-    if env and "workspace_id" in env:
-        target_ws = env["workspace_id"]
+    if env and "workspace_id" in env and env["workspace_id"] is not None:
+        target_ws = str(env["workspace_id"])
         for name, prof in profiles.items():
-            if prof.get("workspace_id") == target_ws:
+            if prof.get("workspace_id") is not None and str(prof["workspace_id"]) == target_ws:
                 return name, prof
         print(
             f"Warning: workspace_id {target_ws} from .workatoenv does not match "
@@ -194,15 +194,17 @@ class WorkatoAPI:
                 return json.loads(resp.read().decode())
         except urllib.error.HTTPError as e:
             body = e.read().decode() if e.fp else ""
+            safe_url = url.split("?")[0]  # Strip query params from logs
             print(
                 f"Error: HTTP {e.code} {e.reason}\n"
-                f"URL: {url}\n"
+                f"URL: {safe_url}\n"
                 f"Response: {body}",
                 file=sys.stderr,
             )
             sys.exit(1)
         except urllib.error.URLError as e:
-            print(f"Error: {e.reason}\nURL: {url}", file=sys.stderr)
+            safe_url = url.split("?")[0]
+            print(f"Error: {e.reason}\nURL: {safe_url}", file=sys.stderr)
             sys.exit(1)
 
     # -- Jobs --
@@ -220,7 +222,11 @@ class WorkatoAPI:
     # -- Connectors --
 
     def connectors_list_platform(self, provider: str | None = None) -> list:
-        """Get Pre-built connector metadata. Paginates automatically."""
+        """Get Pre-built connector metadata. Paginates automatically.
+
+        When --provider is given, checks each page for a match and returns
+        early to avoid fetching all 1000+ connectors.
+        """
         all_connectors = []
         page = 1
         per_page = 100
@@ -236,18 +242,20 @@ class WorkatoAPI:
             )
             if not items:
                 break
+
+            if provider:
+                matched = [
+                    c for c in items
+                    if c.get("name", "").lower() == provider.lower()
+                    or c.get("provider", "").lower() == provider.lower()
+                ]
+                if matched:
+                    return matched
+
             all_connectors.extend(items)
             if len(items) < per_page:
                 break
             page += 1
-
-        if provider:
-            all_connectors = [
-                c
-                for c in all_connectors
-                if c.get("name", "").lower() == provider.lower()
-                or c.get("provider", "").lower() == provider.lower()
-            ]
 
         return all_connectors
 
@@ -279,7 +287,7 @@ class WorkatoAPI:
         if no_release:
             payload["release"] = False
 
-        if connector_id:
+        if connector_id is not None:
             # Update existing connector
             result = self._request(
                 f"/api/custom_connectors/{connector_id}",
@@ -300,13 +308,26 @@ class WorkatoAPI:
     # -- Recipes --
 
     def recipes_list(self, folder_id: int | None = None) -> list:
-        params = {}
-        if folder_id:
-            params["folder_id"] = folder_id
-        result = self._request("/api/recipes", params)
-        if isinstance(result, dict):
-            return result.get("items", result.get("result", []))
-        return result
+        """List recipes with pagination."""
+        all_recipes = []
+        page = 1
+        per_page = 100
+        while True:
+            params: dict = {"page": page, "per_page": per_page}
+            if folder_id is not None:
+                params["folder_id"] = folder_id
+            result = self._request("/api/recipes", params)
+            if isinstance(result, dict):
+                items = result.get("items", result.get("result", []))
+            else:
+                items = result
+            if not items:
+                break
+            all_recipes.extend(items)
+            if len(items) < per_page:
+                break
+            page += 1
+        return all_recipes
 
 
 # ---------------------------------------------------------------------------
@@ -386,7 +407,8 @@ def cmd_profile_show(_api: WorkatoAPI, args: argparse.Namespace):
             if env
             and "workspace_id" in env
             and env["workspace_id"] is not None
-            and env["workspace_id"] == profile.get("workspace_id")
+            and profile.get("workspace_id") is not None
+            and str(env["workspace_id"]) == str(profile.get("workspace_id"))
             else "current_profile"
         ),
     }
