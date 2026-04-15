@@ -620,7 +620,7 @@ def cmd_sdk_edit(_api: WorkatoAPI, args: argparse.Namespace):
             print("Editor exited with error. File not saved.", file=sys.stderr)
             sys.exit(1)
 
-        edited = Path(tmp_path).read_text()
+        edited = Path(tmp_path).read_text(encoding="utf-8")
         if edited == original:
             print("No changes made.", file=sys.stderr)
             return
