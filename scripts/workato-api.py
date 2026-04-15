@@ -223,7 +223,7 @@ class WorkatoAPI:
         result = self._request(f"/api/recipes/{recipe_id}/jobs", params)
         return result if isinstance(result, list) else result.get("items", [])
 
-    def jobs_get(self, recipe_id: int, job_id: int) -> dict:
+    def jobs_get(self, recipe_id: int, job_id: str) -> dict:
         return self._request(f"/api/recipes/{recipe_id}/jobs/{job_id}")
 
     # -- Connectors --
@@ -634,7 +634,7 @@ def main():
 
     jobs_get_p = jobs_sub.add_parser("get", help="Get job details")
     jobs_get_p.add_argument("--recipe-id", type=int, required=True)
-    jobs_get_p.add_argument("--job-id", type=int, required=True)
+    jobs_get_p.add_argument("--job-id", type=str, required=True)
 
     # -- connectors --
     conn_parser = subparsers.add_parser("connectors", help="Manage connectors")

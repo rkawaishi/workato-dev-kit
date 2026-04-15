@@ -26,7 +26,7 @@ pipx install workato-platform-cli
 
 > `pipx` がない場合: `brew install pipx && pipx ensurepath`
 
-> **Note**: CLI にないジョブ管理やコネクタ情報の取得は `python3 scripts/workato-api.py` で補完できます。詳細は [スキルリファレンス](skills-reference.md) を参照。
+> **Note**: 公式 CLI でプロジェクトの pull/push を行います。ジョブ管理やコネクタ情報取得など CLI にない機能は、付属の API ヘルパー (`python3 scripts/workato-api.py`) で補完します。詳細は `.claude/rules/workato-cli.md` を参照。
 
 ## 4. CLI の初期認証
 

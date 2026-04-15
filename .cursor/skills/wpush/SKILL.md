@@ -180,8 +180,8 @@ Workflow App の UI 確認チェックリスト:
 ### 5. レシピ起動（--start / --test 指定時）
 
 ```bash
-# プロジェクト内のレシピ一覧を取得
-workato recipes list --output-mode json
+# プロジェクト内のレシピ一覧を取得（folder_id は .workatoenv から取得）
+python3 scripts/workato-api.py recipes list --folder-id <folder_id>
 
 # 個別レシピを起動
 workato recipes start --id <recipe-id>
@@ -194,17 +194,17 @@ workato recipes start --all
 
 ```bash
 # レシピのジョブ一覧を取得（失敗のみ）
-workato jobs list --recipe-id <recipe-id> --status failed
+python3 scripts/workato-api.py jobs list --recipe-id <recipe-id> --status failed
 
 # ジョブの詳細（エラー内容）を取得
-workato jobs get --recipe-id <recipe-id> --job-id <job-id>
+python3 scripts/workato-api.py jobs get --recipe-id <recipe-id> --job-id <job-id>
 ```
 
 ### 7. エラー修正サイクル
 
 ジョブが失敗した場合:
 
-1. `workato jobs get` でエラー内容を確認
+1. `python3 scripts/workato-api.py jobs get` でエラー内容を確認
 2. エラー原因を分析:
    - **datapill 参照エラー**: path の指定ミス → レシピ JSON を修正
    - **コネクション未設定**: UI でコネクション認証を設定するよう案内
