@@ -18,7 +18,7 @@ Workato (エンタープライズ iPaaS) の自動化開発を [Claude Code](htt
 ## 前提条件
 
 - [Workato](https://www.workato.com/) アカウント + API トークン
-- [Workato Platform CLI (フォーク版推奨)](https://github.com/rkawaishi/workato-platform-cli) (`pipx install git+https://github.com/rkawaishi/workato-platform-cli.git`)
+- [Workato Platform CLI](https://github.com/workato-devs/workato-platform-cli) (`pipx install workato-platform-cli`)
 - [Claude Code](https://claude.com/claude-code) または [Cursor](https://cursor.com)
 
 ## セットアップ
