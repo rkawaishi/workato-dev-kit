@@ -830,8 +830,6 @@ def main():
         ("connectors", "list-custom"): cmd_connectors_list_custom,
         ("recipes", "list"): cmd_recipes_list,
         ("sdk", "push"): cmd_sdk_push,
-        ("sdk", "decrypt"): cmd_sdk_decrypt,
-        ("sdk", "edit"): cmd_sdk_edit,
         ("sdk", "generate-schema"): cmd_sdk_generate_schema,
         ("oauth-profiles", "list"): cmd_oauth_profiles_list,
         ("oauth-profiles", "get"): cmd_oauth_profiles_get,
