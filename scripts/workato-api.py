@@ -176,34 +176,42 @@ class WorkatoAPI:
         self.base_url = base_url.rstrip("/")
         self.token = token
 
-    def _request(self, path: str, params: dict | None = None) -> dict | list:
+    def _request(
+        self, path: str, params: dict | None = None, method: str = "GET",
+        body: dict | list | None = None,
+    ) -> dict | list:
         url = f"{self.base_url}{path}"
         if params:
             url += "?" + urllib.parse.urlencode(
                 {k: v for k, v in params.items() if v is not None}
             )
 
+        data = json.dumps(body).encode() if body else None
         req = urllib.request.Request(
             url,
+            data=data,
             headers={
                 "Authorization": f"Bearer {self.token}",
                 "Content-Type": "application/json",
             },
+            method=method,
         )
         try:
             with urllib.request.urlopen(req) as resp:
                 return json.loads(resp.read().decode())
         except urllib.error.HTTPError as e:
             body = e.read().decode() if e.fp else ""
+            safe_url = url.split("?")[0]
             print(
                 f"Error: HTTP {e.code} {e.reason}\n"
-                f"URL: {url}\n"
+                f"URL: {safe_url}\n"
                 f"Response: {body}",
                 file=sys.stderr,
             )
             sys.exit(1)
         except urllib.error.URLError as e:
-            print(f"Error: {e.reason}\nURL: {url}", file=sys.stderr)
+            safe_url = url.split("?")[0]
+            print(f"Error: {e.reason}\nURL: {safe_url}", file=sys.stderr)
             sys.exit(1)
 
     # -- Jobs --
@@ -256,6 +264,68 @@ class WorkatoAPI:
         result = self._request("/api/custom_connectors")
         return result if isinstance(result, list) else result.get("result", [])
 
+    # -- OAuth Profiles --
+
+    def oauth_profiles_list(self) -> list:
+        result = self._request("/api/custom_oauth_profiles")
+        if isinstance(result, dict):
+            return result.get("result", result.get("items", []))
+        return result
+
+    def oauth_profiles_get(self, profile_id: int) -> dict:
+        return self._request(f"/api/custom_oauth_profiles/{profile_id}")
+
+    def oauth_profiles_create(
+        self, name: str, provider: str, client_id: str, client_secret: str,
+        token: str | None = None,
+    ) -> dict:
+        body: dict = {
+            "name": name,
+            "provider": provider,
+            "data": {"client_id": client_id, "client_secret": client_secret},
+        }
+        if token is not None:
+            body["data"]["token"] = token
+        result = self._request(
+            "/api/custom_oauth_profiles", method="POST", body=body,
+        )
+        return result.get("data", result) if isinstance(result, dict) else result
+
+    def oauth_profiles_update(
+        self, profile_id: int, name: str, provider: str,
+        client_id: str, client_secret: str, token: str | None = None,
+    ) -> dict:
+        body: dict = {
+            "name": name,
+            "provider": provider,
+            "data": {"client_id": client_id, "client_secret": client_secret},
+        }
+        if token is not None:
+            body["data"]["token"] = token
+        result = self._request(
+            f"/api/custom_oauth_profiles/{profile_id}", method="PUT", body=body,
+        )
+        return result.get("data", result) if isinstance(result, dict) else result
+
+    def oauth_profiles_delete(self, profile_id: int) -> dict:
+        return self._request(
+            f"/api/custom_oauth_profiles/{profile_id}", method="DELETE",
+        )
+
+    # -- SDK Generate Schema --
+
+    def sdk_generate_schema_json(self, raw_json: str) -> dict:
+        return self._request(
+            "/api/sdk/generate_schema/json", method="POST",
+            body={"sample": raw_json},
+        )
+
+    def sdk_generate_schema_csv(self, csv_content: str, col_sep: str = ",") -> dict:
+        return self._request(
+            "/api/sdk/generate_schema/csv", method="POST",
+            body={"sample": csv_content, "col_sep": col_sep},
+        )
+
     # -- Recipes --
 
     def recipes_list(self, folder_id: int | None = None) -> list:
@@ -296,6 +366,58 @@ def cmd_connectors_list_custom(api: WorkatoAPI, args: argparse.Namespace):
 def cmd_recipes_list(api: WorkatoAPI, args: argparse.Namespace):
     recipes = api.recipes_list(args.folder_id)
     print(json.dumps(recipes, indent=2, ensure_ascii=False))
+
+
+def cmd_oauth_profiles_list(api: WorkatoAPI, args: argparse.Namespace):
+    profiles = api.oauth_profiles_list()
+    print(json.dumps(profiles, indent=2, ensure_ascii=False))
+
+
+def cmd_oauth_profiles_get(api: WorkatoAPI, args: argparse.Namespace):
+    profile = api.oauth_profiles_get(args.id)
+    print(json.dumps(profile, indent=2, ensure_ascii=False))
+
+
+def cmd_oauth_profiles_create(api: WorkatoAPI, args: argparse.Namespace):
+    result = api.oauth_profiles_create(
+        name=args.name, provider=args.provider,
+        client_id=args.client_id, client_secret=args.client_secret,
+        token=args.token,
+    )
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    print(f"\nCreated OAuth profile: {result.get('name', args.name)}", file=sys.stderr)
+
+
+def cmd_oauth_profiles_update(api: WorkatoAPI, args: argparse.Namespace):
+    result = api.oauth_profiles_update(
+        profile_id=args.id, name=args.name, provider=args.provider,
+        client_id=args.client_id, client_secret=args.client_secret,
+        token=args.token,
+    )
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    print(f"\nUpdated OAuth profile: {result.get('name', args.name)}", file=sys.stderr)
+
+
+def cmd_oauth_profiles_delete(api: WorkatoAPI, args: argparse.Namespace):
+    result = api.oauth_profiles_delete(args.id)
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    print(f"\nDeleted OAuth profile id={args.id}", file=sys.stderr)
+
+
+def cmd_sdk_generate_schema(api: WorkatoAPI, args: argparse.Namespace):
+    file_path = Path(args.file)
+    if not file_path.exists():
+        print(f"Error: File not found: {file_path}", file=sys.stderr)
+        sys.exit(1)
+
+    content = file_path.read_text()
+    if file_path.suffix == ".csv":
+        result = api.sdk_generate_schema_csv(content)
+    else:
+        # API expects raw JSON string, not parsed object
+        result = api.sdk_generate_schema_json(content)
+
+    print(json.dumps(result, indent=2, ensure_ascii=False))
 
 
 # ---------------------------------------------------------------------------
@@ -367,6 +489,35 @@ def _resolve_key_path(key_arg: str | None, enc_file: Path) -> Path:
     if key_arg:
         return Path(key_arg)
     return enc_file.parent / "master.key"
+
+
+def cmd_sdk_push(api: WorkatoAPI, args: argparse.Namespace):
+    connector_path = Path(args.connector)
+    if not connector_path.exists():
+        print(f"Error: File not found: {connector_path}", file=sys.stderr)
+        sys.exit(1)
+
+    source_code = connector_path.read_text()
+
+    title = args.title
+    if not title:
+        import re
+        match = re.search(r"title:\s*['\"](.+?)['\"]", source_code)
+        title = match.group(1) if match else connector_path.parent.name
+
+    result = api.sdk_push(
+        source_code=source_code,
+        title=title,
+        connector_id=args.connector_id,
+        description=args.description,
+        notes=args.notes,
+        no_release=args.no_release,
+    )
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+
+    action = "Updated" if args.connector_id else "Created"
+    cid = result.get("id", "?")
+    print(f"\n{action} connector: {result.get('title', title)} (id={cid})", file=sys.stderr)
 
 
 def cmd_sdk_decrypt(_api: WorkatoAPI, args: argparse.Namespace):
@@ -548,6 +699,40 @@ def main():
         "--key", default=None, help="Path to master.key (default: same dir as .enc)"
     )
 
+    sdk_gen_p = sdk_sub.add_parser(
+        "generate-schema", help="Generate Workato schema from JSON/CSV sample"
+    )
+    sdk_gen_p.add_argument("file", help="Path to JSON or CSV sample file")
+
+    # -- oauth-profiles --
+    oauth_parser = subparsers.add_parser(
+        "oauth-profiles", help="Manage custom OAuth profiles"
+    )
+    oauth_sub = oauth_parser.add_subparsers(dest="oauth_profiles_command")
+
+    oauth_sub.add_parser("list", help="List custom OAuth profiles")
+
+    oauth_get_p = oauth_sub.add_parser("get", help="Get OAuth profile by ID")
+    oauth_get_p.add_argument("--id", type=int, required=True)
+
+    oauth_create_p = oauth_sub.add_parser("create", help="Create OAuth profile")
+    oauth_create_p.add_argument("--name", required=True)
+    oauth_create_p.add_argument("--provider", required=True)
+    oauth_create_p.add_argument("--client-id", required=True)
+    oauth_create_p.add_argument("--client-secret", required=True)
+    oauth_create_p.add_argument("--token", default=None, help="Token (Slack only)")
+
+    oauth_update_p = oauth_sub.add_parser("update", help="Update OAuth profile")
+    oauth_update_p.add_argument("--id", type=int, required=True)
+    oauth_update_p.add_argument("--name", required=True)
+    oauth_update_p.add_argument("--provider", required=True)
+    oauth_update_p.add_argument("--client-id", required=True)
+    oauth_update_p.add_argument("--client-secret", required=True)
+    oauth_update_p.add_argument("--token", default=None, help="Token (Slack only)")
+
+    oauth_delete_p = oauth_sub.add_parser("delete", help="Delete OAuth profile")
+    oauth_delete_p.add_argument("--id", type=int, required=True)
+
     # -- profile --
     profile_parser = subparsers.add_parser(
         "profile", help="Show resolved profile info"
@@ -596,18 +781,25 @@ def main():
         ("sdk", "push"): cmd_sdk_push,
         ("sdk", "decrypt"): cmd_sdk_decrypt,
         ("sdk", "edit"): cmd_sdk_edit,
+        ("sdk", "generate-schema"): cmd_sdk_generate_schema,
+        ("oauth-profiles", "list"): cmd_oauth_profiles_list,
+        ("oauth-profiles", "get"): cmd_oauth_profiles_get,
+        ("oauth-profiles", "create"): cmd_oauth_profiles_create,
+        ("oauth-profiles", "update"): cmd_oauth_profiles_update,
+        ("oauth-profiles", "delete"): cmd_oauth_profiles_delete,
     }
 
-    sub_cmd = getattr(args, f"{args.command}_command", None)
+    cmd_key = args.command.replace("-", "_")
+    sub_cmd = getattr(args, f"{cmd_key}_command", None)
     handler = commands.get((args.command, sub_cmd))
     if handler:
         handler(api, args)
     else:
         # Print subcommand help
-        for action in subparsers._group_actions:
-            if action.choices and args.command in action.choices:
-                action.choices[args.command].print_help()
-                break
+        if hasattr(subparsers, "choices") and args.command in subparsers.choices:
+            subparsers.choices[args.command].print_help()
+        else:
+            parser.print_help()
 
 
 if __name__ == "__main__":
