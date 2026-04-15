@@ -80,6 +80,15 @@ connectors/<name>/
 `/sync-connectors --custom` で `connector.rb` をパースして自動生成。
 Pre-built コネクタ（`docs/connectors/`）と同じ形式。
 
+## sdk push 後の docs 自動更新
+
+`python3 scripts/workato-api.py sdk push` の完了後は、push したコネクタの `connectors/docs/<name>.md` を更新すること。
+
+手順:
+1. `connectors/<name>/connector.rb` を読む
+2. `/sync-connectors` スキルのカスタムコネクタ doc フォーマットに従い `connectors/docs/<name>.md` を生成/更新
+3. 既存の `## フィールド詳細` セクションに `/learn-recipe` で蓄積したデータがあれば保持する
+
 ## 注意事項
 
 - 使用可能な Ruby メソッドは許可リストに限定

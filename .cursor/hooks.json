@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "postToolUse": [
+      {
+        "matcher": "Shell",
+        "command": ".claude/hooks/sync-docs-after-sdk-push.sh",
+        "type": "command"
+      }
+    ]
+  }
+}
