@@ -44,7 +44,8 @@ if exit_code != 0:
     sys.exit(0)
 
 # Extract connector path from --connector argument
-m = re.search(r'--connector\s+[\"\\x27](.*?)[\"\\x27]', command) or re.search(r'--connector\s+(\S+)', command)
+q = chr(39)  # single quote (avoids bash escaping issues)
+m = re.search(r'--connector\s+[\"' + q + r'](.*?)[\"' + q + r']', command) or re.search(r'--connector\s+(\S+)', command)
 if not m:
     sys.exit(0)
 
