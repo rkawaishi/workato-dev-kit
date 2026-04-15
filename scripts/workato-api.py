@@ -258,12 +258,18 @@ class WorkatoAPI:
                 ]
                 if matched:
                     return matched
+                if len(items) < per_page:
+                    break
+                page += 1
+                continue
 
             all_connectors.extend(items)
             if len(items) < per_page:
                 break
             page += 1
 
+        if provider:
+            return []
         return all_connectors
 
     def connectors_list_custom(self) -> list:
