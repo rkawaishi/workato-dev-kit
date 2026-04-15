@@ -621,7 +621,8 @@ def cmd_sdk_edit(_api: WorkatoAPI, args: argparse.Namespace):
         tmp_path = tmp.name
 
     try:
-        result = subprocess.run([editor, tmp_path])
+        import shlex
+        result = subprocess.run(shlex.split(editor) + [tmp_path])
         if result.returncode != 0:
             print("Editor exited with error. File not saved.", file=sys.stderr)
             sys.exit(1)
