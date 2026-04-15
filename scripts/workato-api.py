@@ -169,19 +169,25 @@ class WorkatoAPI:
         self.base_url = base_url.rstrip("/")
         self.token = token
 
-    def _request(self, path: str, params: dict | None = None) -> dict | list:
+    def _request(
+        self, path: str, params: dict | None = None, method: str = "GET",
+        body: dict | None = None,
+    ) -> dict | list:
         url = f"{self.base_url}{path}"
         if params:
             url += "?" + urllib.parse.urlencode(
                 {k: v for k, v in params.items() if v is not None}
             )
 
+        data = json.dumps(body).encode() if body else None
         req = urllib.request.Request(
             url,
+            data=data,
             headers={
                 "Authorization": f"Bearer {self.token}",
                 "Content-Type": "application/json",
             },
+            method=method,
         )
         try:
             with urllib.request.urlopen(req) as resp:
@@ -249,6 +255,48 @@ class WorkatoAPI:
         result = self._request("/api/custom_connectors")
         return result if isinstance(result, list) else result.get("result", [])
 
+    # -- SDK (Custom Connectors) --
+
+    def sdk_push(
+        self,
+        source_code: str,
+        title: str,
+        connector_id: int | None = None,
+        description: str | None = None,
+        notes: str | None = None,
+        no_release: bool = False,
+    ) -> dict:
+        """Push connector source code to Workato.
+
+        Creates a new custom connector or updates an existing one.
+        Uses the same Platform API token (no separate gem auth needed).
+        """
+        payload: dict = {"source_code": source_code}
+        if description:
+            payload["description"] = description
+        if notes:
+            payload["notes"] = notes
+        if no_release:
+            payload["release"] = False
+
+        if connector_id:
+            # Update existing connector
+            result = self._request(
+                f"/api/custom_connectors/{connector_id}",
+                method="PUT",
+                body=payload,
+            )
+        else:
+            # Create new connector
+            payload["title"] = title
+            result = self._request(
+                "/api/custom_connectors",
+                method="POST",
+                body=payload,
+            )
+
+        return result.get("data", result) if isinstance(result, dict) else result
+
     # -- Recipes --
 
     def recipes_list(self, folder_id: int | None = None) -> list:
@@ -289,6 +337,37 @@ def cmd_connectors_list_custom(api: WorkatoAPI, args: argparse.Namespace):
 def cmd_recipes_list(api: WorkatoAPI, args: argparse.Namespace):
     recipes = api.recipes_list(args.folder_id)
     print(json.dumps(recipes, indent=2, ensure_ascii=False))
+
+
+def cmd_sdk_push(api: WorkatoAPI, args: argparse.Namespace):
+    connector_path = Path(args.connector)
+    if not connector_path.exists():
+        print(f"Error: File not found: {connector_path}", file=sys.stderr)
+        sys.exit(1)
+
+    source_code = connector_path.read_text()
+
+    # Determine title from source code or argument
+    title = args.title
+    if not title:
+        # Try to extract from connector.rb
+        import re
+        match = re.search(r"title:\s*['\"](.+?)['\"]", source_code)
+        title = match.group(1) if match else connector_path.parent.name
+
+    result = api.sdk_push(
+        source_code=source_code,
+        title=title,
+        connector_id=args.connector_id,
+        description=args.description,
+        notes=args.notes,
+        no_release=args.no_release,
+    )
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+
+    action = "Updated" if args.connector_id else "Created"
+    cid = result.get("id", "?")
+    print(f"\n{action} connector: {result.get('title', title)} (id={cid})", file=sys.stderr)
 
 
 def cmd_profile_show(_api: WorkatoAPI, args: argparse.Namespace):
@@ -367,6 +446,31 @@ def main():
         "--folder-id", type=int, default=None, help="Filter by folder ID"
     )
 
+    # -- sdk --
+    sdk_parser = subparsers.add_parser(
+        "sdk", help="Connector SDK commands (uses Platform API token)"
+    )
+    sdk_sub = sdk_parser.add_subparsers(dest="sdk_command")
+
+    sdk_push_p = sdk_sub.add_parser(
+        "push", help="Push connector source code to Workato"
+    )
+    sdk_push_p.add_argument(
+        "--connector", required=True, help="Path to connector.rb file"
+    )
+    sdk_push_p.add_argument(
+        "--title", default=None, help="Connector title (auto-detected from source)"
+    )
+    sdk_push_p.add_argument(
+        "--connector-id", type=int, default=None,
+        help="Existing connector ID (for updates)"
+    )
+    sdk_push_p.add_argument("--description", default=None, help="Description (markdown)")
+    sdk_push_p.add_argument("--notes", default=None, help="Release notes")
+    sdk_push_p.add_argument(
+        "--no-release", action="store_true", help="Upload without releasing"
+    )
+
     # -- profile --
     profile_parser = subparsers.add_parser(
         "profile", help="Show resolved profile info"
@@ -407,6 +511,7 @@ def main():
         ("connectors", "list-platform"): cmd_connectors_list_platform,
         ("connectors", "list-custom"): cmd_connectors_list_custom,
         ("recipes", "list"): cmd_recipes_list,
+        ("sdk", "push"): cmd_sdk_push,
     }
 
     sub_cmd = getattr(args, f"{args.command}_command", None)
