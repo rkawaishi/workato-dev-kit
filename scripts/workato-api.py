@@ -103,10 +103,10 @@ def resolve_profile(explicit_profile: str | None) -> tuple[str, dict]:
 
     # 2. workspace_id from .workatoenv
     env = find_workatoenv()
-    if env and "workspace_id" in env:
-        target_ws = env["workspace_id"]
+    if env and "workspace_id" in env and env["workspace_id"] is not None:
+        target_ws = str(env["workspace_id"])
         for name, prof in profiles.items():
-            if prof.get("workspace_id") == target_ws:
+            if prof.get("workspace_id") is not None and str(prof["workspace_id"]) == target_ws:
                 return name, prof
         print(
             f"Warning: workspace_id {target_ws} from .workatoenv does not match "
@@ -264,6 +264,40 @@ class WorkatoAPI:
         result = self._request("/api/custom_connectors")
         return result if isinstance(result, list) else result.get("result", [])
 
+    # -- SDK (Custom Connectors) --
+
+    def sdk_push(
+        self,
+        source_code: str,
+        title: str,
+        connector_id: int | None = None,
+        description: str | None = None,
+        notes: str | None = None,
+        no_release: bool = False,
+    ) -> dict:
+        """Push connector source code to Workato."""
+        payload: dict = {"source_code": source_code}
+        if description:
+            payload["description"] = description
+        if notes:
+            payload["notes"] = notes
+        if no_release:
+            payload["release"] = False
+
+        if connector_id is not None:
+            result = self._request(
+                f"/api/custom_connectors/{connector_id}",
+                method="PUT", body=payload,
+            )
+        else:
+            payload["title"] = title
+            result = self._request(
+                "/api/custom_connectors",
+                method="POST", body=payload,
+            )
+
+        return result.get("data", result) if isinstance(result, dict) else result
+
     # -- OAuth Profiles --
 
     def oauth_profiles_list(self) -> list:
@@ -329,13 +363,26 @@ class WorkatoAPI:
     # -- Recipes --
 
     def recipes_list(self, folder_id: int | None = None) -> list:
-        params = {}
-        if folder_id:
-            params["folder_id"] = folder_id
-        result = self._request("/api/recipes", params)
-        if isinstance(result, dict):
-            return result.get("items", result.get("result", []))
-        return result
+        """List recipes with pagination."""
+        all_recipes = []
+        page = 1
+        per_page = 100
+        while True:
+            params: dict = {"page": page, "per_page": per_page}
+            if folder_id is not None:
+                params["folder_id"] = folder_id
+            result = self._request("/api/recipes", params)
+            if isinstance(result, dict):
+                items = result.get("items", result.get("result", []))
+            else:
+                items = result
+            if not items:
+                break
+            all_recipes.extend(items)
+            if len(items) < per_page:
+                break
+            page += 1
+        return all_recipes
 
 
 # ---------------------------------------------------------------------------
@@ -598,7 +645,11 @@ def cmd_profile_show(_api: WorkatoAPI, args: argparse.Namespace):
             "explicit --profile"
             if args.profile
             else "workspace_id from .workatoenv"
-            if env and env.get("workspace_id") == profile.get("workspace_id")
+            if env
+            and "workspace_id" in env
+            and env["workspace_id"] is not None
+            and profile.get("workspace_id") is not None
+            and str(env["workspace_id"]) == str(profile.get("workspace_id"))
             else "current_profile"
         ),
     }
