@@ -186,7 +186,7 @@ class WorkatoAPI:
                 {k: v for k, v in params.items() if v is not None}
             )
 
-        data = json.dumps(body).encode() if body else None
+        data = json.dumps(body).encode() if body is not None else None
         req = urllib.request.Request(
             url,
             data=data,
@@ -200,12 +200,12 @@ class WorkatoAPI:
             with urllib.request.urlopen(req) as resp:
                 return json.loads(resp.read().decode())
         except urllib.error.HTTPError as e:
-            body = e.read().decode() if e.fp else ""
+            err_body = e.read().decode() if e.fp else ""
             safe_url = url.split("?")[0]
             print(
                 f"Error: HTTP {e.code} {e.reason}\n"
                 f"URL: {safe_url}\n"
-                f"Response: {body}",
+                f"Response: {err_body}",
                 file=sys.stderr,
             )
             sys.exit(1)
