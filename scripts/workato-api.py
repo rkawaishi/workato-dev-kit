@@ -316,10 +316,13 @@ class WorkatoAPI:
         if not no_release:
             cid = connector_id if connector_id is not None else (data.get("id") if isinstance(data, dict) else None)
             if cid is not None:
-                self._request(
+                rel = self._request(
                     f"/api/custom_connectors/{cid}/release",
                     method="POST",
                 )
+                rel_data = rel.get("data", rel) if isinstance(rel, dict) else rel
+                if isinstance(rel_data, dict):
+                    data = rel_data
 
         return data
 
