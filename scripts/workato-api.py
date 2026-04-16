@@ -197,6 +197,9 @@ def get_token(profile_name: str) -> str:
             return token
     except Exception as e:
         print(f"Warning: keyring error ({e}), trying fallback.", file=sys.stderr)
+        token = _get_token_from_os_keychain(profile_name)
+        if token:
+            return token
 
     # 3. Token store file
     token_store = Path.home() / ".workato" / "token_store.json"
