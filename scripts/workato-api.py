@@ -124,12 +124,57 @@ def resolve_profile(explicit_profile: str | None) -> tuple[str, dict]:
     return name, profiles[name]
 
 
+def _get_token_from_os_keychain(profile_name: str) -> str | None:
+    """Read token directly from OS keychain without the keyring Python package.
+
+    On macOS, uses the ``security`` CLI to read from Keychain.
+    On Linux, tries ``secret-tool`` (libsecret / GNOME Keyring).
+    Returns None if the token cannot be retrieved.
+    """
+    if sys.platform == "darwin":
+        try:
+            result = subprocess.run(
+                [
+                    "security",
+                    "find-generic-password",
+                    "-s", KEYRING_SERVICE,
+                    "-a", profile_name,
+                    "-w",
+                ],
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                return result.stdout.strip()
+        except FileNotFoundError:
+            pass
+    elif sys.platform.startswith("linux"):
+        try:
+            result = subprocess.run(
+                [
+                    "secret-tool",
+                    "lookup",
+                    "service", KEYRING_SERVICE,
+                    "username", profile_name,
+                ],
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                return result.stdout.strip()
+        except FileNotFoundError:
+            pass
+    return None
+
+
 def get_token(profile_name: str) -> str:
     """Retrieve API token for a profile.
 
     Tries in order:
       1. WORKATO_API_TOKEN env var
-      2. Python keyring (same as Platform CLI)
+      2. Python keyring package (same as Platform CLI)
+      2b. OS keychain CLI (macOS security / Linux secret-tool) — when
+          keyring package is unavailable (e.g. pipx isolated env)
       3. ~/.workato/token_store.json
     """
     # 1. Environment variable
@@ -137,15 +182,24 @@ def get_token(profile_name: str) -> str:
     if env_token:
         return env_token
 
-    # 2. Keyring
+    # 2. Keyring (Python package)
     try:
         import keyring
 
         token = keyring.get_password(KEYRING_SERVICE, profile_name)
         if token:
             return token
-    except (ImportError, Exception) as e:
-        print(f"Warning: keyring unavailable ({e}), trying fallback.", file=sys.stderr)
+    except ImportError:
+        # keyring not installed in this Python (e.g. pipx isolated env).
+        # Try OS-level keychain directly.
+        token = _get_token_from_os_keychain(profile_name)
+        if token:
+            return token
+    except Exception as e:
+        print(f"Warning: keyring error ({e}), trying fallback.", file=sys.stderr)
+        token = _get_token_from_os_keychain(profile_name)
+        if token:
+            return token
 
     # 3. Token store file
     token_store = Path.home() / ".workato" / "token_store.json"
