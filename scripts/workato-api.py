@@ -314,7 +314,7 @@ class WorkatoAPI:
 
         # Release unless explicitly skipped
         if not no_release:
-            cid = connector_id or (data.get("id") if isinstance(data, dict) else None)
+            cid = connector_id if connector_id is not None else (data.get("id") if isinstance(data, dict) else None)
             if cid is not None:
                 self._request(
                     f"/api/custom_connectors/{cid}/release",
