@@ -67,4 +67,9 @@ Thumbs.db
 # Custom connectors (SDK projects, separate from Platform CLI)
 connectors/
 
+# Custom connector source pulled into projects.
+# Managed via SDK push — including in project push can revert SDK changes.
+*.custom_adapter.rb
+*.custom_adapter.json
+
 # Add your own patterns below
