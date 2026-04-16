@@ -341,14 +341,16 @@ class WorkatoAPI:
         notes: str | None = None,
         no_release: bool = False,
     ) -> dict:
-        """Push connector source code to Workato."""
-        payload: dict = {"source_code": source_code}
+        """Push connector source code to Workato.
+
+        The create/update call uploads the code. A separate release call
+        publishes the latest uploaded version.
+        """
+        payload: dict = {"code": source_code}
         if description:
             payload["description"] = description
         if notes:
-            payload["notes"] = notes
-        if no_release:
-            payload["release"] = False
+            payload["note"] = notes
 
         if connector_id is not None:
             result = self._request(
@@ -362,7 +364,18 @@ class WorkatoAPI:
                 method="POST", body=payload,
             )
 
-        return result.get("data", result) if isinstance(result, dict) else result
+        data = result.get("data", result) if isinstance(result, dict) else result
+
+        # Release unless explicitly skipped
+        if not no_release:
+            cid = connector_id if connector_id is not None else (data.get("id") if isinstance(data, dict) else None)
+            if cid is not None:
+                self._request(
+                    f"/api/custom_connectors/{cid}/release",
+                    method="POST",
+                )
+
+        return data
 
     # -- OAuth Profiles --
 
