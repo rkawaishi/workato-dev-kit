@@ -35,9 +35,10 @@ python3 scripts/workato-api.py <command>
 | `connectors list-platform [--provider <name>]` | Pre-built コネクタ情報 |
 | `connectors list-custom` | カスタムコネクタ一覧 |
 | `recipes list [--folder-id <id>]` | レシピ一覧（JSON） |
+| `sdk push --connector <path> [--connector-id <id>]` | カスタムコネクタ push（**推奨**） |
 | `profile show` | プロファイル解決結果 |
 
-## 3. Connector SDK CLI（カスタムコネクタ開発）
+## 3. Connector SDK CLI（カスタムコネクタ開発・ローカルテスト）
 
 インストール: `gem install workato-connector-sdk`
 
@@ -46,9 +47,21 @@ python3 scripts/workato-api.py <command>
 ```bash
 cd connectors/<name>
 bundle exec workato new <PATH>           # 新規作成
-bundle exec workato exec <PATH> test     # テスト
-bundle exec workato push <FOLDER>        # push
+bundle exec workato exec <PATH> test     # ローカルテスト
 ```
+
+### カスタムコネクタの push
+
+**API ヘルパーを使う（推奨）。** Ruby 不要、Platform CLI のプロファイルで認証。
+
+```bash
+# 新規作成
+python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb --title "<Title>"
+# 既存コネクタの更新
+python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb --connector-id <id>
+```
+
+> `bundle exec workato push` や `workato sdk push` も使えるが、API ヘルパーの方がプロファイル自動解決・リリース自動化の点で推奨。
 
 ## コネクタの分類
 
