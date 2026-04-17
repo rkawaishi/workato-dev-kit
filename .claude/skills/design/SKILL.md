@@ -76,7 +76,17 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 
 ユーザー体験が確定したら、Workato の具体的な構成に変換する。
 
-**まず `projects/CATALOG.md` を確認**し、既存の共有アセットで対応可能な部分を特定する:
+**まず外部リソースの情報を取得**する。ユーザー体験に登場する外部サービス（Jira, Slack, Google Sheets 等）に対して、MCP サーバーや CLI ツール経由でリソース構成を事前に把握する:
+
+1. 使用するプロバイダーを特定（ユーザー体験のヒアリングから）
+2. `@docs/platform/resource-providers.md` を参照し、利用可能なツールを検出
+3. 検出できた場合、リソース情報を取得して設計に反映:
+   - 例: Jira プロジェクトの Issue Type やカスタムフィールド → Data Table のフィールド設計に反映
+   - 例: Slack チャンネル一覧 → 通知先の具体化
+   - 例: Google Sheets のヘッダー行 → フィールドマッピングの設計
+4. 取得できない場合はスキップし、設計書の Open Issues に「デプロイ後に確認が必要な項目」として記録
+
+**次に `projects/CATALOG.md` を確認**し、既存の共有アセットで対応可能な部分を特定する:
 - 共有 Recipe Function（マネージャー取得、通知送信等）が使えるか
 - 共有コネクション（Slack, Jira 等）が使えるか
 - 既存の Workflow App やパターンを参考にできるか
