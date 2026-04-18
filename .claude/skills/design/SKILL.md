@@ -1,6 +1,6 @@
 ---
 description: プロジェクトの設計書 (DESIGN.md) を作成・更新・参照する。セッション開始時やタスク完了時に使用。
-allowed-tools: Read, Write, Edit, Glob, Grep
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # /design
