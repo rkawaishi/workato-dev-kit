@@ -1,0 +1,49 @@
+# リソースプロバイダー設定（環境固有）
+# このファイルをコピーして .resource-providers.yml として保存してください。
+# .resource-providers.yml は gitignore 対象です。
+#
+# 利用しないプロバイダーは削除またはコメントアウトしてください。
+# 詳細: docs/platform/resource-providers.md
+
+providers:
+  # --- MCP サーバー ---
+  # tool_prefix: ToolSearch で検索するプレフィックス
+  # 実際のプレフィックスは MCP サーバーの設定により異なります
+
+  # jira:
+  #   method: mcp
+  #   tool_prefix: "mcp__jira__"
+  #   notes: "Jira Cloud MCP server"
+
+  # slack:
+  #   method: mcp
+  #   tool_prefix: "mcp__slack__"
+
+  # salesforce:
+  #   method: mcp
+  #   tool_prefix: "mcp__salesforce__"
+
+  # google_sheets:
+  #   method: mcp
+  #   tool_prefix: "mcp__google_drive__"
+
+  # --- CLI ツール ---
+  # command: which で検出するコマンド名
+  # auth_check: 認証状態を確認するコマンド（任意）
+
+  # github:
+  #   method: cli
+  #   command: "gh"
+  #   auth_check: "gh auth status"
+
+  # workato:
+  #   method: cli
+  #   command: "workato"
+
+  # --- WebFetch ---
+  # base_url: API のベース URL
+
+  # my_api:
+  #   method: webfetch
+  #   base_url: "https://api.example.com"
+  #   notes: "OpenAPI spec at /openapi.json"

@@ -12,6 +12,9 @@ master.key
 settings.yaml
 settings.yaml.enc
 
+# Resource provider settings (environment-specific)
+.resource-providers.yml
+
 # General secrets (prevent accidental commits)
 .env
 .env.*

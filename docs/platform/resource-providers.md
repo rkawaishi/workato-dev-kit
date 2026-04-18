@@ -6,210 +6,171 @@
 
 レシピの入力フィールドには、ユーザーが正確な ID やフィールド名を把握していないと設定できない値がある（Jira プロジェクトキー、Slack チャンネル ID 等）。MCP サーバーや CLI ツールが利用可能な場合、自動取得してユーザーに選択肢として提示する。
 
-### 優先順位
+### 環境固有設定ファイル
+
+利用可能なツールは端末ごとに異なるため、環境固有の設定を `.resource-providers.yml` に記述する。
+
+- **場所**: `workato-dev-kit/.resource-providers.yml`（gitignore 対象）
+- **作成**: 初回セットアップ時にユーザーにヒアリングして生成
+- **参照**: `/create-recipe` Step 4、`/design` Phase 3 でこのファイルを読む
+
+ファイルが存在しない場合はリソース自動取得をスキップし、従来のヒアリングフローを使う。
+
+### アクセス手段の優先順位
 
 1. **MCP サーバー** — セッションで利用可能な MCP ツール
 2. **CLI ツール** — PATH にあるコマンドラインツール
-3. **WebFetch** — OpenAPI spec や REST API エンドポイントへの直接アクセス
+3. **WebFetch** — REST API / OpenAPI spec への直接アクセス
 4. **ヒアリング** — 上記が全て利用不可の場合のフォールバック
 
-### 検出方法
-
-- **MCP ツール**: `ToolSearch` で `mcp__<provider>__` を検索し、ツールが存在するか確認
-- **CLI ツール**: `which <command>` で PATH にあるか確認
-- 検出に失敗した場合はサイレントにヒアリングにフォールバック（エラーを出さない）
-
 ---
 
-## プロバイダー別リファレンス
+## `.resource-providers.yml` のフォーマット
 
-### GitHub
+```yaml
+# 環境固有のリソースプロバイダー設定
+# このファイルは gitignore 対象。端末ごとに作成する。
 
-| 項目 | 値 |
-|---|---|
-| Workato プロバイダー名 | `github` |
-| 検出 | `which gh` で `gh` CLI の存在を確認 |
-| 認証確認 | `gh auth status` |
+providers:
+  jira:
+    method: mcp
+    tool_prefix: "mcp__jira__"           # ToolSearch で検索するプレフィックス
+    notes: "Jira Cloud MCP server"       # メモ（任意）
 
-#### 取得可能な情報
+  slack:
+    method: mcp
+    tool_prefix: "mcp__slack__"
 
-| 情報 | コマンド | レシピでの用途 |
+  github:
+    method: cli
+    command: "gh"                         # which で検出するコマンド名
+    auth_check: "gh auth status"         # 認証確認コマンド（任意）
+
+  salesforce:
+    method: mcp
+    tool_prefix: "mcp__salesforce__"
+
+  google_sheets:
+    method: mcp
+    tool_prefix: "mcp__google_drive__"   # Google Drive MCP 経由でシートも操作可能な場合
+
+  workato:
+    method: cli
+    command: "workato"
+```
+
+### フィールド説明
+
+| フィールド | 必須 | 説明 |
 |---|---|---|
-| リポジトリ一覧 | `gh repo list <owner> --json name,description --limit 50` | トリガー/アクションの対象リポジトリ |
-| ラベル一覧 | `gh label list -R <owner/repo> --json name` | Issue 作成時のラベル指定 |
-| マイルストーン一覧 | `gh api repos/<owner>/<repo>/milestones --jq '.[].title'` | Issue 作成時のマイルストーン |
-| Issue テンプレート | `ls <repo>/.github/ISSUE_TEMPLATE/` | Issue 本文のテンプレート |
-| ブランチ一覧 | `gh api repos/<owner>/<repo>/branches --jq '.[].name'` | ブランチ指定 |
+| `method` | Yes | `mcp`, `cli`, `webfetch` のいずれか |
+| `tool_prefix` | MCP 時 | `ToolSearch` で検索するプレフィックス（例: `mcp__jira__`） |
+| `command` | CLI 時 | `which` で検出するコマンド名（例: `gh`） |
+| `auth_check` | No | 認証状態を確認するコマンド（例: `gh auth status`） |
+| `base_url` | No | WebFetch 時の API ベース URL |
+| `notes` | No | メモ（人間向け） |
 
-#### ヒアリングとの統合例
-
-```
-従来: 「対象のリポジトリは？」→ ユーザーが手入力
-改善: gh repo list → 「以下のリポジトリがあります。どれを使いますか？」
-      1. workato-dev-kit
-      2. my-app
-      → ユーザーが番号で選択
-```
+ユーザーが利用しないプロバイダーは記載不要。記載があるプロバイダーのみ自動取得を試みる。
 
 ---
+
+## プロバイダー別: 取得したい情報
+
+各プロバイダーに対して「何を取得すべきか」を定義する。具体的なツール名やコマンドは `.resource-providers.yml` の設定と実際のツールのスキーマに従う。
 
 ### Jira
 
-| 項目 | 値 |
-|---|---|
-| Workato プロバイダー名 | `jira` |
-| 検出 | `ToolSearch` で `mcp__jira__` を検索 |
-| フォールバック | Jira REST API v3 を WebFetch（要ベース URL） |
-
-#### 取得可能な情報（MCP 経由）
-
-| 情報 | MCP ツール候補 | レシピでの用途 |
+| 取得したい情報 | レシピでの用途 | 取得のヒント |
 |---|---|---|
-| プロジェクト一覧 | `mcp__jira__list_projects` 等 | プロジェクトキー指定 |
-| Issue Type 一覧 | `mcp__jira__get_issue_types` 等 | イシュータイプ指定 |
-| カスタムフィールド | `mcp__jira__get_fields` 等 | カスタムフィールド ID（customfield_XXXXX） |
-| ステータス一覧 | `mcp__jira__get_statuses` 等 | トランジション指定 |
-| 優先度一覧 | `mcp__jira__get_priorities` 等 | 優先度指定 |
-
-> **注意**: MCP ツール名はサーバーの実装により異なる。`ToolSearch` の結果から実際のツール名を特定すること。
-
----
+| プロジェクト一覧（キー・名前） | プロジェクトキー指定 | "list projects" 系のツール/API |
+| Issue Type 一覧 | イシュータイプ指定 | プロジェクト指定で取得 |
+| カスタムフィールド一覧（名前・ID） | `customfield_XXXXX` の特定 | "get fields" 系のツール/API |
+| ステータス一覧 | トランジション指定 | プロジェクト/ワークフロー指定 |
+| 優先度一覧 | 優先度指定 | グローバル設定 |
 
 ### Slack
 
-| 項目 | 値 |
-|---|---|
-| Workato プロバイダー名 | `slack`, `slack_bot` |
-| 検出 | `ToolSearch` で `mcp__slack__` を検索 |
-
-#### 取得可能な情報（MCP 経由）
-
-| 情報 | MCP ツール候補 | レシピでの用途 |
+| 取得したい情報 | レシピでの用途 | 取得のヒント |
 |---|---|---|
-| チャンネル一覧 | `mcp__slack__list_channels` 等 | メッセージ投稿先の channel_id |
-| ユーザー一覧 | `mcp__slack__list_users` 等 | DM 送信先の user_id |
-| チャンネル情報 | `mcp__slack__get_channel_info` 等 | チャンネル名 → ID の解決 |
+| チャンネル一覧（名前・ID） | メッセージ投稿先の `channel_id` | "list channels" 系。名前と ID の両方を取得 |
+| ユーザー一覧（名前・ID） | DM 送信先の `user_id` | "list users" 系 |
 
-#### ヒアリングとの統合例
+### GitHub
 
-```
-従来: 「どのチャンネルに投稿しますか？」→「#general」→ ID 不明で push 後エラー
-改善: MCP → チャンネル一覧取得 → 「以下のチャンネルがあります:」
-      1. #general (C01234567)
-      2. #it-helpdesk (C07654321)
-      → 正確な channel_id でレシピ生成
-```
-
----
+| 取得したい情報 | レシピでの用途 | CLI コマンド |
+|---|---|---|
+| リポジトリ一覧 | トリガー/アクションの対象 | `gh repo list <owner> --json name,description --limit 50` |
+| ラベル一覧 | Issue 作成時のラベル | `gh label list -R <owner/repo> --json name` |
+| マイルストーン一覧 | Issue のマイルストーン | `gh api repos/<owner>/<repo>/milestones --jq '.[].title'` |
+| ブランチ一覧 | ブランチ指定 | `gh api repos/<owner>/<repo>/branches --jq '.[].name'` |
 
 ### Salesforce
 
-| 項目 | 値 |
-|---|---|
-| Workato プロバイダー名 | `salesforce` |
-| 検出 | `ToolSearch` で `mcp__salesforce__` を検索 |
-| フォールバック | `sf` CLI (`which sf`) |
-
-#### 取得可能な情報
-
-| 情報 | 取得方法 | レシピでの用途 |
+| 取得したい情報 | レシピでの用途 | 取得のヒント |
 |---|---|---|
-| オブジェクト一覧 | MCP or `sf sobject list` | 対象オブジェクト指定 |
-| フィールド一覧 | MCP or `sf sobject describe -s <object>` | フィールドマッピング |
-| PickList 値 | MCP or describe の result | 選択肢の事前解決 |
-| レコードタイプ | MCP or describe の result | RecordTypeId 指定 |
-
----
+| オブジェクト一覧 | 対象オブジェクト指定 | "list objects" / `sf sobject list` |
+| フィールド一覧（名前・型） | フィールドマッピング | "describe object" / `sf sobject describe -s <obj>` |
+| PickList 値 | 選択肢の事前解決 | describe 結果の picklistValues |
+| レコードタイプ | RecordTypeId 指定 | describe 結果の recordTypeInfos |
 
 ### Google Sheets
 
-| 項目 | 値 |
-|---|---|
-| Workato プロバイダー名 | `google_sheets` |
-| 検出 | `ToolSearch` で `mcp__google_sheets__` または `mcp__google_drive__` を検索 |
-
-#### 取得可能な情報
-
-| 情報 | 取得方法 | レシピでの用途 |
+| 取得したい情報 | レシピでの用途 | 取得のヒント |
 |---|---|---|
-| スプレッドシート一覧 | MCP（Google Drive 検索） | スプレッドシート ID |
-| シート名一覧 | MCP | シート名指定 |
-| ヘッダー行 | MCP（1行目を読み取り） | カラム名のマッピング |
-
----
+| スプレッドシート一覧 | スプレッドシート ID | Google Drive の検索/一覧 |
+| シート名一覧 | シート名指定 | スプレッドシート ID 指定で取得 |
+| ヘッダー行 | カラム名のマッピング | 1行目の読み取り |
 
 ### Google Drive
 
-| 項目 | 値 |
-|---|---|
-| Workato プロバイダー名 | `google_drive` |
-| 検出 | `ToolSearch` で `mcp__google_drive__` を検索 |
-
-#### 取得可能な情報
-
-| 情報 | 取得方法 | レシピでの用途 |
+| 取得したい情報 | レシピでの用途 | 取得のヒント |
 |---|---|---|
-| フォルダ一覧 | MCP | アップロード先フォルダ ID |
-| ファイル一覧 | MCP | 対象ファイル ID |
+| フォルダ一覧 | アップロード先フォルダ ID | "list files" でフォルダ型をフィルタ |
+| ファイル一覧 | 対象ファイル ID | "list files" / "search files" |
 
----
+### Workato
 
-### Workato 自身
-
-| 項目 | 値 |
-|---|---|
-| Workato プロバイダー名 | `workato` |
-| 検出 | `which workato` で CLI の存在を確認 |
-
-#### 取得可能な情報
-
-| 情報 | コマンド | レシピでの用途 |
+| 取得したい情報 | レシピでの用途 | CLI コマンド |
 |---|---|---|
-| コネクション一覧 | `workato exec connections.list` | コネクション ID |
-| レシピ一覧 | `workato exec recipes.list` | call_recipe の対象 |
-| フォルダ構成 | `workato exec folders.list` | zip_name / folder 指定 |
-
----
+| コネクション一覧 | コネクション ID | `workato exec connections.list` |
+| レシピ一覧 | `call_recipe` の対象 | `workato exec recipes.list` |
+| フォルダ構成 | `zip_name` / `folder` 指定 | `workato exec folders.list` |
 
 ### 任意の REST API
 
-| 項目 | 値 |
-|---|---|
-| Workato プロバイダー名 | カスタムコネクタ依存 |
-| 検出 | ユーザーから OpenAPI spec URL を取得 |
-
-#### 取得可能な情報
-
-| 情報 | 取得方法 | レシピでの用途 |
+| 取得したい情報 | レシピでの用途 | 取得のヒント |
 |---|---|---|
-| エンドポイント一覧 | WebFetch で OpenAPI spec を取得 | HTTP アクションの URL |
-| リクエスト/レスポンススキーマ | OpenAPI spec の schemas | input/output フィールド定義 |
-| 認証方式 | OpenAPI spec の securitySchemes | コネクション設定の参考 |
+| エンドポイント一覧 | HTTP アクションの URL | WebFetch で OpenAPI spec を取得 |
+| リクエスト/レスポンススキーマ | input/output フィールド定義 | OpenAPI spec の schemas |
+| 認証方式 | コネクション設定の参考 | OpenAPI spec の securitySchemes |
 
 ---
 
 ## スキルでの利用手順
 
-### 1. プロバイダーの特定
+### 1. 環境設定の読み込み
 
-レシピで使用するプロバイダーを特定する（ヒアリングの結果から）。
+`.resource-providers.yml` を読む。ファイルが存在しない場合はリソース自動取得をスキップ。
 
-### 2. ツールの検出
+### 2. 対象プロバイダーの照合
+
+レシピで使用するプロバイダーが `.resource-providers.yml` に定義されているか確認。
+
+### 3. ツールの検出と実行
 
 ```
-プロバイダーが github の場合:
-  → which gh を実行
+method が mcp の場合:
+  → ToolSearch で tool_prefix を検索
+  → 見つかったツールのスキーマを読み、適切なツールを実行
 
-プロバイダーが jira, slack, salesforce, google_sheets, google_drive の場合:
-  → ToolSearch で mcp__<provider>__ を検索
+method が cli の場合:
+  → which <command> で存在確認
+  → auth_check があれば認証状態を確認
+  → 上記テーブルのコマンドを実行
 
-プロバイダーが workato の場合:
-  → which workato を実行
+method が webfetch の場合:
+  → base_url を使って API にアクセス
 ```
-
-### 3. リソース情報の取得
-
-検出に成功した場合、このドキュメントの該当セクションを参照して適切なコマンド/ツールを実行。
 
 ### 4. ユーザーへの提示
 
@@ -231,7 +192,30 @@
 
 ### 5. フォールバック
 
-検出に失敗した場合、または取得でエラーが発生した場合:
-- エラーメッセージは表示しない
-- 従来通りユーザーへのヒアリングで値を収集する
-- 「正確な値が不明な場合は push 後に UI で確認・修正してください」と案内する
+以下の場合は従来のヒアリングにサイレントに移行する:
+- `.resource-providers.yml` が存在しない
+- 対象プロバイダーが定義されていない
+- ツールの検出に失敗した
+- リソース取得でエラーが発生した
+
+エラーメッセージは表示せず、自然にヒアリングフローに移行する。
+
+---
+
+## 初回セットアップ
+
+`.resource-providers.yml` が存在しない状態で `/create-recipe` や `/design` を実行した場合、以下のようにセットアップを案内する:
+
+```
+リソース自動取得の設定ファイル (.resource-providers.yml) がまだありません。
+外部サービスのリソース情報（Jira プロジェクト一覧、Slack チャンネル等）を
+自動取得できるように設定しますか？
+
+設定する場合、利用している MCP サーバーや CLI ツールを教えてください:
+- Jira MCP を使っていますか？ → ツール名のプレフィックスは？（例: mcp__jira__）
+- Slack MCP を使っていますか？
+- gh CLI は入っていますか？
+- その他、利用可能な MCP サーバーや CLI はありますか？
+
+スキップする場合は「スキップ」と入力してください（従来通りヒアリングで進めます）。
+```
