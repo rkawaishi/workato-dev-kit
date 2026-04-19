@@ -49,6 +49,7 @@ if [ -z "$PROJECT_DIR" ] || [ ! -d "$PROJECT_DIR" ]; then
 fi
 
 ERRORS=()
+ERROR_DETAILS=()
 WARNINGS=()
 
 # 1. Validate JSON syntax (blocking)
@@ -94,6 +95,56 @@ with open(os.environ['VALIDATE_FILE']) as f:
   fi
 done < <(find "$PROJECT_DIR" -type f -name "*.lcap_page.json" -print0 2>/dev/null)
 
+# 4. Run `workato recipes validate` per recipe (blocking, ~2s/file, with noise filter)
+if command -v workato >/dev/null 2>&1; then
+  RECIPE_FILES=()
+  while IFS= read -r -d '' file; do
+    # Skip files that already failed syntax check
+    base=$(basename "$file")
+    skip=0
+    for err in "${ERRORS[@]}"; do
+      case "$err" in *"$base"*) skip=1; break;; esac
+    done
+    [ $skip -eq 0 ] && RECIPE_FILES+=("$file")
+  done < <(find "$PROJECT_DIR" -type f -name "*.recipe.json" -print0 2>/dev/null)
+
+  if [ ${#RECIPE_FILES[@]} -gt 0 ]; then
+    echo "" >&2
+    echo "Running 'workato recipes validate' on ${#RECIPE_FILES[@]} recipe(s) (~2s each)..." >&2
+
+    NOISE_COUNT=0
+    for file in "${RECIPE_FILES[@]}"; do
+      base=$(basename "$file")
+      rel=$(VALIDATE_FILE="$file" VALIDATE_ROOT="$PROJECT_DIR" python3 -c "import os; print(os.path.relpath(os.environ['VALIDATE_FILE'], os.environ['VALIDATE_ROOT']))" 2>/dev/null)
+      [ -z "$rel" ] && rel="$file"
+
+      raw=$(cd "$PROJECT_DIR" && workato recipes validate --path "$rel" < /dev/null 2>&1)
+      clean=$(printf '%s' "$raw" | tr '\r' '\n' | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' | grep -v "^[[:space:]]*$" | grep -v "^[[:space:]]*⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏" | grep -Ev "Validating recipe:.*\([0-9.]+s\)")
+
+      if ! printf '%s' "$clean" | grep -q "Validation failed"; then
+        continue
+      fi
+
+      # Noise filter: workspace-level pre-check fails when any custom connector
+      # in the workspace has `latest_released_version = null` (not yet released).
+      # This short-circuits recipe-level validation regardless of the recipe's own
+      # contents, so we can't extract real format errors. Aggregate into a single
+      # warning rather than spamming one per recipe.
+      if printf '%s' "$clean" | grep -q "CustomConnector" && printf '%s' "$clean" | grep -q "latest_released_version"; then
+        NOISE_COUNT=$((NOISE_COUNT + 1))
+        continue
+      fi
+
+      ERRORS+=("CLI validation failed: $base")
+      ERROR_DETAILS+=("$clean")
+    done
+
+    if [ $NOISE_COUNT -gt 0 ]; then
+      WARNINGS+=("CLI validate skipped for $NOISE_COUNT recipe(s): workspace has unreleased custom connector(s). Release with 'workato sdk push' to enable deeper validation.")
+    fi
+  fi
+fi
+
 # Show warnings (non-blocking)
 if [ ${#WARNINGS[@]} -gt 0 ]; then
   echo "" >&2
@@ -107,8 +158,11 @@ fi
 if [ ${#ERRORS[@]} -gt 0 ]; then
   echo "" >&2
   echo "=== Pre-push validation FAILED ===" >&2
-  for err in "${ERRORS[@]}"; do
-    echo "  ❌ $err" >&2
+  for i in "${!ERRORS[@]}"; do
+    echo "  ❌ ${ERRORS[$i]}" >&2
+    if [ -n "${ERROR_DETAILS[$i]:-}" ]; then
+      printf '%s\n' "${ERROR_DETAILS[$i]}" | sed 's/^/      /' >&2
+    fi
   done
   echo "" >&2
   echo "Fix errors above before pushing." >&2
