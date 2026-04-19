@@ -277,6 +277,7 @@ delete('path')                   # DELETE
 全リクエストに `connection.base_uri` が `URI.join` 相当で結合される。**path を `/` で始めると absolute path 扱いになりホスト直下にリセットされる**ため、`base_uri` 側のパスプレフィックスが落ちる。
 
 ```ruby
+# IRB で動作を再現（コネクタ内では URI.join は呼ばない。SDK 内部挙動の確認用）
 require 'uri'
 URI.join('https://example.com/api/', '/users/me').to_s
 # => "https://example.com/users/me"     ← /api/ が消える
