@@ -1,0 +1,24 @@
+# Workato Platform CLI — API トークンを含む
+.workatoenv
+
+# 環境別のリソースプロバイダ設定
+.resource-providers.yml
+
+# 一般的な秘密情報
+.env
+.env.*
+*.key
+*.pem
+*.secret
+*.credential*
+
+# OS / エディタ生成物
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# 注: 以下は必ずコミットする
+# - DESIGN.md（.workatoignore に含めて workato pull で消えないようにする）
+# - .workatoignore
+# - Recipes/ Pages/ Connections/ Data Tables/ Agents/ docs/
