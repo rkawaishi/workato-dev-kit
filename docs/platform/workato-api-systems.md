@@ -1,6 +1,8 @@
 # Workato の API 系統（Developer API / API Platform / OEM）
 
-Workato には **「API Client」という名前の似て非なる 3 系統 API** がある。さらに OEM / Embedded を合わせると 4 系統。
+> Last verified: 2026-04-19
+
+Workato には **「API Client」という名前の似て非なる 4 系統 API**（Developer API / API Platform v1 / API Platform v2 / OEM）がある。うち API Platform v1 は廃止進行中。
 
 設計着手前にこのドキュメントを必ず読み、どの系統を使うのか最初に決めること。混同すると設計そのものをやり直す手戻りが発生する（`workato-key-broker` プロジェクト初期の失敗事例）。
 
@@ -22,15 +24,17 @@ Workato 自体を API で操作したい？（レシピ CRUD、接続管理、AP
 |---|---|---|---|---|
 | **目的** | Workato 自体を操作 | 外部公開 API の呼び出し側認証（旧方式） | 外部公開 API の呼び出し側認証（現行） | パートナーが顧客テナントを管理 |
 | **典型的な主体** | CLI / MCP / Dev Kit / 内部自動化 | 外部システム（レガシー） | 外部システム（新規） | ISV / SaaS ベンダー |
-| **エンドポイント基底** | `/api/*`（例: `/api/recipes`、`/api/developer_api_clients/*`） | `/api/api_clients/*`（※ 内部観測 / 廃止対象） | `/api/v2/api_clients/*`（※ 内部観測） | `/oem/oem-api/*`（例: `/oem/oem-api/adapters`） |
+| **エンドポイント基底** | `/api/*`（例: `/api/recipes`、`/api/developer_api_clients/*`） | `/api/api_clients/*` ⚠️ 公式 docs 未掲載・廃止対象 | `/api/v2/api_clients/*` ⚠️ 公式 docs 未掲載 | `/oem/oem-api/*`（例: `/oem/oem-api/adapters`） |
 | **スコープ単位** | Project / Folder（role に project scope を付与） | Access Profile 単位（= 紐づく API Collection 群） | Client + API Key 単位（IP 制限・mTLS 付き） | 顧客テナント単位 |
-| **認証ヘッダ** | `Authorization: Bearer <token>`<br>※ 旧 `x-user-token` / `x-user-email` は 2025-07-14 廃止済み | `api-token` ヘッダ | `api-token` ヘッダ | Admin Console / JWT |
-| **現役度（2026-04 時点）** | 現役 | **廃止進行中**<br>・2025-12-01: 新規作成・変更不可<br>・2026-07-01: 完全廃止（トークン無効化） | 現役（推奨） | 現役 |
+| **認証ヘッダ** | `Authorization: Bearer <token>` ／ 旧 `x-user-token` + `x-user-email` は 2025-07-14 廃止済み | `api-token` ヘッダ | `api-token` ヘッダ | Admin Console / JWT |
+| **現役度** | 現役 | **廃止進行中**（2025-12-01 新規作成・変更不可 ／ 2026-07-01 完全廃止・トークン無効化） | 現役（推奨） | 現役 |
 | **UI 管理画面** | Workspace admin > API clients | API platform > Clients（Access Profiles タブ） | API platform > Clients（API Keys タブ） | Admin Console |
 | **公式 docs** | [workato-api.html](https://docs.workato.com/en/workato-api.html) / [api-clients.html](https://docs.workato.com/workato-api/api-clients.html) | [api-client-mgmt.html](https://docs.workato.com/en/api-mgmt/api-client-mgmt.html) | 同上（API Keys セクション） | [oem.html](https://docs.workato.com/en/oem.html) / [oem-api.html](https://docs.workato.com/en/oem/oem-api.html) |
 
-> **Note on "v1 / v2" 命名**
+> **Note on "v1 / v2" 命名とエンドポイントパス**
 > 公式 docs では v1 / v2 とは呼ばず、「Access Profiles（legacy）」「API Keys（modern）」と呼ぶ。本ドキュメントの v1 / v2 は Developer API 経由で API Platform クライアントを操作する際の実観測パス（`/api/api_clients/*` vs `/api/v2/api_clients/*`）を指す便宜上のラベル。
+>
+> ⚠️ **`/api/api_clients/*` と `/api/v2/api_clients/*` は公式ドキュメントに掲載されていない undocumented なエンドポイント**であり、予告なく変更される可能性がある。新規設計ではまず API Platform の UI 管理 / 公式 SDK で要件が満たせないか検討し、直接叩くのは最終手段にすること。
 
 ## 系統ごとの詳細
 
@@ -58,7 +62,7 @@ Workato 自体を API で操作したい？（レシピ CRUD、接続管理、AP
 - Access Policy で rate limit / quota を Access Profile 単位で設定
 
 廃止スケジュール:
-- **2025-12-01**: 既存 Access Profile の変更・新規作成が不可（※ 2026-04-19 現在、すでに過ぎている）
+- **2025-12-01**: 既存 Access Profile の変更・新規作成が不可となった
 - **2026-07-01**: 完全廃止。発行済み API Token が無効化される
 
 既存システムは 2026-07-01 までに v2 (API Keys) へ移行する必要がある。
