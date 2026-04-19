@@ -2,6 +2,8 @@
 
 公式: https://docs.workato.com/en/developing-connectors/sdk/sdk-reference.html
 
+ハマりどころ: `@docs/connector-sdk/pitfalls.md`
+
 ## トップレベル構造
 
 ```ruby
@@ -273,3 +275,5 @@ delete('/path')                  # DELETE
 ```
 
 全リクエストに `connection.base_uri` が自動付与される。
+
+戻り値は `Workato::Connector::Sdk::Request < SimpleDelegator` でラップされているため、型判定・包装パターン・path 先頭スラッシュの扱いに注意。詳細は `@docs/connector-sdk/pitfalls.md`。
