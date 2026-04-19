@@ -653,15 +653,9 @@ def _read_frontmatter(md_path: Path) -> tuple[dict, str]:
         return {}, text
     end = text.find("\n---\n", 4)
     if end == -1:
-        # Trailing form: `---` at the very end of file
-        end_trailing = text.find("\n---", 4)
-        if end_trailing == -1 or end_trailing != len(text) - 4:
-            return {}, text
-        fm_text = text[4:end_trailing]
-        body = ""
-    else:
-        fm_text = text[4:end]
-        body = text[end + len("\n---\n"):]
+        return {}, text
+    fm_text = text[4:end]
+    body = text[end + len("\n---\n"):]
 
     fm: dict = {}
     for line in fm_text.splitlines():
@@ -685,8 +679,6 @@ def _write_frontmatter(md_path: Path, fm: dict, connector_name: str | None = Non
 
     if md_path.exists():
         _existing_fm, body = _read_frontmatter(md_path)
-        if not body:
-            body = md_path.read_text()
     else:
         name = connector_name or md_path.stem
         body = (

@@ -103,7 +103,9 @@ ls connectors/*/connector.rb 2>/dev/null
    `sdk push` が書き込んだ情報（connector_id 等）を書き換えたり消したりしないこと。
 
 ```markdown
+---
 connector_id: <id>   # sdk push が自動管理
+---
 
 # <Title> コネクタ
 
