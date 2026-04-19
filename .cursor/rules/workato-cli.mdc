@@ -77,10 +77,10 @@ python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.
 
 ### ファイル命名・構造（push 前）
 
-- [ ] **Connection ファイル名 = workspace prefix + display name の snake_case**
-  - display name が `Key Broker | Workato Developer API` なら、ファイル名は `Connections/key_broker_workato_developer_api.connection.json`
-  - **ワークスペース名（prefix）を省略すると、push 後に Workato 側で prefix 付きに自動 rename される**。次回 pull で「元ファイルが削除され、新ファイルが追加された」形に見えて混乱の元
-  - display name を先に確定してから snake_case 化したファイル名を使うこと
+- [ ] **Connection ファイル名 = display name の snake_case（先頭に workspace 名を含める）**
+  - 例: display name `Key Broker | Workato Developer API`（workspace 名 = `Key Broker`）→ ファイル名は `Connections/key_broker_workato_developer_api.connection.json`
+  - **display name が workspace 名で始まっていないと、push 後に Workato が workspace 名を自動 prepend してファイルごと rename する**。次回 pull で「元ファイルが削除され、新ファイルが追加された」形に見えて混乱の元
+  - 対策: display name を `<Workspace 名> | <用途>` 形式で先に確定し、その snake_case をファイル名に使う
 - [ ] **Data Table JSON は business columns のみ**
   - Record ID / Created time / Last modified time などの system columns をローカルで書かない（独自 UUID を入れるとリモート側で別 UUID が振られて pull 時に重複が発生）
   - system columns は `workato pull` 時に自動取得される
