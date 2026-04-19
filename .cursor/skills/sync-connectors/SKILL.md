@@ -99,7 +99,12 @@ ls connectors/*/connector.rb 2>/dev/null
 
 3. `connectors/docs/<name>.md` を作成または更新:
 
+   **フロントマター保持のルール**: ファイル先頭に `---` で囲まれた YAML フロントマター（`connector_id:` など）がある場合は **必ずそのまま保持** する。
+   `sdk push` が書き込んだ情報（connector_id 等）を書き換えたり消したりしないこと。
+
 ```markdown
+connector_id: <id>   # sdk push が自動管理
+
 # <Title> コネクタ
 
 Provider: `<name>`
@@ -173,6 +178,7 @@ Provider: `<name>`
 - **更新**: 既存ファイルがある場合:
   - API から取得したトリガー/アクションと比較
   - 新しいものがあれば追加
+  - **フロントマター（`---` で囲まれた YAML ブロック）は必ず保持** する。`connector_id` などは `sdk push` が自動管理しているため、絶対に書き換えない
   - `## フィールド詳細` 以降のセクション（/learn-recipe で蓄積した情報）は保持
   - deprecated フラグが立ったものに注記を追加
 - **provider 名の確定**: API の `name` フィールドが正式な provider 名
