@@ -184,6 +184,12 @@ Last updated: <YYYY-MM-DD>
 - [ ] エンドツーエンドテスト
 - [ ] pull → learn-recipe
 
+## Unlearned Actions
+<!-- docs/connectors/<provider>.md または connectors/docs/<provider>.md にフィールド情報が無く、ベストエフォートで実装したアクション/トリガー -->
+<!-- 実装後に /learn-recipe を回したら該当エントリを削除する -->
+| provider | action/trigger | 備考（判明した input/output など） |
+|---|---|---|
+
 ## Decisions
 <!-- 設計判断とその理由を記録 -->
 

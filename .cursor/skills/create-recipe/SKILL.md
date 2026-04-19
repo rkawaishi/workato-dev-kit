@@ -39,6 +39,8 @@ Workato レシピ JSON ファイルを対話的に生成するスキル。
   - URL パターン: `https://docs.workato.com/en/connectors/<name>/<action-name>.html`
   - または: `https://docs.workato.com/en/connectors/<name>/actions.html`
 - 取得したフィールド情報は `docs/connectors/<connector>.md` に追記して蓄積する
+- **禁止**: `projects/<other-project>/Recipes/` を grep して JSON サンプルからフィールドをコピーしない。個別プロジェクト固有のロジック・命名が混入し、ドキュメントの欠落も可視化されなくなる（`@.claude/CLAUDE.md` の「レシピ実装ライフサイクル」参照）
+- 公式ドキュメントにも無くベストエフォートで実装する場合、プロジェクトの `DESIGN.md` の「Unlearned Actions」に `provider` / `action` を記録する
 
 ### 4. リソース情報の自動取得
 
@@ -205,6 +207,6 @@ Slack MCP と Jira MCP からリソース情報を取得しました。
    認証が完了したら教えてください。
    ```
 4. **認証完了後に UI 確認を案内**: レシピ構造、フィールドマッピングの確認
-5. **調整があった場合**: pull → `/learn-recipe` で学習
+5. **学習（必須）**: pull → `/learn-recipe` で学習。`DESIGN.md` の「Unlearned Actions」に記録したアクションを使った場合は **スキップ禁止**（ドキュメント欠落を放置しないため）。学習完了したらそのエントリを削除する
 6. **テスト実行**: UI でテスト → エラーがあれば分析・修正
 7. **パターン蓄積**: 新しい構築パターンが含まれていれば `/learn-pattern` でカタログに追加
