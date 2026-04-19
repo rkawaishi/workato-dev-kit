@@ -71,3 +71,40 @@ python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.
 - **Community**: ユーザー共有コネクタ
 - **Custom**: Connector SDK で自作 → `connectors/` ディレクトリ
 - **Custom Action**: コネクタ内の `__adhoc_http_action` で API 直接呼出し
+
+## Pull/Push ハマりポイント
+
+`workato pull` / `workato push` は Workato リモートを正として動く。ローカル命名やファイル構造がリモートの規約と合わないと、サイレントに rename/上書き/重複が起こる。以下を必ずチェックする。
+
+### ファイル命名・構造（push 前）
+
+- [ ] **Connection ファイル名 = workspace prefix + display name の snake_case**
+  - display name が `Key Broker | Workato Developer API` なら、ファイル名は `Connections/key_broker_workato_developer_api.connection.json`
+  - **ワークスペース名（prefix）を省略すると、push 後に Workato 側で prefix 付きに自動 rename される**。次回 pull で「元ファイルが削除され、新ファイルが追加された」形に見えて混乱の元
+  - display name を先に確定してから snake_case 化したファイル名を使うこと
+- [ ] **Data Table JSON は business columns のみ**
+  - Record ID / Created time / Last modified time などの system columns をローカルで書かない（独自 UUID を入れるとリモート側で別 UUID が振られて pull 時に重複が発生）
+  - system columns は `workato pull` 時に自動取得される
+- [ ] **`*.connection.json` に認証情報は含めない**（Workato が自動で除外）
+
+### Pull 前チェック
+
+- [ ] `git status` で未コミット変更を確認
+  - pull は上書き（サイレント）・削除（y/N プロンプト）でローカルを書き換える
+  - 未コミットの編集があれば commit または stash してから pull
+- [ ] `.workatoignore` に `DESIGN.md` など pull 対象外にしたいファイルを登録
+
+### `workato init` で既存ディレクトリを初期化する場合
+
+- `workato init` は非空ディレクトリを `DIRECTORY_NOT_EMPTY` で拒否する（`--force` 相当のオプションは無い）
+- すでに `DESIGN.md` などを置いたディレクトリで `.workatoenv` だけ欲しい場合:
+
+```bash
+# 一時ディレクトリに init
+workato init --non-interactive --profile <profile> --project-id <id> \
+  --folder-name "projects/_tmp_init_$$"
+
+# .workatoenv だけ本来のディレクトリに移動
+mv "projects/_tmp_init_$$/.workatoenv" "projects/<name>/"
+rm -rf "projects/_tmp_init_$$"
+```
