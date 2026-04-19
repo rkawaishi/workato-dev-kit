@@ -19,7 +19,13 @@ response.class         # => Workato::Connector::Sdk::Request
 中身を取り出すには、まず `method_missing` を何か呼んで実体の遅延評価を走らせたうえで `__getobj__` を使う。
 
 ```ruby
-response.length rescue nil   # Delegator に任意メソッドを委譲させる
+# Delegator に任意メソッドを委譲させて実体を読み込ませる。
+# ネットワーク例外は飲まず NoMethodError だけ無視する。
+begin
+  response.length
+rescue NoMethodError
+  # 実体が Hash 等で length を持たない場合に到達。問題なし。
+end
 body = response.__getobj__   # 実体（Array / Hash）を取り出す
 ```
 
@@ -28,8 +34,16 @@ body = response.__getobj__   # 実体（Array / Hash）を取り出す
 ```ruby
 methods: {
   normalize_list_response: lambda do |response|
-    response.length rescue nil
-    body = response.__getobj__ rescue response
+    begin
+      response.length
+    rescue NoMethodError
+      # length を持たない実体（Hash 等）は素通り
+    end
+    body = begin
+      response.__getobj__
+    rescue NoMethodError
+      response
+    end
 
     case body
     when Array then body
@@ -40,9 +54,21 @@ methods: {
 }
 ```
 
+> **注意**: `rescue` 修飾子（`x rescue nil`）は `StandardError` 全般を飲み込むため、ネットワーク例外まで握り潰しやすい。必ず `NoMethodError` に絞ること。
+
 ### 2. `base_uri` の末尾スラッシュと path の先頭スラッシュは共存させない
 
-RestClient は path が `/` で始まるとホスト直下にリセットする。`base_uri` 側に `/api/` などのプレフィックスを置いている場合、path を絶対パスで書くと **プレフィックスが落ちる**。
+SDK 内部は URI 結合（`URI.join` 相当）で path を組み立てる。`URI.join` は第二引数が `/` で始まると **absolute path** 扱いにしてホスト直下にリセットするため、`base_uri` 側の `/api/` プレフィックスが落ちる。
+
+```ruby
+require 'uri'
+URI.join('https://example.com/api/', '/users/me').to_s
+# => "https://example.com/users/me"   ← /api/ が消える
+URI.join('https://example.com/api/', 'users/me').to_s
+# => "https://example.com/api/users/me"
+```
+
+コネクタ側でも同じ挙動:
 
 ```ruby
 # connection
@@ -76,7 +102,7 @@ get('users/me')    # => https://example.com/api/users/me ← 正しい
 
 ### 5. Ruby 4.0 では default gems が外れている
 
-`workato-connector-sdk` 1.3.19 系を Ruby 4.0 で動かすには、以下を `Gemfile` に明示追加が必要。
+`workato-connector-sdk` 1.3.19 系を Ruby 4.0（2026-04 時点では preview 段階）で動かすには、以下を `Gemfile` に明示追加が必要。
 
 ```ruby
 # Gemfile
@@ -105,7 +131,7 @@ export CPPFLAGS="-I$(brew --prefix icu4c@78)/include"
 bundle install
 ```
 
-最新 ICU で通ることを確認できたらバージョンを上げてよいが、SDK gem のビルド対象に合わせるのが無難。
+最新 ICU で通ることを確認できたらバージョンを上げてよいが、SDK gem のビルド対象に合わせるのが無難。Homebrew 側の提供バージョンは時期で変わるため、`brew search icu4c` で現行のリストを確認してから入れる。
 
 ### 7. 日本語コメントを含む `connector.rb` には `LANG/LC_ALL=UTF-8` が要る
 
