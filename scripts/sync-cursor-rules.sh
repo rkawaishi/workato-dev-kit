@@ -21,9 +21,14 @@ CURSOR_SKILLS="$REPO_ROOT/.cursor/skills"
 mkdir -p "$CURSOR_RULES" "$CURSOR_SKILLS"
 
 # --- ルール: description をファイルの最初の # 見出しから自動生成 ---
+#
+# frontmatter の終端検出は、行頭 "---" を2回数える方式。
+# ただしコードフェンス (```) 内の "---" は YAML frontmatter の例として
+# 本文に書くケースがあるため、フェンス状態を追跡して区切り扱いしない。
 get_description() {
   awk '
-    /^---$/ { fm++; next }
+    /^```/ { fence = !fence; next }
+    !fence && /^---$/ { fm++; next }
     fm >= 2 && /^# / {
       sub(/^# */, "")
       print
@@ -48,6 +53,7 @@ for claude_file in "$CLAUDE_RULES"/*.md; do
   fi
 
   # Claude フロントマターから paths を抽出してカンマ区切りに変換
+  # (frontmatter block 内には code fence は出ないので fence 追跡不要)
   globs=$(awk '
     /^---$/ { fm++; next }
     fm == 1 && /^  - "/ {
@@ -59,8 +65,10 @@ for claude_file in "$CLAUDE_RULES"/*.md; do
   ' "$claude_file")
 
   # フロントマター以降の本文を抽出
+  # コードフェンス内の "---" は frontmatter 区切りではないので無視
   body=$(awk '
-    /^---$/ { fm++; next }
+    fm >= 2 && /^```/ { fence = !fence; print; next }
+    !fence && /^---$/ { fm++; next }
     fm >= 2 { print }
   ' "$claude_file")
 
@@ -93,6 +101,7 @@ for skill_dir in "$CLAUDE_SKILLS"/*/; do
   mkdir -p "$cursor_skill_dir"
 
   # フロントマターのフィールドを抽出
+  # (frontmatter block 内には code fence は出ないので fence 追跡不要)
   desc=$(awk '
     /^---$/ { fm++; next }
     fm == 1 && /^description:/ {
@@ -111,8 +120,10 @@ for skill_dir in "$CLAUDE_SKILLS"/*/; do
 
   # フロントマター以降の本文を抽出し、ファイル参照パスを変換
   # Note: /skill-name は Cursor でも同じなので変換不要
+  # コードフェンス内の "---" は frontmatter 区切りではないので無視
   body=$(awk '
-    /^---$/ { fm++; next }
+    fm >= 2 && /^```/ { fence = !fence; print; next }
+    !fence && /^---$/ { fm++; next }
     fm >= 2 { print }
   ' "$skill_file" | sed \
     -e 's|@docs/|docs/|g' \

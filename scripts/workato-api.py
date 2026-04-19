@@ -16,6 +16,8 @@ Usage:
   python3 scripts/workato-api.py connectors list-custom
   python3 scripts/workato-api.py recipes list [--folder-id <id>]
   python3 scripts/workato-api.py sdk push --connector <path> [--title <t>]
+    (auto-detects new vs. update by reading connector_id from
+     connectors/docs/<name>.md frontmatter; saves ID back after initial create)
   python3 scripts/workato-api.py sdk edit <file> [--key <master.key>]
   python3 scripts/workato-api.py sdk decrypt <file> [--key <master.key>]
   python3 scripts/workato-api.py profile show
@@ -620,6 +622,104 @@ def _resolve_key_path(key_arg: str | None, enc_file: Path) -> Path:
     return enc_file.parent / "master.key"
 
 
+# ---------------------------------------------------------------------------
+# Connector docs frontmatter (for connector_id persistence)
+#
+# `connectors/docs/<name>.md` holds a YAML-ish frontmatter block that records
+# the Workato connector ID after a successful push. Subsequent pushes read
+# it back so the user does not need to remember `--connector-id`.
+# Only flat `key: value` pairs are supported (no nested structures).
+# ---------------------------------------------------------------------------
+
+
+def _connector_docs_path(connector_rb_path: Path) -> Path:
+    """Return `connectors/docs/<name>.md` derived from the connector.rb path.
+
+    `<name>` is the basename of the connector.rb's parent directory, and the
+    docs dir is a sibling of that parent (i.e. `connectors/docs/`).
+    """
+    connector_dir = connector_rb_path.resolve().parent
+    name = connector_dir.name
+    docs_dir = connector_dir.parent / "docs"
+    return docs_dir / f"{name}.md"
+
+
+def _read_frontmatter(md_path: Path) -> tuple[dict, str]:
+    """Parse top-of-file YAML-ish frontmatter. Returns (fm_dict, body)."""
+    if not md_path.exists():
+        return {}, ""
+    text = md_path.read_text()
+    if not text.startswith("---\n"):
+        return {}, text
+    end = text.find("\n---\n", 4)
+    if end == -1:
+        return {}, text
+    fm_text = text[4:end]
+    body = text[end + len("\n---\n"):]
+
+    fm: dict = {}
+    for line in fm_text.splitlines():
+        line = line.rstrip()
+        if not line or line.lstrip().startswith("#"):
+            continue
+        if ":" not in line:
+            continue
+        k, _, v = line.partition(":")
+        fm[k.strip()] = v.strip()
+    return fm, body
+
+
+def _write_frontmatter(md_path: Path, fm: dict, connector_name: str | None = None):
+    """Write/update frontmatter at top of `md_path`.
+
+    Creates a minimal stub body if the file doesn't exist yet so the
+    frontmatter has somewhere to live.
+    """
+    md_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if md_path.exists():
+        _existing_fm, body = _read_frontmatter(md_path)
+    else:
+        name = connector_name or md_path.stem
+        body = (
+            f"# {name} コネクタ\n\n"
+            f"Provider: `{name}`\n"
+            f"Source: Custom (Connector SDK)\n\n"
+            f"> `/sync-connectors --custom {name}` を実行して "
+            f"トリガー/アクション/フィールド情報を反映してください。\n"
+        )
+
+    fm_lines = "\n".join(f"{k}: {v}" for k, v in fm.items())
+    md_path.write_text(f"---\n{fm_lines}\n---\n\n{body.lstrip()}")
+
+
+def _resolve_connector_id(
+    connector_rb_path: Path, explicit_id: int | None
+) -> tuple[int | None, Path]:
+    """Decide which connector ID to use for this push.
+
+    Returns `(id_or_None, docs_path)`. Explicit `--connector-id` wins;
+    otherwise the frontmatter of `connectors/docs/<name>.md` is consulted.
+    """
+    docs_path = _connector_docs_path(connector_rb_path)
+    if explicit_id is not None:
+        return explicit_id, docs_path
+
+    fm, _ = _read_frontmatter(docs_path)
+    raw = fm.get("connector_id")
+    if not raw:
+        return None, docs_path
+    try:
+        return int(raw), docs_path
+    except ValueError:
+        print(
+            f"Warning: connector_id in {docs_path} is not an integer ('{raw}'); "
+            "treating as new connector.",
+            file=sys.stderr,
+        )
+        return None, docs_path
+
+
 def cmd_sdk_push(api: WorkatoAPI, args: argparse.Namespace):
     connector_path = Path(args.connector)
     if not connector_path.exists():
@@ -634,19 +734,69 @@ def cmd_sdk_push(api: WorkatoAPI, args: argparse.Namespace):
         match = re.search(r"title:\s*['\"](.+?)['\"]", source_code)
         title = match.group(1) if match else connector_path.parent.name
 
+    resolved_id, docs_path = _resolve_connector_id(connector_path, args.connector_id)
+    is_update = resolved_id is not None
+
+    try:
+        display_docs = docs_path.relative_to(Path.cwd())
+    except ValueError:
+        display_docs = docs_path
+
+    if is_update:
+        if args.connector_id is not None:
+            print(f"Updating connector id={resolved_id} (--connector-id)", file=sys.stderr)
+        else:
+            print(
+                f"Updating connector id={resolved_id} "
+                f"(from {display_docs} frontmatter)",
+                file=sys.stderr,
+            )
+    else:
+        print(
+            f"Creating new connector '{title}' "
+            f"(no connector_id found in {display_docs})",
+            file=sys.stderr,
+        )
+
     result = api.sdk_push(
         source_code=source_code,
         title=title,
-        connector_id=args.connector_id,
+        connector_id=resolved_id,
         description=args.description,
         notes=args.notes,
         no_release=args.no_release,
     )
     print(json.dumps(result, indent=2, ensure_ascii=False))
 
-    action = "Updated" if args.connector_id else "Created"
-    cid = result.get("id", "?")
-    print(f"\n{action} connector: {result.get('title', title)} (id={cid})", file=sys.stderr)
+    returned_id = result.get("id") if isinstance(result, dict) else None
+    final_id = resolved_id if resolved_id is not None else returned_id
+
+    action = "Updated" if is_update else "Created"
+    print(
+        f"\n{action} connector: {result.get('title', title)} (id={final_id or '?'})",
+        file=sys.stderr,
+    )
+
+    # Persist connector_id to docs frontmatter on first successful push
+    # (or if the docs file did not yet record the ID for some reason).
+    if final_id is not None and not args.skip_save_id:
+        fm, _ = _read_frontmatter(docs_path)
+        existing = fm.get("connector_id")
+        if existing != str(final_id):
+            fm["connector_id"] = str(final_id)
+            _write_frontmatter(docs_path, fm, connector_name=connector_path.parent.name)
+            if existing is None:
+                print(
+                    f"Saved connector_id={final_id} to "
+                    f"{docs_path} (next push will update in place)",
+                    file=sys.stderr,
+                )
+            else:
+                print(
+                    f"Updated connector_id in {docs_path} "
+                    f"({existing} -> {final_id})",
+                    file=sys.stderr,
+                )
 
 
 def cmd_sdk_decrypt(_api: WorkatoAPI, args: argparse.Namespace):
@@ -815,6 +965,11 @@ def main():
     sdk_push_p.add_argument("--notes", default=None, help="Release notes")
     sdk_push_p.add_argument(
         "--no-release", action="store_true", help="Upload without releasing"
+    )
+    sdk_push_p.add_argument(
+        "--skip-save-id", action="store_true",
+        help="Don't persist the returned connector_id to "
+             "connectors/docs/<name>.md frontmatter",
     )
 
     sdk_decrypt_p = sdk_sub.add_parser(

@@ -80,10 +80,25 @@ api_key: YOUR_API_KEY
 
 ```ruby
 source 'https://rubygems.org'
+
 gem 'workato-connector-sdk'
-gem 'rspec'
-gem 'vcr'
-gem 'webmock'
+
+# Ruby 3.4+ で default gems から外れた stdlib。
+# `LoadError: cannot load such file -- csv` 等を避けるため明示する。
+# 詳細: docs/connector-sdk/overview.md「Ruby 4.0 では default gems が外れている」
+gem 'csv'
+gem 'base64'
+gem 'bigdecimal'
+gem 'logger'
+gem 'drb'
+gem 'ostruct'
+gem 'mutex_m'
+
+group :test do
+  gem 'rspec'
+  gem 'vcr'
+  gem 'webmock'
+end
 ```
 
 ## .gitignore テンプレート
@@ -103,17 +118,26 @@ settings.yaml.enc
 - コネクタの構成サマリー（認証方式、アクション数、トリガー数）
 - 次のステップ:
   1. `settings.yaml` に認証情報を設定（ローカルテスト用）
-  2. テスト（Ruby gem CLI）:
+  2. テスト（Ruby gem CLI, 任意）:
      ```bash
      cd connectors/<name>
      bundle install                              # 初回のみ
-     bundle exec workato exec connector.rb test  # テスト
+     bundle exec workato exec connector.rb test  # テスト（settings.yaml に実認証情報が必要）
      ```
      > **Note**: `bundle exec workato` を使うのは、Platform CLI と `workato` コマンド名が競合するため
   3. Workato へアップロード（API ヘルパー — Ruby 不要、Platform CLI のプロファイルで認証）:
      ```bash
-     # 新規作成
-     python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb --title "<Title>"
-     # 既存コネクタの更新
-     python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb --connector-id <id>
+     # 初回も更新も同じコマンドで OK。
+     # 初回は新規作成し、返ってきた connector_id を
+     # connectors/docs/<name>.md の YAML フロントマターに保存する。
+     # 2 回目以降は frontmatter の connector_id を読んで自動で更新 push する。
+     python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb
      ```
+     - 明示的に新規作成したい場合は `--title "<Title>"` を付ける（frontmatter に ID が無い場合のみ）
+     - 明示的に特定 ID を更新したい場合は `--connector-id <id>` を付ける（frontmatter より優先）
+  4. docs の本体（トリガー/アクション/フィールド）を埋める:
+     ```
+     /sync-connectors --custom <name>
+     ```
+     初回 push 後、`connectors/docs/<name>.md` はフロントマター + スタブだけの状態になる。
+     `/sync-connectors` が `connector.rb` をパースして本文を埋める（フロントマターは保持される）。
