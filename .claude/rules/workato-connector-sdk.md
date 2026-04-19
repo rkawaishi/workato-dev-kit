@@ -97,3 +97,4 @@ Pre-built コネクタ（`docs/connectors/`）と同じ形式。
 - `connectors/` は組織固有（gitignore 対象）。フレームワークリポジトリにはコミットしない
 
 詳細: `@docs/connector-sdk/connector-rb.md`
+ハマりどころ: `@docs/connector-sdk/pitfalls.md`
