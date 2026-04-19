@@ -64,6 +64,14 @@ WARNING: <page>.lcap_page.json のドロップダウン "<label>" の dataSource
   push しても選択肢の値が保存されません。UI で設定するか、JSON で dataSource を定義してください。
 ```
 
+#### 1d. Workato CLI recipes validate（ブロッキング）
+
+`.claude/hooks/validate-before-push.sh` が `workato push` 検知時に自動実行する。全 `*.recipe.json` に対して `workato recipes validate --path <file>` を流し、フォーマット不備を push 前に検出する。
+
+- **実行時間**: 約 2 秒/ファイル（直列実行）。大規模プロジェクトでは push 前の待ち時間になる点に留意
+- **失敗時**: エラー詳細を表示して push を中断（exit 2）
+- **ワークスペース制約（警告扱い）**: workspace に未リリースのカスタムコネクタがあると CLI 側の pre-check が先に失敗し、レシピ本体の検証まで到達できない。この場合は「CLI validate skipped for N recipe(s): ... Release with 'workato sdk push' to enable deeper validation.」という警告が出るのみで push は通す。deeper validation を有効にするには `workato sdk push` で連携対象のカスタムコネクタを release する
+
 ### 2. 新規コネクションの検出
 
 push 前にプロジェクト内の `.connection.json` ファイルを確認し、Workato リモートにまだ存在しない新規コネクションがあるか検出する。
