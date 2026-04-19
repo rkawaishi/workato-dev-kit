@@ -1,0 +1,94 @@
+---
+description: Claude Code の自律性ルール: CLI/API で完結することはユーザーに依頼しない
+globs: "projects/**,connectors/**,.workatoenv"
+alwaysApply: false
+---
+
+# Claude Code の自律性ルール: CLI/API で完結することはユーザーに依頼しない
+
+## 原則
+
+ユーザーに「Workato UI で〜してください」と作業を投げる **前に** 必ず以下を確認する。
+CLI/API で完結する操作をユーザーに依頼するのは時間の浪費であり、自動化の価値を損なう。
+
+## ユーザー依頼の前にチェックする 4 ステップ
+
+順番に確認し、どこかで該当すればそれを使う。最後まで該当しなければユーザーに依頼してよい。
+
+1. **`workato <command> --help`** で全オプションを確認
+   - 例: `workato init --help` → `--project-name` で新規プロジェクト作成可能と判明
+2. **`workato <command> <subcommand> --help`** で sub options を確認
+   - 例: `workato connections create --help` → `--input '{"...": "..."}'` で認証情報を JSON 渡せる場合あり
+3. **`python3 scripts/workato-api.py --help`** で API ヘルパーを確認
+   - Platform CLI にない API 操作を補完するスクリプト（jobs, recipes list JSON, sdk push 等）
+4. **カスタムコネクタ経由で API 呼び出し** を検討
+   - 上記で出来ない場合、`__adhoc_http_action` で Workato Platform API を直接叩けないか検討
+
+## CLI/API で完結する操作（ユーザーに依頼しない）
+
+| やりたいこと | コマンド |
+|---|---|
+| プロジェクト新規作成 | `workato init --project-name <name> --non-interactive --profile <profile>` |
+| 既存プロジェクト切替 | `workato projects use "<name>"` |
+| プロジェクト一覧 | `workato projects list` |
+| ワークスペース情報 | `workato workspace` |
+| プロジェクト pull | `workato pull` |
+| プロジェクト push | `workato push` (`--restart-recipes` / `--delete` 可) |
+| アセット一覧（DT, カスタムコネクタ, プロパティ等） | `workato assets [--folder-id <id>]` |
+| レシピ一覧 | `workato recipes list` または `python3 scripts/workato-api.py recipes list` |
+| レシピ start/stop | `workato recipes start --id <id>` / `workato recipes start --all` |
+| レシピのコネクション差し替え | `workato recipes update-connection` |
+| レシピ JSON 検証 | `workato recipes validate <file>` |
+| コネクション作成（認証パラメータ JSON 化可能な場合） | `workato connections create --provider <p> --name <n> --input '<json>'` |
+| シェルコネクション作成（認証なしの箱だけ） | `workato connections create --provider <p> --name <n> --shell-connection` |
+| コネクション一覧 | `workato connections list` |
+| コネクションのピックリスト取得 | `workato connections pick-list` |
+| コネクタのコネクション必須パラメータ確認 | `workato connectors parameters --provider <p>` |
+| データテーブル作成 | `workato data-tables create --name <n> --schema-json '<json>'` |
+| データテーブル一覧 | `workato data-tables list` |
+| プロパティ操作 | `workato properties list` / `workato properties upsert` |
+| ジョブ一覧 / 詳細 | `python3 scripts/workato-api.py jobs list/get` |
+| Pre-built コネクタ情報取得 | `python3 scripts/workato-api.py connectors list-platform` |
+| カスタムコネクタ一覧 | `python3 scripts/workato-api.py connectors list-custom` |
+| カスタムコネクタ push（推奨） | `python3 scripts/workato-api.py sdk push --connector <path> [--connector-id <id>]` |
+| OAuth プロファイル管理 | `workato oauth-profiles ...` |
+| API クライアント管理 | `workato api-clients ...` |
+| OpenAPI から API コレクション作成 | `workato api-collections create` |
+| AI 向け CLI ドキュメント検索 | `workato guide search/topics/content` |
+
+## CLI で出来ない（= ユーザーに依頼してよい）操作
+
+以下は Web UI 必須。判明し次第このリストを更新する。
+
+- **OAuth コネクションの認証フロー**（ブラウザリダイレクトが必要）
+  - ただし `workato connections get-oauth-url` で URL 取得 → ユーザーにアクセス依頼、は可能
+- **Workflow App ページの WYSIWYG 編集**（プレビュー確認）
+  - JSON での push は可能だが、最終確認は UI で
+- **Connection の対話的なテスト実行**（一部プロバイダ）
+- **Workflow App の有効化（Activate）操作**
+- **環境間のデプロイ承認フロー**（リリースマネージャー承認）
+
+## アンチパターン
+
+❌ 「Workato UI で新規プロジェクトを作成して project_id を教えてください」
+✅ `workato init --project-name <name> --non-interactive --profile <profile>` を実行
+
+❌ 「UI でレシピを起動してください」
+✅ `workato recipes start --id <id>` を実行
+
+❌ 「UI でカスタムコネクタを更新してリリースしてください」
+✅ `python3 scripts/workato-api.py sdk push --connector <path> --connector-id <id>` を実行
+
+❌ 「UI でデータテーブルを作成してください」
+✅ `workato data-tables create --name <n> --schema-json '<json>'` を実行
+
+## 補足: `workato guide` を活用する
+
+CLI 自身が AI 向けにドキュメント検索コマンドを持つ。不明な操作があれば `--help` の前後で:
+
+```bash
+workato guide topics                  # トピック一覧
+workato guide search <query>          # 全文検索
+workato guide content <topic>         # トピック本文
+workato guide structure <topic>       # 関連トピック構造
+```

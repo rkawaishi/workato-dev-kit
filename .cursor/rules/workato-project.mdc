@@ -71,6 +71,8 @@ workato push
 workato init --non-interactive --profile default --project-id <id> --folder-name "projects/<name>"
 ```
 
+**自律性ルール**: ユーザーに「UI で〜してください」と依頼する前に、必ず `workato <command> --help` / `python3 scripts/workato-api.py --help` で CLI/API で完結できないか確認する。詳細は `workato-cli-autonomy` ルール参照。
+
 ## 開発ルール
 
 - コネクタ詳細: `docs/connectors/` を参照
