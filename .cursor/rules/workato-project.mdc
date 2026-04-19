@@ -59,29 +59,13 @@ Workato には「API Client」という名前の似て非なる 4 系統（Devel
 
 ## レシピ実装ライフサイクル（必須遵守）
 
-ナレッジベースを育て続けるため、下記サイクルを **必ず** 守る。ドキュメント参照 → 実装 → 学習の順に進め、個別プロジェクトのコピペで済ませない。
+ナレッジベースを育て続けるため、ドキュメント参照 → 実装 → 学習の順に進め、個別プロジェクトのコピペで済ませない。全体像（フロー図、スキル×docs 責務マップ、典型シナリオ）は **`guides/lifecycle.md`** を参照（grep に逃げる前に、本来通るべきスキルを思い出すための地図）。
 
-**各スキル・各 docs の「いつ・誰が・何のために」呼ぶ/書く/読むかの全体像は `guides/lifecycle.md` の責務マップを参照**（grep に逃げる前に、本来通るべきスキルを思い出すための地図）。
+ここでは不可侵の 3 原則のみ記す:
 
-```
-[実装] docs/connectors/<provider>.md と connectors/docs/<provider>.md を読む
-  ├─ 情報あり → そのまま実装
-  └─ 情報なし → ベストエフォート実装（UI 検証込み）+ 未学習として記録
-[学習] /learn-recipe を回して input/output/snippet を docs に追記
-[次の人] docs を見るだけで実装可能
-```
-
-### 実装時のルール
-
-- **docs-first**: アクション/トリガーを使う前に `docs/connectors/<provider>.md`（Pre-built）または `connectors/docs/<provider>.md`（カスタム）を必ず参照する。公式ドキュメントに無ければ WebFetch で補完する
-- **既存プロジェクトの grep 禁止**: `projects/<other-project>/Recipes/` 配下の JSON を漁ってサンプルをコピーしてはいけない。個別プロジェクト固有のロジック・命名・datapill 参照が混入し、ナレッジの欠落も可視化されなくなる
-  - 例外: **パターン学習**（`docs/patterns/recipe-patterns/`, `projects/docs/patterns/`）のために参照するのは可。ただし input/output スキーマを得る目的で grep するのは不可
-- **未学習の記録**: ドキュメントに無いアクションをベストエフォートで実装した場合、そのプロジェクトの `DESIGN.md` の「Unlearned Actions」セクション、または当リポジトリの GitHub Issue に記録する
-
-### 学習時のルール
-
-- **実装後に `/learn-recipe` 必須**: 未学習アクションを使ったレシピを push/pull した後は、必ず `/learn-recipe <project-name>` を回して `docs/connectors/<provider>.md` に input/output/snippet を追記する
-- 学習が終わったら `DESIGN.md` の「Unlearned Actions」エントリから外す（または Issue をクローズする）
+1. **docs-first**: アクション/トリガーを使う前に `docs/connectors/<provider>.md`（Pre-built）または `connectors/docs/<provider>.md`（カスタム）を必ず参照する。公式ドキュメントに無ければ WebFetch で補完
+2. **既存プロジェクトの grep 禁止**: input/output スキーマを得る目的で `projects/<other-project>/Recipes/` を漁るのは禁止。個別プロジェクト固有のロジック・命名・datapill 参照が混入し、ナレッジの欠落も可視化されなくなる（例外: `docs/patterns/recipe-patterns/` や `projects/docs/patterns/` でのパターン学習目的の参照は可）
+3. **未学習は記録＋`/learn-recipe` 必須**: ドキュメントに無いアクションをベストエフォート実装した場合は `DESIGN.md` の「Unlearned Actions」または GitHub Issue に記録し、push/pull 後に `/learn-recipe <project-name>` を回して docs に追記。学習後はエントリから外す
 
 ## コネクタの分類
 

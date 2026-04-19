@@ -90,8 +90,9 @@
 | `docs/patterns/recipe-patterns/` | `/learn-pattern` | `/create-recipe`, `/design` | 汎用レシピ構築パターン（Workato 全般に適用可） |
 | `docs/patterns/deployment-guide.md` | 人手, `/learn-recipe` | `/wpush`, `/create-workflow-app` | デプロイ手順、よくあるエラー |
 | `docs/patterns/shared-assets.md` | 人手 | `/create-recipe`, `/catalog`, `/design` | 共有アセット設計方針 |
+| `docs/patterns/workspace-management.md` | 人手 | `/design`, `/catalog` | ワークスペース構成・命名規則 |
 | `.claude/rules/` | 人手, `/learn-recipe`（JSON 構造の新発見時） | 全スキル | JSON フォーマット、パス別ルール |
-| `docs/learned-patterns.md` | `/learn-recipe`（一時保管のみ） | 人手（振り分け作業） | 適切な場所が決まるまでの仮置き場 |
+| `docs/learned-patterns.md` | `/learn-recipe`（振り分け先が決まらない時のフォールバックのみ） | 人手（振り分け作業） | 適切な場所が決まるまでの仮置き場 |
 
 ### 組織側（`connectors/`, `projects/` は別リポジトリ）
 
