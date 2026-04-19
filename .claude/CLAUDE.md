@@ -80,6 +80,8 @@ Workato には「API Client」という名前の似て非なる 4 系統（Devel
 
 ナレッジベースを育て続けるため、下記サイクルを **必ず** 守る。ドキュメント参照 → 実装 → 学習の順に進め、個別プロジェクトのコピペで済ませない。
 
+**各スキル・各 docs の「いつ・誰が・何のために」呼ぶ/書く/読むかの全体像は `@guides/lifecycle.md` の責務マップを参照**（grep に逃げる前に、本来通るべきスキルを思い出すための地図）。
+
 ```
 [実装] docs/connectors/<provider>.md と connectors/docs/<provider>.md を読む
   ├─ 情報あり → そのまま実装
@@ -120,6 +122,8 @@ Workato には「API Client」という名前の似て非なる 4 系統（Devel
 - **Cursor 同期**: `.claude/rules/` や `.claude/skills/` を変更したら `bash scripts/sync-cursor-rules.sh` を実行して `.cursor/` に反映する。コミットには両方を含めること
 
 ## スキル一覧
+
+各スキルが「いつ呼ばれ、何を読み、何を書くか」の責務マップは `@guides/lifecycle.md` を参照。
 
 | スキル | 用途 |
 |---|---|
