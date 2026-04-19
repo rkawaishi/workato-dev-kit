@@ -1,0 +1,30 @@
+# Connector SDK 暗号化キー（settings.yaml.enc を復号するので絶対にコミット禁止）
+master.key
+
+# 認証情報（暗号化済みの .enc も保守的に除外）
+settings.yaml
+settings.yaml.enc
+
+# Ruby / Bundler
+*.gem
+.bundle/
+vendor/bundle/
+
+# 一般的な秘密情報
+.env
+.env.*
+*.key
+*.pem
+*.secret
+*.credential*
+
+# OS / エディタ生成物
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# 注: 以下は必ずコミットする
+# - connector.rb
+# - Gemfile / Gemfile.lock
+# - docs/（/sync-connectors で自動生成されるナレッジ）
