@@ -2,8 +2,6 @@
 
 公式: https://docs.workato.com/en/developing-connectors/sdk/sdk-reference.html
 
-ハマりどころ: `@docs/connector-sdk/pitfalls.md`
-
 ## トップレベル構造
 
 ```ruby
@@ -267,13 +265,76 @@ methods: {
 ## HTTP メソッド
 
 ```ruby
-get('/path')                     # GET
-post('/path', payload)           # POST
-put('/path', payload)            # PUT
-patch('/path', payload)          # PATCH
-delete('/path')                  # DELETE
+get('path')                      # GET
+post('path', payload)            # POST
+put('path', payload)             # PUT
+patch('path', payload)           # PATCH
+delete('path')                   # DELETE
 ```
 
-全リクエストに `connection.base_uri` が自動付与される。
+### base_uri と path
 
-戻り値は `Workato::Connector::Sdk::Request < SimpleDelegator` でラップされているため、型判定・包装パターン・path 先頭スラッシュの扱いに注意。詳細は `@docs/connector-sdk/pitfalls.md`。
+全リクエストに `connection.base_uri` が `URI.join` 相当で結合される。**path を `/` で始めると absolute path 扱いになりホスト直下にリセットされる**ため、`base_uri` 側のパスプレフィックスが落ちる。
+
+```ruby
+require 'uri'
+URI.join('https://example.com/api/', '/users/me').to_s
+# => "https://example.com/users/me"     ← /api/ が消える
+URI.join('https://example.com/api/', 'users/me').to_s
+# => "https://example.com/api/users/me"
+```
+
+**規約**: `base_uri` は末尾スラッシュあり、`get` 等に渡す path は先頭スラッシュなしの相対パスで統一する。
+
+### 戻り値の型
+
+`get`, `post`, `put`, `patch`, `delete` は `Workato::Connector::Sdk::Request < SimpleDelegator` を返す。Array や Hash を返す API でも、直接の型チェックは Delegator 自身を見るため false になる。
+
+```ruby
+response = get('items')
+response.is_a?(Array)   # => false（Delegator を見ている）
+response.class          # => Workato::Connector::Sdk::Request
+```
+
+実体を取り出すには、まず `method_missing` を経由して遅延評価を走らせ、`__getobj__` で実体を得る。`rescue` は **必ず `NoMethodError` に絞る**（修飾子 `rescue` は `StandardError` 全般を飲むためネットワーク例外を隠す）。
+
+```ruby
+begin
+  response.length
+rescue NoMethodError
+  # length を持たない実体（Hash 等）は素通り
+end
+body = response.__getobj__   # 実体（Array / Hash）
+```
+
+### List API の正規化ヘルパー
+
+エンドポイントごとに応答包装が異なる API（`[...]` 直接 / `{ "result": [...] }` / `{ "data": [...], "total": N }` / `{ "items": [...], "cursor": "..." }` など）では、`methods` ブロックに共通ヘルパーを置いて `execute` から必ず通す。
+
+```ruby
+methods: {
+  normalize_list_response: lambda do |response|
+    begin
+      response.length
+    rescue NoMethodError
+      # 実体が Hash 等のケースは素通り
+    end
+    body = begin
+      response.__getobj__
+    rescue NoMethodError
+      response
+    end
+
+    items = case body
+            when Array then body
+            when Hash  then body['result'] || body['data'] || body['items'] || []
+            else []
+            end
+    next_cursor = body.is_a?(Hash) ? (body['next_page'] || body['cursor']) : nil
+
+    { items: items, next_cursor: next_cursor }
+  end
+}
+```
+
+戻り値を `{ items:, next_cursor: }` の固定形に揃えると、トリガー `poll` の `closure` 設計が素直になる。
