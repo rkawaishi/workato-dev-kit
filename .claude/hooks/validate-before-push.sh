@@ -99,11 +99,13 @@ done < <(find "$PROJECT_DIR" -type f -name "*.lcap_page.json" -print0 2>/dev/nul
 if command -v workato >/dev/null 2>&1; then
   RECIPE_FILES=()
   while IFS= read -r -d '' file; do
-    # Skip files that already failed syntax check
+    # Skip files that already failed syntax check (exact match on the known
+    # error message produced by step 1 to avoid basename substring collisions
+    # like "broken.recipe.json" vs "really-broken.recipe.json").
     base=$(basename "$file")
     skip=0
     for err in "${ERRORS[@]}"; do
-      case "$err" in *"$base"*) skip=1; break;; esac
+      [ "$err" = "JSON syntax error: $base" ] && skip=1 && break
     done
     [ $skip -eq 0 ] && RECIPE_FILES+=("$file")
   done < <(find "$PROJECT_DIR" -type f -name "*.recipe.json" -print0 2>/dev/null)
@@ -121,22 +123,31 @@ if command -v workato >/dev/null 2>&1; then
       raw=$(cd "$PROJECT_DIR" && workato recipes validate --path "$rel" < /dev/null 2>&1)
       clean=$(printf '%s' "$raw" | tr '\r' '\n' | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' | grep -v "^[[:space:]]*$" | grep -v "^[[:space:]]*⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏" | grep -Ev "Validating recipe:.*\([0-9.]+s\)")
 
-      if ! printf '%s' "$clean" | grep -q "Validation failed"; then
+      # Explicit success marker — anything else needs classification below.
+      if printf '%s' "$clean" | grep -qE "Validation passed|✅"; then
         continue
       fi
 
-      # Noise filter: workspace-level pre-check fails when any custom connector
-      # in the workspace has `latest_released_version = null` (not yet released).
-      # This short-circuits recipe-level validation regardless of the recipe's own
-      # contents, so we can't extract real format errors. Aggregate into a single
-      # warning rather than spamming one per recipe.
-      if printf '%s' "$clean" | grep -q "CustomConnector" && printf '%s' "$clean" | grep -q "latest_released_version"; then
-        NOISE_COUNT=$((NOISE_COUNT + 1))
+      if printf '%s' "$clean" | grep -q "Validation failed"; then
+        # Noise filter: workspace-level pre-check fails when any custom connector
+        # in the workspace has `latest_released_version = null` (not yet released).
+        # This short-circuits recipe-level validation regardless of the recipe's own
+        # contents, so we can't extract real format errors. Aggregate into a single
+        # warning rather than spamming one per recipe.
+        if printf '%s' "$clean" | grep -q "CustomConnector" && printf '%s' "$clean" | grep -q "latest_released_version"; then
+          NOISE_COUNT=$((NOISE_COUNT + 1))
+          continue
+        fi
+        ERRORS+=("CLI validation failed: $base")
+        ERROR_DETAILS+=("$clean")
         continue
       fi
 
-      ERRORS+=("CLI validation failed: $base")
-      ERROR_DETAILS+=("$clean")
+      # Unexpected output — neither pass nor fail marker. Likely auth/network
+      # failure, CLI version change, or empty output. Surface as a warning so
+      # the user can investigate instead of silently treating as success.
+      snippet=$(printf '%s' "$clean" | tr '\n' ' ' | tail -c 200)
+      WARNINGS+=("CLI validate inconclusive for $base (no pass/fail marker). Tail: ${snippet:-<empty>}")
     done
 
     if [ $NOISE_COUNT -gt 0 ]; then
