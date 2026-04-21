@@ -73,14 +73,44 @@ Provider: `slack_bot`
 
 ### new_event (New event)
 
-Slack Events API のイベント発生時に発火。
+Slack Events API のイベント発生時に発火。**Slash command も実はこの new_event 経由**（専用トリガーではない）。
 
 #### Input fields
+
+**`format_version: 2` 以降（新版）**:
 | フィールド | 型 | 説明 |
 |---|---|---|
-| webhook_suffix | string | イベント種別（例: `reaction_added`, `message`, `app_home_opened`） |
+| event_name | string | イベント名（例: `slash_command`, `reaction_added`, `message`, `app_home_opened`） |
 
-**注意**: イベント種別は `event_type` ではなく `webhook_suffix` で指定する。
+UI で作成すると `dynamicPickListSelection.event_name`（表示用）と `toggleCfg.event_name: true` も付与される。
+
+**旧版（format_version なし / 1）**:
+| フィールド | 型 | 説明 |
+|---|---|---|
+| webhook_suffix | string | イベント種別（同義） |
+
+**注意**: 新規作成時は `event_name` を使うこと（Workato が format_version=2 でレシピを管理）。
+
+#### Output fields（slash_command の場合）
+
+`event_name: "slash_command"` を使った場合、トリガー出力の `slash_command` オブジェクト配下に以下が入る:
+
+| フィールド | パス | 型 | 説明 |
+|---|---|---|---|
+| api_app_id | `slash_command.api_app_id` | string | Slack App の ID |
+| channel_id | `slash_command.channel_id` | string | コマンド実行チャンネル |
+| channel_name | `slash_command.channel_name` | string | チャンネル名 |
+| command | `slash_command.command` | string | スラッシュコマンド名（例: `/workato-key`） |
+| is_enterprise_install | `slash_command.is_enterprise_install` | boolean | Enterprise Grid インストール判定 |
+| response_url | `slash_command.response_url` | string | 遅延応答用 URL |
+| team_domain | `slash_command.team_domain` | string | Slack workspace ドメイン |
+| team_id | `slash_command.team_id` | string | Slack workspace ID |
+| text | `slash_command.text` | string | コマンド引数（`/workato-key foo bar` なら `foo bar`） |
+| trigger_id | `slash_command.trigger_id` | string | モーダル open 用 |
+| user_id | `slash_command.user_id` | string | 実行者の Slack user ID |
+| user_name | `slash_command.user_name` | string | 実行者のユーザー名 |
+
+⚠️ **slash_command の出力に email は含まれない**。email が必要な場合は `get_user_by_email` アクションに `user_id` を渡して profile を取得する（後述）。
 
 ### dynamic_menu (New dynamic menu event)
 
@@ -221,16 +251,29 @@ Bot の App Home タブにリッチコンテンツを表示。ユーザーごと
 
 ### get_user_by_email
 
+⚠️ **名前と入力が一致しない罠**: アクション名は "get user by email" だが、input フィールドは `email` と `id`（Slack user ID）の**どちらでも受け付ける**。UI の toggle 切り替えで選択できる。slash_command のようにトリガー出力に email が無い場合は `id` に Slack user_id を渡すパターンで使う。
+
 #### Input fields
 | フィールド | 型 | 説明 |
 |---|---|---|
 | email | string | ユーザーのメールアドレス |
+| id | string | Slack user ID（`email` が無い場合はこちら。toggle で切替） |
 
 #### Output fields
-| フィールド | 型 | 説明 |
-|---|---|---|
-| id | string | Slack ユーザー ID（DM の channel に使用） |
-| name | string | ユーザー名 |
+
+`profile` オブジェクトにユーザー情報がネストされて返る:
+
+| フィールド | パス | 型 | 説明 |
+|---|---|---|---|
+| id | `id` | string | Slack ユーザー ID |
+| name | `name` | string | ユーザー名 |
+| profile.email | `profile.email` | string | メールアドレス（slash_command 経由で email を取得する主用途） |
+| profile.real_name | `profile.real_name` | string | 本名 |
+| profile.display_name | `profile.display_name` | string | 表示名 |
+
+> **slash_command トリガー後の email 取得パターン**:
+> `new_event(event_name: slash_command) → get_user_by_email(id: slash_command.user_id) → 後続で profile.email を参照`
+> これは Slack Events API の slash_command が email を含まないため必須のワンステップ。
 
 ---
 
