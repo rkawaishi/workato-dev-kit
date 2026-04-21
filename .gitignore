@@ -22,3 +22,7 @@ settings.yaml.enc
 *.pem
 *.secret
 *.credential*
+
+# Local working artifacts
+.claude/worktrees/
+__pycache__/
