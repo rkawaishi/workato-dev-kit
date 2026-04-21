@@ -206,3 +206,14 @@ MCP Server → Skills → Recipes（Genie なし）
 3. UI でスキルレシピのフィールドマッピング確認を案内
 4. MCP の場合: サーバー有効化と AI クライアント設定を案内
 5. テスト実行を案内
+
+## Git 管理
+
+生成ファイル (`Agents/`, `Recipes/`, `Connections/`) は内側リポジトリ `projects/` に配置される:
+
+```bash
+(cd projects/<project-name> && git add Agents/ Recipes/ Connections/ && git commit -m "Add genie: <name>")
+(cd projects/<project-name> && git push origin)
+```
+
+詳細は `@.claude/rules/workato-multi-repo-git.md` 参照。

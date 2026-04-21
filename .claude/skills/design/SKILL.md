@@ -228,3 +228,14 @@ DESIGN.md
 ```
 
 既存の `.workatoignore` に `DESIGN.md` がなければ追記する。
+
+## Git 管理
+
+DESIGN.md は内側リポジトリ `projects/` で管理する（外側 workato-dev-kit からは gitignored）。新規作成・更新後は内側でコミット:
+
+```bash
+(cd projects/<project-name> && git add DESIGN.md .workatoignore && git commit -m "Update design: <project-name>")
+(cd projects/<project-name> && git push origin)
+```
+
+詳細は `@.claude/rules/workato-multi-repo-git.md` 参照。

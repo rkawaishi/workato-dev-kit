@@ -139,3 +139,14 @@ B. 既存パターンに知見を追記（注意点、バリエーション etc.
 
 - 作成・更新したパターンファイルと内容のサマリー
 - 関連するフィールド知識の蓄積が必要なら `/learn-recipe` を案内
+
+## Git 管理
+
+書き込み先リポジトリは蓄積先によって異なる:
+
+| 蓄積先 | リポジトリ | コミット先 |
+|---|---|---|
+| `docs/patterns/recipe-patterns/` | 外側 `workato-dev-kit` | 外側 |
+| `projects/docs/patterns/` | 内側 `projects/` | 内側 (`cd projects && git add docs/patterns/`) |
+
+両方に書き込んだ場合はそれぞれ個別にコミット。詳細は `@.claude/rules/workato-multi-repo-git.md` 参照。

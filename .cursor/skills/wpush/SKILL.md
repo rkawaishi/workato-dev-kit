@@ -237,3 +237,15 @@ python3 scripts/workato-api.py jobs get --recipe-id <recipe-id> --job-id <job-id
 - Workflow App のトリガー（new_requests_realtime 等）はフォーム送信でテスト
 - **`--delete` の制限**: `agentic_skill` と `mcp_server` は CLI で削除できない。UI で手動削除が必要
 - **`--restart-recipes`**: 稼働中レシピへの変更を反映するために必要。新規レシピのみなら不要
+
+## Git 管理
+
+**`/wpush` は Workato API へのデプロイであり、git への影響はゼロ。** ローカルの変更を git リモートにも残したい場合は、別途内側リポジトリ `projects/` で git 操作が必要:
+
+```bash
+(cd projects/<project-name> && git status)
+(cd projects/<project-name> && git add . && git commit -m "<msg>")
+(cd projects/<project-name> && git push origin)
+```
+
+「`/wpush` したから履歴は残っている」と誤認しない。詳細は `.cursor/rules/workato-multi-repo-git.mdc` 参照。
