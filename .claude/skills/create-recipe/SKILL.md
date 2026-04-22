@@ -210,3 +210,15 @@ Slack MCP と Jira MCP からリソース情報を取得しました。
 5. **学習（必須）**: pull → `/learn-recipe` で学習。`DESIGN.md` の「Unlearned Actions」に記録したアクションを使った場合は **スキップ禁止**（ドキュメント欠落を放置しないため）。学習完了したらそのエントリを削除する
 6. **テスト実行**: UI でテスト → エラーがあれば分析・修正
 7. **パターン蓄積**: 新しい構築パターンが含まれていれば `/learn-pattern` でカタログに追加
+
+## Git 管理
+
+生成ファイル (`Recipes/`, `Connections/`) は内側リポジトリ `projects/` に配置される。外側 workato-dev-kit からは gitignored なので、コミットは内側で行う:
+
+```bash
+(cd projects/<project-name> && git status)
+(cd projects/<project-name> && git add Recipes/ Connections/ && git commit -m "Add recipe: <name>")
+(cd projects/<project-name> && git push origin)
+```
+
+`workato push` は Workato API へのデプロイで git とは独立。詳細は `@.claude/rules/workato-multi-repo-git.md` 参照。

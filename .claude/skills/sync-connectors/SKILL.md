@@ -227,3 +227,23 @@ python3 scripts/workato-api.py connectors list-platform
 - 作成/更新したファイル一覧（`connectors/docs/`）
 - 抽出されたトリガー/アクション/フィールドの数
 - connector.rb が見つからなかったディレクトリ（pull が必要）
+
+## Git 管理
+
+このスキルは **2 つのリポジトリ** に書き込む:
+
+- `docs/connectors/*.md` → 外側 `workato-dev-kit` リポジトリ
+- `connectors/docs/*.md` → 内側 `connectors/` リポジトリ（外側からは gitignored）
+
+実行後は両方で個別にコミットが必要:
+
+```bash
+# 外側 (Pre-built コネクタ更新分)
+git add docs/connectors/
+git commit -m "docs: update pre-built connector info"
+
+# 内側 (カスタムコネクタ更新分)
+(cd connectors && git add docs/ && git commit -m "docs: update custom connector info")
+```
+
+片方だけコミットして push するとナレッジが不整合になる。詳細は `@.claude/rules/workato-multi-repo-git.md` 参照。

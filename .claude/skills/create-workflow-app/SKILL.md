@@ -220,3 +220,14 @@ Recipe Function:
 - push 結果
 - **プロジェクト URL**（`.workatoenv` の `folder_id` + リージョンから生成）
 - ユーザーが UI で行うべき操作を具体的に案内（デプロイガイド参照）
+
+## Git 管理
+
+生成ファイル (`*.lcap_app.json`, `Pages/`, `Data Tables/`, `Recipes/`, `Connections/`) は内側リポジトリ `projects/` に配置される:
+
+```bash
+(cd projects/<project-name> && git add . && git commit -m "Add workflow app: <name>")
+(cd projects/<project-name> && git push origin)
+```
+
+詳細は `@.claude/rules/workato-multi-repo-git.md` 参照。

@@ -131,6 +131,10 @@ for skill_dir in "$CLAUDE_SKILLS"/*/; do
     -e 's|@projects/|projects/|g' \
     -e 's|@\.claude/rules/\([^.]*\)\.md|.cursor/rules/\1.mdc|g' \
     -e 's|\.claude/rules/\([^.]*\)\.md|.cursor/rules/\1.mdc|g' \
+    -e 's|@\.claude/rules/|.cursor/rules/|g' \
+    -e 's|\.claude/rules/|.cursor/rules/|g' \
+    -e 's|@\.claude/skills/|.cursor/skills/|g' \
+    -e 's|\.claude/skills/|.cursor/skills/|g' \
   )
 
   # Cursor スキル形式で出力
