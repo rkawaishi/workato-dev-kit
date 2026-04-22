@@ -7,6 +7,10 @@
           {
             "type": "command",
             "command": ".claude/hooks/validate-before-push.sh"
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/multi-repo-git-guard.sh"
           }
         ]
       }
