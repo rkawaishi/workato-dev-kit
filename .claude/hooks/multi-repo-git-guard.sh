@@ -28,11 +28,10 @@ CWD="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 COMMAND=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('tool_input',{}).get('command',''))" 2>/dev/null)
 [ -z "$COMMAND" ] && exit 0
 
-# Skip if command already uses the (cd <inner> && git ...) pattern — that's correct usage.
-# We consider the command "guarded" when it cd's into projects/ or connectors/ before git.
-if echo "$COMMAND" | grep -Eq '\(\s*cd\s+[^)]*(projects|connectors)[^)]*\)\s*$|(cd\s+[^&]*(projects|connectors)[^&]*&&\s*git)'; then
-  exit 0
-fi
+# Note: no global early-exit for "(cd <inner> && git ...)" patterns.
+# A compound command can mix correct and incorrect segments (e.g.
+# `git add projects/x/foo && cd projects/x && git status`), so each check
+# analyzes segments individually instead of all-or-nothing.
 
 WARNINGS=()
 
@@ -76,12 +75,65 @@ if [ -n "$ADDED_INNER_PATHS" ]; then
 fi
 
 # Check C: git commit at outer root while inner repos have staged/unstaged changes
-# Only trigger when the command is a bare git commit (no subshell cd), not an amend or
-# path-specific commit.
-if echo "$COMMAND" | grep -Eq '^\s*git\s+commit\b' || echo "$COMMAND" | grep -Eq '&&\s*git\s+commit\b'; then
-  # Only bother checking if the current command runs in the outer repo (no cd into inner).
-  # If the command starts with `(cd projects/... && git commit)` we already exited above.
+# Fire only when the command has a bare outer-level `git commit`:
+#   - subshells `(...)` are stripped (they don't propagate cd to the outer shell)
+#   - segments after `cd projects/...` or `cd connectors` in the outer shell are skipped
+#   - --amend / --fixup / --squash are excluded (documented intent)
+#   - path-specific commits (`git commit -- <path>` or `git commit <path>`) are excluded
+IS_OUTER_COMMIT=$(echo "$COMMAND" | python3 -c "
+import sys, re, shlex
+cmd = sys.stdin.read().strip()
+# Strip parenthesized subshells (cd inside a subshell doesn't affect outer cwd).
+# Iterate to collapse nested parens.
+prev = None
+while prev != cmd:
+    prev = cmd
+    cmd = re.sub(r'\([^()]*\)', '', cmd)
+segments = [s.strip() for s in re.split(r'&&|;|\|\|', cmd) if s.strip()]
+in_inner = False
+for seg in segments:
+    if re.match(r'^cd\s+(projects|connectors)(\b|/)', seg):
+        in_inner = True
+        continue
+    m = re.match(r'^git\s+commit\b(.*)$', seg)
+    if not m:
+        continue
+    if in_inner:
+        continue
+    rest = m.group(1)
+    if re.search(r'(?:^|\s)--(amend|fixup|squash)(?:\s|=|$)', rest):
+        continue
+    # Path-specific via explicit -- separator
+    if re.search(r'\s--(\s|$)', rest):
+        continue
+    # Path-specific via bare pathspec arg (non-flag token that isn't a flag value)
+    try:
+        tokens = shlex.split(rest)
+    except ValueError:
+        print('yes')
+        sys.exit(0)
+    value_flags = {'-m', '-C', '-F', '-c', '--message', '--reuse-message', '--file',
+                   '--reedit-message', '--fixup', '--squash', '--author', '--date',
+                   '--cleanup', '--gpg-sign', '-S', '--trailer'}
+    skip_next = False
+    pathspec = False
+    for t in tokens:
+        if skip_next:
+            skip_next = False
+            continue
+        if t.startswith('-'):
+            if '=' not in t and t in value_flags:
+                skip_next = True
+            continue
+        pathspec = True
+        break
+    if pathspec:
+        continue
+    print('yes')
+    sys.exit(0)
+" 2>/dev/null)
 
+if [ "$IS_OUTER_COMMIT" = "yes" ]; then
   for inner in projects connectors; do
     [ -d "$CWD/$inner/.git" ] || continue
     # `git -C <path> status --porcelain` lists changes; non-empty = dirty
