@@ -351,6 +351,115 @@ const items = Array.from(stepGroup?.querySelectorAll('.data-tree-item') || []).m
 - toggle が `_open` → 既に展開された親（直後の leaf 群が子）
 - 確実な深さ判定はさらに調査要
 
+### 画面 6: アクション追加導線 / Action ピッカー
+
+アクションを追加する場合、トリガーと違って **2 段階のピッカー**を経由する。
+
+#### 6-a: ステップタイプピッカー
+
+ACTIONS セクションの `+` (`button[aria-label="Add step"]`) をクリックすると、ステップ種別を選ぶ小ポップオーバーが出る。
+
+```
+ステップ種別: Action in app | Recipe function | IF condition | Repeat for each | Repeat while | Stop job | Handle errors
+```
+
+入力フィールド調査では `Action in app` を選ぶ。
+
+#### 6-b: App ピッカー → Action ピッカー
+
+`Action in app` を選ぶと App ピッカー（画面 3 と同じ）が出る。コネクタを選んだ後、トリガーが 1 個でスキップされる動作とは違い、アクションは原則複数あるので **Action ピッカー画面が必ず出る**:
+
+```
+w-recipe-step-details
+└ w-recipe-step-details (operation モード)
+    └ w-panel.recipe-step-details
+        ├ w-panel-header                          ← "Choose an action"
+        └ w-panel-content.recipe-step-details-operation
+            └ w-operation-picker
+                ├ w-search-field                  ← "Search for an action"
+                └ li.operation-picker__item × N    ← 各アクション
+                    └ w-operation
+                        ├ "<Title>"                ← e.g. "Search rows"
+                        ├ w-operation-badge        ← "Batch" バッジ等
+                        └ "<description>"          ← e.g. "Search rows in selected sheet"
+```
+
+**操作**:
+```javascript
+// アクション選択（例: "Search rows"）
+Array.from(document.querySelectorAll('li.operation-picker__item'))
+  .find(li => li.textContent.trim().startsWith('Search rows'))
+  ?.click();
+```
+
+App ピッカーがアイコングリッド形式だったのに対し、Action ピッカーは**1 行 1 アクションの詳細リスト形式**（タイトル + Batch 等のタグ + 説明文）。
+
+タブの遷移: `App → Action → Connection → Setup`（trigger フローの `App → Trigger → Connection → Setup` と「2 段目だけ」異なる）。
+
+### 画面 7: 動的フィールド検出（picklist 選択 → 新フィールド出現）⭐
+
+`/integrations/meta` で `extends_input_schema=true` または `extends_output_schema=true` とマークされたオペレーションは、ユーザーが特定の picklist を選択した結果として、**新しい入力フィールド・出力フィールドが UI に追加される**。
+
+**実例**: Google Sheets `search_spreadsheet_rows_v4_new` (Search rows)
+- 初期表示: `Google Drive`, `Spreadsheet`
+- Spreadsheet 選択後: `Sheet`, `Search result size` が追加される
+- Sheet 選択後: `Columns` が追加され、その配下に**シートのヘッダー列ごとに `w-form-field` が動的生成**される
+
+**実測の DOM 構造**（SAMPLE シート選択後、4 列のシート）:
+```
+w-form-field (top-level)         ← "Columns" (required, has 4 nested children)
+└ .form-field__body
+    └ .form-field-controls
+        └ .form-field-input-wrapper
+            ├ w-form-field        ← child 0: label="open_time" (sheet 列名)
+            ├ w-form-field        ← child 1: label="open_price"
+            ├ w-form-field        ← child 2: label="type"
+            └ w-form-field        ← child 3: label="time_1m"
+```
+
+つまり、**親 `w-form-field` の配下に inner `w-form-field` が「列数だけ」並ぶ**のが動的フィールドの基本パターン。
+
+**検出アルゴリズム**:
+```javascript
+// 0. 初期スナップショット (picklist 選択前)
+const before = snapshotFields();   // top-level w-form-field の labels を記録
+
+// 1. ユーザーが picklist を選択（UI 操作）
+//    selectPicklist(...) — 例: Sheet picklist で値を選ぶ
+
+// 2. DOM の安定を待つ（ローディング消失 / 一定時間 DOM 変化なし）
+await waitForDomStable();
+
+// 3. 再スナップショット
+const after = snapshotFields();
+
+// 4. 差分を計算 → 新出フィールドが「動的フィールド」
+const newTopLevelFields = after.filter(f => !before.some(b => b.label === f.label));
+
+// 5. 内側の子（per-column）も収集
+function snapshotFields() {
+  const top = Array.from(document.querySelectorAll('w-recipe-step-details w-form-field'))
+    .filter(f => !f.parentElement?.closest('w-form-field'));
+  return top.map(f => {
+    const label = (f.querySelector('.form-field-label')?.textContent||'').trim().replace(/\s*\*$/,'');
+    const innerFields = Array.from(f.querySelectorAll('w-form-field')).map(inner => ({
+      label: (inner.querySelector('.form-field-label')?.textContent||'').trim().replace(/\s*\*$/,''),
+      controlComponent: inner.querySelector('.form-field-input-wrapper > *')?.tagName.toLowerCase(),
+    }));
+    return { label, innerFields };
+  });
+}
+```
+
+**ナレッジ収集対象（動的フィールド検出時に記録すべき情報）**:
+- **決定条件**: どの picklist の選択に依存するか（例: `spreadsheet + sheet`）
+- **生成パターン**: 親フィールド名（例: `Columns`）+ 子要素の生成ルール（例: `シートのヘッダー列ごとに 1 つ`）
+- **インスタンス固有値は記録しない**: `open_time`, `open_price` 等の実際の列名はテストデータ依存なので保存対象外
+
+**動的 OUTPUT フィールド**: 同じパターンが Recipe data パネルにも反映される（次ステップを開いた時に、前ステップの動的列が `data-tree-item` として出現する）。検出ロジックは [画面 5c](#画面-5c-recipe-data-パネル--出力スキーマ-) のとおり、`.data-tree-item` の `data-icon-id` で型情報も取れる。
+
+⚠ **実証範囲**: SAMPLE シート（4 列）で動的入力フィールド側を確認済み。動的 OUTPUT 側（Recipe data パネルでの列出現）は次サイクルで検証予定。
+
 ## レベル 2 自動収集の標準フロー
 
 `/auto-learn` スキルは **公式ドキュメント（`/sync-connectors`）と UI DOM 観察の組み合わせ**で構築する。Workato の内部 API は呼ばない。
@@ -370,7 +479,7 @@ const items = Array.from(stepGroup?.querySelectorAll('.data-tree-item') || []).m
 これで「どのコネクタにどんな trigger / action があるか」のカタログは取れる。  
 ただし入力フィールドの hint や型、出力スキーマの詳細などは公式ドキュメントには載っていないことがある — そこを Phase 2 で補う。
 
-### Phase 2: UI 観察で詳細フィールド情報を収集（Tier 3）
+### Phase 2: UI 観察で詳細フィールド情報を収集
 
 対象オペレーションごとに:
 
@@ -378,7 +487,7 @@ const items = Array.from(stepGroup?.querySelectorAll('.data-tree-item') || []).m
 1. navigate to /recipes/<id>/edit （対象 operation を設定済みのスケルトンレシピ）
 2. click .recipe-step__header → Setup タブ到達を待つ
 
-3. 入力フィールドの収集:
+3. 静的入力フィールドの収集:
    - button:contains("Show optional fields") を click
    - w-dialog 出現を待つ
    - label.multi-select-list__item を全列挙
@@ -388,17 +497,21 @@ const items = Array.from(stepGroup?.querySelectorAll('.data-tree-item') || []).m
    - w-recipe-step-details w-form-field（top-level のみ）を列挙
      → hint, required (*), control component, has w-toggle-field を取得
    - label をキーにモーダル / フォームの情報をマージ
+   - この時点で field の集合 = "静的入力フィールド" として記録
 
-4. 出力フィールドの収集:
+4. 静的出力フィールドの収集:
    - w-datatree が _minimize なら .data-tree-resize-controls をクリック
    - .data-tree-group_current の .data-tree-group__header を click（外側 __heading ではなく内側）
    - .data-tree-item を全列挙 → pill (label) + data-icon-id (type) を取得
+   - この時点の集合 = "静的出力フィールド" として記録
 
-5. 動的フィールドの検出（picklist 依存型のもの）:
-   - 上記 3, 4 を実行（picklist 未選択状態の field セットを記録）
-   - 想定される dynamic picklist フィールドで値を選ぶ
-   - DOM の reload を待つ（ローディングインジケータが消えるまで）
-   - 上記 3, 4 を再実行 → 差分が動的フィールド
+5. 動的フィールドの検出（picklist 依存）:
+   - 画面 7 を参照
+   - スナップショット → picklist 選択（例: Sheet を選ぶ）→ DOM 安定待ち → 再スナップショット → 差分
+   - 差分: トップレベルの新出 w-form-field + 既存フィールドの内側に新出 w-form-field 群
+   - 動的 input の集合と「決定条件」（どの picklist が起点か）を記録
+   - 同様に Recipe data パネルを再走査して動的 output 集合を取得
+   - ⚠ インスタンス固有値（実際の列名 'open_time' 等）は構造のみ保存し、値は ナレッジに残さない
 ```
 
 ### Phase 3: 収集結果を docs に書き出し
