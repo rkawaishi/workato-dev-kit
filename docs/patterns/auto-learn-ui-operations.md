@@ -1,176 +1,30 @@
-# 自動ナレッジ収集: Workato UI 操作 / 内部 API リファレンス
+# 自動ナレッジ収集: Workato UI 操作リファレンス
 
 [Issue #27](https://github.com/rkawaishi/workato-dev-kit/issues/27) のレベル 2 でコネクタの input/output フィールド情報を収集するためのリファレンス。
 
-3 つの取得経路を比較した結果、**`/integrations/meta`（内部 API）を主軸**にし、動的フィールドのみ UI 自動化で補う設計を採用する。
+**Workato の内部（非公開）API を直接叩く方式は採用しない**。情報源は (a) 公式ドキュメント `docs.workato.com` と (b) Workato UI の DOM 観察 の 2 つに限定する。
 
-## 結論サマリ ⭐
+## 結論サマリ
 
-| 経路 | 用途 | 詳細 |
+| 情報源 | 用途 | 詳細 |
 |---|---|---|
-| **Tier 1**: `docs.workato.com` | 公式情報の補完 | 既存の `/sync-connectors` で活用済 |
-| **Tier 2**: `/integrations/meta?name=<provider>` ⭐ | **静的スキーマの主データソース** | 構造化 JSON で全 trigger/action の input/output を一括取得 |
-| **Tier 3**: UI DOM スクレイピング | 動的フィールド + フォールバック | `extends_*_schema=true` の場合や Tier 2 が取れないとき |
+| **公式ドキュメント**: `docs.workato.com` | 静的スキーマの主データソース | 既存の `/sync-connectors` で API 経由活用済 |
+| **UI DOM 観察**（本ドキュメントの主題） | 動的フィールド + 公式ドキュメントに無い情報 | Claude in Chrome でレシピ編集画面を操作 |
 
-**Tier 2 で取れる情報（実測 — Gmail `new_email` トリガー）**:
-- 全 input フィールド（`name`, `label`, `type`, `control_type`, `optional`, `hint`, `pick_list`, `toggle_field`, `parse_output`）
-- 全 output フィールド（`name`, `label`, `type`, `of`, `properties[]` でネスト構造込み）
-- `extends_input_schema` / `extends_output_schema` フラグ（dynamic 有無）
+**UI から取れる情報**:
+- 入力フィールド一覧（hidden 含む）と各フィールドの型 — `Show optional fields` モーダル
+- フィールドのヒント文・必須・コントロール種別 — Setup フォーム
+- Toggle picker（preset/custom 切替）の有無 — Setup フォーム
+- 出力スキーマと各フィールドの型 — Recipe data パネル
+- 動的フィールド（テーブル列等）— picklist 選択前後の DOM 差分
 
-**UI からのみ取れる情報（Tier 3 を残す理由）**:
-- dynamic picklist 選択後に生成される動的フィールド（テーブル列、シートヘッダ等）
-- カスタムコネクタの一部メタ情報（要調査）
-- 内部 API エンドポイントが将来変わったときのフォールバック
+これにより `extended_input_schema` / `extended_output_schema` / `dynamicPickListSelection` / `toggleCfg` / `visible_config_fields` 相当のデータが、UI セッション 1 回で収集できる。
 
-## Tier 2: `/integrations/meta` 内部 API ⭐
-
-### エンドポイント
-
-```
-GET /integrations/meta?name=<provider>&cacheKey=<rotating_key>
-```
-
-- `name`: コネクタの内部 ID（例: `gmail`, `google_sheets`, `salesforce`）— `klass: "Adapters::<X>::Adapter"` から推測可能
-- `cacheKey`: 16 進文字列（例: `eb5a9e02d42_en`）— ビルドごとに変わる、サーバ側でキャッシュキーとして利用
-  - 取得方法: 一度ページを開いて DevTools / network 監視で `/integrations/meta?name=gmail&cacheKey=...` を観察 → 抽出
-  - 期限切れ時は新しいキーで再取得（Workato 自身がやっているのと同じ）
-- 認証: ログイン中のセッション cookie（Claude in Chrome 経由ならそのまま使える）
-
-### レスポンス構造
-
-```jsonc
-{
-  "<provider_name>": {
-    "name": "gmail",
-    "klass": "Adapters::Gmail::Adapter",
-    "title": "Gmail",
-    "categories": ["Productivity", "Sales Enablement"],
-    "config": { /* OAuth / connection 設定 */ },
-    "triggers": {
-      "new_email": {
-        "name": "new_email",
-        "title": "New email",
-        "title_hint": "Triggers when a new email is received",
-        "help": "Checks for new emails every {{authUser.membership.poll_interval}} minutes...",
-        "input": [ /* InputField[] */ ],
-        "output": [ /* OutputField[] */ ],
-        "extends_input_schema": false,
-        "extends_output_schema": false,
-        // ...
-      }
-    },
-    "actions": {
-      "send_mail": { /* 同じ構造 */ },
-      "download_attachment": { /* ... */ },
-      "get_email_or_draft_by_id": { /* ... */ },
-      "__adhoc_http_action": { /* ... */ }
-    },
-    "data_pipeline_triggers": {},
-    "triggers_count": 1,
-    "actions_count": 4
-  }
-}
-```
-
-### `InputField` の構造
-
-```jsonc
-{
-  "name": "___poll_interval",                  // 内部 JSON キー名（重要）
-  "label": "Trigger poll interval",            // 表示ラベル
-  "type": "integer",                           // データ型
-  "control_type": "select",                    // UI レンダリング種別: text / select / date_time / checkbox / textarea / etc.
-  "optional": true,                            // 必須/任意
-  "hint": "How frequently to check...",        // ヒント文（フル）
-  "parse_output": "integer_conversion",        // 型変換ヒント: integer_conversion / boolean_conversion / date_time_conversion
-  "pick_list": [["5 minutes", 5], ["15 minutes", 15], ...],  // preset 値（ラベル + 内部 ID）
-  "toggle_field": {                            // preset/custom 切替がある場合のフィールド設定
-    "control_type": "...", "label": "...", "type": "...", "name": "..."
-  },
-  // 他にも: support_pills, disable_formula, sticky, default, etc.
-}
-```
-
-### `OutputField` の構造
-
-```jsonc
-// 単純型
-{
-  "name": "subject",
-  "label": "Subject",
-  "type": "string"  // string / integer / number / boolean / date_time / array
-}
-
-// 配列（プリミティブ）
-{
-  "name": "labelIds",
-  "label": "Label IDs",
-  "type": "array",
-  "of": "string"
-}
-
-// 配列（オブジェクト = ネスト構造体）
-{
-  "name": "attachments",
-  "label": "Attachments",
-  "type": "array",
-  "of": "object",
-  "properties": [
-    { "name": "mimeType", "label": "Mime type", "type": "string", "control_type": "text" },
-    { "name": "filename", "label": "Filename", "type": "string", "control_type": "text" },
-    { "name": "filesize", "label": "Filesize", "type": "integer", "control_type": "text", "parse_output": "integer_conversion" },
-    { "name": "attachmentId", "label": "Attachment ID", "type": "string", "control_type": "text" }
-  ]
-}
-```
-
-### 取得スニペット
-
-```javascript
-// 1 コネクタ全体のスキーマを取得
-async function fetchConnectorMeta(provider, cacheKey) {
-  const r = await fetch(`/integrations/meta?name=${provider}&cacheKey=${cacheKey}`, { credentials: 'include' });
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  const j = await r.json();
-  return j[provider]; // top-level key = provider name
-}
-
-// 全 trigger/action のフィールド一覧を平坦化
-function extractAllOperations(adapterMeta) {
-  const ops = [];
-  for (const [name, t] of Object.entries(adapterMeta.triggers || {})) {
-    ops.push({ kind: 'trigger', name, ...t });
-  }
-  for (const [name, a] of Object.entries(adapterMeta.actions || {})) {
-    if (name.startsWith('__')) continue; // skip __adhoc_http_action 等の内部用
-    ops.push({ kind: 'action', name, ...a });
-  }
-  return ops;
-}
-```
-
-### `cacheKey` の取得方法
-
-ページの最初のロード時、`window` 上に Workato が露出させている場合がある（要確認）。  
-確実な方法は network 監視:
-
-```javascript
-// 既に発生している /integrations/meta リクエストから抽出
-async function getCacheKey() {
-  // performance.getEntriesByType('resource') で過去のリソースリクエストを参照
-  const entries = performance.getEntriesByType('resource')
-    .filter(e => e.name.includes('/integrations/meta?'));
-  const m = entries[0]?.name.match(/cacheKey=([^&]+)/);
-  return m?.[1];
-}
-```
-
-### 留意事項
-
-- **動的スキーマ（`extends_*_schema: true`）**: 例えば Google Sheets の "search rows" アクションは sheet 選択後に列名フィールドが生成される。これは Tier 2 の単発リクエストでは取れず、別エンドポイント（`/recipe/<id>/picklist?...` 等）と組み合わせる必要がある。要追加調査。
-- **カスタムコネクタ**: 別エンドポイント `/web_api/recipes/<id>/custom_adapters/pre_install.json` が存在。要追加調査。
-- **`__` プレフィックスのアクション**: `__adhoc_http_action` 等は内部用なので除外する。
-- **i18n**: `cacheKey` の末尾 `_en` は言語コード。スキーマの `label` / `hint` は言語に依存して返ってくるので、ナレッジ収集は **`_en` 固定**で行う。
+> **内部 API の扱い（重要な線引き）**:
+> - ❌ **NG**: 内部 API（`/integrations/meta`、`/connections/<id>/extended_schema.json` 等）を**こちらで構築したリクエストで直接叩く**こと、およびリクエスト/レスポンスを総当たりで観察してリバースエンジニアリングすること。
+> - ✅ **OK**: ユーザー（または自動化スクリプト）が **通常の UI 操作**を行った結果として Workato 自身が発火させたリクエストの**レスポンスを受動的に読む**こと。
+>
+> 本ナレッジ収集スキルは UI 操作を主軸にし、補助的にレスポンスを読み取って構造化データを得る設計にする。スキルから直接 fetch / XHR で内部エンドポイントを呼ぶことは行わない。
 
 ## Workato UI の DOM 規約
 
@@ -497,85 +351,80 @@ const items = Array.from(stepGroup?.querySelectorAll('.data-tree-item') || []).m
 - toggle が `_open` → 既に展開された親（直後の leaf 群が子）
 - 確実な深さ判定はさらに調査要
 
-## レベル 2 自動収集の標準フロー（再設計）
+## レベル 2 自動収集の標準フロー
 
-`/auto-learn` スキルは **Tier 2 を主軸**にし、必要に応じて Tier 3 で補完する。
+`/auto-learn` スキルは **公式ドキュメント（`/sync-connectors`）と UI DOM 観察の組み合わせ**で構築する。Workato の内部 API は呼ばない。
 
 ### 前提
 - Chrome で Workato にログイン済み + Claude in Chrome 拡張が有効
-- 検証用ワークスペースに対象コネクタの認証済みコネクションがある（Tier 3 を使う場合のみ必須）
+- 検証用ワークスペースに対象コネクタの認証済みコネクションがある
+- 検証用プロジェクトに対象オペレーション（trigger / action）を使うスケルトンレシピを事前作成（`workato push` 経由で JSON から生成）
 
-### Phase 1: cacheKey の取得（初回のみ）
-
-```
-navigate to /recipes/<any_recipe_id>/edit
-wait for /integrations/meta?name=...&cacheKey=... が performance entries に現れる
-extract cacheKey from URL query
-```
-
-`cacheKey` はワークスペース内では一定期間共有されるので、最初の 1 回取れば複数コネクタで使い回せる。
-
-### Phase 2: コネクタ全体スキーマの取得（Tier 2）
+### Phase 1: 公式ドキュメントから静的情報を収集（既存の /sync-connectors）
 
 ```
-fetch /integrations/meta?name=<provider>&cacheKey=<key>
-parse triggers / actions
-for each operation:
-  記録: name, kind (trigger/action), title, help, extends_input_schema, extends_output_schema
-  記録: input_fields[] = [{ name, label, type, control_type, optional, hint, pick_list, toggle_field, parse_output }]
-  記録: output_fields[] = [{ name, label, type, of, properties[] (再帰) }]
+/sync-connectors を実行 → docs.workato.com の各コネクタページを WebFetch
+→ docs/connectors/<provider>.md にトリガー・アクションのリストと概要を反映
 ```
 
-これで **`extends_*_schema: false` のオペレーションは収集完了**（Pre-built コネクタの大半はここに該当）。
+これで「どのコネクタにどんな trigger / action があるか」のカタログは取れる。  
+ただし入力フィールドの hint や型、出力スキーマの詳細などは公式ドキュメントには載っていないことがある — そこを Phase 2 で補う。
 
-### Phase 3: 動的スキーマの収集（`extends_*_schema: true` のもののみ）
+### Phase 2: UI 観察で詳細フィールド情報を収集（Tier 3）
+
+対象オペレーションごとに:
 
 ```
-for each operation with extends_input_schema=true or extends_output_schema=true:
-  navigate to /recipes/<id>/edit (operation を予め設定済みのスケルトンレシピ)
-  click .recipe-step__header
-  Setup タブ到達待ち
+1. navigate to /recipes/<id>/edit （対象 operation を設定済みのスケルトンレシピ）
+2. click .recipe-step__header → Setup タブ到達を待つ
 
-  if extends_input_schema:
-    open Show optional fields modal
-    extract all field labels + data-icon-id
-    apply changes
+3. 入力フィールドの収集:
+   - button:contains("Show optional fields") を click
+   - w-dialog 出現を待つ
+   - label.multi-select-list__item を全列挙
+     → label + data-icon-id="field-type/<TYPE>" + visibleByDefault を取得
+   - label.multi-select-list__checkbox を click（Select all）
+   - button:contains("Apply changes") を click → モーダル消失を待つ
+   - w-recipe-step-details w-form-field（top-level のみ）を列挙
+     → hint, required (*), control component, has w-toggle-field を取得
+   - label をキーにモーダル / フォームの情報をマージ
 
-    if dynamic picklist が想定される field 存在:
-      pick a value
-      wait for schema reload
-      re-extract fields
-      diff = dynamic input fields
+4. 出力フィールドの収集:
+   - w-datatree が _minimize なら .data-tree-resize-controls をクリック
+   - .data-tree-group_current の .data-tree-group__header を click（外側 __heading ではなく内側）
+   - .data-tree-item を全列挙 → pill (label) + data-icon-id (type) を取得
 
-  if extends_output_schema:
-    expand Recipe data panel
-    expand Current step output group
-    extract .data-tree-item の (label, field-type)
-    if any picklist was selected: 同じく差分で動的 output を識別
+5. 動的フィールドの検出（picklist 依存型のもの）:
+   - 上記 3, 4 を実行（picklist 未選択状態の field セットを記録）
+   - 想定される dynamic picklist フィールドで値を選ぶ
+   - DOM の reload を待つ（ローディングインジケータが消えるまで）
+   - 上記 3, 4 を再実行 → 差分が動的フィールド
 ```
 
-### Phase 4: 収集結果を docs に書き出し
+### Phase 3: 収集結果を docs に書き出し
 
 ```
 docs/connectors/<provider>.md に
 ## triggers
-### <name>
-- title, description, help
-- extends_input_schema: bool
-- extends_output_schema: bool
-- input_fields: <Tier 2 の構造をそのまま>
-- output_fields: <Tier 2 の構造をそのまま>
-- dynamic_input_fields: <Tier 3 で取れた差分（あれば）>
-- dynamic_output_fields: <同上>
+### <operation_name>
+- title, description, help（Phase 1 から）
+- input_fields:
+  - label, type, required, hint, default_visible, has_toggle_picker（Phase 2 から）
+- output_fields:
+  - label, type（Phase 2 から）
+- dynamic_input_fields:
+  - 決定条件（どの picklist 選択で生成されるか）+ 例（Phase 2 の差分から）
+- dynamic_output_fields:
+  - 同上
 
 ## actions
-... (同じ構造)
+... （同じ構造）
 ```
 
-### カスタムコネクタの扱い（要追加調査）
+### カスタムコネクタの扱い
 
-- `/web_api/recipes/<id>/custom_adapters/pre_install.json` で取得可能な可能性
-- 取れない場合は、既存の `/sync-connectors` が `connector.rb` をパースしてカタログ化する仕組みを流用
+- 既存の `/sync-connectors` がカスタムコネクタの `connector.rb` をパースしてカタログ化する仕組みを流用
+- UI 経由の Phase 2 はカスタム / Pre-built 関係なく適用可能
 
 ## 実装上の注意
 
@@ -602,22 +451,38 @@ Angular のイベントリスナーは要素自身ではなく親に張られて
 - **トランスクリプトに dump しない**
 - フィールド名と型情報のみを保存
 
+### レスポンスの受動観察（任意）
+
+UI 操作の結果として Workato 自身が発火させたリクエストのレスポンスは、補助情報として読んでよい（直接 fetch / XHR を新規発行するのは NG）。
+
+例: ステップを開いたとき、picklist を選んだとき、Workato は内部エンドポイントを叩く。それらのレスポンスには DOM スクレイピングより構造化された情報（フィールドの内部 `name`、データ型、`pick_list` の値ペア等）が含まれることがある。
+
+実装パターン:
+1. `XMLHttpRequest` / `fetch` を **観測専用にラップ**して、レスポンスをコピーして辞書に格納するだけの interceptor を入れる
+2. 通常の UI 操作（ステップを開く、picklist を選ぶ等）を実行
+3. 該当レスポンスが格納されていたら、DOM 抽出結果と突き合わせて補強
+
+注意:
+- **新規リクエストを送らない**。リクエストの URL や body を真似て fetch すること、CSRF トークン回避、ヘッダ偽装などはすべて NG。
+- **エンドポイントの仕様調査として総当たり的にいじらない**。観測するのは、UI 操作の自然な結果として発生したリクエストに限る。
+- レスポンスにユーザーの実データ（メール、シート名、列値等）が含まれる場合は **PII の取り扱い** ルールに従い、フィールド構造のみを抽出して値は破棄する。
+- 内部 API の URL や body 構造を docs に詳細記載しない（変わる可能性があり、依存ナレッジを残すと有害）。
+
 ## 残課題
 
-### Tier 2 関連
-- [ ] `cacheKey` の取得方法を確実にする（performance entries 経由 / `window.*` への露出有無 / 期限切れ時の再取得）
-- [ ] **動的スキーマの取得経路** — `extends_*_schema: true` のオペレーションで Workato 自身がどのエンドポイントを叩いているかを観察（picklist 選択 → 再フェッチの URL を捕捉）
-- [ ] **カスタムコネクタの meta API** — `/web_api/recipes/<id>/custom_adapters/pre_install.json` の構造調査
-- [ ] エンドポイント変更耐性 — Workato が将来 `cacheKey` ベースから別形式に変えた場合のフォールバック設計
-- [ ] レート制限 / 同時リクエスト制約の確認（300 コネクタを順次取得する際）
+### UI 観察関連
+- [ ] dynamic picklist 選択 → スキーマ再読み込みの確実な検出方法（DOM 変化の終了を判定する条件 — ローディングインジケータ消失 / 一定時間の DOM 安定）
+- [ ] データツリーの **ネスト深さ判定** — `paddingLeft` が一律 0 でフラット表示されるため、配列の子要素を親と紐づける確実な手段（toggle state ヒューリスティック以外）
+- [ ] 複数トリガー持ちコネクタの **Trigger ピッカー画面**の DOM 構造（Gmail のように 1 個でスキップされない場合の観察）
+- [ ] 大量フィールドコネクタでの仮想スクロール（`cdk-virtual-scroll-viewport`）追従
+- [ ] saved レシピと unsaved レシピで Recipe data パネルの出方が違うかの確認
 
-### Tier 3 関連（動的フィールド検出）
-- [ ] dynamic picklist 選択 → スキーマ再読み込み の確実な検出方法（DOM 差分 vs network ピング）
-- [ ] データツリーの**ネスト深さ判定** — Tier 2 では `properties[]` で取れるが、動的に追加されたフィールドのネスト判定方法（Tier 3 のみで完結する場合）
-- [ ] 複数トリガー持ちコネクタの **Trigger ピッカー画面**の DOM 構造（自動スキップしないコネクタでの観察）
+### 公式ドキュメント関連
+- [ ] `/sync-connectors` で取れる情報と UI 観察で取れる情報の差分整理（重複の解消、相補的な使い分け）
 
-### Tier 1 関連
-- [ ] `/sync-connectors` との役割分担を明確化（Tier 2 が主軸になった今、`/sync-connectors` はカスタムコネクタ専用 or 補完用に再定義）
+### スキル化
+- [ ] `/auto-learn` スキルの実装（公式ドキュメント + UI 観察の組み合わせ）
+- [ ] スキルの長時間実行（300+ コネクタ）に耐える設計（中断 / 再開、進捗管理）
 
 ## 参考
 
