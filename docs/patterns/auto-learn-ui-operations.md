@@ -456,9 +456,17 @@ function snapshotFields() {
 - **生成パターン**: 親フィールド名（例: `Columns`）+ 子要素の生成ルール（例: `シートのヘッダー列ごとに 1 つ`）
 - **インスタンス固有値は記録しない**: `open_time`, `open_price` 等の実際の列名はテストデータ依存なので保存対象外
 
-**動的 OUTPUT フィールド**: 同じパターンが Recipe data パネルにも反映される（次ステップを開いた時に、前ステップの動的列が `data-tree-item` として出現する）。検出ロジックは [画面 5c](#画面-5c-recipe-data-パネル--出力スキーマ-) のとおり、`.data-tree-item` の `data-icon-id` で型情報も取れる。
+**動的 OUTPUT フィールド**: 同じパターンが Recipe data パネルにも反映される。**前ステップの output を見るには、その下に新しいステップを追加してそのステップの Setup 画面を開く**（Recipe data パネルは「現在のステップから見える前ステップ群の output」を表示する仕様）。
 
-⚠ **実証範囲**: SAMPLE シート（4 列）で動的入力フィールド側を確認済み。動的 OUTPUT 側（Recipe data パネルでの列出現）は次サイクルで検証予定。
+検出ロジックは [画面 5c](#画面-5c-recipe-data-パネル--出力スキーマ-) のとおり、`.data-tree-item` の `data-icon-id` で型情報も取れる。
+
+✅ **実証済み**: Google Sheets `search_spreadsheet_rows_v4_new` で Spreadsheet → Sheet (SAMPLE) を選択 → Step 3 を追加して Setup を開くと、Recipe data パネルに `Search rows (Step 2 output)` グループが出現し、SAMPLE シートの実際の列ヘッダー 17 個が `Rows (array)` の子要素として `field-type/text` で出現することを確認。
+- 静的 output: `Spreadsheet ID`, `Spreadsheet name`, `Sheet name`, `Rows (array)`, `List size`, `List index`
+- 動的 output: `Rows[].Row number` + シートの全列ヘッダー（インスタンス固有）
+
+つまり**動的 input の列名と動的 output の列名は同じ集合**になり、検出パターンも同じ DOM 構造（`w-form-field` ネスト → `Rows`/`Columns` 親要素配下）になる。
+
+⚠ **入力フィールドと出力フィールドの粒度差**: SAMPLE シートでは UI の `Columns` 入力フィールド配下には 4 個の inner `w-form-field` しか表示されなかったが、実際の OUTPUT 側では 17 列すべてが見えた（Workato の入力 UI が「最初の N 列」だけ表示する仕様の可能性。要追加検証）。
 
 ## レベル 2 自動収集の標準フロー
 
