@@ -125,5 +125,5 @@ Workato には「API Client」という名前の似て非なる 4 系統（Devel
 | `/learn-recipe` | レシピからフィールド情報を学習しドキュメントに反映 |
 | `/learn-pattern` | レシピから構築パターンを抽出しカタログに蓄積 |
 | `/sync-connectors` | コネクタ情報を収集・更新（Pre-built: API、カスタム: connector.rb パース） |
-| `/auto-learn` | Workato UI を Claude in Chrome で操作してオペレーションのフィールド詳細を能動収集（`/sync-connectors` と `/learn-recipe` の隙間を埋める） |
+| `/auto-learn` | 1 コネクタの全 op を Claude in Chrome で自律収集（対話なし、不確実なものは skip + log）。完全性より網羅性を優先 |
 | `/design` | プロジェクト設計書の作成・更新・参照 |
