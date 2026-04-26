@@ -100,11 +100,11 @@ for op in queue:
 1. switchStepToOp(op)
    - kind=trigger → Step 1 を上書き（App タブ → コネクタ → Trigger picker → 当該 op）
    - kind=action  → Step 3 を上書き（App タブ → コネクタ → Action picker → 当該 op）
-   - 失敗（picker に op が見えない、auto-skip 異常 等）→ result.status='failed_to_open'
+   - 失敗（picker に op が見えない、auto-skip 異常 等）→ result.status='failed_to_open' を返して**早期終了**（後続の step 2-6 はスキップ）
 
 2. waitForSetupTab()
    - 完了判定: button.tabs__label.tabs__label_active のテキスト === 'Setup'
-   - timeout 8 秒で諦める
+   - timeout 8 秒。タイムアウトしたら result.status='failed_to_open' で**早期終了**
 
 3. result.input = captureInputFields()
    - "Show optional fields" ボタンがあれば開いてモーダルから {label, type, visibleByDefault} 取得 → Cancel
@@ -129,7 +129,10 @@ for op in queue:
        result.errors.push("dynamic_probe_failed: " + e.message)
      }
 
-6. result.status = 'ok'（errors の有無に関わらず、Phase 4 で記録）
+6. ステータス確定:
+   - ここまで result.status が未設定（=step 1〜2 で早期終了していない）なら、result.status = 'ok' を設定
+   - errors 配列の有無は status に影響させない（部分学習は status='ok' + errors=[...] で表す）
+   - ⚠ step 1 / 2 で 'failed_to_open' を設定して早期 return したケースは、ここに到達しないため status は上書きされない
 ```
 
 ### Phase 4: docs に追記
@@ -157,10 +160,20 @@ for op in queue:
 - 観測例: ... （PII を残さない範囲で）
 ```
 
-ステータス別の追記:
-- `status='ok'` & errors=[] → 完全に追記
-- `status='ok'` & errors!=[] → 注記行（`> ⚠ 部分学習: <errors>`）を加えて追記
-- `status='failed_to_open'` / `status='error'` → セクション本体は作らず、ファイル末尾「## 学習失敗ログ」セクションに 1 行追記（`- <op>: <reason> — <date>`）
+ステータスは以下の 4 値のいずれか:
+
+| status | 意味 |
+|---|---|
+| `ok` | processOperation が最後まで通った（`errors` が non-empty なら部分学習）|
+| `failed_to_open` | step 1 / 2 で対象 op を開けず早期 return した |
+| `error` | step 3〜5 のいずれかで例外発生（`errors` に詳細）|
+| `unexpected_error` | processOperation そのものが投げた例外を上位 catch で受けた（後述） |
+
+追記ルーティング（`'ok'` 以外はすべて学習失敗ログ扱い）:
+
+- `status === 'ok'` & errors=[] → セクション本体に完全に追記
+- `status === 'ok'` & errors!=[] → 注記行（`> ⚠ 部分学習: <errors>`）を加えてセクション本体に追記
+- `status !== 'ok'`（=`failed_to_open` / `error` / `unexpected_error` / その他将来追加される非 ok ステータス全般）→ セクション本体は作らず、ファイル末尾「## 学習失敗ログ」セクションに 1 行追記（`- <op>: status=<status>, reason=<reason> — <date>`）
 
 ### Phase 5: レポート出力
 
@@ -234,7 +247,8 @@ for (const op of queue) {
     const result = await processOperation(op);
     results.push(result);
   } catch (e) {
-    // 想定外の例外も次の op に進む
+    // processOperation 内 try/catch を通り抜けた想定外例外も次の op に進める
+    // status='unexpected_error' は Phase 4 ルーティング表で 'ok 以外' = 学習失敗ログ扱い
     results.push({ name: op.name, kind: op.kind, status: 'unexpected_error', errors: [e.message] });
     continue;
   }
