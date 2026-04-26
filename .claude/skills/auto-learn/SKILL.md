@@ -160,20 +160,21 @@ for op in queue:
 - 観測例: ... （PII を残さない範囲で）
 ```
 
-ステータスは以下の 4 値のいずれか:
+ステータスは以下の 3 値のいずれか:
 
-| status | 意味 |
-|---|---|
-| `ok` | processOperation が最後まで通った（`errors` が non-empty なら部分学習）|
-| `failed_to_open` | step 1 / 2 で対象 op を開けず早期 return した |
-| `error` | step 3〜5 のいずれかで例外発生（`errors` に詳細）|
-| `unexpected_error` | processOperation そのものが投げた例外を上位 catch で受けた（後述） |
+| status | 意味 | 設定箇所 |
+|---|---|---|
+| `ok` | processOperation が最後まで通った。step 3〜5 で個別の不具合（modal 不在、output グループ不在、dynamic probe 失敗 等）があれば `errors[]` に文字列で蓄積するが status 自体は `ok` のまま — 部分学習として扱う | step 6 |
+| `failed_to_open` | step 1 / 2 で対象 op を開けず早期 return | step 1 / 2 |
+| `unexpected_error` | processOperation 内で想定外例外が外側まで伝播し、上位の catch で受けた | 上位ループの catch |
+
+⚠ step 3〜5 内で起きる軽微な失敗は **例外を投げず** に `errors[]` への push で扱う方針（部分学習扱い）。例外まで投げる必要があるのはステップ 1 / 2（その op を開く前提が崩れた）か、もしくは想定外（バグ）のときだけ。
 
 追記ルーティング（`'ok'` 以外はすべて学習失敗ログ扱い）:
 
 - `status === 'ok'` & errors=[] → セクション本体に完全に追記
 - `status === 'ok'` & errors!=[] → 注記行（`> ⚠ 部分学習: <errors>`）を加えてセクション本体に追記
-- `status !== 'ok'`（=`failed_to_open` / `error` / `unexpected_error` / その他将来追加される非 ok ステータス全般）→ セクション本体は作らず、ファイル末尾「## 学習失敗ログ」セクションに 1 行追記（`- <op>: status=<status>, reason=<reason> — <date>`）
+- `status !== 'ok'`（=`failed_to_open` / `unexpected_error` / 将来追加される非 ok ステータス）→ セクション本体は作らず、ファイル末尾「## 学習失敗ログ」セクションに 1 行追記（`- <op>: status=<status>, reason=<reason> — <date>`）
 
 ### Phase 5: レポート出力
 
