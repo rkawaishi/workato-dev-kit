@@ -75,7 +75,7 @@ Workato UI を Claude in Chrome で操作し、対象コネクタの全オペレ
 1. `docs/connectors/<provider>.md` を Read
 2. Triggers / Actions テーブルから op 名・kind を列挙
 3. 除外: `__adhoc_http_action`、deprecated（`[deprecated]` 等の注記がある行）
-4. `--force` がない限り、既に `### <op> (Trigger|Action)` セクションがあるものはスキップ
+4. `--force` がない限り、既に `### <op>` で始まるセクションがあるものはスキップ。検出は **op 名のみで照合**（行頭の `### ` 直後のトークン）。括弧内の補足（display title など）は無視する。例: `### delete_message (Delete message)` も `### delete_message (Action)` も同じ op としてスキップ対象になる
 5. 残った op リストを処理キューに
 
 ### Phase 2: タブ準備
@@ -137,8 +137,9 @@ for op in queue:
 `docs/connectors/<provider>.md` の `## アクション詳細` / `## トリガー詳細` セクションに、各 op の結果を追記:
 
 ```markdown
-### <op_name> (<Trigger|Action>)
+### <op_name> (<Display Title>)
 
+種別: Trigger | Action
 学習元: /auto-learn (UI 観察) — <YYYY-MM-DD>[, output <YYYY-MM-DD>]
 
 #### Input fields
