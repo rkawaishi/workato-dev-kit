@@ -113,18 +113,27 @@ for op in queue:
    - ボタンが無ければモーダル抽出を skip（form のみ）
 
 4. result.output = captureOutputFields(op.kind)
-   - 当該 step の output グループ名を組み立て:
-     - kind=trigger:  "Step 1 output"   → Step 2 を開いて Recipe data から覗く
-     - kind=action:   "Step 3 output"   → Step 4 を開いて Recipe data から覗く
+   - **観察用ステップに切替えてから読む**（target step は触らない）:
+     - kind=trigger:  Step 2 を開く → Recipe data の "Step 1 output" グループから覗く
+     - kind=action:   Step 4 を開く → Recipe data の "Step 3 output" グループから覗く
    - データツリー minimize なら展開、対象グループの内側 .data-tree-group__header を click
    - グループが現れなければ "no_output_schema"（fire-and-forget アクション）として null
    - 現れれば .data-tree-item を全列挙 → {label, type}
+   - ⚠ 完了後の在りどころは**観察用ステップ**（Step 2 / Step 4）。次に target step を触る前に必ず navigation し直すこと
 
 5. もし result.input に dynamic picklist 候補（w-toggle-field を持つ select 等）があり、
    かつ --sandbox が用意されていれば:
+     // ⚠ step 4 で観察用ステップに切替えているので、まず target step に戻る
+     // - kind=trigger: Step 1 (target) のヘッダーをクリックして Setup タブへ復帰
+     // - kind=action:  Step 3 (target) のヘッダーをクリックして Setup タブへ復帰
+     // active tab が再び Setup になったことを button.tabs__label_active で確認してから進める
      try {
-       applySandboxValues()
-       result.dynamic = { input: captureInputFields(), output: captureOutputFields() }
+       navigateBackToTargetStep(op.kind)         // Step 1 / Step 3 を再度開く
+       waitForSetupTab()                         // タブが Setup に戻るのを待つ
+       applySandboxValues()                      // target step の picklist を埋める
+       const dynInput = captureInputFields()     // target step のフォームを読む
+       const dynOutput = captureOutputFields(op.kind)  // 内部で観察用ステップへ自動遷移して読む
+       result.dynamic = { input: dynInput, output: dynOutput }
      } catch (e) {
        result.errors.push("dynamic_probe_failed: " + e.message)
      }
