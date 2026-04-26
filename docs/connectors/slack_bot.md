@@ -121,6 +121,31 @@ Real-time。チャネル内に対象アプリの URL がメンションされた
 | Application | string (picklist) | Yes | URL 検出対象のアプリ |
 | Business data | string (picklist) | Yes | 対象のビジネスデータ種別（例: invoice, bill, customer） |
 
+#### Output fields
+| フィールド | 型 | 説明 |
+|---|---|---|
+| Application | string | URL に含まれるアプリ名 |
+| Object | string | 対象オブジェクト種別（例: account, opportunity） |
+| Object ID | string | 対象オブジェクトの ID |
+| Context | object | 実行コンテキスト（コンテナ） |
+| Context.Team ID | string | Slack チーム ID |
+| Context.User ID | string | 実行ユーザーの Slack ID |
+| Context.User handle | string | ユーザーハンドル |
+| Context.User name | string | ユーザー名 |
+| Context.User email | string | ユーザーメール |
+| Context.Conversation ID | string | チャンネル / DM の ID |
+| Context.Message text | string | URL を含むメッセージ全文 |
+| Context.Reply to | string | 返信先 |
+| Context.Timestamp | datetime | 発火タイムスタンプ |
+| Context.Thread ID | string | スレッド ID |
+| Context.Interactive | boolean | インタラクティブ実行か |
+| Context.Trigger ID | string | Slack Trigger ID |
+| Context.Callback ID | string | Callback ID |
+| Context.Response URL | string | Slack Response URL |
+| Context.Original message JSON | string | 元メッセージの JSON |
+| Context.Original message timestamp | string | 元メッセージのタイムスタンプ |
+| Modals & App home | object | モーダル / App home コンテキスト（コンテナ） |
+
 ### help_event (New help message trigger)
 
 Real-time。ユーザーが `help` で DM するか、チャンネルで `@workbot help` のようにメンションしたときに発火。`Post command reply` アクションとペアで bot のヘルプメッセージをカスタマイズする。1 つのコネクションで有効化できる help_event レシピは 1 つだけ（カスタムヘルプより優先）。
@@ -292,7 +317,7 @@ Bot の App Home タブにリッチコンテンツを表示。ユーザーごと
 
 Workbot として投稿したメッセージを削除する。
 
-学習元: /auto-learn (UI 観察) — 2026-04-25
+学習元: /auto-learn (UI 観察) — 2026-04-25 / output 2026-04-26
 
 #### Input fields
 | フィールド | 型 | 必須 | 説明 |
@@ -302,11 +327,17 @@ Workbot として投稿したメッセージを削除する。
 
 オプションフィールドなし。
 
+#### Output fields
+| フィールド | 型 | 説明 |
+|---|---|---|
+| Channel ID | string | 削除実行されたチャンネル ID |
+| Timestamp | string | 削除されたメッセージのタイムスタンプ |
+
 ### download_attachment (Download attachment)
 
 Slack 添付ファイルを Workbot 経由でダウンロードする。File 出力タグ付き。
 
-学習元: /auto-learn (UI 観察) — 2026-04-25
+学習元: /auto-learn (UI 観察) — 2026-04-25 / output 2026-04-26
 
 #### Input fields
 | フィールド | 型 | 必須 | 説明 |
@@ -315,13 +346,19 @@ Slack 添付ファイルを Workbot 経由でダウンロードする。File 出
 
 オプションフィールドなし。
 
+#### Output fields
+| フィールド | 型 | 説明 |
+|---|---|---|
+| Body | string | 添付ファイルのバイナリコンテンツ（datapill として下流に渡せる） |
+| Size | integer | ファイルサイズ（バイト） |
+
 ### upload_file (Upload file)
 
 チャンネルまたはスレッドにファイル添付を投稿。初期コメントを付けることもできる。
 
-⚠ **UI 表示バグ**: Workbot for Slack の Action ピッカーで `upload_file` のタイトルが誤って **"Return menu options"**（File バッジ付き）と表示される。`generate_menu_options` (Return menu options, バッジなし) と並んで重複するため、選ぶ際は **File バッジの有無**で判別する必要がある。canvas / panel header にも同じ誤タイトルが表示されるが、フィールド構造は upload_file のもの（"Post to conversations" / "File content" 等）。
+⚠ **UI 表示バグ**: Workbot for Slack の Action ピッカーで `upload_file` のタイトルが誤って **"Return menu options"**（File バッジ付き）と表示される。`generate_menu_options` (Return menu options, バッジなし) と並んで重複するため、選ぶ際は **File バッジの有無**で判別する必要がある。canvas / panel header にも同じ誤タイトルが表示されるが、フィールド構造は upload_file のもの（"Post to conversations" / "File content" 等）。Recipe data パネルの Step output グループ名も同じく "Return menu options" と表示される。
 
-学習元: /auto-learn (UI 観察) — 2026-04-25
+学習元: /auto-learn (UI 観察) — 2026-04-25 / output 2026-04-26
 
 #### Input fields
 | フィールド | 型 | 必須 | デフォルト表示 | 説明 |
@@ -334,11 +371,43 @@ Slack 添付ファイルを Workbot 経由でダウンロードする。File 出
 | Title | string | - | 非表示 | ファイルタイトル |
 | Thread ID | string | - | 非表示 | 投稿先スレッド ID |
 
+#### Output fields
+Slack `files.upload` API のレスポンスに準拠（[Slack 公式リファレンス](https://api.slack.com/methods/files.upload)参照）。
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| Ok | string | API 結果ステータス |
+| File | object | アップロード結果ファイルメタデータ（コンテナ） |
+| File.ID | string | ファイル ID |
+| File.Created | string | 作成タイムスタンプ |
+| File.Timestamp | string | タイムスタンプ |
+| File.Name | string | ファイル名 |
+| File.Title | string | タイトル |
+| File.User | string | アップロードユーザー ID |
+| File.Editable | boolean | 編集可能か |
+| File.Size | integer | サイズ（バイト） |
+| File.Mode | string | アップロードモード |
+| File.Is external | boolean | 外部ファイルか |
+| File.External type | string | 外部タイプ |
+| File.Is public | boolean | パブリックか |
+| File.Public URL shared | boolean | パブリック URL が共有されているか |
+| File.Display as bot | boolean | bot として表示するか |
+| File.Username | string | ユーザー名 |
+| File.URL private | string | プライベート URL |
+| File.URL private download | string | プライベートダウンロード URL |
+| File.Permalink | string | パーマリンク |
+| File.Permalink public | string | パブリックパーマリンク |
+| File.User | string | ユーザー（重複ラベル — Slack API の異なるパスを表示） |
+| File.Comments count | integer | コメント数 |
+| File.Is starred | boolean | スター付きか |
+| File.Channels | string[] | 投稿先チャンネル ID 配列 |
+| File.Has rich preview | boolean | リッチプレビューがあるか |
+
 ### open_bot_dialog (Post dialog)
 
 ボタンクリックやメニュー選択時に bot dialog を開く。**Legacy** API（モーダルが推奨）。`New command` トリガーとペアで使う。Submit 押下時に別の bot コマンドを実行する構造。
 
-学習元: /auto-learn (UI 観察) — 2026-04-25
+学習元: /auto-learn (UI 観察) — 2026-04-25 / output 2026-04-26
 
 #### Input fields
 | フィールド | 型 | 必須 | デフォルト表示 | 説明 |
@@ -348,6 +417,9 @@ Slack 添付ファイルを Workbot 経由でダウンロードする。File 出
 | Submit button command | string (picklist) | Yes | 表示 | Submit 時に呼び出す Workbot コマンド |
 | State(Callback id) | string | - | 表示 | dialog 識別子（最大 3000 文字）。Submit 時のレシピに渡される |
 | Submit button label | string | - | 非表示 | Submit ボタンのラベル |
+
+#### Output fields
+**出力フィールドなし**（Recipe data パネルに `Step N output` グループが現れない fire-and-forget 型のアクション）。dialog 送信後の処理は `Submit button command` で指定した別の bot コマンドレシピで行う。
 
 ---
 
