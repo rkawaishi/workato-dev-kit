@@ -451,8 +451,8 @@ Provider: `slack`
 
 最終実行: 2026-04-27 by /auto-learn
 - 試行: 11 op (2 triggers + 9 actions)
-- 完全成功: 7
-- 部分学習: 5（うち 5 が fire-and-forget、1 が internal key マッピング不明 — 同 op で重複可）
+- 完全成功: 5 — `button_action`, `create_conversation`, `get_user_by_email`, `invite_user_to_conversation`, `post_message_to_channel`
+- 部分学習: 6 — `new_event` (internal key), `archive_conversation` / `unarchive_conversation` / `set_conversation_purpose` / `set_conversation_topic` / `post_button_action_reply` (fire-and-forget)
 - 学習失敗: 0
 - スキップ:
   - Deprecated: 7

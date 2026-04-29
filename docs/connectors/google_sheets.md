@@ -287,7 +287,7 @@ Provider: `google_sheets`
 
 ## 学習失敗ログ
 
-- get_spreadsheet_rows_v4: status=ok (output empty), reason=output schema not materialized in datatree until Spreadsheet picklist is selected (dynamic output) — 2026-04-27
+（なし — 全 op が `status=ok` で完了。`get_spreadsheet_rows_v4` の output schema は dynamic 由来の partial で、本ログではなく上記セクションの `> ⚠ 部分学習` に記録済み）
 
 ---
 
@@ -295,8 +295,8 @@ Provider: `google_sheets`
 
 最終実行: 2026-04-27 by /auto-learn
 - 試行: 11 op (6 triggers + 5 actions)
-- 完全成功: 9
-- 部分学習: 2
+- 完全成功: 1 — `update_row_v4_new`
+- 部分学習: 10 — 6 triggers (`new_polling_spreadsheet_row_v4`, `new_spreadsheet_row_v4`, `team_drive_new_spreadsheet_row_v4`, `updated_polling_spreadsheet_row_v4_2`, `updated_spreadsheet_row_v4_2`, `team_drive_updated_spreadsheet_row_v4_2`) + 4 actions (`add_spreadsheet_row_v4`, `add_row_v4_bulk`, `get_spreadsheet_rows_v4`, `update_row_v4_bulk`)
 - 学習失敗: 0
 - スキップ:
   - Deprecated: 7
@@ -306,7 +306,9 @@ Provider: `google_sheets`
 ### 要 follow-up
 
 - **Dynamic schema (要 /learn-recipe)** — Spreadsheet/Sheet picklist 未選択により `Rows[]` 配下の動的列スキーマが取れない
+  - 6 triggers — output の `Rows[]` 配下のカラムが未展開（`new_polling_spreadsheet_row_v4` 他 5 件）
   - `get_spreadsheet_rows_v4` — output schema 全体が未確定（datatree に group 出現せず）
+  - `add_spreadsheet_row_v4` — input の Rows カラム未展開
   - `add_row_v4_bulk` / `update_row_v4_bulk` — `List of batches` 配下の per-row column schema が未確定
   - 全 op 共通: `Spreadsheet` picklist 選択時にしか `Rows[]` 配下のカラムは展開されない
 

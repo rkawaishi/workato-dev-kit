@@ -1226,8 +1226,8 @@ Provider: `jira`
 
 最終実行: 2026-04-27 by /auto-learn
 - 試行: 26 op (10 triggers + 16 actions)
-- 完全成功: 21
-- 部分学習: 5
+- 完全成功: 19
+- 部分学習: 7 — `deleted_object`, `new_event`, `updated_worklog_webhook`, `assign_issue`, `create_issue`, `update_issue`, `update_issue_status`
 - 学習失敗: 0
 - スキップ:
   - Deprecated: 3
