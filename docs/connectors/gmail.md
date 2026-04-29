@@ -630,3 +630,19 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 | markedMessageUnread[].labelIds | string | Label IDs |
 | markedMessageUnread[].messageId | string | Message ID |
 | markedMessageUnread[].id | string | ID |
+
+---
+
+## 学習サマリ
+
+最終実行: 2026-04-27 by /auto-learn
+- 試行: 1 op
+- 完全成功: 1
+- 部分学習: 0
+- 学習失敗: 0
+- スキップ:
+  - Deprecated: 0
+  - adhoc: 1 — `__adhoc_http_action`
+  - 既学習: 2 — `new_email`, `download_attachment`
+
+要 follow-up なし。

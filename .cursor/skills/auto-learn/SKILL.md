@@ -28,6 +28,7 @@ Workato UI を Claude in Chrome で操作し、対象コネクタの全オペレ
 - `--force` — 既に docs にフィールド詳細があっても上書き学習
 - `--triggers-only` / `--actions-only` — 範囲を絞る
 - `--sandbox <json>` — 動的スキーマ用テストデータ（後述）
+- `--followups` — **UI 操作なしモード**。既存 `docs/connectors/*.md` の `## 学習サマリ` を集約して標準出力に出すだけ。`<provider>` 指定があれば単一コネクタ、なければ全 7+ コネクタ集約。実行フロー（Phase 1-5）は走らない。詳細は本ファイル末尾「Followups mode」参照
 
 事前準備が無い場合（規約レシピ未作成・コネクション未認証など）は、**ユーザーに質問せず失敗ログだけ残して終了**する。
 
@@ -185,9 +186,58 @@ for op in queue:
 - `status === 'ok'` & errors!=[] → 注記行（`> ⚠ 部分学習: <errors>`）を加えてセクション本体に追記
 - `status !== 'ok'`（=`failed_to_open` / `unexpected_error` / 将来追加される非 ok ステータス）→ セクション本体は作らず、ファイル末尾「## 学習失敗ログ」セクションに 1 行追記（`- <op>: status=<status>, reason=<reason> — <date>`）
 
+### Phase 4 末尾: `## 学習サマリ` セクションの更新（必須）
+
+各 op の追記が終わったら、`docs/connectors/<provider>.md` の **末尾**（最終 `## ...` セクションのさらに下）に `## 学習サマリ` セクションを追加する。**既にあれば差し替え**（このセクションは run の最新スナップショットだけ保持し、過去の run は git 履歴で追う）。
+
+フォーマット（記入欄は run 結果から組み立てる。各リストは ` — ` 区切りで op 名を示す。空集合の場合は当該行を残して `0` と書く）:
+
+```markdown
+## 学習サマリ
+
+最終実行: <YYYY-MM-DD> by /auto-learn
+- 試行: <N> op
+- 完全成功: <M>
+- 部分学習: <K>
+- 学習失敗: <L>
+- スキップ:
+  - Deprecated: <D> — `<op1>`, `<op2>`, ...
+  - adhoc: <A> — `__adhoc_http_action`
+  - 既学習: <S> — `<op1>`, `<op2>`, ...
+
+### 要 follow-up
+
+カテゴリ別。errors[] の prefix と理由文を見てルーティングする:
+
+- **Dynamic schema (要 /learn-recipe)** — `dynamic schema unresolved`, `output_group_missing` (project not selected) 等
+  - `<op>` — <短い説明>
+- **Fire-and-forget (UI 仕様・追加学習不要)** — `output_group_not_found`, `no_output_schema`
+  - `<op>` — <短い説明>
+- **Internal key 不明 (要 /learn-recipe)** — `webhook_suffix` 等の内部キーマッピング不明
+  - `<op>` — <短い説明>
+- **Other** — 上記に当てはまらない部分学習
+  - `<op>` — <reason>
+
+該当カテゴリが空の場合は、そのカテゴリ見出しごと削除して構わない。
+
+### 構造的注記（参考）
+
+各 op section 内の `> ⚠` インライン注記（`> ⚠ 部分学習:` 以外）を 1 行ずつコピー集約:
+
+- 重複ラベル: `<label>` (op: `<op_name>`)
+- paddingLeft=0 によるネスト不可視: ...
+- 動的入力（input picklist 依存）: ...
+
+該当なしなら本見出しごと削除。
+```
+
+このセクションが**「follow-up 出して」依頼に対する単一の参照点**となる。`grep "^## 学習サマリ" docs/connectors/*.md -A 200` で全コネクタの follow-up を一覧できる。
+
+`--followups` モードはこのセクションのみを読んで集約する（Phase 1-3 を走らせない）。詳細は本ファイル末尾「Followups mode」参照。
+
 ### Phase 5: レポート出力
 
-標準出力に短く:
+標準出力に短く（Phase 4 で書いた `## 学習サマリ` の中身と整合させる。出力にズレがあるのは禁止。テキストはそのまま貼る運用で OK）:
 
 ```
 /auto-learn <provider> 完了
@@ -195,6 +245,7 @@ for op in queue:
 - 完全成功: M op
 - 部分学習: K op  (主因: <theme>)
 - 学習失敗: L op  (理由: <reason>)
+- 永続化: docs/connectors/<provider>.md の `## 学習サマリ` を更新
 - マニュアルでフィードバックすべき項目:
   - 重複ラベル: ...
   - ネスト深さ未確定: ...
@@ -202,6 +253,8 @@ for op in queue:
 ```
 
 最後に追記したセクション一覧と git diff 概要を提示し、コミット可否はユーザー判断に任せる（**コミットは自動実行しない**）。
+
+将来「follow-up を出して」と依頼されたら、`docs/connectors/*.md` の `## 学習サマリ` を読むだけで答えられる。新規セッションでも決定的に再現できる。
 
 ## 「止まらない」ための具体ルール
 
@@ -266,6 +319,56 @@ for (const op of queue) {
 ```
 
 タブが死んだ・ネットワークが切れた・ログアウトされた等、recoverable でない事態だけは早期 abort してレポートを返す。判定基準: 連続 3 op 以上失敗 → abort。
+
+## Followups mode (`--followups`)
+
+通常の `/auto-learn` 実行（UI 操作あり）と独立した、**読み取り専用集約モード**。Phase 1〜5 を一切走らせず、`docs/connectors/*.md` の `## 学習サマリ` セクションを読んで follow-up を一覧化するだけ。
+
+### 起動
+
+```
+/auto-learn --followups            # 全コネクタ集約
+/auto-learn <provider> --followups # 単一コネクタのみ
+```
+
+### 動作仕様
+
+1. ターゲット連携:
+   - `<provider>` 指定あり → `docs/connectors/<provider>.md` のみ
+   - 指定なし → `docs/connectors/*.md` 全体（`_index.md` 等の非コネクタファイルは内容を見て除外）
+2. 各ファイルを Read し、`## 学習サマリ` セクションを抽出（次の `## ` または EOF まで）
+3. セクションが無い連携は「未集計」として `unknown` カテゴリにまとめる（過去 run の遺物）
+4. 標準出力に集計表とカテゴリ別 follow-up を出力:
+
+```
+/auto-learn --followups (集約: 8 コネクタ / 学習サマリあり: 7)
+
+| Connector | 試行 | 完全 | 部分 | 失敗 | 最終実行 |
+|---|---|---|---|---|---|
+| gmail | 1 | 1 | 0 | 0 | 2026-04-27 |
+| ...
+
+要 follow-up（カテゴリ別合計）:
+- Dynamic schema (要 /learn-recipe): 19 件
+  - google_big_query: insert_row, search_rows_sync, ...
+  - google_sheets: ...
+- Fire-and-forget (UI 仕様・追加学習不要): 9 件
+- Internal key 不明 (要 /learn-recipe): 1 件
+
+未集計（## 学習サマリ なし、過去 run 遺物の可能性）:
+- xxxx.md
+```
+
+### 設計上の不変条件
+
+- このモードは **UI に触らない**。Chrome MCP も呼ばない。`Read` / `Grep` / `Bash` (grep) のみ
+- `## 学習サマリ` は run の **最新スナップショット**。複数 run の累積は git 履歴で追う（このモードでは追わない）
+- `unknown` カテゴリは「セクション未生成のコネクタ」を可視化することで再 run を促す効果を持つ
+- 出力に書き込みはしない（**docs ファイルを変更しない**）
+
+### 既存セッションでの判断ルール
+
+ユーザーから「follow-up を出して」「skip した op を一覧して」「マニュアルでフィードバックすべき項目を出して」等の依頼を受けた場合、Claude は **`/auto-learn --followups` を呼ぶか、内容を直接実装する** のどちらでも構わない。重要なのは **`## 学習サマリ` のみを唯一の参照点にする**こと（テーブル本文や `> ⚠` インライン注記から再構築しない — 既に集計済みのものを読むだけ）。
 
 ## Git 管理
 

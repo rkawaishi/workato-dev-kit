@@ -288,3 +288,30 @@ Provider: `google_sheets`
 ## 学習失敗ログ
 
 - get_spreadsheet_rows_v4: status=ok (output empty), reason=output schema not materialized in datatree until Spreadsheet picklist is selected (dynamic output) — 2026-04-27
+
+---
+
+## 学習サマリ
+
+最終実行: 2026-04-27 by /auto-learn
+- 試行: 11 op (6 triggers + 5 actions)
+- 完全成功: 9
+- 部分学習: 2
+- 学習失敗: 0
+- スキップ:
+  - Deprecated: 7
+  - adhoc: 1 — `__adhoc_http_action`
+  - 既学習: 1 — `search_spreadsheet_rows_v4_new`
+
+### 要 follow-up
+
+- **Dynamic schema (要 /learn-recipe)** — Spreadsheet/Sheet picklist 未選択により `Rows[]` 配下の動的列スキーマが取れない
+  - `get_spreadsheet_rows_v4` — output schema 全体が未確定（datatree に group 出現せず）
+  - `add_row_v4_bulk` / `update_row_v4_bulk` — `List of batches` 配下の per-row column schema が未確定
+  - 全 op 共通: `Spreadsheet` picklist 選択時にしか `Rows[]` 配下のカラムは展開されない
+
+### 構造的注記（参考）
+
+- Triggers の output は metadata（`Spreadsheet ID`, `Spreadsheet name`, `Sheet name`, `Row number`）のみ resolve 可能。実カラムは sandbox spreadsheet 選択が必要
+- `search_spreadsheet_rows_v4_new` 既存セクションは snake_case 手動 schema。再学習時は `--force` で UI 由来の label format に統一推奨
+- 既存 Actions テーブルの行ずれ（rows 47-50）を本 run で修正済み

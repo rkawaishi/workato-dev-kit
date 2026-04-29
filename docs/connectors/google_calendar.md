@@ -1029,3 +1029,28 @@ Provider: `google_calendar`
 | Link | text | — |
 | List size | integer | — |
 | List index | integer | — |
+
+---
+
+## 学習サマリ
+
+最終実行: 2026-04-27 by /auto-learn
+- 試行: 17 op
+- 完全成功: 16
+- 部分学習: 1
+- 学習失敗: 0
+- スキップ:
+  - Deprecated: 0
+  - adhoc: 1 — `__adhoc_http_action`
+  - 既学習: 0
+
+### 要 follow-up
+
+- **Fire-and-forget (UI 仕様・追加学習不要)**
+  - `delete_event` — 削除アクション。output_group_not_found
+
+### 構造的注記（参考）
+
+- 重複ラベル `Email`: `Creator` / `Organizer` / `Attendees[]` 配下で出現。データツリー paddingLeft=0 でフラット表示
+- `event_start` / `event_end` トリガー: `Conference data` / `Focus time properties` / `Out of office properties` / `Working location properties` を含む 76 フィールドが output に出る（`new_event` / `updated_event` の 56 フィールドより多い）
+- 内部 JSON キーと UI label のマッピングは UI 観察では取れない（`/learn-recipe` で補完）

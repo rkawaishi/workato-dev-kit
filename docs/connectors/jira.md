@@ -1219,3 +1219,36 @@ Provider: `jira`
 - `search_issues` は UI 上で検索フィールドを指定する形式（JQL 直接入力は `Search issues by JQL` を使用）
 - 日本語テナントのデータツリーは label が日本語（`要約`、`担当者`、`期限` 等）で出る。レシピの datapill 参照では JSON キー（`fields.summary`、`fields.assignee` 等）を使う必要があるため、`new_issue` セクションの英語キー対応表を参照。
 - `update_issue` / `create_issue` の custom field 入力は `Sample project issue type` 選択により動的に追加される。プロジェクトごとに異なるため `/learn-recipe` で個別レシピから補完する。
+
+---
+
+## 学習サマリ
+
+最終実行: 2026-04-27 by /auto-learn
+- 試行: 26 op (10 triggers + 16 actions)
+- 完全成功: 21
+- 部分学習: 5
+- 学習失敗: 0
+- スキップ:
+  - Deprecated: 3
+  - adhoc: 1 — `__adhoc_http_action`
+  - 既学習: 2 — `new_issue`, `search_issues`
+
+### 要 follow-up
+
+- **Dynamic schema (要 /learn-recipe)** — Object/Project picklist 未選択により output schema が確定せず
+  - `deleted_object` — トリガー output が Object 選択依存
+  - `new_event` — トリガー output が Object 選択依存
+  - `create_issue` / `update_issue` (custom field 入力) — `Sample project issue type` 選択時のみ展開（プロジェクト固有）
+- **Fire-and-forget (UI 仕様・追加学習不要)**
+  - `assign_issue` — 担当者アサイン
+  - `update_issue` — 課題更新（output_group_not_found）
+  - `update_issue_status` — ステータス更新
+- **Webhook-only**
+  - `updated_worklog_webhook` — form-field 入力なし、Webhook 登録のみ
+
+### 構造的注記（参考）
+
+- 出力ラベルが日本語化（`要約`, `担当者`, `期限`）— 既存 `new_issue` セクションの英語 JSON キー対応表を要参照
+- `Pagination` / `Visibility` / `Role` / `Time tracking` / `Issue link` 等は内部 control type が空で `string` フォールバック。型精度はマニュアル補完
+- Custom fields (`customfield_xxxxx`) は project + issue type 依存で UI 観察対象外

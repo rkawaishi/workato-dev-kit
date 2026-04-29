@@ -566,3 +566,26 @@ Provider: `google_drive`
 - OAuth 2.0 またはサービスアカウント認証
 - Google Drive API v3 使用
 - provider 名: `google_drive`
+
+---
+
+## 学習サマリ
+
+最終実行: 2026-04-27 by /auto-learn
+- 試行: 17 op
+- 完全成功: 17
+- 部分学習: 0
+- 学習失敗: 0
+- スキップ:
+  - Deprecated: 1 — `upload_file`（→ `upload_file_stream` 推奨）
+  - adhoc: 1 — `__adhoc_http_action`
+  - 既学習: 0
+
+### 構造的注記（参考）
+
+- 重複ラベル `List size` / `List index`: `Actions` と `Actors` の各配列配下に同名で出現（`new_activity` 等）。データツリー `paddingLeft: 0` でフラット表示
+- Sharing user / Owners / Last modifying user の object/array 配下が `Display name` / `Email address` / `Permission ID` / `Photo link` / `Me` でフラット重複表示（`new_file_or_folder` 等）
+- 型表示の揺れ: `new_csv_file_batch` は `Starred` / `Trashed` を `boolean` 表示、`new_file_or_folder` は同フィールドを `number` 表示。Workato UI 側の不整合
+- 大文字小文字の揺れ: `MIME type` (`new_csv_file_batch`) vs `Mime type` (他)。UI そのまま捕捉
+
+要 follow-up なし（全 op で input/output 取得済み）。構造的注記は `/learn-recipe` または手動補完の対象。

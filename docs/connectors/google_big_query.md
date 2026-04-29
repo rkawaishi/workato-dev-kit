@@ -456,3 +456,35 @@ Provider: `google_big_query`
 ## 学習失敗ログ
 
 （なし — 全 op が `status=ok` で完了。一部は dynamic schema 由来の partial learning）
+
+---
+
+## 学習サマリ
+
+最終実行: 2026-04-27 by /auto-learn
+- 試行: 15 op
+- 完全成功: 4
+- 部分学習: 11
+- 学習失敗: 0
+- スキップ:
+  - Deprecated: 2 — `insert_rows`（→ `insert_rows_stream`）, `run_custom_sql`（→ `run_custom_sql_sync`）
+  - adhoc: 1 — `__adhoc_http_action`
+  - 既学習: 0
+
+### 要 follow-up
+
+- **Dynamic schema (要 /learn-recipe)** — Project/Dataset/Table picklist 未選択により output schema が UI 観察では取れない
+  - `new_row` / `new_rows_batch` / `scheduled_query` — 行系トリガー
+  - `get_query_job_output` — Job ID から行を取得
+  - `insert_row` / `insert_rows_stream` — Insert 系（output schema 動的）
+  - `run_custom_sql_sync` — 同期 SQL 実行（output 出現せず要再調査）
+  - `search_rows` / `search_rows_sync` — 検索 (Legacy + 現行)
+  - `search_rows_using_custom_sql` / `search_rows_using_custom_sql_sync` — SQL 検索 (Legacy + 現行)
+- **Fire-and-forget 寄り (要再確認)**
+  - `load_data_from_file` / `load_data_from_google_table` — ファイル/GCS ロードジョブ
+
+### 構造的注記（参考）
+
+- `new_job_completed` の output で `Load` / `Extract` / `Query` / `State` が `Statistics` と `Configuration` の object 配下に重複登場（`paddingLeft: 0` 起因）
+- `Insert rows` ピッカーは新 UI では `insert_rows_stream` のみ表示（`insert_rows` は picker から非表示）
+- `Run custom SQL in BigQuery` ピッカーは `run_custom_sql_sync` のみ表示

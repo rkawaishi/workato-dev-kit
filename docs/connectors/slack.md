@@ -444,3 +444,33 @@ Provider: `slack`
 - `text` — メッセージテキスト
 - `advanced.thread_ts` — スレッド返信先のタイムスタンプ
 - `blocks` — Block Kit ブロック定義
+
+---
+
+## 学習サマリ
+
+最終実行: 2026-04-27 by /auto-learn
+- 試行: 11 op (2 triggers + 9 actions)
+- 完全成功: 7
+- 部分学習: 5（うち 5 が fire-and-forget、1 が internal key マッピング不明 — 同 op で重複可）
+- 学習失敗: 0
+- スキップ:
+  - Deprecated: 7
+  - adhoc: 1 — `__adhoc_http_action`
+  - 既学習: 0
+
+### 要 follow-up
+
+- **Fire-and-forget (UI 仕様・追加学習不要)**
+  - `archive_conversation` — チャンネルアーカイブ
+  - `unarchive_conversation` — チャンネル復元
+  - `set_conversation_purpose` — チャンネル目的設定
+  - `set_conversation_topic` — チャンネルトピック設定
+  - `post_button_action_reply` — Block Kit ボタン応答
+- **Internal key 不明 (要 /learn-recipe)**
+  - `new_event` — `Event name` フィールドが内部 `webhook_suffix` キーに対応。UI 観察では label しか取れない
+
+### 構造的注記（参考）
+
+- 重複ラベル `ID` / `Name` / `User`: `Channel` と `Team` グループ配下の入れ子フィールド。データツリー paddingLeft=0 でフラット表示（`button_action`, `new_event` 等）
+- 動的 `Channel` picklist: 多くのアクションで Channel 選択が必要（sandbox 値なし。static のみ捕捉）
