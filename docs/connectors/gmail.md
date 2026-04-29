@@ -60,6 +60,34 @@ Provider: `gmail`
 |---|---|---|
 | content_bytes | string | 添付ファイルのバイナリコンテンツ |
 
+---
+
+### send_mail (Action)
+
+種別: Action
+学習元: /auto-learn (UI 観察) — 2026-04-27
+
+#### Input fields
+| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+|---|---|---|---|---|
+| To | string | Yes | Yes | Provide the recipient email address(es) separated by comma. |
+| Subject | string | Yes | Yes | — |
+| Email type | select | - | Yes | Select the format of the email message（`Text` / `HTML`） |
+| Message | string | - | Yes | Plain text if selected email type is Text, HTML formatted if selected email type is HTML |
+| From | string | - | No | — |
+| Bcc | string | - | No | — |
+| Cc | string | - | No | — |
+| Reply to | string | - | No | — |
+| Attachments[].File binary content | string | - | No | リスト型のグループフィールド |
+| Attachments[].File name | string | - | No | リスト型のグループフィールド |
+
+#### Output fields
+| フィールド | 型 | 説明 |
+|---|---|---|
+| id | string | 送信メールの ID |
+| thread_id | string | スレッド ID |
+| label_ids | string | 適用ラベル（例: `UNREAD`） |
+
 ## Custom Action パターン
 
 Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gmail API を直接呼び出せる。
@@ -602,3 +630,19 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 | markedMessageUnread[].labelIds | string | Label IDs |
 | markedMessageUnread[].messageId | string | Message ID |
 | markedMessageUnread[].id | string | ID |
+
+---
+
+## 学習サマリ
+
+最終実行: 2026-04-27 by /auto-learn
+- 試行: 1 op
+- 完全成功: 1
+- 部分学習: 0
+- 学習失敗: 0
+- スキップ:
+  - Deprecated: 0
+  - adhoc: 1 — `__adhoc_http_action`
+  - 既学習: 2 — `new_email`, `download_attachment`
+
+要 follow-up なし。
