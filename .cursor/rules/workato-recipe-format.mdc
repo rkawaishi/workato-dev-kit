@@ -20,6 +20,22 @@ alwaysApply: false
 }
 ```
 
+### `code` 配下のトリガーにある `format_version`
+
+Workato が新しいレシピ構造を区別するため、トリガーステップに `"format_version": 2` が付与されることがある（UI で保存後の pull で出現）。新規生成時は省略可、push 時は保持する。
+
+## UI 由来のフィールド（手書きでは付けないが push 後に現れる）
+
+| フィールド | 場所 | 意味 |
+|---|---|---|
+| `dynamicPickListSelection` | ステップ | UI の pick list で選択した値の表示用ラベル。例: `{"event_name": "Slash Command (slash_command)"}` |
+| `toggleCfg` | ステップ | 入力フィールドの toggle 状態。`true` = カスタム入力モード、`false` = pick list モード |
+| `title` | アクションステップ | アクション表示名のオーバーライド（null で default） |
+| `description` | アクションステップ | コネクタが返すアクション説明文（HTML spans 含む）。pull 時に自動付与 |
+| `custom: true` | config の account_id | カスタムコネクタ接続を示すフラグ（pull 時に自動付与） |
+
+これらは UI で編集せずに JSON を手書きする場合は省略して構わない（push 時に Workato が補完する）。手動編集後も削除せずに残すのが安全。
+
 ## code: ステップツリー（再帰構造）
 
 各ステップは以下のフィールドを持つ:
