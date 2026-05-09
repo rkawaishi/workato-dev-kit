@@ -86,21 +86,21 @@ link_dir() {
 # ── 1. .claude/rules/ （ファイル単位 symlink）──────────────
 echo "--- Setting up .claude/rules/ ---"
 link_files_in_dir \
-  "$KIT_DIR/.claude/rules" \
+  "$KIT_DIR/framework/claude/rules" \
   "$WORKSPACE_ROOT/.claude/rules" \
-  "../../$KIT_REL/.claude/rules"
+  "../../$KIT_REL/framework/claude/rules"
 
 # ── 2. .claude/skills/ （ディレクトリ単位 symlink: 各スキルフォルダ）─
 echo ""
 echo "--- Setting up .claude/skills/ ---"
 mkdir -p "$WORKSPACE_ROOT/.claude/skills"
 
-for skill_dir in "$KIT_DIR/.claude/skills"/*/; do
+for skill_dir in "$KIT_DIR/framework/claude/skills"/*/; do
   [ -d "$skill_dir" ] || continue
   skill_name="$(basename "$skill_dir")"
 
   dst="$WORKSPACE_ROOT/.claude/skills/$skill_name"
-  rel_target="../../$KIT_REL/.claude/skills/$skill_name"
+  rel_target="../../$KIT_REL/framework/claude/skills/$skill_name"
 
   if [ -L "$dst" ]; then
     rm "$dst"
@@ -117,9 +117,9 @@ done
 echo ""
 echo "--- Setting up .claude/hooks/ ---"
 link_files_in_dir \
-  "$KIT_DIR/.claude/hooks" \
+  "$KIT_DIR/framework/claude/hooks" \
   "$WORKSPACE_ROOT/.claude/hooks" \
-  "../../$KIT_REL/.claude/hooks"
+  "../../$KIT_REL/framework/claude/hooks"
 
 # ── 4. docs/ guides/ scripts/ templates/ （ディレクトリ symlink）─
 echo ""
@@ -133,7 +133,7 @@ link_dir "$KIT_DIR/templates" "templates" "templates"
 echo ""
 echo "--- Setting up .claude/settings.json ---"
 
-KIT_SETTINGS="$KIT_DIR/.claude/settings.json"
+KIT_SETTINGS="$KIT_DIR/framework/claude/settings.json"
 USER_SETTINGS="$WORKSPACE_ROOT/.claude/settings.json"
 
 if [ ! -f "$USER_SETTINGS" ]; then
@@ -144,13 +144,16 @@ import json, sys
 with open('$KIT_SETTINGS') as f:
     s = json.load(f)
 
-# Hook のコマンドパスを kit/ 相対に書き換え
+# Hook のコマンドパスを kit/framework/claude/ 配下に書き換え
+# テンプレート上は \".claude/hooks/<name>\" と書かれているが、実体は
+# kit/framework/claude/hooks/<name>。利用者の \".claude/settings.json\" には
+# 実体パスを直接埋め込む（symlink を経由しない）。
 for event in s.get('hooks', {}).values():
     for group in event:
         for hook in group.get('hooks', []):
             cmd = hook.get('command', '')
             if cmd.startswith('.claude/hooks/'):
-                hook['command'] = '$KIT_REL/' + cmd
+                hook['command'] = '$KIT_REL/framework/claude/hooks/' + cmd[len('.claude/hooks/'):]
 
 with open('$USER_SETTINGS', 'w') as f:
     json.dump(s, f, indent=2, ensure_ascii=False)
@@ -158,7 +161,34 @@ with open('$USER_SETTINGS', 'w') as f:
   "
   echo "  ✓ Created .claude/settings.json (from kit template)"
 else
-  echo "  EXISTS .claude/settings.json (not overwritten — merge manually if needed)"
+  # 既存設定: 旧版 setup.sh が書いた hook パスを framework/claude/ 配下に書き換える。
+  # 利用者が追加した hook（kit 由来でないもの）には手を付けない。
+  python3 -c "
+import json
+
+old_prefix = '$KIT_REL/.claude/hooks/'
+new_prefix = '$KIT_REL/framework/claude/hooks/'
+
+with open('$USER_SETTINGS') as f:
+    s = json.load(f)
+
+migrated = 0
+for event in s.get('hooks', {}).values():
+    for group in event:
+        for hook in group.get('hooks', []):
+            cmd = hook.get('command', '')
+            if cmd.startswith(old_prefix):
+                hook['command'] = new_prefix + cmd[len(old_prefix):]
+                migrated += 1
+
+if migrated:
+    with open('$USER_SETTINGS', 'w') as f:
+        json.dump(s, f, indent=2, ensure_ascii=False)
+        f.write('\n')
+    print(f'  ✓ Migrated {migrated} kit hook path(s) in .claude/settings.json (.claude/hooks/ → framework/claude/hooks/)')
+else:
+    print('  EXISTS .claude/settings.json (no kit hook paths needed migrating — merge manually if other changes are needed)')
+  "
 fi
 
 # ── 6. CLAUDE.md の生成 ──────────────────────────────────
@@ -166,7 +196,7 @@ echo ""
 echo "--- Setting up CLAUDE.md ---"
 
 CLAUDE_MD="$WORKSPACE_ROOT/.claude/CLAUDE.md"
-KIT_CLAUDE_MD="$KIT_DIR/.claude/CLAUDE.md"
+KIT_CLAUDE_MD="$KIT_DIR/framework/claude/CLAUDE.md"
 
 if [ ! -f "$CLAUDE_MD" ]; then
   cat > "$CLAUDE_MD" << 'HEREDOC'
