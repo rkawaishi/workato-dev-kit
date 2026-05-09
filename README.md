@@ -119,8 +119,8 @@ git add projects/<project-name> && git commit -m "Add IT Onboarding workflow"
 | `/create-connector` | カスタムコネクタをスキャフォールド |
 | `/catalog` | 共有アセットのスキャン・カタログ化 |
 | `/validate-recipe` | レシピ JSON の構造を検証 |
-| `/wpull` | Workato リモートからプロジェクトを pull |
-| `/wpush` | ローカル変更を push (バリデーション + レシピ起動対応) |
+| `/pull-project` | Workato リモートからプロジェクトを pull |
+| `/push-project` | ローカル変更を push (バリデーション + レシピ起動対応) |
 | `/learn-recipe` | pull したレシピからフィールド情報を学習 |
 | `/learn-pattern` | レシピ構築パターンをカタログに記録・更新 |
 | `/sync-connectors` | コネクタ情報を収集・更新（Pre-built: API、カスタム: connector.rb パース） |
@@ -148,9 +148,9 @@ bash scripts/sync-cursor-rules.sh
 ```
 /design new "<project-name>"     ← 設計書を作成
 /create-workflow-app             ← Workflow App を構築（またはレシピ単体）
-/wpush --start                   ← push + レシピ起動
+/push-project --start            ← push + レシピ起動
 Workato UI で確認・調整
-/wpull → /learn-recipe           ← 学習サイクル
+/pull-project → /learn-recipe    ← 学習サイクル
 /design update                   ← 設計書の進捗を更新
 ```
 

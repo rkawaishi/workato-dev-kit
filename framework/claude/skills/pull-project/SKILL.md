@@ -1,18 +1,19 @@
 ---
-name: wpull
 description: Workato リモートからプロジェクトを pull する。引数なしで現在のプロジェクト、プロジェクト名指定で切り替え後 pull。
+allowed-tools: Bash, Read, Glob
+disable-model-invocation: true
 ---
 
-# /wpull
+# /pull-project
 
 Workato Platform CLI でリモートからプロジェクトを pull する。
 
 ## 使い方
 
-- `/wpull` — 現在のプロジェクトを pull
-- `/wpull <project-name>` — 指定プロジェクトに切り替えて pull
-- `/wpull --all` — 全リモートプロジェクトを pull
-- `/wpull --list` — リモートプロジェクト一覧を表示
+- `/pull-project` — 現在のプロジェクトを pull
+- `/pull-project <project-name>` — 指定プロジェクトに切り替えて pull
+- `/pull-project --all` — 全リモートプロジェクトを pull
+- `/pull-project --list` — リモートプロジェクト一覧を表示
 
 ## 実行手順
 

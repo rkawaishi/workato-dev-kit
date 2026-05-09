@@ -141,30 +141,30 @@ Connector SDK プロジェクトをスキャフォールドし、`connector.rb` 
 
 ## 同期フェーズ
 
-### /wpull — Workato からプルする
+### /pull-project — Workato からプルする
 
 Workato リモートからプロジェクトのアセットをローカルに取得する。
 
 ```
-/wpull                     # カレントプロジェクトをプル
-/wpull --all               # 全リモートプロジェクトをプル
-/wpull --list              # リモートプロジェクトの一覧表示
+/pull-project                     # カレントプロジェクトをプル
+/pull-project --all               # 全リモートプロジェクトをプル
+/pull-project --list              # リモートプロジェクトの一覧表示
 ```
 
 **プル後のアクション:**
 - 変更されたファイルを報告
 - 新しいパターンが見つかった場合、`/learn-recipe` の実行を提案
 
-### /wpush — Workato にプッシュする
+### /push-project — Workato にプッシュする
 
 ローカルの変更を Workato リモートにプッシュする。プッシュ前にバリデーションを実行。
 
 ```
-/wpush                     # バリデーション → プッシュ
-/wpush --start             # プッシュ後にレシピを起動
-/wpush --test              # プッシュ後にテスト実行・ジョブ確認
-/wpush --restart-recipes   # 既存の稼働中レシピを再起動
-/wpush --delete            # リモートから削除されたアセットを削除
+/push-project                     # バリデーション → プッシュ
+/push-project --start             # プッシュ後にレシピを起動
+/push-project --test              # プッシュ後にテスト実行・ジョブ確認
+/push-project --restart-recipes   # 既存の稼働中レシピを再起動
+/push-project --delete            # リモートから削除されたアセットを削除
 ```
 
 **プッシュフロー:**

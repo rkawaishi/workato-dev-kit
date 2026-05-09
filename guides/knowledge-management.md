@@ -60,7 +60,7 @@ projects/docs/patterns/     # 組織ドメインの構築パターン
 UI で調整したレシピを pull した後に実行する。
 
 ```
-/wpull                         # UI の変更をローカルに取得
+/pull-project                         # UI の変更をローカルに取得
 /learn-recipe <project-name>   # プロジェクト全体を学習
 ```
 
@@ -145,9 +145,9 @@ trigger → step1 → step2 → ...
 ```
 1. /sync-connectors <provider>     # コネクタ情報を取得
 2. /create-recipe                  # レシピを生成
-3. /wpush --start                  # デプロイ
+3. /push-project --start                  # デプロイ
 4. UI で調整                       # pick_list の選択、フィールド微調整
-5. /wpull                          # 変更を取得
+5. /pull-project                          # 変更を取得
 6. /learn-recipe                   # 調整結果を学習
 ```
 
@@ -163,7 +163,7 @@ trigger → step1 → step2 → ...
 ### プロジェクト引き継ぎ時
 
 ```
-1. /wpull --all                    # 全プロジェクトを取得
+1. /pull-project --all                    # 全プロジェクトを取得
 2. /learn-recipe <project>         # 各プロジェクトから学習
 3. /catalog                        # 共有アセットを棚卸し
 ```

@@ -19,9 +19,9 @@
               ↓
 [検証]     /validate-recipe        → JSON 構造を検証
               ↓
-[同期]     /wpush                  → Workato リモートへ push（バリデーション込み）
+[同期]     /push-project                  → Workato リモートへ push（バリデーション込み）
            (UI で pick_list 等を調整)
-           /wpull                  → 調整結果をローカルに取得
+           /pull-project                  → 調整結果をローカルに取得
               ↓
 [学習]     /learn-recipe           → 調整済みレシピから docs/connectors/ を拡充
            /learn-pattern          → 再現性のある組み方を docs/patterns/ に記録
@@ -65,14 +65,14 @@
 | スキル | いつ呼ぶ | 読むもの | 書くもの |
 |---|---|---|---|
 | `/validate-recipe` | push 前、JSON 編集後 | プロジェクトの JSON 群, `.claude/rules/` | なし（検証レポートのみ） |
-| `/wpush` | デプロイ前 | プロジェクトのアセット | Workato リモート（ローカルは変更しない） |
-| `/wpull` | UI 調整後、引き継ぎ時 | Workato リモート | `projects/<name>/` のアセット（上書き） |
+| `/push-project` | デプロイ前 | プロジェクトのアセット | Workato リモート（ローカルは変更しない） |
+| `/pull-project` | UI 調整後、引き継ぎ時 | Workato リモート | `projects/<name>/` のアセット（上書き） |
 
 ### 学習フェーズ
 
 | スキル | いつ呼ぶ | 読むもの | 書くもの |
 |---|---|---|---|
-| `/learn-recipe` | `/wpull` 直後、未学習アクション実装後 | `projects/<name>/Recipes/*.recipe.json` | `docs/connectors/<provider>.md`（input/output/snippet 追記）, `docs/logic/data-pills.md`, `.claude/rules/`, `docs/patterns/deployment-guide.md` |
+| `/learn-recipe` | `/pull-project` 直後、未学習アクション実装後 | `projects/<name>/Recipes/*.recipe.json` | `docs/connectors/<provider>.md`（input/output/snippet 追記）, `docs/logic/data-pills.md`, `.claude/rules/`, `docs/patterns/deployment-guide.md` |
 | `/learn-pattern` | 再現性のある組み方に気づいた時 | 参考レシピ（任意）, 既存 `docs/patterns/recipe-patterns/` | `docs/patterns/recipe-patterns/<name>.md`（汎用）または `projects/docs/patterns/<name>.md`（組織固有） |
 
 ## docs 責務マップ
@@ -88,7 +88,7 @@
 | `docs/logic/` | 人手, `/learn-recipe` | `/create-recipe`, `/create-workflow-app` | datapill 記法、数式、ループ、エラーハンドリング、トリガー |
 | `docs/platform/` | 人手 | `/create-workflow-app`, `/create-genie`, `/design` | Data Table, Lookup Table, Agent Studio, MCP, Workflow App |
 | `docs/patterns/recipe-patterns/` | `/learn-pattern` | `/create-recipe`, `/design` | 汎用レシピ構築パターン（Workato 全般に適用可） |
-| `docs/patterns/deployment-guide.md` | 人手, `/learn-recipe` | `/wpush`, `/create-workflow-app` | デプロイ手順、よくあるエラー |
+| `docs/patterns/deployment-guide.md` | 人手, `/learn-recipe` | `/push-project`, `/create-workflow-app` | デプロイ手順、よくあるエラー |
 | `docs/patterns/shared-assets.md` | 人手 | `/create-recipe`, `/catalog`, `/design` | 共有アセット設計方針 |
 | `docs/patterns/workspace-management.md` | 人手 | `/design`, `/catalog` | ワークスペース構成・命名規則 |
 | `.claude/rules/` | 人手, `/learn-recipe`（JSON 構造の新発見時） | 全スキル | JSON フォーマット、パス別ルール |
@@ -101,7 +101,7 @@
 | `connectors/docs/<name>.md` | `/sync-connectors --custom` | `/create-recipe`, `/create-workflow-app` | カスタムコネクタのトリガー/アクション/フィールド仕様 |
 | `connectors/<name>/connector.rb` | `/create-connector`, 人手 | `/sync-connectors --custom` | カスタムコネクタの実装 |
 | `projects/<name>/DESIGN.md` | `/design` | セッション開始時の Claude, `/create-recipe`, `/create-workflow-app` | プロジェクト設計書、Unlearned Actions |
-| `projects/<name>/Recipes/*.json` | `/create-recipe`, `/wpull` | `/learn-recipe`, `/validate-recipe`, `/wpush` | レシピ本体 |
+| `projects/<name>/Recipes/*.json` | `/create-recipe`, `/pull-project` | `/learn-recipe`, `/validate-recipe`, `/push-project` | レシピ本体 |
 | `projects/CATALOG.md` | `/catalog scan` | `/create-recipe`, `/design` | 組織の共有アセット（Recipe Function, コネクション）一覧 |
 | `projects/CATALOG_CONFIG.yaml` | 人手 | `/catalog` | スコープ設定（global / team / private） |
 | `projects/docs/patterns/` | `/learn-pattern` | `/create-recipe`, `/design` | 組織ドメイン固有の構築パターン |
@@ -152,9 +152,9 @@
 /sync-connectors <provider>    # コネクタのメタデータを取得
 /create-recipe                 # docs/connectors/ を読んでレシピ生成
 /validate-recipe <project>     # JSON 構造を検証
-/wpush --start                 # デプロイ + 起動
+/push-project --start                 # デプロイ + 起動
 (UI で pick_list 等を調整)
-/wpull                         # 調整結果を取得
+/pull-project                         # 調整結果を取得
 /learn-recipe <project>        # 調整内容を docs に反映
 /design update                 # 実装状況を DESIGN.md に反映
 ```
@@ -166,7 +166,7 @@
 /catalog
 /create-recipe                 # 既に docs/connectors/ にある前提
 /validate-recipe <project>
-/wpush --start
+/push-project --start
 /design update
 ```
 
@@ -184,7 +184,7 @@
 ### シナリオ D: 引き継ぎ（既存プロジェクトを理解する）
 
 ```
-/wpull --all                   # 全プロジェクトをローカルに取得
+/pull-project --all                   # 全プロジェクトをローカルに取得
 /design <project>              # 設計書を読む
 /learn-recipe <project>        # 実装から docs を拡充
 /catalog scan                  # 共有アセットを棚卸し
