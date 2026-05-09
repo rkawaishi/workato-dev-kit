@@ -223,10 +223,13 @@ else
 fi
 
 # ── 8. Cursor 同期（存在する場合）────────────────────────
-if [ -f "$KIT_DIR/scripts/sync-cursor-rules.sh" ]; then
+# sync-cursor-rules.sh は REPO_ROOT を $(dirname "$0")/.. から導出するため、
+# ワークスペースルートの scripts/ から実行されたように見せる必要がある。
+# scripts/ は kit/scripts/ への symlink なので、そのパスで呼び出す。
+if [ -L "$WORKSPACE_ROOT/scripts" ] && [ -f "$WORKSPACE_ROOT/scripts/sync-cursor-rules.sh" ]; then
   echo ""
   echo "--- Syncing Cursor rules ---"
-  bash "$KIT_DIR/scripts/sync-cursor-rules.sh" 2>/dev/null || echo "  WARN: Cursor sync failed (non-fatal)"
+  bash "$WORKSPACE_ROOT/scripts/sync-cursor-rules.sh" 2>/dev/null || echo "  WARN: Cursor sync failed (non-fatal)"
 fi
 
 # ── 完了 ────────────────────────────────────────────────
