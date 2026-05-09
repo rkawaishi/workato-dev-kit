@@ -161,7 +161,34 @@ with open('$USER_SETTINGS', 'w') as f:
   "
   echo "  ✓ Created .claude/settings.json (from kit template)"
 else
-  echo "  EXISTS .claude/settings.json (not overwritten — merge manually if needed)"
+  # 既存設定: 旧版 setup.sh が書いた hook パスを framework/claude/ 配下に書き換える。
+  # 利用者が追加した hook（kit 由来でないもの）には手を付けない。
+  python3 -c "
+import json
+
+old_prefix = '$KIT_REL/.claude/hooks/'
+new_prefix = '$KIT_REL/framework/claude/hooks/'
+
+with open('$USER_SETTINGS') as f:
+    s = json.load(f)
+
+migrated = 0
+for event in s.get('hooks', {}).values():
+    for group in event:
+        for hook in group.get('hooks', []):
+            cmd = hook.get('command', '')
+            if cmd.startswith(old_prefix):
+                hook['command'] = new_prefix + cmd[len(old_prefix):]
+                migrated += 1
+
+if migrated:
+    with open('$USER_SETTINGS', 'w') as f:
+        json.dump(s, f, indent=2, ensure_ascii=False)
+        f.write('\n')
+    print(f'  ✓ Migrated {migrated} kit hook path(s) in .claude/settings.json (.claude/hooks/ → framework/claude/hooks/)')
+else:
+    print('  EXISTS .claude/settings.json (no kit hook paths needed migrating — merge manually if other changes are needed)')
+  "
 fi
 
 # ── 6. CLAUDE.md の生成 ──────────────────────────────────
