@@ -36,8 +36,8 @@ my-org-workato/                 ← 作業ルート
 ├── docs/ → kit/docs/           ← symlink
 ├── guides/ → kit/guides/       ← symlink
 ├── kit/                        ← git submodule（読み取り専用）
-├── projects/                   ← 組織のレシピ（ワークスペースリポジトリで直接管理）
-└── connectors/                 ← 組織のカスタムコネクタ（ワークスペースリポジトリで直接管理）
+├── projects/                   ← 組織のレシピ
+└── connectors/                 ← 組織のカスタムコネクタ
 ```
 
 ## 3. Workato Platform CLI をインストール

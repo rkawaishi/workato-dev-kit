@@ -18,13 +18,13 @@ my-org-workato/                   ← 組織のリポジトリ（作業ルート
 ├── docs/ → kit/docs/             # symlink（ナレッジベース）
 ├── guides/ → kit/guides/         # symlink
 ├── kit/                          ← git submodule（workato-dev-kit、読み取り専用）
-├── projects/                     ← 組織のレシピ（ワークスペースリポジトリで直接管理）
+├── projects/                     ← 組織のレシピ
 │   └── <project-name>/
 │       ├── DESIGN.md
 │       ├── Recipes/
 │       ├── Pages/
 │       └── ...
-└── connectors/                   ← 組織のカスタムコネクタ（ワークスペースリポジトリで直接管理）
+└── connectors/                   ← 組織のカスタムコネクタ
     ├── docs/
     └── <name>/connector.rb
 ```
