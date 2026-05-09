@@ -1,36 +1,13 @@
 {
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".claude/hooks/validate-before-push.sh"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".claude/hooks/sync-docs-after-sdk-push.sh"
-          }
-        ]
-      }
-    ]
-  },
   "permissions": {
     "allow": [
-      "Bash(workato:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
-      "Bash(uuidgen)",
+      "Bash(cat:*)",
       "Bash(git:*)",
-      "Bash(cat:*)"
+      "Bash(bash scripts/sync-cursor-rules.sh)",
+      "Bash(bash setup.sh)",
+      "Bash(python3:*)"
     ],
     "deny": [
       "Bash(rm -rf:*)",

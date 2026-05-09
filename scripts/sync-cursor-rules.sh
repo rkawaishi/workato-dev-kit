@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # sync-cursor-rules.sh
 #
-# .claude/rules/*.md  → .cursor/rules/*.mdc   へフロントマター変換＋内容コピー
-# .claude/skills/*/SKILL.md → .cursor/skills/*/SKILL.md へスキル変換
+# framework/claude/rules/*.md       → .cursor/rules/*.mdc   へフロントマター変換＋内容コピー
+# framework/claude/skills/*/SKILL.md → .cursor/skills/*/SKILL.md へスキル変換
 #
 # Usage: bash scripts/sync-cursor-rules.sh
 #
@@ -13,10 +13,19 @@
 set -eo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-CLAUDE_RULES="$REPO_ROOT/.claude/rules"
+CLAUDE_RULES="$REPO_ROOT/framework/claude/rules"
 CURSOR_RULES="$REPO_ROOT/.cursor/rules"
-CLAUDE_SKILLS="$REPO_ROOT/.claude/skills"
+CLAUDE_SKILLS="$REPO_ROOT/framework/claude/skills"
 CURSOR_SKILLS="$REPO_ROOT/.cursor/skills"
+
+# このスクリプトは kit リポジトリ内（framework/ が存在する）でのみ動作する。
+# 利用者リポジトリ（kit/ を submodule として持つ側）にはルート直下に framework/ が無い
+# ため、setup.sh からチェイン実行された場合はサイレントに skip する。
+# 利用者リポジトリでの Cursor 同期は現時点でサポート対象外。
+if [ ! -d "$CLAUDE_RULES" ] || [ ! -d "$CLAUDE_SKILLS" ]; then
+  echo "Skipped: framework/claude/{rules,skills} not found at $REPO_ROOT (consumer repo or non-kit context)."
+  exit 0
+fi
 
 mkdir -p "$CURSOR_RULES" "$CURSOR_SKILLS"
 
