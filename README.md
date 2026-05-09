@@ -25,68 +25,82 @@ Workato (エンタープライズ iPaaS) の自動化開発を [Claude Code](htt
 
 > 詳しい手順は **[Quick Start Guide (Claude Code)](guides/quickstart-claude-code.md)** または **[Quick Start Guide (Cursor)](guides/quickstart-cursor.md)** を参照してください。
 
+### 方法 A: Submodule として利用（推奨）
+
+組織のワークスペースリポジトリに workato-dev-kit を submodule として追加します。フレームワークの更新を `git submodule update` で簡単に取り込めます。
+
 ```bash
-# リポジトリをクローン
-git clone <repo-url>
-cd workato-dev-kit
+# 組織のワークスペースリポジトリを作成
+mkdir my-org-workato && cd my-org-workato
+git init
+
+# workato-dev-kit を submodule として追加
+git submodule add <repo-url> kit
+
+# セットアップスクリプトを実行（symlink 作成、設定ファイル生成）
+bash kit/setup.sh
 
 # Platform CLI の初期化
 workato init
+
+# 初回コミット
+git add -A && git commit -m "Initial setup with workato-dev-kit"
 ```
 
-## 使い方 — デュアルリポジトリ構造
-
-このリポジトリは **開発フレームワーク** です。組織固有のレシピプロジェクトは `projects/` 配下に別の git リポジトリとして管理します。
+セットアップ後のディレクトリ構造:
 
 ```
-workato-dev-kit/                ← このリポジトリ（フレームワーク）
-├── .claude/                    ← Claude Code 用（スキル、ルール、hooks）
-├── .cursor/                    ← Cursor 用（ルール、スキル相当のルール）
-├── docs/                       ← ナレッジベース
-│
-├── connectors/                 ← 組織の別リポジトリ（gitignore 対象）
-│   ├── docs/                   ← カスタムコネクタのナレッジ（自動生成）
-│   └── <name>/
-│       └── connector.rb        ← Connector SDK ソース
-│
-└── projects/                   ← 組織の別リポジトリ（gitignore 対象）
-    └── <project-name>/
-        ├── DESIGN.md           ← 設計書
-        ├── Recipes/
-        ├── Pages/
-        └── ...
+my-org-workato/                 ← 組織のリポジトリ（作業ルート）
+├── .claude/
+│   ├── CLAUDE.md               ← 自動生成（カスタマイズ可）
+│   ├── rules/                  ← kit のルールへの symlink + 組織独自ルール
+│   ├── skills/                 ← kit のスキルへの symlink + 組織独自スキル
+│   ├── hooks/                  ← kit のフックへの symlink
+│   └── settings.json           ← 自動生成（カスタマイズ可）
+├── docs/ → kit/docs/           ← symlink
+├── guides/ → kit/guides/       ← symlink
+├── kit/                        ← git submodule（workato-dev-kit、読み取り専用）
+├── projects/                   ← 組織のレシピ（直接管理 or 別リポ）
+└── connectors/                 ← 組織のカスタムコネクタ（直接管理 or 別リポ）
 ```
 
-### フレームワーク (workato-dev-kit)
-
-スキル、ルール、ドキュメントを含む。開発中に新しいパターンを学んだら PR で反映して育てる。
+**フレームワークの更新:**
 
 ```bash
-# スキルの改善を PR
-git checkout -b feature/improve-create-recipe
-# ... スキルやドキュメントを更新 ...
-git push origin feature/improve-create-recipe
-# GitHub で PR を作成
+git submodule update --remote kit
+bash kit/setup.sh   # 新しいスキル/ルールの symlink を追加
+git add kit && git commit -m "Update workato-dev-kit"
 ```
+
+**組織独自のスキル/ルールの追加:**
+
+`.claude/rules/` や `.claude/skills/` に通常のファイルとして追加すれば、kit のものと共存します（symlink でないファイルは setup.sh で上書きされません）。
+
+### 方法 B: 直接クローン
+
+個人利用やすぐに試したい場合はそのままクローンできます。
+
+```bash
+git clone <repo-url> workato-dev-kit
+cd workato-dev-kit
+workato init
+```
+
+## ワークスペース構造
+
+このリポジトリは **開発フレームワーク** です。組織固有のレシピプロジェクトは `projects/` 配下に配置します。
 
 ### レシピプロジェクト (projects/)
 
-組織固有のレシピ・ページ・コネクションを管理。`projects/` 配下で別途 git init する。
+組織固有のレシピ・ページ・コネクションを管理。
 
 ```bash
-# 組織リポジトリの初期化
-cd projects
-git init
-git remote add origin <org-repo-url>
-
 # Workato からプロジェクトを pull
-cd ..
 workato projects use "<project-name>"
 workato pull
 
-# 開発 → コミット
-cd projects
-git add -A && git commit -m "Add IT Onboarding workflow"
+# 開発 → コミット（submodule 利用時は projects/ を直接 git 管理可能）
+git add projects/<project-name> && git commit -m "Add IT Onboarding workflow"
 ```
 
 ### 設計書 (DESIGN.md)
