@@ -13,10 +13,6 @@ Claude Code で Workato Dev Kit をセットアップして最初のレシピを
 
 ## 2. ワークスペースをセットアップ
 
-### 方法 A: Submodule として利用（推奨）
-
-フレームワークの更新を簡単に取り込めます。組織のチームで共有する場合はこちら。
-
 ```bash
 # 組織のワークスペースリポジトリを作成
 mkdir my-org-workato && cd my-org-workato
@@ -43,17 +39,6 @@ my-org-workato/                 ← 作業ルート
 ├── projects/                   ← 組織のレシピ
 └── connectors/                 ← 組織のカスタムコネクタ
 ```
-
-### 方法 B: 直接クローン
-
-個人利用やすぐに試したい場合。
-
-```bash
-git clone https://github.com/rkawaishi/workato-dev-kit.git
-cd workato-dev-kit
-```
-
-> 方法 B では `projects/` と `connectors/` を別リポジトリとして管理します。詳しくは [README.md](../README.md) を参照。
 
 ## 3. Workato Platform CLI をインストール
 
@@ -103,7 +88,7 @@ workato pull
 ## 7. Claude Code を起動
 
 ```bash
-cd workato-dev-kit
+cd my-org-workato
 claude
 ```
 
@@ -176,7 +161,8 @@ Workato UI でレシピを調整したら、その変更を取り込んでナレ
 学んだパターンがツールキットの改善になる場合は、workato-dev-kit に PR を出してください:
 
 ```bash
-# workato-dev-kit 側で
+# kit/ ディレクトリで
+cd kit
 git checkout -b feature/learn-jira-fields
 # docs/ や .claude/rules/ への変更をコミット
 git push origin feature/learn-jira-fields
@@ -189,9 +175,9 @@ git push origin feature/learn-jira-fields
 
 Workato UI 上でレシピやコネクションをまとめる単位です。`workato pull` でローカルに JSON ファイルとしてダウンロードし、`workato push` でアップロードします。
 
-### Q: projects/ フォルダは git に入らないの？
+### Q: projects/ フォルダはどう git 管理するの？
 
-workato-dev-kit の `.gitignore` で除外されています。組織のレシピは `projects/` 内で別の git リポジトリとして管理してください。
+ワークスペースリポジトリに直接含まれます。`git add projects/<name> && git commit` で通常通り管理してください。
 
 ### Q: DESIGN.md は workato pull で消える？
 

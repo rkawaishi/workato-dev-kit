@@ -231,11 +231,10 @@ DESIGN.md
 
 ## Git 管理
 
-DESIGN.md は内側リポジトリ `projects/` で管理する（外側 workato-dev-kit からは gitignored）。新規作成・更新後は内側でコミット:
+DESIGN.md はワークスペースリポジトリの `projects/` で管理する。新規作成・更新後はワークスペースリポジトリでコミット:
 
 ```bash
-(cd projects/<project-name> && git add DESIGN.md .workatoignore && git commit -m "Update design: <project-name>")
-(cd projects/<project-name> && git push origin)
+git add projects/<project-name>/DESIGN.md projects/<project-name>/.workatoignore
+git commit -m "Update design: <project-name>"
+git push origin
 ```
-
-詳細は `.cursor/rules/workato-multi-repo-git.mdc` 参照。

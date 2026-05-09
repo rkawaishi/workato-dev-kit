@@ -372,14 +372,13 @@ for (const op of queue) {
 
 ## Git 管理
 
-書き込み先は外側 `workato-dev-kit/docs/connectors/<provider>.md` のみ。スキル自身はコミットしない（最後にユーザー判断）:
+書き込み先は kit（submodule）内の `docs/connectors/<provider>.md` のみ。スキル自身はコミットしない（最後にユーザー判断）。コミットは kit 内で行い、workato-dev-kit に PR:
 
 ```bash
+cd kit
 git add docs/connectors/<provider>.md
 git commit -m "auto-learn: <provider> N op (M ok / K failed)"
 ```
-
-詳細は `@.claude/rules/workato-multi-repo-git.md` 参照。
 
 ## 関連スキル / ドキュメント
 

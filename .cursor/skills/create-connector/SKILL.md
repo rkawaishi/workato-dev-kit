@@ -145,12 +145,12 @@ cp templates/gitignore/connectors.gitignore connectors/.gitignore
 
 ## Git 管理
 
-生成ファイル (`connector.rb`, `Gemfile`, `settings.yaml`, `README.md`) は内側リポジトリ `connectors/` に配置される。外側 workato-dev-kit からは gitignored なので、コミットは内側で行う:
+生成ファイル (`connector.rb`, `Gemfile`, `settings.yaml`, `README.md`) は `connectors/<name>/` に配置される。ワークスペースリポジトリでコミット:
 
 ```bash
-(cd connectors && git status)
-(cd connectors && git add <name>/ && git commit -m "Add connector: <name>")
-(cd connectors && git push origin)
+git add connectors/<name>/
+git commit -m "Add connector: <name>"
+git push origin
 ```
 
-`settings.yaml` は `connectors/.gitignore` で除外済み（認証情報を含むため）。`sdk push` は Workato API へのデプロイで git とは独立。詳細は `.cursor/rules/workato-multi-repo-git.mdc` 参照。
+`settings.yaml` はワークスペースリポジトリの `.gitignore` で除外済み（認証情報を含むため）。`sdk push` は Workato API へのデプロイで git とは独立。

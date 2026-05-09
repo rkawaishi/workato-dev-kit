@@ -4,12 +4,8 @@ Workato (エンタープライズ iPaaS) の自動化開発を Claude Code / Cur
 
 ## リポジトリ構造
 
-このリポジトリは **フレームワーク** であり、組織固有のレシピプロジェクトは含まない。
-利用方法は 2 通り: **Submodule 利用**（推奨）と **直接クローン**。
-
-### Submodule 利用（推奨）
-
-組織のワークスペースリポジトリに workato-dev-kit を `kit/` として追加し、`bash kit/setup.sh` で symlink を作成する。
+このリポジトリは **フレームワーク** であり、組織のワークスペースリポジトリに `kit/` として submodule 追加して使う。
+`bash kit/setup.sh` でスキル・ルール・ドキュメントへの symlink を作成する。
 
 ```
 my-org-workato/                   ← 組織のリポジトリ（作業ルート）
@@ -34,23 +30,6 @@ my-org-workato/                   ← 組織のリポジトリ（作業ルート
 ```
 
 フレームワーク更新: `git submodule update --remote kit && bash kit/setup.sh`
-
-### 直接クローン
-
-```
-workato-dev-kit/              ← このリポジトリ（スキル・ルール・ナレッジ）
-├── .claude/
-│   ├── rules/                # パス別フォーマットルール（8ファイル）
-│   ├── skills/               # 開発スキル（12個）
-│   └── hooks/                # 自動化フック
-├── docs/                     # AI向けナレッジベース
-├── guides/                   # 利用者向けガイド
-├── connectors/               ← 組織の別リポジトリ（gitignore 対象）
-└── projects/                 ← 組織の別リポジトリ（gitignore 対象）
-```
-
-直接クローンでは `projects/` と `connectors/` は独立した git リポジトリとして管理する。
-内側リポジトリでの git 操作は必ず `cd` で入ってから実行する（外側から `git add projects/...` は gitignored で何も起きない）。スキル別のコミット先対応表や事故パターンは `@.claude/rules/workato-multi-repo-git.md` を参照。
 
 ### 設計書 (DESIGN.md)
 
@@ -96,7 +75,6 @@ Workato には「API Client」という名前の似て非なる 4 系統（Devel
 - カスタムコネクタ: `@.claude/rules/workato-connector-sdk.md`
 - CLI: `@.claude/rules/workato-cli.md`
 - CLI/API 自律性（ユーザーに UI 作業を投げる前に必ず確認）: `@.claude/rules/workato-cli-autonomy.md`
-- Multi-repo git 操作（projects/ connectors/ は別リポジトリ）: `@.claude/rules/workato-multi-repo-git.md`
 - コネクタ詳細: Pre-built は `@docs/connectors/`、カスタムは `@connectors/docs/` を参照。未作成分は WebFetch
 - 新しい独自知見は適切なドキュメントに直接追記（`docs/learned-patterns.md` は一時保管のみ）
 - `*.connection.json` に認証情報は含まれない

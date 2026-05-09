@@ -230,20 +230,22 @@ python3 scripts/workato-api.py connectors list-platform
 
 ## Git 管理
 
-このスキルは **2 つのリポジトリ** に書き込む:
+このスキルは **2 箇所** に書き込む:
 
-- `docs/connectors/*.md` → 外側 `workato-dev-kit` リポジトリ
-- `connectors/docs/*.md` → 内側 `connectors/` リポジトリ（外側からは gitignored）
+- `docs/connectors/*.md` → kit（submodule）内のナレッジベース → workato-dev-kit に PR
+- `connectors/docs/*.md` → ワークスペースリポジトリ内のカスタムコネクタナレッジ
 
-実行後は両方で個別にコミットが必要:
+実行後のコミット:
 
 ```bash
-# 外側 (Pre-built コネクタ更新分)
+# ワークスペース側 (カスタムコネクタ更新分)
+git add connectors/docs/
+git commit -m "docs: update custom connector info"
+
+# kit 側 (Pre-built コネクタ更新分) → workato-dev-kit に PR
+cd kit
 git add docs/connectors/
 git commit -m "docs: update pre-built connector info"
-
-# 内側 (カスタムコネクタ更新分)
-(cd connectors && git add docs/ && git commit -m "docs: update custom connector info")
 ```
 
-片方だけコミットして push するとナレッジが不整合になる。詳細は `@.claude/rules/workato-multi-repo-git.md` 参照。
+片方だけコミットして push するとナレッジが不整合になる。

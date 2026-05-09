@@ -94,6 +94,6 @@ Pre-built コネクタ（`docs/connectors/`）と同じ形式。
 - 使用可能な Ruby メソッドは許可リストに限定
 - `master.key` は絶対にコミットしない
 - `settings.yaml` に実際の認証情報を含む場合は `.gitignore` に追加
-- `connectors/` は組織固有（gitignore 対象）。フレームワークリポジトリにはコミットしない
+- `connectors/` は組織のワークスペースリポジトリで管理する
 
 詳細: `@docs/connector-sdk/connector-rb.md`

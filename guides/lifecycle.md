@@ -94,7 +94,7 @@
 | `.claude/rules/` | 人手, `/learn-recipe`（JSON 構造の新発見時） | 全スキル | JSON フォーマット、パス別ルール |
 | `docs/learned-patterns.md` | `/learn-recipe`（振り分け先が決まらない時のフォールバックのみ） | 人手（振り分け作業） | 適切な場所が決まるまでの仮置き場 |
 
-### 組織側（`connectors/`, `projects/` は別リポジトリ）
+### 組織側（`connectors/`, `projects/`）
 
 | パス | 書き手 | 読み手 | 内容 |
 |---|---|---|---|
