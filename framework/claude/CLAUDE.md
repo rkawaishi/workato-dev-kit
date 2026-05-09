@@ -15,8 +15,10 @@ my-org-workato/                   ← 組織のリポジトリ（作業ルート
 │   ├── skills/                   # kit のスキルへの symlink + 組織独自スキル
 │   ├── hooks/                    # kit のフックへの symlink
 │   └── settings.json             # setup.sh が生成（カスタマイズ可）
-├── docs/ → kit/docs/             # symlink（ナレッジベース）
+├── docs/ → kit/docs/             # symlink（kit canonical なナレッジベース。直接編集しない）
 ├── guides/ → kit/guides/         # symlink
+├── org/                          ← 組織ナレッジ層（kit が一切 touch しない）
+│   └── docs/                     # docs/ と同じ階層を mirror。kit 版の補正・組織独自情報を置く
 ├── kit/                          ← git submodule（workato-dev-kit、読み取り専用）
 ├── projects/                     ← 組織のレシピ
 │   └── <project-name>/
@@ -39,15 +41,17 @@ my-org-workato/                   ← 組織のリポジトリ（作業ルート
 
 ## ナレッジの参照優先順位
 
+`@docs/<path>` を参照する際は、対応する `@org/docs/<path>` も必ず確認する（存在すれば併読、矛盾は org 版が優先）。詳細は `@.claude/rules/org-knowledge-overlay.md`。
+
 ### レシピ開発
-1. `@docs/connectors/` — Pre-built コネクタのトリガー/アクション/フィールド一覧
+1. `@docs/connectors/` (+ `@org/docs/connectors/`) — Pre-built コネクタのトリガー/アクション/フィールド一覧
 2. `@connectors/docs/` — カスタムコネクタのトリガー/アクション/フィールド一覧
-3. `@docs/logic/` — ロジックステップの組み方（datapill 記法含む）
-4. `@docs/platform/` — プラットフォーム機能の理解
+3. `@docs/logic/` (+ `@org/docs/logic/`) — ロジックステップの組み方（datapill 記法含む）
+4. `@docs/platform/` (+ `@org/docs/platform/`) — プラットフォーム機能の理解
 5. `@.claude/rules/` — JSON フォーマット、プロジェクト構造
-6. `@docs/patterns/recipe-patterns/` — 汎用レシピ構築パターン
+6. `@docs/patterns/recipe-patterns/` (+ `@org/docs/patterns/recipe-patterns/`) — 汎用レシピ構築パターン
 7. `@projects/docs/patterns/` — 組織ドメインのレシピ構築パターン
-8. `@docs/patterns/` — デプロイガイド、共有アセットパターン
+8. `@docs/patterns/` (+ `@org/docs/patterns/`) — デプロイガイド、共有アセットパターン
 
 ### カスタムコネクタ開発
 1. `@docs/connector-sdk/connector-rb.md` — connector.rb リファレンス
@@ -63,9 +67,9 @@ Workato には「API Client」という名前の似て非なる 4 系統（Devel
 
 ここでは不可侵の 3 原則のみ記す:
 
-1. **docs-first**: アクション/トリガーを使う前に `@docs/connectors/<provider>.md`（Pre-built）または `@connectors/docs/<provider>.md`（カスタム）を必ず参照する。公式ドキュメントに無ければ WebFetch で補完
+1. **docs-first**: アクション/トリガーを使う前に `@docs/connectors/<provider>.md`（Pre-built、kit canonical）と `@org/docs/connectors/<provider>.md`（組織側の補正・追記、存在すれば）を必ず参照する。カスタムは `@connectors/docs/<provider>.md`。公式ドキュメントに無ければ WebFetch で補完
 2. **既存プロジェクトの grep 禁止**: input/output スキーマを得る目的で `projects/<other-project>/Recipes/` を漁るのは禁止。個別プロジェクト固有のロジック・命名・datapill 参照が混入し、ナレッジの欠落も可視化されなくなる（例外: `@docs/patterns/recipe-patterns/` や `@projects/docs/patterns/` でのパターン学習目的の参照は可）
-3. **未学習は記録＋`/learn-recipe` 必須**: ドキュメントに無いアクションをベストエフォート実装した場合は `DESIGN.md` の「Unlearned Actions」または GitHub Issue に記録し、push/pull 後に `/learn-recipe <project-name>` を回して docs に追記。学習後はエントリから外す
+3. **未学習は記録＋`/learn-recipe` 必須**: ドキュメントに無いアクションをベストエフォート実装した場合は `DESIGN.md` の「Unlearned Actions」または GitHub Issue に記録し、push/pull 後に `/learn-recipe <project-name>` を回して `org/docs/` に追記。学習後はエントリから外す
 
 ## 開発ルール
 
@@ -75,8 +79,9 @@ Workato には「API Client」という名前の似て非なる 4 系統（Devel
 - カスタムコネクタ: `@.claude/rules/workato-connector-sdk.md`
 - CLI: `@.claude/rules/workato-cli.md`
 - CLI/API 自律性（ユーザーに UI 作業を投げる前に必ず確認）: `@.claude/rules/workato-cli-autonomy.md`
-- コネクタ詳細: Pre-built は `@docs/connectors/`、カスタムは `@connectors/docs/` を参照。未作成分は WebFetch
-- 新しい独自知見は適切なドキュメントに直接追記（`docs/learned-patterns.md` は一時保管のみ）
+- 組織ナレッジの上書きレイヤー: `@.claude/rules/org-knowledge-overlay.md`
+- コネクタ詳細: Pre-built は `@docs/connectors/` (+ `@org/docs/connectors/`)、カスタムは `@connectors/docs/` を参照。未作成分は WebFetch
+- 新しい独自知見は `org/docs/<相対パス>` に追記（kit の `docs/` は直接編集しない）
 - `*.connection.json` に認証情報は含まれない
 - `.workatoenv` / `master.key` はコミットしない
 

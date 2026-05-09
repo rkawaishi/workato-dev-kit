@@ -63,6 +63,12 @@ workato-dev-kit/                  ← このリポジトリ
 
 利用者はこれら symlink と同じディレクトリに **独自ファイルを追加できる**（setup.sh は既存の非 symlink ファイルを保持する）。
 
+### 組織ナレッジ層 `org/`（利用者側のみ存在）
+
+利用者は `docs/`（kit への symlink）には書き込めないため、kit の docs に対する補正・組織独自情報は **`org/docs/`** に置く（`docs/` と同じ階層を mirror）。`/learn-recipe` などの学習系スキルは書き込み先を `org/docs/...` にする。`org/` は setup.sh が一切 touch せず、ワークスペースリポジトリ側でコミットする。詳細は [framework/claude/rules/org-knowledge-overlay.md](../framework/claude/rules/org-knowledge-overlay.md) 参照。
+
+このリポジトリ（kit 本体）の `docs/` は kit canonical なナレッジで、`/sync-connectors` などの sync 系スキルが書き込む。`org/` は kit 本体には存在しない（利用者リポジトリでのみ生成される）。
+
 ## 開発時のルール
 
 ### 配布物（framework/）の編集
