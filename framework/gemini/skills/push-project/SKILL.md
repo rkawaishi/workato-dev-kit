@@ -1,22 +1,21 @@
 ---
+name: push-project
 description: ローカルのプロジェクト変更を Workato リモートに push する。バリデーション、コネクション先行 push、デプロイガイダンスまで一貫して実行。
-allowed-tools: Bash, Read, Write, Edit, Glob, Grep
-disable-model-invocation: true
 ---
 
-# /wpush
+# /push-project
 
 ローカルの変更を Workato リモートに push し、レシピの動作確認まで行う。
 
 ## 使い方
 
-- `/wpush` — 現在のプロジェクトを push
-- `/wpush <project-name>` — 指定プロジェクトに切り替えて push
-- `/wpush --start` — push 後にレシピを起動
-- `/wpush --test` — push 後にレシピを起動し、ジョブの成否を確認
-- `/wpush --restart-recipes` — push 後に稼働中レシピを自動再起動（既存レシピ更新時）
-- `/wpush --delete` — リモートにあるがローカルにないアセットを削除
-- `/wpush --validate-only` — バリデーションのみ実行（push しない）
+- `/push-project` — 現在のプロジェクトを push
+- `/push-project <project-name>` — 指定プロジェクトに切り替えて push
+- `/push-project --start` — push 後にレシピを起動
+- `/push-project --test` — push 後にレシピを起動し、ジョブの成否を確認
+- `/push-project --restart-recipes` — push 後に稼働中レシピを自動再起動（既存レシピ更新時）
+- `/push-project --delete` — リモートにあるがローカルにないアセットを削除
+- `/push-project --validate-only` — バリデーションのみ実行（push しない）
 
 ## 実行手順
 
@@ -151,7 +150,7 @@ push 完了。以下のレシピを起動してください:
 - <recipe_name_2>
 
 Workato UI で各レシピを開き「Start recipe」をクリック、
-または --start / --test フラグ付きで /wpush を実行してください。
+または --start / --test フラグ付きで /push-project を実行してください。
 ```
 
 #### 新規コネクションがある場合
@@ -240,7 +239,7 @@ python3 scripts/workato-api.py jobs get --recipe-id <recipe-id> --job-id <job-id
 
 ## Git 管理
 
-**`/wpush` は Workato API へのデプロイであり、git への影響はゼロ。** ローカルの変更を git リモートにも残したい場合は、ワークスペースリポジトリで git 操作が必要:
+**`/push-project` は Workato API へのデプロイであり、git への影響はゼロ。** ローカルの変更を git リモートにも残したい場合は、ワークスペースリポジトリで git 操作が必要:
 
 ```bash
 git add projects/<project-name>/
@@ -248,4 +247,4 @@ git commit -m "<msg>"
 git push origin
 ```
 
-「`/wpush` したから履歴は残っている」と誤認しない。
+「`/push-project` したから履歴は残っている」と誤認しない。

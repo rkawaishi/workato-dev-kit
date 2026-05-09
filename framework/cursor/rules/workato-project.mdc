@@ -113,8 +113,8 @@ workato init --non-interactive --profile default --project-id <id> --folder-name
 | `/create-connector` | カスタムコネクタをスキャフォールド |
 | `/catalog` | 共有アセットのスキャン・カタログ化 |
 | `/validate-recipe` | JSON 構造を検証 |
-| `/wpull` | Workato からプロジェクトを pull |
-| `/wpush` | プロジェクトを push（バリデーション付き） |
+| `/pull-project` | Workato からプロジェクトを pull |
+| `/push-project` | プロジェクトを push（バリデーション付き） |
 | `/learn-recipe` | レシピからフィールド情報を学習しドキュメントに反映 |
 | `/learn-pattern` | レシピ構築パターンをカタログに記録・更新 |
 | `/sync-connectors` | コネクタ情報を収集・更新 |

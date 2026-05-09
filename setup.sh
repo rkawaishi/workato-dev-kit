@@ -64,6 +64,31 @@ link_files_in_dir() {
   done
 }
 
+# 利用者ディレクトリ内の壊れた kit-managed symlink を削除する
+# ・symlink 以外（利用者の実ファイル/ディレクトリ）には触れない
+# ・kit を指している symlink のみ対象（target 文字列に kit_marker を含むもの）
+# ・target が解決できないもの（kit 側で削除/リネームされたもの）だけ削除
+prune_stale_links() {
+  local dst_dir="$1"      # 利用者側のディレクトリ（絶対パス）
+  local kit_marker="$2"   # symlink target に含まれているはずの kit 側パス断片
+
+  [ -d "$dst_dir" ] || return 0
+
+  for entry in "$dst_dir"/* "$dst_dir"/.[!.]*; do
+    [ -L "$entry" ] || continue
+    local target
+    target="$(readlink "$entry")"
+    case "$target" in
+      *"$kit_marker"*) ;;
+      *) continue ;;
+    esac
+    if [ ! -e "$entry" ]; then
+      rm "$entry"
+      echo "  PRUNED $(basename "$dst_dir")/$(basename "$entry") (kit no longer provides this)"
+    fi
+  done
+}
+
 # ディレクトリ単位のシンボリックリンクを作成
 link_dir() {
   local src_dir="$1"
@@ -85,6 +110,7 @@ link_dir() {
 
 # ── 1. .claude/rules/ （ファイル単位 symlink）──────────────
 echo "--- Setting up .claude/rules/ ---"
+prune_stale_links "$WORKSPACE_ROOT/.claude/rules" "framework/claude/rules/"
 link_files_in_dir \
   "$KIT_DIR/framework/claude/rules" \
   "$WORKSPACE_ROOT/.claude/rules" \
@@ -94,6 +120,7 @@ link_files_in_dir \
 echo ""
 echo "--- Setting up .claude/skills/ ---"
 mkdir -p "$WORKSPACE_ROOT/.claude/skills"
+prune_stale_links "$WORKSPACE_ROOT/.claude/skills" "framework/claude/skills/"
 
 for skill_dir in "$KIT_DIR/framework/claude/skills"/*/; do
   [ -d "$skill_dir" ] || continue
@@ -116,6 +143,7 @@ done
 # ── 3. .claude/hooks/ （ファイル単位 symlink）─────────────
 echo ""
 echo "--- Setting up .claude/hooks/ ---"
+prune_stale_links "$WORKSPACE_ROOT/.claude/hooks" "framework/claude/hooks/"
 link_files_in_dir \
   "$KIT_DIR/framework/claude/hooks" \
   "$WORKSPACE_ROOT/.claude/hooks" \
@@ -258,6 +286,7 @@ fi
 if [ -d "$KIT_DIR/framework/cursor" ]; then
   echo ""
   echo "--- Setting up .cursor/rules/ ---"
+  prune_stale_links "$WORKSPACE_ROOT/.cursor/rules" "framework/cursor/rules/"
   link_files_in_dir \
     "$KIT_DIR/framework/cursor/rules" \
     "$WORKSPACE_ROOT/.cursor/rules" \
@@ -266,6 +295,7 @@ if [ -d "$KIT_DIR/framework/cursor" ]; then
   echo ""
   echo "--- Setting up .cursor/skills/ ---"
   mkdir -p "$WORKSPACE_ROOT/.cursor/skills"
+  prune_stale_links "$WORKSPACE_ROOT/.cursor/skills" "framework/cursor/skills/"
 
   for skill_dir in "$KIT_DIR/framework/cursor/skills"/*/; do
     [ -d "$skill_dir" ] || continue
@@ -307,6 +337,7 @@ if [ -d "$KIT_DIR/framework/codex" ]; then
   echo ""
   echo "--- Setting up .agents/skills/ ---"
   mkdir -p "$WORKSPACE_ROOT/.agents/skills"
+  prune_stale_links "$WORKSPACE_ROOT/.agents/skills" "framework/codex/skills/"
 
   for skill_dir in "$KIT_DIR/framework/codex/skills"/*/; do
     [ -d "$skill_dir" ] || continue
@@ -333,6 +364,7 @@ if [ -d "$KIT_DIR/framework/gemini" ]; then
   echo ""
   echo "--- Setting up .gemini/skills/ ---"
   mkdir -p "$WORKSPACE_ROOT/.gemini/skills"
+  prune_stale_links "$WORKSPACE_ROOT/.gemini/skills" "framework/gemini/skills/"
 
   for skill_dir in "$KIT_DIR/framework/gemini/skills"/*/; do
     [ -d "$skill_dir" ] || continue

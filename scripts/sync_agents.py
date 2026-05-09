@@ -220,7 +220,7 @@ def _build_codex_slash_pattern(names: set[str]) -> re.Pattern[str] | None:
     if not names:
         return None
     alts = "|".join(re.escape(n) for n in sorted(names, key=len, reverse=True))
-    # ``(?<!\w)`` so that file paths like ``projects/wpush`` do not match,
+    # ``(?<!\w)`` so that file paths like ``projects/push-project`` do not match,
     # and ``\b`` after the name so we do not partially rewrite longer words.
     return re.compile(rf"(?<!\w)/({alts})\b")
 

@@ -87,7 +87,7 @@ JSON のフォーマットルールは `.claude/rules/workato-agentic-format.md`
 ### 3. デプロイ
 
 ```
-/wpush
+/push-project
 ```
 
 プッシュ後の確認:
@@ -148,6 +148,6 @@ JSON のフォーマットルールは `.claude/rules/workato-agentic-format.md`
 
 ## 既知の制限
 
-- `/wpush --delete` では `agentic_skill` と `mcp_server` を削除できない。UI から手動削除が必要
+- `/push-project --delete` では `agentic_skill` と `mcp_server` を削除できない。UI から手動削除が必要
 - MCP サーバーにスキルを紐付けると、スキル名が自動リネームされる場合がある
 - ナレッジベースのファイルアップロードは UI からのみ可能

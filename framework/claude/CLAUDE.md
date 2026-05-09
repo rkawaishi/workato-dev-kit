@@ -92,8 +92,8 @@ Workato には「API Client」という名前の似て非なる 4 系統（Devel
 | `/create-connector` | カスタムコネクタをスキャフォールド |
 | `/catalog` | 共有アセットのスキャン・カタログ化 |
 | `/validate-recipe` | JSON 構造を検証 |
-| `/wpull` | Workato からプロジェクトを pull |
-| `/wpush` | プロジェクトを push（バリデーション付き） |
+| `/pull-project` | Workato からプロジェクトを pull |
+| `/push-project` | プロジェクトを push（バリデーション付き） |
 | `/learn-recipe` | レシピからフィールド情報を学習しドキュメントに反映 |
 | `/learn-pattern` | レシピから構築パターンを抽出しカタログに蓄積 |
 | `/sync-connectors` | コネクタ情報を収集・更新（Pre-built: API、カスタム: connector.rb パース） |

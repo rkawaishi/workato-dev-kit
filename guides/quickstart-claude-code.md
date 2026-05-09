@@ -126,7 +126,7 @@ Claude が以下をヒアリングします:
 ## 9. デプロイ
 
 ```
-あなた: /wpush --start
+あなた: /push-project --start
 ```
 
 Claude が以下を実行します:
@@ -152,7 +152,7 @@ Workato のレシピ JSON には公式ドキュメントに記載されていな
 Workato UI でレシピを調整したら、その変更を取り込んでナレッジを育てます。
 
 ```
-あなた: /wpull
+あなた: /pull-project
 あなた: /learn-recipe
 ```
 
