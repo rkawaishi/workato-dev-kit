@@ -10,7 +10,7 @@
 
 利用可能なツールは端末ごとに異なるため、環境固有の設定を `.resource-providers.yml` に記述する。
 
-- **場所**: `workato-dev-kit/.resource-providers.yml`（gitignore 対象）
+- **場所**: ワークスペースリポジトリのルート `.resource-providers.yml`（gitignore 対象）
 - **作成**: 初回セットアップ時にユーザーにヒアリングして生成
 - **参照**: `/create-recipe` Step 4、`/design` Phase 3 でこのファイルを読む
 

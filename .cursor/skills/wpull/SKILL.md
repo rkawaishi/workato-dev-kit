@@ -19,14 +19,13 @@ Workato Platform CLI でリモートからプロジェクトを pull する。
 
 ### 0. Pull 前チェック（必須）
 
-pull は未コミット変更をサイレントに上書きする。`projects/` 配下は workato-dev-kit とは別の git リポジトリ（gitignore 対象）なので、プロジェクトディレクトリ内に入ってから `git status` を確認する:
+pull は未コミット変更をサイレントに上書きする。ワークスペースリポジトリで対象プロジェクトの未コミット変更を確認する:
 
 ```bash
-# 対象プロジェクト内に入って確認（projects/ は別 git リポジトリ）
-(cd projects/<project-name> && git status)
+git status projects/<project-name>/
 ```
 
-未コミット変更がある場合は、ユーザーに commit / stash を提案してから pull に進む。何も聞かずに pull すると編集中のファイルが失われる可能性がある。`--all` では対象プロジェクトごとにこのチェックを繰り返す。`projects/<project-name>/` が git 管理下でない（`.git` が無い）場合はこのチェックをスキップする。
+未コミット変更がある場合は、ユーザーに commit / stash を提案してから pull に進む。何も聞かずに pull すると編集中のファイルが失われる可能性がある。`--all` では対象プロジェクトごとにこのチェックを繰り返す。ワークスペースリポジトリが git 管理下でない場合はこのチェックをスキップする。
 
 ### 引数なし / プロジェクト名指定
 ```bash

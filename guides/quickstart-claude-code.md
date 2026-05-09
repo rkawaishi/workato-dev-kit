@@ -88,7 +88,7 @@ workato pull
 ## 7. Claude Code を起動
 
 ```bash
-cd workato-dev-kit
+cd my-org-workato
 claude
 ```
 
@@ -161,7 +161,8 @@ Workato UI でレシピを調整したら、その変更を取り込んでナレ
 学んだパターンがツールキットの改善になる場合は、workato-dev-kit に PR を出してください:
 
 ```bash
-# workato-dev-kit 側で
+# kit/ ディレクトリで
+cd kit
 git checkout -b feature/learn-jira-fields
 # docs/ や .claude/rules/ への変更をコミット
 git push origin feature/learn-jira-fields
