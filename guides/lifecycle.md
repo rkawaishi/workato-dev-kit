@@ -23,8 +23,8 @@
            (UI で pick_list 等を調整)
            /pull-project                  → 調整結果をローカルに取得
               ↓
-[学習]     /learn-recipe           → 調整済みレシピから docs/connectors/ を拡充
-           /learn-pattern          → 再現性のある組み方を docs/patterns/ に記録
+[学習]     /learn-recipe           → 調整済みレシピから org/docs/connectors/ を拡充
+           /learn-pattern          → 再現性のある組み方を org/docs/patterns/ または projects/docs/patterns/ に記録
               ↓
 [整理]     /catalog                → 新しい共有アセットをカタログに反映
            /design update          → DESIGN.md を実装状況で更新
@@ -72,8 +72,8 @@
 
 | スキル | いつ呼ぶ | 読むもの | 書くもの |
 |---|---|---|---|
-| `/learn-recipe` | `/pull-project` 直後、未学習アクション実装後 | `projects/<name>/Recipes/*.recipe.json` | `docs/connectors/<provider>.md`（input/output/snippet 追記）, `docs/logic/data-pills.md`, `.claude/rules/`, `docs/patterns/deployment-guide.md` |
-| `/learn-pattern` | 再現性のある組み方に気づいた時 | 参考レシピ（任意）, 既存 `docs/patterns/recipe-patterns/` | `docs/patterns/recipe-patterns/<name>.md`（汎用）または `projects/docs/patterns/<name>.md`（組織固有） |
+| `/learn-recipe` | `/pull-project` 直後、未学習アクション実装後 | `projects/<name>/Recipes/*.recipe.json`, kit canonical の `docs/<...>` も併読 | `org/docs/connectors/<provider>.md`（input/output/snippet 追記）, `org/docs/logic/data-pills.md`, `org/docs/patterns/deployment-guide.md`, `org/docs/learned-patterns.md` |
+| `/learn-pattern` | 再現性のある組み方に気づいた時 | 参考レシピ（任意）, 既存 `docs/patterns/recipe-patterns/`（kit）+ `org/docs/patterns/recipe-patterns/`（組織） | `org/docs/patterns/recipe-patterns/<name>.md`（汎用）または `projects/docs/patterns/<name>.md`（組織ドメイン固有） |
 
 ## docs 責務マップ
 
@@ -81,20 +81,22 @@
 
 ### フレームワーク側（`workato-dev-kit` リポジトリ）
 
+kit canonical な `docs/` は **kit メンテナと sync 系スキルのみが書き込み**、利用者の学習結果は `org/docs/` 側に蓄積する（`@.claude/rules/org-knowledge-overlay.md` 参照）。
+
 | パス | 書き手 | 読み手 | 内容 |
 |---|---|---|---|
-| `docs/connectors/<provider>.md` | `/sync-connectors`, `/learn-recipe` | `/create-recipe`, `/create-workflow-app`, `/create-genie` | Pre-built コネクタのトリガー/アクション/フィールド仕様 |
+| `docs/connectors/<provider>.md` | `/sync-connectors` | `/create-recipe`, `/create-workflow-app`, `/create-genie` | Pre-built コネクタのトリガー/アクション/フィールド仕様（kit canonical） |
 | `docs/connector-sdk/` | 人手 | `/create-connector` | Connector SDK リファレンス |
-| `docs/logic/` | 人手, `/learn-recipe` | `/create-recipe`, `/create-workflow-app` | datapill 記法、数式、ループ、エラーハンドリング、トリガー |
+| `docs/logic/` | 人手 | `/create-recipe`, `/create-workflow-app` | datapill 記法、数式、ループ、エラーハンドリング、トリガー |
 | `docs/platform/` | 人手 | `/create-workflow-app`, `/create-genie`, `/design` | Data Table, Lookup Table, Agent Studio, MCP, Workflow App |
-| `docs/patterns/recipe-patterns/` | `/learn-pattern` | `/create-recipe`, `/design` | 汎用レシピ構築パターン（Workato 全般に適用可） |
-| `docs/patterns/deployment-guide.md` | 人手, `/learn-recipe` | `/push-project`, `/create-workflow-app` | デプロイ手順、よくあるエラー |
+| `docs/patterns/recipe-patterns/` | 人手（kit メンテナ） | `/create-recipe`, `/design`, `/learn-pattern`（読み込み時の併読） | 汎用レシピ構築パターン（Workato 全般に適用可、kit canonical） |
+| `docs/patterns/deployment-guide.md` | 人手 | `/push-project`, `/create-workflow-app` | デプロイ手順、よくあるエラー |
 | `docs/patterns/shared-assets.md` | 人手 | `/create-recipe`, `/catalog`, `/design` | 共有アセット設計方針 |
 | `docs/patterns/workspace-management.md` | 人手 | `/design`, `/catalog` | ワークスペース構成・命名規則 |
-| `.claude/rules/` | 人手, `/learn-recipe`（JSON 構造の新発見時） | 全スキル | JSON フォーマット、パス別ルール |
-| `docs/learned-patterns.md` | `/learn-recipe`（振り分け先が決まらない時のフォールバックのみ） | 人手（振り分け作業） | 適切な場所が決まるまでの仮置き場 |
+| `.claude/rules/` | 人手 | 全スキル | JSON フォーマット、パス別ルール |
+| `docs/learned-patterns.md` | 人手（kit メンテナの一時保管） | 人手（振り分け作業） | kit canonical なバッファ。利用者は `org/docs/learned-patterns.md` を使う |
 
-### 組織側（`connectors/`, `projects/`）
+### 組織側（`connectors/`, `projects/`, `org/`）
 
 | パス | 書き手 | 読み手 | 内容 |
 |---|---|---|---|
@@ -104,7 +106,11 @@
 | `projects/<name>/Recipes/*.json` | `/create-recipe`, `/pull-project` | `/learn-recipe`, `/validate-recipe`, `/push-project` | レシピ本体 |
 | `projects/CATALOG.md` | `/catalog scan` | `/create-recipe`, `/design` | 組織の共有アセット（Recipe Function, コネクション）一覧 |
 | `projects/CATALOG_CONFIG.yaml` | 人手 | `/catalog` | スコープ設定（global / team / private） |
-| `projects/docs/patterns/` | `/learn-pattern` | `/create-recipe`, `/design` | 組織ドメイン固有の構築パターン |
+| `projects/docs/patterns/` | `/learn-pattern`（組織ドメイン固有） | `/create-recipe`, `/design` | 組織ドメイン固有の構築パターン |
+| `org/docs/connectors/<provider>.md` | `/learn-recipe` | `/create-recipe`, `/create-workflow-app`, `/create-genie` | kit 版の補正・追記、組織独自フィールド情報 |
+| `org/docs/logic/`, `org/docs/platform/`, `org/docs/patterns/deployment-guide.md` | `/learn-recipe` | 各 create 系スキル | kit 版の補正・追記 |
+| `org/docs/patterns/recipe-patterns/` | `/learn-pattern`（汎用） | `/create-recipe`, `/design` | 組織が学習した汎用パターン（Workato 全般に適用可） |
+| `org/docs/learned-patterns.md` | `/learn-recipe`（振り分け先が決まらない時のフォールバック） | 人手（振り分け作業） | 組織側の一時保管バッファ |
 
 ## ライフサイクルの原則
 
@@ -124,18 +130,20 @@
 `projects/<other-project>/Recipes/` 配下を grep してサンプル JSON を掘り出すのは **禁止**。
 個別プロジェクト固有のロジック・命名・datapill 参照がノイズとして混入し、ナレッジの欠落も可視化されなくなる。
 
-**例外**: パターン学習（`/learn-pattern` で `docs/patterns/recipe-patterns/` や `projects/docs/patterns/` を参照）は可。ただし input/output スキーマを得る目的での grep は不可。
+**例外**: パターン学習（`/learn-pattern` で `docs/patterns/recipe-patterns/`、`org/docs/patterns/recipe-patterns/`、`projects/docs/patterns/` を参照）は可。ただし input/output スキーマを得る目的での grep は不可。
 
 ### 3. 学習の責務分離
 
 | 学習内容 | 使うスキル | 書き込み先 |
 |---|---|---|
-| コネクタのフィールド仕様 | `/sync-connectors`（API/SDK 経由）または `/learn-recipe`（実レシピから） | `docs/connectors/`, `connectors/docs/` |
-| 再現性のある組み方 | `/learn-pattern` | `docs/patterns/recipe-patterns/`, `projects/docs/patterns/` |
-| JSON 構造の新発見 | `/learn-recipe` | `.claude/rules/` |
-| datapill 参照パターン | `/learn-recipe` | `docs/logic/data-pills.md` |
+| コネクタのフィールド仕様（公式 API/SDK 由来） | `/sync-connectors` | `docs/connectors/`（kit canonical）, `connectors/docs/`（カスタム） |
+| コネクタのフィールド仕様（組織が利用したレシピ由来） | `/learn-recipe` | `org/docs/connectors/` |
+| 再現性のある組み方（汎用） | `/learn-pattern` | `org/docs/patterns/recipe-patterns/` |
+| 再現性のある組み方（組織ドメイン固有） | `/learn-pattern` | `projects/docs/patterns/` |
+| JSON 構造の新発見 | `/learn-recipe` | `org/docs/learned-patterns.md`（後で kit 還流したい知見はここに） |
+| datapill 参照パターン | `/learn-recipe` | `org/docs/logic/data-pills.md` |
 
-**ポイント**: 学習スキルは中間ファイルを作らず、該当ドキュメントに直接追記する。`docs/learned-patterns.md` だけは仮置き場として許容されるが、早めに振り分けること。
+**ポイント**: 学習スキルは中間ファイルを作らず、該当ドキュメントに直接追記する。`org/docs/learned-patterns.md` だけは仮置き場として許容されるが、早めに振り分けること。kit canonical な `docs/` は学習スキルが書き込まない（kit メンテナと sync 系スキルのみ）。
 
 ### 4. 構築スキルは docs を書かない
 

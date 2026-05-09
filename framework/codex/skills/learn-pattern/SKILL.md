@@ -1,12 +1,14 @@
 ---
 name: learn-pattern
-description: レシピ構築パターンをカタログに記録・更新する。Workato エキスパートが他者サポート用にナレッジを蓄積する。
+description: レシピ構築パターンを組織ナレッジ層 (org/docs/patterns/ または projects/docs/patterns/) に記録・更新する。Workato エキスパートが他者サポート用にナレッジを蓄積する。
 ---
 
 # $learn-pattern
 
-Workato エキスパートが構築パターンを `docs/patterns/recipe-patterns/` に記録するスキル。
+Workato エキスパートが構築パターンを **組織ナレッジ層 (`org/docs/patterns/recipe-patterns/` または `projects/docs/patterns/`)** に記録するスキル。
 エキスパートが既に持っている知見をドキュメント化することが目的。レシピは参考素材として任意で指定する。
+
+書き込み先はすべて **ワークスペースリポジトリ側**（kit submodule の `docs/` には書かない）。詳細は `AGENTS.md`。
 
 ## 使い方
 
@@ -19,9 +21,10 @@ Workato エキスパートが構築パターンを `docs/patterns/recipe-pattern
 
 ### 1. エキスパートの意図を確認
 
-まず既存パターンを把握する:
-- `docs/patterns/recipe-patterns/_index.md` — 汎用パターン
-- `projects/docs/patterns/` — 組織ドメインのパターン（存在すれば）
+まず既存パターンを把握する（kit canonical と組織側を併読、矛盾は org 側優先）:
+- `docs/patterns/recipe-patterns/_index.md` — kit canonical の汎用パターン
+- `org/docs/patterns/recipe-patterns/_index.md` — 組織が学習した汎用パターン（存在すれば）
+- `projects/docs/patterns/_index.md` — 組織ドメインのパターン（存在すれば）
 
 利用者に何をしたいかを確認する:
 
@@ -32,7 +35,7 @@ A. 新しいパターンを追加（例: ページネーションループ、バ
 B. 既存パターンに知見を追記（注意点、バリエーション etc.）
 
 蓄積先:
-- 汎用（docs/patterns/recipe-patterns/）: <パターン名を列挙>
+- 汎用（org/docs/patterns/recipe-patterns/）: <パターン名を列挙>
 - 組織ドメイン（projects/docs/patterns/）: <パターン名を列挙>
 ```
 
@@ -112,8 +115,8 @@ B. 既存パターンに知見を追記（注意点、バリエーション etc.
 
 新しいパターンを作成した場合、蓄積先に応じたインデックスを更新する:
 
-- **汎用パターン**: `docs/patterns/recipe-patterns/_index.md` のパターン一覧テーブルに行を追加
-- **組織ドメインパターン**: `projects/docs/patterns/_index.md` に行を追加（ファイルが存在しなければ `docs/patterns/recipe-patterns/_index.md` と同じ形式で作成）
+- **汎用パターン**: `org/docs/patterns/recipe-patterns/_index.md` のパターン一覧テーブルに行を追加（ファイル/ディレクトリが存在しなければ `mkdir -p` で作成し、`docs/patterns/recipe-patterns/_index.md`（kit canonical）と同じ形式で新規作成）
+- **組織ドメインパターン**: `projects/docs/patterns/_index.md` に行を追加（ファイルが存在しなければ kit canonical と同じ形式で作成）
 
 ### 5. 確認
 
@@ -126,12 +129,14 @@ B. 既存パターンに知見を追記（注意点、バリエーション etc.
 
 | 蓄積先 | 内容 | 例 |
 |---|---|---|
-| `docs/patterns/recipe-patterns/` | Workato プラットフォームに紐づく汎用パターン | ページネーションループ、ブロッキングアクションの配置ルール |
+| `org/docs/patterns/recipe-patterns/` | Workato プラットフォームに紐づく汎用パターン（組織が学習した範囲） | ページネーションループ、ブロッキングアクションの配置ルール |
 | `projects/docs/patterns/` | 組織ドメインに紐づくパターン | 社内承認フローの構成、特定 SaaS 連携の定石 |
 
-迷った場合の目安: 「Workato を使う他の組織でも同じ構成になるか？」→ Yes なら汎用、No なら組織ドメイン。
+迷った場合の目安: 「Workato を使う他の組織でも同じ構成になるか？」→ Yes なら汎用 (`org/docs/patterns/recipe-patterns/`)、No なら組織ドメイン (`projects/docs/patterns/`)。
 
-`projects/docs/patterns/` が存在しない場合はディレクトリを作成する。
+両方とも存在しなければディレクトリを `mkdir -p` で作成する。
+
+**kit canonical な `docs/patterns/recipe-patterns/` には書き込まない**（kit submodule の変更になる）。汎用パターンが十分に洗練されて kit に還流する価値が出てきたら、別途 kit リポジトリに PR を立てる（現時点ではスコープ外）。
 
 ## 出力
 
@@ -142,11 +147,17 @@ B. 既存パターンに知見を追記（注意点、バリエーション etc.
 
 ## Git 管理
 
-書き込み先リポジトリは蓄積先によって異なる:
+書き込み先はすべて **ワークスペースリポジトリ**（kit submodule の外）:
 
 | 蓄積先 | リポジトリ | コミット先 |
 |---|---|---|
-| `docs/patterns/recipe-patterns/` | kit（submodule） | kit/ 内でコミット → workato-dev-kit に PR |
+| `org/docs/patterns/recipe-patterns/` | ワークスペースリポジトリ | ワークスペースルートでコミット |
 | `projects/docs/patterns/` | ワークスペースリポジトリ | ワークスペースルートでコミット |
 
-両方に書き込んだ場合は、kit 側は workato-dev-kit の PR に、ワークスペース側はワークスペースリポジトリに個別にコミット。
+```bash
+cd <workspace-root>
+git add org/docs/ projects/docs/
+git commit -m "docs(org): record pattern <pattern-name>"
+```
+
+**kit submodule (`kit/`) には commit しない**。汎用パターンを kit canonical (`docs/patterns/recipe-patterns/`) に還流したい場合は別途 kit リポジトリに PR を立てる（現時点ではスコープ外）。
