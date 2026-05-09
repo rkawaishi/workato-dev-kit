@@ -146,7 +146,7 @@ B. 既存パターンに知見を追記（注意点、バリエーション etc.
 
 | 蓄積先 | リポジトリ | コミット先 |
 |---|---|---|
-| `docs/patterns/recipe-patterns/` | 外側 `workato-dev-kit` | 外側 |
-| `projects/docs/patterns/` | 内側 `projects/` | 内側 (`cd projects && git add docs/patterns/`) |
+| `docs/patterns/recipe-patterns/` | kit（submodule） | kit/ 内でコミット → workato-dev-kit に PR |
+| `projects/docs/patterns/` | ワークスペースリポジトリ | ワークスペースルートでコミット |
 
-両方に書き込んだ場合はそれぞれ個別にコミット。詳細は `.cursor/rules/workato-multi-repo-git.mdc` 参照。
+両方に書き込んだ場合は、kit 側は workato-dev-kit の PR に、ワークスペース側はワークスペースリポジトリに個別にコミット。

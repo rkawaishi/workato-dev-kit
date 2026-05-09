@@ -379,8 +379,6 @@ git add docs/connectors/<provider>.md
 git commit -m "auto-learn: <provider> N op (M ok / K failed)"
 ```
 
-詳細は `@.claude/rules/workato-multi-repo-git.md` 参照。
-
 ## 関連スキル / ドキュメント
 
 - [/sync-connectors](../sync-connectors/SKILL.md) — Triggers/Actions 一覧の収集（このスキルの上流）

@@ -209,11 +209,10 @@ MCP Server → Skills → Recipes（Genie なし）
 
 ## Git 管理
 
-生成ファイル (`Agents/`, `Recipes/`, `Connections/`) は内側リポジトリ `projects/` に配置される:
+生成ファイル (`Agents/`, `Recipes/`, `Connections/`) は `projects/<project-name>/` に配置される。ワークスペースリポジトリでコミット:
 
 ```bash
-(cd projects/<project-name> && git add Agents/ Recipes/ Connections/ && git commit -m "Add genie: <name>")
-(cd projects/<project-name> && git push origin)
+git add projects/<project-name>/Agents/ projects/<project-name>/Recipes/ projects/<project-name>/Connections/
+git commit -m "Add genie: <name>"
+git push origin
 ```
-
-詳細は `@.claude/rules/workato-multi-repo-git.md` 参照。

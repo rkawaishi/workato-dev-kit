@@ -240,12 +240,12 @@ python3 scripts/workato-api.py jobs get --recipe-id <recipe-id> --job-id <job-id
 
 ## Git 管理
 
-**`/wpush` は Workato API へのデプロイであり、git への影響はゼロ。** ローカルの変更を git リモートにも残したい場合は、別途内側リポジトリ `projects/` で git 操作が必要:
+**`/wpush` は Workato API へのデプロイであり、git への影響はゼロ。** ローカルの変更を git リモートにも残したい場合は、ワークスペースリポジトリで git 操作が必要:
 
 ```bash
-(cd projects/<project-name> && git status)
-(cd projects/<project-name> && git add . && git commit -m "<msg>")
-(cd projects/<project-name> && git push origin)
+git add projects/<project-name>/
+git commit -m "<msg>"
+git push origin
 ```
 
-「`/wpush` したから履歴は残っている」と誤認しない。詳細は `.cursor/rules/workato-multi-repo-git.mdc` 参照。
+「`/wpush` したから履歴は残っている」と誤認しない。

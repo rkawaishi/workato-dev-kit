@@ -213,12 +213,12 @@ Slack MCP と Jira MCP からリソース情報を取得しました。
 
 ## Git 管理
 
-生成ファイル (`Recipes/`, `Connections/`) は内側リポジトリ `projects/` に配置される。外側 workato-dev-kit からは gitignored なので、コミットは内側で行う:
+生成ファイル (`Recipes/`, `Connections/`) は `projects/<project-name>/` に配置される。ワークスペースリポジトリでコミット:
 
 ```bash
-(cd projects/<project-name> && git status)
-(cd projects/<project-name> && git add Recipes/ Connections/ && git commit -m "Add recipe: <name>")
-(cd projects/<project-name> && git push origin)
+git add projects/<project-name>/Recipes/ projects/<project-name>/Connections/
+git commit -m "Add recipe: <name>"
+git push origin
 ```
 
-`workato push` は Workato API へのデプロイで git とは独立。詳細は `.cursor/rules/workato-multi-repo-git.mdc` 参照。
+`workato push` は Workato API へのデプロイで git とは独立。
