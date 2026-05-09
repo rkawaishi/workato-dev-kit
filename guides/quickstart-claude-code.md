@@ -11,12 +11,49 @@ Claude Code で Workato Dev Kit をセットアップして最初のレシピを
 - **Claude Code** — [claude.com/claude-code](https://claude.com/claude-code) からインストール
 - **Python 3** — `python3 --version` で確認（Platform CLI に必要）
 
-## 2. ツールキットをクローン
+## 2. ワークスペースをセットアップ
+
+### 方法 A: Submodule として利用（推奨）
+
+フレームワークの更新を簡単に取り込めます。組織のチームで共有する場合はこちら。
+
+```bash
+# 組織のワークスペースリポジトリを作成
+mkdir my-org-workato && cd my-org-workato
+git init
+
+# workato-dev-kit を submodule として追加
+git submodule add https://github.com/rkawaishi/workato-dev-kit.git kit
+
+# セットアップスクリプトを実行
+bash kit/setup.sh
+
+# 初回コミット
+git add -A && git commit -m "Initial setup with workato-dev-kit"
+```
+
+セットアップ後の構造:
+
+```
+my-org-workato/                 ← 作業ルート
+├── .claude/                    ← kit から symlink（+ 組織独自ルール/スキルを追加可）
+├── docs/ → kit/docs/           ← symlink
+├── guides/ → kit/guides/       ← symlink
+├── kit/                        ← git submodule（読み取り専用）
+├── projects/                   ← 組織のレシピ
+└── connectors/                 ← 組織のカスタムコネクタ
+```
+
+### 方法 B: 直接クローン
+
+個人利用やすぐに試したい場合。
 
 ```bash
 git clone https://github.com/rkawaishi/workato-dev-kit.git
 cd workato-dev-kit
 ```
+
+> 方法 B では `projects/` と `connectors/` を別リポジトリとして管理します。詳しくは [README.md](../README.md) を参照。
 
 ## 3. Workato Platform CLI をインストール
 
@@ -39,47 +76,16 @@ workato init
 - **Data Center**: お使いのデータセンター（`us`, `eu`, `jp`, `sg`）
 - **API Token**: 手順1で発行したトークン
 
-## 5. 組織のプロジェクトリポジトリを準備
-
-Workato Dev Kit は **開発ツール**（スキル、ルール、ドキュメント）を管理します。
-組織の **レシピやページなどの実ファイル** は `projects/` フォルダに別の git リポジトリとして管理します。
-
-```
-workato-dev-kit/           ← ツールキット（スキル・ルール・ナレッジ）
-├── connectors/            ← あなたの組織のリポジトリ（カスタムコネクタ）
-└── projects/              ← あなたの組織のリポジトリ（レシピ・ページ等）
-```
-
-### なぜ分けるのか？
-
-- **ツールキット** は汎用。誰でも使え、改善を PR で共有できる
-- **レシピ** は組織固有。認証情報やビジネスロジックを含むため、組織の git リポジトリで管理すべき
-- 両方を同じフォルダで扱うことで、Claude Code のスキルがそのまま使える
-
-### セットアップ方法
-
-#### A. 新しく始める場合
+## 5. フレームワークの更新（Submodule 利用時）
 
 ```bash
-cd workato-dev-kit/projects
-git init
-git remote add origin <あなたの組織のリポジトリURL>
+git submodule update --remote kit
+bash kit/setup.sh
+git add kit && git commit -m "Update workato-dev-kit"
 ```
 
-#### B. 既存の組織リポジトリがある場合
-
-```bash
-cd workato-dev-kit
-# projects/ に既存リポジトリをクローン
-git clone <あなたの組織のリポジトリURL> projects
-```
-
-#### C. まず試してみたい場合（git 管理なし）
-
-```bash
-# そのまま使えます。projects/ は workato-dev-kit の .gitignore に含まれているため、
-# ツールキット側に影響しません。後から git init しても OK。
-```
+新しいスキルやルールが追加された場合、`setup.sh` が自動で symlink を作成します。
+組織独自に追加したファイル（symlink でないもの）は上書きされません。
 
 ## 6. Workato プロジェクトを取得
 
