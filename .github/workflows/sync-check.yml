@@ -1,0 +1,37 @@
+name: sync-check
+
+# scripts/sync_agents.py が生成する framework/{cursor,codex,gemini}/ と
+# framework/AGENTS.md が、framework/claude/ の正本とドリフトしていないか検証する。
+#
+# framework/claude/ を編集したのに sync_agents.py を回し忘れた PR を検出する。
+
+on:
+  pull_request:
+    paths:
+      - 'framework/claude/**'
+      - 'framework/cursor/**'
+      - 'framework/codex/**'
+      - 'framework/gemini/**'
+      - 'framework/AGENTS.md'
+      - 'scripts/sync_agents.py'
+      - '.github/workflows/sync-check.yml'
+  push:
+    branches: [main]
+
+jobs:
+  sync-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run sync_agents.py
+        run: python3 scripts/sync_agents.py
+
+      - name: Detect drift
+        run: |
+          if ! git diff --exit-code; then
+            echo "::error::framework/{cursor,codex,gemini}/ or framework/AGENTS.md is out of sync with framework/claude/."
+            echo "::error::Run 'python3 scripts/sync_agents.py' locally and commit the regenerated files."
+            exit 1
+          fi
