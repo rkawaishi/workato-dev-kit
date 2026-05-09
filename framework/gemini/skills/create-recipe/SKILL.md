@@ -137,7 +137,7 @@ Slack MCP と Jira MCP からリソース情報を取得しました。
 
 1. パターンカタログを読む（3 系統を併読、矛盾は組織側が優先）:
    - `docs/patterns/recipe-patterns/_index.md` — 汎用パターン（kit canonical）
-   - `@org/docs/patterns/recipe-patterns/_index.md` — 組織が学習した汎用パターン（存在すれば）
+   - `org/docs/patterns/recipe-patterns/_index.md` — 組織が学習した汎用パターン（存在すれば）
    - `projects/docs/patterns/` — 組織ドメインのパターン（存在すれば）
 2. ヒアリングで決まった要件を分解し、各部分に該当するパターンを特定する:
    - 例: 「API から全件取得して DB に反映」→ **ページネーションループ** + **データ同期**

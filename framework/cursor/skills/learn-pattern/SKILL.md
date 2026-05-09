@@ -154,9 +154,17 @@ B. 既存パターンに知見を追記（注意点、バリエーション etc.
 | `org/docs/patterns/recipe-patterns/` | ワークスペースリポジトリ | ワークスペースルートでコミット |
 | `projects/docs/patterns/` | ワークスペースリポジトリ | ワークスペースルートでコミット |
 
+いずれか実際に書き込んだディレクトリだけを add する（両方を一度に add すると、片方が存在しないワークスペースで pathspec エラーになる）:
+
 ```bash
 cd <workspace-root>
-git add org/docs/ projects/docs/
+
+# 汎用パターンを書き込んだ場合:
+git add org/docs/patterns/recipe-patterns/
+
+# 組織ドメインパターンを書き込んだ場合:
+git add projects/docs/patterns/
+
 git commit -m "docs(org): record pattern <pattern-name>"
 ```
 

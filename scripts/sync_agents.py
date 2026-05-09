@@ -111,6 +111,7 @@ def trim_trailing_newlines(text: str) -> str:
 # from devouring unrelated ``.md`` references several lines away.
 SKILL_PATH_REWRITES: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"@docs/"), "docs/"),
+    (re.compile(r"@org/"), "org/"),
     (re.compile(r"@connectors/"), "connectors/"),
     (re.compile(r"@projects/"), "projects/"),
     (re.compile(r"@\.claude/rules/([^.\n]*)\.md"), r".cursor/rules/\1.mdc"),
@@ -237,6 +238,7 @@ def _build_codex_slash_pattern(names: set[str]) -> re.Pattern[str] | None:
 #     pattern that knows the actual skill names.
 CODEX_PATH_REWRITES: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"@docs/"), "docs/"),
+    (re.compile(r"@org/"), "org/"),
     (re.compile(r"@connectors/"), "connectors/"),
     (re.compile(r"@projects/"), "projects/"),
     (re.compile(r"@\.claude/CLAUDE\.md"), "AGENTS.md"),
@@ -309,6 +311,7 @@ def sync_codex() -> None:
 #     slash invocation, just like Claude/Cursor.
 GEMINI_PATH_REWRITES: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"@docs/"), "docs/"),
+    (re.compile(r"@org/"), "org/"),
     (re.compile(r"@connectors/"), "connectors/"),
     (re.compile(r"@projects/"), "projects/"),
     (re.compile(r"@\.claude/CLAUDE\.md"), "GEMINI.md"),
