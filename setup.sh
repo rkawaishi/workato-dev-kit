@@ -252,14 +252,128 @@ else
   echo "  ✓ .gitignore already up to date"
 fi
 
-# ── 8. Cursor 同期（存在する場合）────────────────────────
-# sync-cursor-rules.sh は REPO_ROOT を $(dirname "$0")/.. から導出するため、
-# ワークスペースルートの scripts/ から実行されたように見せる必要がある。
-# scripts/ は kit/scripts/ への symlink なので、そのパスで呼び出す。
-if [ -L "$WORKSPACE_ROOT/scripts" ] && [ -f "$WORKSPACE_ROOT/scripts/sync-cursor-rules.sh" ]; then
+# ── 8. Cursor 配布 ──────────────────────────────────────
+# framework/cursor/ は kit 側で生成済み（python3 scripts/sync_agents.py）。
+# 利用者の Cursor 環境に届けるため symlink を張る。
+if [ -d "$KIT_DIR/framework/cursor" ]; then
   echo ""
-  echo "--- Syncing Cursor rules ---"
-  bash "$WORKSPACE_ROOT/scripts/sync-cursor-rules.sh" 2>/dev/null || echo "  WARN: Cursor sync failed (non-fatal)"
+  echo "--- Setting up .cursor/rules/ ---"
+  link_files_in_dir \
+    "$KIT_DIR/framework/cursor/rules" \
+    "$WORKSPACE_ROOT/.cursor/rules" \
+    "../../$KIT_REL/framework/cursor/rules"
+
+  echo ""
+  echo "--- Setting up .cursor/skills/ ---"
+  mkdir -p "$WORKSPACE_ROOT/.cursor/skills"
+
+  for skill_dir in "$KIT_DIR/framework/cursor/skills"/*/; do
+    [ -d "$skill_dir" ] || continue
+    skill_name="$(basename "$skill_dir")"
+
+    dst="$WORKSPACE_ROOT/.cursor/skills/$skill_name"
+    rel_target="../../$KIT_REL/framework/cursor/skills/$skill_name"
+
+    if [ -L "$dst" ]; then
+      rm "$dst"
+    elif [ -e "$dst" ]; then
+      echo "  SKIP skills/$skill_name (not a symlink, preserving user skill)"
+      continue
+    fi
+
+    ln -s "$rel_target" "$dst"
+    echo "  ✓ skills/$skill_name → $rel_target"
+  done
+
+  echo ""
+  echo "--- Setting up .cursor/hooks.json ---"
+  HOOKS_DST="$WORKSPACE_ROOT/.cursor/hooks.json"
+  HOOKS_REL="../$KIT_REL/framework/cursor/hooks.json"
+  if [ -L "$HOOKS_DST" ]; then
+    rm "$HOOKS_DST"
+    ln -s "$HOOKS_REL" "$HOOKS_DST"
+    echo "  ✓ .cursor/hooks.json → $HOOKS_REL"
+  elif [ -e "$HOOKS_DST" ]; then
+    echo "  SKIP .cursor/hooks.json (not a symlink, preserving user file)"
+  else
+    ln -s "$HOOKS_REL" "$HOOKS_DST"
+    echo "  ✓ .cursor/hooks.json → $HOOKS_REL"
+  fi
+fi
+
+# ── 9. Codex CLI 配布 ────────────────────────────────────
+# Codex CLI（skills モード）は ``.agents/skills/<name>/SKILL.md`` を読む。
+if [ -d "$KIT_DIR/framework/codex" ]; then
+  echo ""
+  echo "--- Setting up .agents/skills/ ---"
+  mkdir -p "$WORKSPACE_ROOT/.agents/skills"
+
+  for skill_dir in "$KIT_DIR/framework/codex/skills"/*/; do
+    [ -d "$skill_dir" ] || continue
+    skill_name="$(basename "$skill_dir")"
+
+    dst="$WORKSPACE_ROOT/.agents/skills/$skill_name"
+    rel_target="../../$KIT_REL/framework/codex/skills/$skill_name"
+
+    if [ -L "$dst" ]; then
+      rm "$dst"
+    elif [ -e "$dst" ]; then
+      echo "  SKIP skills/$skill_name (not a symlink, preserving user skill)"
+      continue
+    fi
+
+    ln -s "$rel_target" "$dst"
+    echo "  ✓ skills/$skill_name → $rel_target"
+  done
+fi
+
+# ── 10. Gemini CLI 配布 ──────────────────────────────────
+# Gemini CLI（skills モード）は ``.gemini/skills/<name>/SKILL.md`` を読む。
+if [ -d "$KIT_DIR/framework/gemini" ]; then
+  echo ""
+  echo "--- Setting up .gemini/skills/ ---"
+  mkdir -p "$WORKSPACE_ROOT/.gemini/skills"
+
+  for skill_dir in "$KIT_DIR/framework/gemini/skills"/*/; do
+    [ -d "$skill_dir" ] || continue
+    skill_name="$(basename "$skill_dir")"
+
+    dst="$WORKSPACE_ROOT/.gemini/skills/$skill_name"
+    rel_target="../../$KIT_REL/framework/gemini/skills/$skill_name"
+
+    if [ -L "$dst" ]; then
+      rm "$dst"
+    elif [ -e "$dst" ]; then
+      echo "  SKIP skills/$skill_name (not a symlink, preserving user skill)"
+      continue
+    fi
+
+    ln -s "$rel_target" "$dst"
+    echo "  ✓ skills/$skill_name → $rel_target"
+  done
+fi
+
+# ── 11. AGENTS.md / GEMINI.md（エージェント横断の規約）────
+# Codex CLI / Gemini CLI / Aider 等が読むエージェント中立ドキュメント。
+# 中身は CLAUDE.md + rules を集約したもので、kit 側で生成済み。
+# Gemini は GEMINI.md を読むため、AGENTS.md と同じ実体を別名で symlink する。
+if [ -f "$KIT_DIR/framework/AGENTS.md" ]; then
+  echo ""
+  echo "--- Setting up AGENTS.md / GEMINI.md ---"
+  for name in AGENTS.md GEMINI.md; do
+    dst="$WORKSPACE_ROOT/$name"
+    rel="$KIT_REL/framework/AGENTS.md"
+    if [ -L "$dst" ]; then
+      rm "$dst"
+      ln -s "$rel" "$dst"
+      echo "  ✓ $name → $rel"
+    elif [ -e "$dst" ]; then
+      echo "  SKIP $name (not a symlink, preserving user file)"
+    else
+      ln -s "$rel" "$dst"
+      echo "  ✓ $name → $rel"
+    fi
+  done
 fi
 
 # ── 完了 ────────────────────────────────────────────────
@@ -269,7 +383,7 @@ echo ""
 echo "Next steps:"
 echo "  1. Review .claude/CLAUDE.md and customize for your organization"
 echo "  2. Run 'workato init' to authenticate with Workato"
-echo "  3. Run 'git add .claude/ docs guides scripts templates .gitignore && git commit'"
+echo "  3. Run 'git add .claude/ .cursor/ .agents/ .gemini/ AGENTS.md GEMINI.md docs guides scripts templates .gitignore && git commit'"
 echo ""
 echo "To update the framework later:"
 echo "  git submodule update --remote kit && bash kit/setup.sh"
