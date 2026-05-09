@@ -34,7 +34,7 @@ workato-dev-kit/                  ← このリポジトリ
 ├── connectors/                   # カスタムコネクタのドキュメント雛形（利用者は connector.rb をここに追加）
 ├── projects/                     # 利用者プロジェクトの patterns/ など
 ├── scripts/
-│   ├── sync_agents.py            # framework/claude/ → framework/cursor/ 同期 + .cursor/ ミラー
+│   ├── sync_agents.py            # framework/claude/ → framework/{cursor,codex,gemini}/ + AGENTS.md を同期
 │   ├── sync-cursor-rules.sh      # 後方互換ラッパー（sync_agents.py を呼ぶだけ）
 │   └── workato-api.py
 ├── templates/                    # 利用者リポジトリ向けのテンプレ（gitignore 等）
@@ -70,7 +70,7 @@ workato-dev-kit/                  ← このリポジトリ
 - 正本は `framework/claude/`。スキル・ルールはここを編集する
   - スキル: `framework/claude/skills/<name>/SKILL.md`
   - ルール: `framework/claude/rules/<name>.md`
-- 編集後、必ず **`python3 scripts/sync_agents.py`** を実行する。これで `framework/cursor/` が再生成され、ローカル `.cursor/` にもミラーされる。コミットには `framework/claude/` と `framework/cursor/` の両方を含めること（CI で同期チェックあり）
+- 編集後、必ず **`python3 scripts/sync_agents.py`** を実行する。これで `framework/{cursor,codex,gemini}/` と `framework/AGENTS.md` が再生成される。コミットには `framework/claude/` 側の編集と再生成された配布物を両方含めること（CI で同期チェックあり）
 - スキル本文中の `@.claude/rules/...` のような参照は **利用者ビュー基準** で書く（`framework/claude/rules/...` ではない）。Cursor 向けには sync が `.cursor/rules/...mdc` に書き換える
 
 ### Cursor 専用ファイル（手書き）

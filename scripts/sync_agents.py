@@ -9,18 +9,14 @@ Canonical output (committed):
     framework/claude/CLAUDE.md
         + framework/claude/rules/*.md → framework/AGENTS.md
 
-Local mirror (gitignored — for the kit-dev workspace's own Cursor IDE):
-    framework/cursor/ → .cursor/
-
-Gemini CLI consumes the same AGENTS.md content via setup.sh, which symlinks
-GEMINI.md → framework/AGENTS.md in consumer repos.
+setup.sh symlinks framework/<agent>/ trees into the consumer repo, and
+symlinks GEMINI.md → framework/AGENTS.md so Gemini CLI gets the same
+content as Codex / Aider.
 """
 
 from __future__ import annotations
 
-import argparse
 import re
-import shutil
 import sys
 from pathlib import Path
 
@@ -39,9 +35,6 @@ CODEX_SKILLS = CODEX_OUT / "skills"
 GEMINI_OUT = REPO_ROOT / "framework" / "gemini"
 GEMINI_SKILLS = GEMINI_OUT / "skills"
 AGENTS_MD = REPO_ROOT / "framework" / "AGENTS.md"
-
-# Local mirror for the kit-dev repo's own Cursor IDE. Gitignored.
-CURSOR_LOCAL = REPO_ROOT / ".cursor"
 
 
 def split_frontmatter(text: str) -> tuple[str, str]:
@@ -434,33 +427,7 @@ def sync_agents_md() -> None:
     print(f"  ✓ framework/AGENTS.md ({len(out.splitlines())} lines)")
 
 
-def mirror_to_local() -> None:
-    """Copy framework/cursor/ → .cursor/ for the kit-dev workspace.
-
-    Files that exist in framework/cursor/ overwrite their counterparts in
-    .cursor/. Files in .cursor/ that are not present in framework/cursor/
-    are left alone, so a developer can keep ad-hoc local overrides.
-    """
-    if not CURSOR_OUT.is_dir():
-        return
-    for src in CURSOR_OUT.rglob("*"):
-        if src.is_dir():
-            continue
-        rel = src.relative_to(CURSOR_OUT)
-        dst = CURSOR_LOCAL / rel
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(src, dst)
-
-
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--no-local-mirror",
-        action="store_true",
-        help="Skip copying framework/cursor/ → .cursor/ (used by CI)",
-    )
-    args = parser.parse_args()
-
     if not CLAUDE_RULES.is_dir() or not CLAUDE_SKILLS.is_dir():
         print(
             f"Skipped: framework/claude/{{rules,skills}} not found at {REPO_ROOT} "
@@ -482,10 +449,6 @@ def main() -> int:
     print()
     print("=== Generating framework/AGENTS.md ===")
     sync_agents_md()
-    if not args.no_local_mirror:
-        print()
-        print("=== Mirroring framework/cursor/ → .cursor/ (local IDE) ===")
-        mirror_to_local()
     print()
     print(
         "Done. framework/cursor/rules/workato-project.mdc and hooks.json "
