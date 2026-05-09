@@ -197,11 +197,11 @@ Workato リモートからプロジェクトのアセットをローカルに取
 
 | 発見内容 | 反映先 |
 |---|---|
-| フィールド情報（extended_output_schema 等） | `docs/connectors/<provider>.md` |
-| 新しいプロバイダ/アクション | `docs/connectors/` または `docs/platform/` |
-| JSON 構造の新発見 | `.claude/rules/` |
-| datapill パターン | `docs/logic/data-pills.md` |
-| デプロイ関連の知見 | `docs/patterns/deployment-guide.md` |
+| フィールド情報（extended_output_schema 等） | `org/docs/connectors/<provider>.md` |
+| 新しいプロバイダ/アクション | `org/docs/connectors/` または `org/docs/platform/` |
+| JSON 構造の新発見 | `org/docs/learned-patterns.md` |
+| datapill パターン | `org/docs/logic/data-pills.md` |
+| デプロイ関連の知見 | `org/docs/patterns/deployment-guide.md` |
 
 ### /learn-pattern — 構築パターンを記録
 
@@ -218,9 +218,7 @@ Workato リモートからプロジェクトのアセットをローカルに取
 - 設計判断のポイント
 - 既知の落とし穴
 
-**保存先:**
-- 汎用パターン → `docs/patterns/recipe-patterns/`
-- 組織ドメインパターン → `projects/docs/patterns/`
+**保存先:** `org/docs/patterns/recipe-patterns/<name>.md`（汎用 / 組織ドメインともに集約。区別はパターン本文の「スコープ」セクションで表現）
 
 詳細は [ナレッジ管理ガイド](knowledge-management.md) を参照。
 

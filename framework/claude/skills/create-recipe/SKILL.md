@@ -135,10 +135,10 @@ Slack MCP と Jira MCP からリソース情報を取得しました。
 
 ヒアリング結果をもとにステップ構成を設計する。このとき、パターンカタログから適用可能なパターンを探す。
 
-1. パターンカタログを読む（3 系統を併読、矛盾は組織側が優先）:
-   - `@docs/patterns/recipe-patterns/_index.md` — 汎用パターン（kit canonical）
-   - `@org/docs/patterns/recipe-patterns/_index.md` — 組織が学習した汎用パターン（存在すれば）
-   - `@projects/docs/patterns/` — 組織ドメインのパターン（存在すれば）
+1. パターンカタログを読む（kit と組織側を併読、矛盾は組織側が優先）:
+   - `@docs/patterns/recipe-patterns/_index.md` — kit canonical のパターン
+   - `@org/docs/patterns/recipe-patterns/_index.md` — 組織が記録したパターン（存在すれば）
+   - `@projects/docs/patterns/` — レガシーパターン（存在すれば、後方互換のため読み込みのみ）
 2. ヒアリングで決まった要件を分解し、各部分に該当するパターンを特定する:
    - 例: 「API から全件取得して DB に反映」→ **ページネーションループ** + **データ同期**
    - 例: 「申請 → 承認 → Jira 起票」→ **承認ワークフロー**

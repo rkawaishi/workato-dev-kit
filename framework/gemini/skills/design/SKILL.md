@@ -94,7 +94,7 @@ description: プロジェクトの設計書 (DESIGN.md) を作成・更新・参
 カタログがない場合は `/catalog scan` で生成できることを案内。
 
 **次にパターンカタログを確認**し、ユーザー体験に合致する構築パターンを特定する:
-- `docs/patterns/recipe-patterns/_index.md`（kit canonical）、`org/docs/patterns/recipe-patterns/_index.md`（組織が学習した汎用、存在すれば）、`projects/docs/patterns/`（組織ドメイン）を読み、該当パターンを検索（矛盾は組織側が優先）
+- `docs/patterns/recipe-patterns/_index.md`（kit canonical）、`org/docs/patterns/recipe-patterns/_index.md`（組織が記録したパターン、存在すれば）、`projects/docs/patterns/`（レガシー、後方互換のため読み込みのみ）を読み、該当パターンを検索（矛盾は組織側が優先）
 - 合致するパターンがあればユーザーに提案:
   ```
   このプロジェクトには以下のパターンが使えそうです:

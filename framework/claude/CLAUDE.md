@@ -49,8 +49,8 @@ my-org-workato/                   ← 組織のリポジトリ（作業ルート
 3. `@docs/logic/` (+ `@org/docs/logic/`) — ロジックステップの組み方（datapill 記法含む）
 4. `@docs/platform/` (+ `@org/docs/platform/`) — プラットフォーム機能の理解
 5. `@.claude/rules/` — JSON フォーマット、プロジェクト構造
-6. `@docs/patterns/recipe-patterns/` (+ `@org/docs/patterns/recipe-patterns/`) — 汎用レシピ構築パターン
-7. `@projects/docs/patterns/` — 組織ドメインのレシピ構築パターン
+6. `@docs/patterns/recipe-patterns/` (+ `@org/docs/patterns/recipe-patterns/`) — レシピ構築パターン
+7. `@projects/docs/patterns/` — レガシーパターン（後方互換のため読み込みのみ。新規記録は `@org/docs/patterns/recipe-patterns/` へ）
 8. `@docs/patterns/` (+ `@org/docs/patterns/`) — デプロイガイド、共有アセットパターン
 
 ### カスタムコネクタ開発
@@ -68,7 +68,7 @@ Workato には「API Client」という名前の似て非なる 4 系統（Devel
 ここでは不可侵の 3 原則のみ記す:
 
 1. **docs-first**: アクション/トリガーを使う前に `@docs/connectors/<provider>.md`（Pre-built、kit canonical）と `@org/docs/connectors/<provider>.md`（組織側の補正・追記、存在すれば）を必ず参照する。カスタムは `@connectors/docs/<provider>.md`。公式ドキュメントに無ければ WebFetch で補完
-2. **既存プロジェクトの grep 禁止**: input/output スキーマを得る目的で `projects/<other-project>/Recipes/` を漁るのは禁止。個別プロジェクト固有のロジック・命名・datapill 参照が混入し、ナレッジの欠落も可視化されなくなる（例外: `@docs/patterns/recipe-patterns/` や `@projects/docs/patterns/` でのパターン学習目的の参照は可）
+2. **既存プロジェクトの grep 禁止**: input/output スキーマを得る目的で `projects/<other-project>/Recipes/` を漁るのは禁止。個別プロジェクト固有のロジック・命名・datapill 参照が混入し、ナレッジの欠落も可視化されなくなる（例外: `@docs/patterns/recipe-patterns/`、`@org/docs/patterns/recipe-patterns/`、`@projects/docs/patterns/`（レガシー）でのパターン学習目的の参照は可）
 3. **未学習は記録＋`/learn-recipe` 必須**: ドキュメントに無いアクションをベストエフォート実装した場合は `DESIGN.md` の「Unlearned Actions」または GitHub Issue に記録し、push/pull 後に `/learn-recipe <project-name>` を回して `org/docs/` に追記。学習後はエントリから外す
 
 ## 開発ルール
