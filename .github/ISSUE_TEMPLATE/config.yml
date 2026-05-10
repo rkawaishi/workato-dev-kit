@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 質問・ディスカッション / Questions & Discussion
+    url: https://github.com/rkawaishi/workato-dev-kit/discussions
+    about: 使い方の質問、設計相談、アイデアの共有はこちらへ。
+  - name: セキュリティ脆弱性 / Security Vulnerability
+    url: https://github.com/rkawaishi/workato-dev-kit/security/advisories/new
+    about: 脆弱性は公開イシューではなく Private Vulnerability Reporting で報告してください（詳細は SECURITY.md）。
+  - name: Workato プラットフォーム本体
+    url: https://www.workato.com/legal/security
+    about: Workato 本体の不具合・脆弱性は本リポジトリではなく Workato 公式へ。
