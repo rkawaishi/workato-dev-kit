@@ -1,5 +1,21 @@
 # Workato コネクタ一覧
 
+## このリストの位置づけ
+
+本ファイルは Workato Pre-built コネクタ **316 件のインベントリ**（コネクタ名・provider key・トリガー数・アクション数）です。`/sync-connectors` が Workato API から自動生成・更新します。
+
+各コネクタの詳細（個別トリガー/アクションの一覧、フィールド仕様）は **`docs/connectors/<provider>.md`** に分離されています。これらの個別ファイルも `/sync-connectors` がスケルトン（`## Triggers` / `## Actions` テーブル + `## フィールド詳細` 空セクション）を作成しますが、**説明文・フィールド詳細は API から取得できないため空欄**で初期化されます。
+
+### ドキュメントの育て方
+
+説明文・フィールド詳細は以下のサイクルで段階的に充実させていく設計です:
+
+1. **`/learn-recipe <project>`** — 既存レシピの JSON からフィールド使用例を抽出し、該当 `<provider>.md` の `## フィールド詳細` に追記
+2. **`/auto-learn <provider>`** — Workato UI を Claude in Chrome で操作し、全 op の input/output フィールドを自律収集して追記（Claude Code 限定）
+3. **手動補正** — 公式ドキュメントや実機検証で得た知見を `org/docs/connectors/<provider>.md`（組織ナレッジ層）または PR で kit に還元
+
+そのため Triggers / Actions テーブルの「説明」列が空欄でも**仕様外ではなく未学習**の意味です。コミュニティ PR でのナレッジ還元は [CONTRIBUTING.md](../../CONTRIBUTING.md) と [connector_doc_update](../../.github/ISSUE_TEMPLATE/connector_doc_update.yml) issue テンプレートを参照してください。
+
 ## コネクタの分類
 
 ### Pre-built Connectors（標準コネクタ）
