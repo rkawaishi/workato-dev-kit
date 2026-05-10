@@ -65,7 +65,9 @@ WARNING: <page>.lcap_page.json のドロップダウン "<label>" の dataSource
 
 #### 1d. Workato CLI recipes validate（ブロッキング）
 
-`.claude/hooks/validate-before-push.sh` が `workato push` 検知時に自動実行する。全 `*.recipe.json` に対して `workato recipes validate --path <file>` を流し、フォーマット不備を push 前に検出する。
+**Claude Code 環境**: `kit/framework/claude/hooks/validate-before-push.sh` が PreToolUse フック経由で `workato push` 検知時に自動実行する。全 `*.recipe.json` に対して `workato recipes validate --path <file>` を流し、フォーマット不備を push 前に検出する。
+
+**他エディタ (Cursor / Codex / Gemini)**: 自動フックは未整備。push 前に `$validate-recipe` を明示的に実行してフォーマットを確認すること。
 
 - **実行時間**: 約 2 秒/ファイル（直列実行）。大規模プロジェクトでは push 前の待ち時間になる点に留意
 - **失敗時**: エラー詳細を表示して push を中断（exit 2）
