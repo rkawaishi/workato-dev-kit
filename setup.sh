@@ -166,38 +166,53 @@ USER_SETTINGS="$WORKSPACE_ROOT/.claude/settings.json"
 
 if [ ! -f "$USER_SETTINGS" ]; then
   # 初回: kit の settings.json をコピー（hook パスを書き換え）
-  python3 -c "
-import json, sys
+  #
+  # 値は env 経由で Python に渡す。`python3 -c "..."` 内にシェル変数を直接展開すると、
+  # パスにクォート・改行・バックスラッシュが含まれた場合に Python コードが破綻する
+  # （あるいは任意コード実行に近い挙動になる）。ヒアドキュメントは <<'PY' でクォート
+  # しておけば変数展開も完全に防げる。
+  KIT_SETTINGS="$KIT_SETTINGS" USER_SETTINGS="$USER_SETTINGS" KIT_REL="$KIT_REL" \
+    python3 <<'PY'
+import json
+import os
 
-with open('$KIT_SETTINGS') as f:
+kit_settings = os.environ['KIT_SETTINGS']
+user_settings = os.environ['USER_SETTINGS']
+kit_rel = os.environ['KIT_REL']
+
+with open(kit_settings) as f:
     s = json.load(f)
 
 # Hook のコマンドパスを kit/framework/claude/ 配下に書き換え
-# テンプレート上は \".claude/hooks/<name>\" と書かれているが、実体は
-# kit/framework/claude/hooks/<name>。利用者の \".claude/settings.json\" には
+# テンプレート上は ".claude/hooks/<name>" と書かれているが、実体は
+# kit/framework/claude/hooks/<name>。利用者の ".claude/settings.json" には
 # 実体パスを直接埋め込む（symlink を経由しない）。
 for event in s.get('hooks', {}).values():
     for group in event:
         for hook in group.get('hooks', []):
             cmd = hook.get('command', '')
             if cmd.startswith('.claude/hooks/'):
-                hook['command'] = '$KIT_REL/framework/claude/hooks/' + cmd[len('.claude/hooks/'):]
+                hook['command'] = kit_rel + '/framework/claude/hooks/' + cmd[len('.claude/hooks/'):]
 
-with open('$USER_SETTINGS', 'w') as f:
+with open(user_settings, 'w') as f:
     json.dump(s, f, indent=2, ensure_ascii=False)
     f.write('\n')
-  "
+PY
   echo "  ✓ Created .claude/settings.json (from kit template)"
 else
   # 既存設定: 旧版 setup.sh が書いた hook パスを framework/claude/ 配下に書き換える。
   # 利用者が追加した hook（kit 由来でないもの）には手を付けない。
-  python3 -c "
+  USER_SETTINGS="$USER_SETTINGS" KIT_REL="$KIT_REL" \
+    python3 <<'PY'
 import json
+import os
 
-old_prefix = '$KIT_REL/.claude/hooks/'
-new_prefix = '$KIT_REL/framework/claude/hooks/'
+user_settings = os.environ['USER_SETTINGS']
+kit_rel = os.environ['KIT_REL']
+old_prefix = kit_rel + '/.claude/hooks/'
+new_prefix = kit_rel + '/framework/claude/hooks/'
 
-with open('$USER_SETTINGS') as f:
+with open(user_settings) as f:
     s = json.load(f)
 
 migrated = 0
@@ -210,13 +225,13 @@ for event in s.get('hooks', {}).values():
                 migrated += 1
 
 if migrated:
-    with open('$USER_SETTINGS', 'w') as f:
+    with open(user_settings, 'w') as f:
         json.dump(s, f, indent=2, ensure_ascii=False)
         f.write('\n')
     print(f'  ✓ Migrated {migrated} kit hook path(s) in .claude/settings.json (.claude/hooks/ → framework/claude/hooks/)')
 else:
     print('  EXISTS .claude/settings.json (no kit hook paths needed migrating — merge manually if other changes are needed)')
-  "
+PY
 fi
 
 # ── 6. CLAUDE.md の生成 ──────────────────────────────────
