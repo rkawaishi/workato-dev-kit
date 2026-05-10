@@ -45,3 +45,27 @@ jobs:
             git diff
             exit 1
           fi
+
+      - name: Check AGENTS.md size budget
+        run: |
+          # AGENTS.md は CLAUDE.md + 全ルールをフラット連結する性質上、
+          # ルール追加で線形に膨張する。Codex / Aider 等のフラット読み込み
+          # エージェントは毎回これを context に取り込むため、肥大化はそのまま
+          # 利用者のトークンコストに跳ね返る。
+          #
+          # ルール 1 つ追加で +200〜400 行を想定し、現状 +12% の余裕を持たせた
+          # 上限を設定。budget を超えたら以下のいずれかで対応:
+          #   1) ルールを統合して総量を減らす
+          #   2) AGENTS.md の構造をインデックス型に再設計 (issue #102)
+          #   3) 議論の上で本ファイルの上限値を引き上げる
+          MAX_LINES=1500
+          MAX_BYTES=65000
+          lines=$(wc -l < framework/AGENTS.md)
+          bytes=$(wc -c < framework/AGENTS.md)
+          echo "framework/AGENTS.md: $lines lines, $bytes bytes (budget: $MAX_LINES lines, $MAX_BYTES bytes)"
+          if [ "$lines" -gt "$MAX_LINES" ] || [ "$bytes" -gt "$MAX_BYTES" ]; then
+            echo "::error::framework/AGENTS.md exceeds the size budget."
+            echo "::error::Lines: $lines / $MAX_LINES, Bytes: $bytes / $MAX_BYTES"
+            echo "::error::See issue #102 for refactor options (index-based structure, rule consolidation)."
+            exit 1
+          fi
