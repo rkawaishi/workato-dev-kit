@@ -1,0 +1,12 @@
+# .mailmap — normalize commit identities for OSS publication.
+#
+# 1. Local hostnames (e.g. ryotaronoMBP.lan, ryotaronoMacBook-Pro.local) leaked
+#    via auto-generated `user.email` are rewritten so `git log` / `git shortlog`
+#    surface a single canonical identity.
+# 2. The author "ryotaro" — used by older local commits — is unified with the
+#    canonical handle "rk <kantannano@gmail.com>" used in recent merge commits.
+#
+# This file only affects display; the commit history itself is not rewritten.
+
+rk <kantannano@gmail.com> <ryotaro@ryotaronoMBP.lan>
+rk <kantannano@gmail.com> <ryotaro@ryotaronoMacBook-Pro.local>
