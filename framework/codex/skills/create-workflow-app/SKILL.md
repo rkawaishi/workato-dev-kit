@@ -87,8 +87,8 @@ Workato UI で Workflow App を有効化してください:
 - 連絡先: `"type": "input"` + `"style": "email"` / `"phone"` / `"url"`（自動バリデーション付き）
 - 日付系: **`"type": "date"`**（`"input"` + `"style": "date"` は NG — エディタが壊れる）
 - 選択式: `"type": "dropdown"` + `"options"` で固定選択肢を定義。`"multiValue": true` で複数選択
-- チェックボックス: `"type": "checkbox"`（※JSON type 要確認）→ Data Table の `boolean` 型
-- ファイル: `"type": "file"`（※JSON type 要確認）→ Data Table の `file` 型
+- チェックボックス: `"type": "checkbox"` → Data Table の `boolean` 型
+- ファイル: `"type": "file"` → Data Table の `file` 型
 - button コンポーネント（`handlers.click.type`: `"save-data"` / `"complete-task"` / `"open-url"` / `"run-recipe"` / `"reset-reload"`）
 - `dataSource` は **Data Table カラムへの保存先**を指定する。`dataSource.id` には Data Table フィールドの **title**（UUID ではない）を指定。`dataSource` が `null` だと送信時に値が保存されない
 
@@ -104,8 +104,8 @@ Workato UI で Workflow App を有効化してください:
 | date / date-time | **`"date"`** | 不要 |
 | 選択式（単一） | **`"dropdown"`** | 不要 |
 | 選択式（複数） | **`"dropdown"`** + `multiValue: true` | 不要 |
-| チェックボックス | **`"checkbox"`** (※要確認) | 不要 |
-| ファイル | **`"file"`** (※要確認) | 不要 |
+| チェックボックス | **`"checkbox"`** | 不要 |
+| ファイル | **`"file"`** | 不要 |
 
 **レビューページ** (`Pages/review_<name>.lcap_page.json`):
 - input / date コンポーネント（`editable: false`）でリクエスト内容を読み取り表示
