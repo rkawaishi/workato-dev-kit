@@ -1,11 +1,17 @@
 ---
-description: Workato UI を Claude in Chrome で操作し、1 コネクタ単位で全オペレーションのフィールド情報を自律的に収集して docs/connectors/<provider>.md に追記する。完全性より自律性を優先し、不確実なものは記録してスキップする（途中でユーザーに質問しない）。
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch
+description: Workato UI を Claude in Chrome で操作し、1 コネクタ単位で全オペレーションのフィールド情報を自律的に収集して docs/connectors/<provider>.md に追記する。完全性より自律性を優先し、不確実なものは記録してスキップする（途中でユーザーに質問しない）。Claude in Chrome 拡張が必須で Claude Code 限定。
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch, mcp__Claude_in_Chrome__navigate, mcp__Claude_in_Chrome__find, mcp__Claude_in_Chrome__form_input, mcp__Claude_in_Chrome__javascript_tool, mcp__Claude_in_Chrome__read_page, mcp__Claude_in_Chrome__read_console_messages, mcp__Claude_in_Chrome__read_network_requests, mcp__Claude_in_Chrome__tabs_context_mcp, mcp__Claude_in_Chrome__tabs_create_mcp, mcp__Claude_in_Chrome__select_browser, mcp__Claude_in_Chrome__list_connected_browsers
 ---
 
 # /auto-learn
 
 Workato UI を Claude in Chrome で操作し、対象コネクタの全オペレーション（trigger / action）の input / output フィールドを能動収集して `docs/connectors/<provider>.md` に追記するスキル。
+
+## 前提
+
+- **エディタ**: Claude Code 限定（Cursor / Codex CLI / Gemini CLI には Chrome MCP が無いため動作しない）
+- **拡張機能**: [Claude in Chrome](https://chrome.google.com/webstore) がインストール・接続されていること。未接続だと `tabs_context_mcp` や `navigate` などの呼び出しがエラーになる（接続状態は `mcp__Claude_in_Chrome__list_connected_browsers` で確認）
+- **Workato ログイン**: 対象ワークスペースに UI でログイン済みのタブがあること（自動ログインはしない）
 
 ## 設計原則（重要）
 
