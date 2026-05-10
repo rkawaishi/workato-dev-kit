@@ -207,10 +207,11 @@ git push origin feature/learn-jira-fields
 | `workato-cli.mdc` | `.workatoenv`, `projects/**`, `connectors/**` |
 | `workato-project.mdc` | 常時適用（プロジェクト全体のコンテキスト） |
 
-これらのルールとスキルは `kit/.claude/` から自動変換されています。最新化するには:
+これらのルールとスキルは kit メンテナーが `framework/claude/` から `python3 scripts/sync_agents.py` で事前生成しており、利用者リポジトリには `bash kit/setup.sh` 実行時に symlink が張られます。kit を更新するには:
 
 ```bash
-bash scripts/sync-cursor-rules.sh
+git submodule update --remote kit
+bash kit/setup.sh    # 新規スキル/ルールの symlink を追加・古いものを除去
 ```
 
 ## よくある質問
@@ -233,10 +234,11 @@ Workato UI 上でレシピやコネクションをまとめる単位です。`wo
 
 ### Q: ルールとスキルを最新の状態に保つには？
 
-Claude 側（`.claude/rules/`、`.claude/skills/`）が正（canonical source）です。更新があった場合は同期スクリプトを実行してください:
+正本は kit の `framework/claude/` にあり、Cursor 用ファイルは kit メンテナーが `python3 scripts/sync_agents.py` で事前生成しています。利用者は kit submodule を更新して setup.sh を再実行するだけです:
 
 ```bash
-bash scripts/sync-cursor-rules.sh
+git submodule update --remote kit
+bash kit/setup.sh
 ```
 
 ### Q: オフラインでも使える？

@@ -12,7 +12,7 @@ Workato のレシピ JSON には以下の特性がある:
 
 これらは開発を重ねるうちに判明するが、個人の記憶に留まりがち。本ツールキットでは、この暗黙知をドキュメントとして蓄積し、次のレシピ生成に活用する。
 
-Claude Code と Cursor のどちらで学習しても、ナレッジは `docs/` と `.claude/rules/` に蓄積されるため、両エディタで共有される。Cursor 利用時は学習後に `bash scripts/sync-cursor-rules.sh` を実行して `.cursor/rules/` にも反映すること。
+どのエディタ（Claude Code / Cursor / Codex CLI / Gemini CLI）で学習しても、ナレッジは `docs/`（kit canonical）と `org/docs/`（組織独自の補正・追記）に蓄積される。`.claude/rules/` 等の各エディタ用ファイルは kit メンテナーが `python3 scripts/sync_agents.py` で事前生成したものを利用者に symlink で配布しているため、利用者側で個別の同期は不要。kit を更新するときは `git submodule update --remote kit && bash kit/setup.sh` を実行する。
 
 ## ナレッジの構造
 

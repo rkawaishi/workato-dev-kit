@@ -1,6 +1,6 @@
 # Workato Dev Kit ガイド
 
-本ツールキットは **Claude Code** と **Cursor** の両方に対応している。スキル (`/create-recipe` 等) やルールはどちらのエディタでも同じ形式で利用できる。
+本ツールキットは **Claude Code** / **Cursor** / **Codex CLI** / **Gemini CLI** に対応している。スキル (`/create-recipe` 等) やルールはどのエディタでも同じ形式で利用できる（Codex のみ `/foo` の代わりに `$foo` 構文）。
 
 ## はじめに
 
@@ -9,7 +9,7 @@
 | [Claude Code クイックスタート](quickstart-claude-code.md) | Claude Code でのセットアップと初回開発 |
 | [Cursor クイックスタート](quickstart-cursor.md) | Cursor でのセットアップとルール同期 |
 
-> **Note:** スキル・ルールの正本は `.claude/` にあり、Cursor 用の `.cursor/` は `bash scripts/sync-cursor-rules.sh` で同期される。詳細は [設計思想・アーキテクチャ](architecture.md) を参照。
+> **Note:** スキル・ルールの正本は kit の `framework/claude/` にあり、`framework/{cursor,codex,gemini}/` および `framework/AGENTS.md` は `python3 scripts/sync_agents.py` で kit メンテナーが事前生成している。利用者は `bash kit/setup.sh` で各エディタ用ディレクトリへの symlink が張られる（個別に sync を回す必要はない）。詳細は [設計思想・アーキテクチャ](architecture.md) を参照。
 
 ## 設計思想
 
@@ -22,7 +22,7 @@
 | ガイド | 内容 |
 |---|---|
 | [ライフサイクルと責務マップ](lifecycle.md) | 各スキル・docs の「いつ・誰が・何のために」呼ぶ/書く/読むかの全体像 |
-| [スキルリファレンス](skills-reference.md) | 全 12 スキルの用途・オプション・使い方 |
+| [スキルリファレンス](skills-reference.md) | 全 13 スキルの用途・オプション・使い方 |
 | [デプロイ手順](deployment.md) | レシピ、Workflow App、Genie/MCP のデプロイとトラブルシューティング |
 | [レシピパターン](recipe-patterns.md) | パターンカタログの仕組みと活用方法 |
 
