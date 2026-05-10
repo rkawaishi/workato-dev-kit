@@ -2,6 +2,12 @@
 
 English | [日本語](README.md)
 
+[![tests](https://github.com/rkawaishi/workato-dev-kit/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/rkawaishi/workato-dev-kit/actions/workflows/tests.yml)
+[![sync-check](https://github.com/rkawaishi/workato-dev-kit/actions/workflows/sync-check.yml/badge.svg?branch=main)](https://github.com/rkawaishi/workato-dev-kit/actions/workflows/sync-check.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
+[![editors](https://img.shields.io/badge/editors-Claude%20Code%20%7C%20Cursor%20%7C%20Codex%20CLI%20%7C%20Gemini%20CLI-orange.svg)](#features)
+
 A toolkit for building Workato (enterprise iPaaS) automations with AI coding agents.
 Supports [Claude Code](https://claude.com/claude-code), [Cursor](https://cursor.com), [Codex CLI](https://github.com/openai/codex), and [Gemini CLI](https://github.com/google-gemini/gemini-cli).
 
