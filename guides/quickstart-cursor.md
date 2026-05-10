@@ -203,7 +203,6 @@ git push origin feature/learn-jira-fields
 | `workato-page-components.mdc` | `**/*.lcap_page.json` |
 | `workato-connector-sdk.mdc` | `connectors/**/*.rb` |
 | `workato-project-structure.mdc` | `projects/**` |
-| `workato-shared-assets.mdc` | `projects/**` |
 | `workato-cli.mdc` | `.workatoenv`, `projects/**`, `connectors/**` |
 | `workato-project.mdc` | 常時適用（プロジェクト全体のコンテキスト） |
 
