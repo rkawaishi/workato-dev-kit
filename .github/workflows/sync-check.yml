@@ -30,8 +30,18 @@ jobs:
 
       - name: Detect drift
         run: |
-          if ! git diff --exit-code; then
+          # `git diff` だけでは tracked ファイルの変更しか検出できず、
+          # 新規スキル追加で sync が untracked ファイルを生成したケース
+          # （例: framework/cursor/skills/<new-skill>/SKILL.md）を見落とす。
+          # `git status --porcelain` で tracked / untracked 両方を検査する。
+          if [ -n "$(git status --porcelain)" ]; then
             echo "::error::framework/{cursor,codex,gemini}/ or framework/AGENTS.md is out of sync with framework/claude/."
             echo "::error::Run 'python3 scripts/sync_agents.py' locally and commit the regenerated files."
+            echo ""
+            echo "Drift detected (modified or untracked):"
+            git status --short
+            echo ""
+            echo "--- Diff of tracked changes ---"
+            git diff
             exit 1
           fi
