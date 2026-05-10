@@ -1,0 +1,78 @@
+name: コネクタドキュメント追加・修正 / Connector Doc Update
+description: docs/connectors/<provider>.md の追加・修正提案
+title: "[docs] connector: "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Workato コネクタのフィールド情報やトリガー/アクションのドキュメントを追加・修正する提案です。
+        `/learn-recipe` や `/auto-learn` で得た学習結果の還元 PR と組み合わせて使うと便利です。
+
+  - type: input
+    id: provider
+    attributes:
+      label: コネクタ名 (provider)
+      description: "docs/connectors/<provider>.md のファイル名と一致する名前"
+      placeholder: "例: salesforce, google_sheets, slack"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: connector-type
+    attributes:
+      label: コネクタタイプ
+      options:
+        - Pre-built (Workato 公式)
+        - カスタム (Connector SDK)
+        - 不明 / 該当なし
+    validations:
+      required: true
+
+  - type: dropdown
+    id: change-type
+    attributes:
+      label: 変更タイプ
+      multiple: true
+      options:
+        - 新規コネクタ追加
+        - トリガー / アクションの追加
+        - 既存フィールドの修正
+        - 説明文の追加・改善
+        - 誤情報の修正
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: 追加・修正したい情報
+      description: |
+        具体的にどのトリガー/アクション、どのフィールドを追加・修正したいか。
+        可能なら入力フィールドのスキーマ（type, required, options 等）まで書いてください。
+    validations:
+      required: true
+
+  - type: textarea
+    id: source
+    attributes:
+      label: 情報源
+      description: |
+        - Workato 公式ドキュメントの URL
+        - 自分のレシピ JSON での確認結果
+        - `/learn-recipe` 実行結果
+        - `/auto-learn` の収集結果
+        などの根拠
+    validations:
+      required: false
+
+  - type: dropdown
+    id: pr-intent
+    attributes:
+      label: PR 提出の意思
+      options:
+        - 自分で PR を出す予定
+        - 提案のみ（メンテナーに任せたい）
+        - 未定
+    validations:
+      required: true

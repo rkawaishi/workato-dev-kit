@@ -1,0 +1,94 @@
+name: バグ報告 / Bug Report
+description: workato-dev-kit の不具合を報告
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        バグ報告ありがとうございます。
+        セキュリティ脆弱性については [SECURITY.md](https://github.com/rkawaishi/workato-dev-kit/blob/main/SECURITY.md) の手順に従って非公開で報告してください。
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要
+      description: 何が起きているか、簡潔に教えてください。
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: 最小限の再現手順を順番に書いてください。
+      placeholder: |
+        1. `bash kit/setup.sh` を実行
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待動作
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の動作
+      description: エラーメッセージやログがあれば貼ってください。長い場合はコードブロックで囲ってください。
+    validations:
+      required: true
+
+  - type: dropdown
+    id: editor
+    attributes:
+      label: エディタ
+      description: どのエディタで再現しますか？
+      multiple: true
+      options:
+        - Claude Code
+        - Cursor
+        - Codex CLI
+        - Gemini CLI
+        - その他 / 該当なし
+    validations:
+      required: true
+
+  - type: input
+    id: kit-version
+    attributes:
+      label: kit のバージョン
+      description: "`git -C kit rev-parse HEAD` の出力（コミットハッシュ）または submodule 取り込み日"
+      placeholder: "例: 20021ee または 2026-05-10 取り込み"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS / 環境
+      placeholder: "例: macOS 14.5 (arm64), Ubuntu 22.04, Windows 11 + WSL2"
+    validations:
+      required: true
+
+  - type: input
+    id: workato-cli-version
+    attributes:
+      label: Workato Platform CLI バージョン
+      description: "`workato --version` の出力（CLI を使う再現の場合のみ）"
+      placeholder: "例: workato-platform-cli 0.5.x"
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: その他補足
+      description: スクリーンショット、関連 issue、回避策など
+    validations:
+      required: false
