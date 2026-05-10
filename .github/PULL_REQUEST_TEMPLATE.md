@@ -27,8 +27,8 @@ Thanks for the PR!
 - [ ] `framework/claude/` を編集した場合、`python3 scripts/sync_agents.py` を実行し再生成物もコミット済み
 - [ ] 既存テストが通る (`python3 -m unittest scripts/tests/test_*.py`)
 - [ ] 新機能/挙動変更の場合、ドキュメント (README / guides / framework/claude/CLAUDE.md) を更新済み
-- [ ] スキル追加・変更の場合、[CONTRIBUTING.md](../blob/main/CONTRIBUTING.md#新規スキル追加時のチェックリスト) のチェックリストを満たしている
-- [ ] [CONTRIBUTING.md](../blob/main/CONTRIBUTING.md) と [Code of Conduct](../blob/main/CODE_OF_CONDUCT.md) を読んだ
+- [ ] スキル追加・変更の場合、[CONTRIBUTING.md](https://github.com/rkawaishi/workato-dev-kit/blob/main/CONTRIBUTING.md#新規スキル追加時のチェックリスト) のチェックリストを満たしている
+- [ ] [CONTRIBUTING.md](https://github.com/rkawaishi/workato-dev-kit/blob/main/CONTRIBUTING.md) と [Code of Conduct](https://github.com/rkawaishi/workato-dev-kit/blob/main/CODE_OF_CONDUCT.md) を読んだ
 
 ## Related
 

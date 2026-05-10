@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         バグ報告ありがとうございます。
-        セキュリティ脆弱性については [SECURITY.md](../blob/main/SECURITY.md) の手順に従って非公開で報告してください。
+        セキュリティ脆弱性については [SECURITY.md](https://github.com/rkawaishi/workato-dev-kit/blob/main/SECURITY.md) の手順に従って非公開で報告してください。
 
   - type: textarea
     id: summary
