@@ -49,9 +49,19 @@ docs/
 加えて、組織固有のナレッジは:
 
 ```
-connectors/docs/            # カスタムコネクタの仕様
-projects/docs/patterns/     # 組織ドメインの構築パターン
+connectors/docs/                            # カスタムコネクタの仕様
+org/docs/                                   # kit canonical な docs/ への上書きレイヤー
+├── connectors/<provider>.md                #   kit 版の補正・追記、組織独自情報
+├── logic/<topic>.md                        #
+├── platform/<topic>.md                     #
+├── patterns/recipe-patterns/<name>.md      #   組織が記録したレシピ構築パターン
+├── patterns/deployment-guide.md            #
+└── learned-patterns.md                     #   組織側の一時保管バッファ
+projects/docs/patterns/                     # レガシー（旧バージョンの記録、読み込みのみ）
 ```
+
+`org/docs/` の参照規約・書き込み規約は `@.claude/rules/org-knowledge-overlay.md` 参照。
+**kit canonical な `docs/` は利用者は直接編集しない**（kit submodule の変更になる）。
 
 ## 学習サイクルの回し方
 
@@ -68,16 +78,16 @@ UI で調整したレシピを pull した後に実行する。
 
 | 発見内容 | 反映先 | 例 |
 |---|---|---|
-| フィールド定義 | `docs/connectors/<provider>.md` | Salesforce の Account に `BillingCity` フィールドがある |
-| 新アクション | `docs/connectors/<provider>.md` | Jira に `Create sprint` アクションがある |
-| datapill パターン | `docs/logic/data-pills.md` | `#{_('data.xxx.yyy')}` の新しい参照パターン |
-| JSON 構造 | `.claude/rules/` | `toggle_cfg` の新しい使い方 |
-| デプロイ知見 | `docs/patterns/deployment-guide.md` | 特定条件で push が失敗するケース |
+| フィールド定義 | `org/docs/connectors/<provider>.md` | Salesforce の Account に `BillingCity` フィールドがある |
+| 新アクション | `org/docs/connectors/<provider>.md` | Jira に `Create sprint` アクションがある |
+| datapill パターン | `org/docs/logic/data-pills.md` | `#{_('data.xxx.yyy')}` の新しい参照パターン |
+| JSON 構造 | `org/docs/learned-patterns.md` | `toggle_cfg` の新しい使い方 |
+| デプロイ知見 | `org/docs/patterns/deployment-guide.md` | 特定条件で push が失敗するケース |
 
 **ポイント:**
-- 既存のドキュメントに直接追記する（中間ファイルは使わない）
-- 重複チェックを行い、既知の情報は追記しない
-- `docs/learned-patterns.md` は一時保管場所。適切な場所に振り分けられるまでの仮置き
+- 書き込み先はすべて `org/docs/` 配下（kit canonical な `docs/` は触らない）
+- 重複チェックを行い、kit 版や org 版で既知の情報は追記しない
+- `org/docs/learned-patterns.md` は一時保管場所。適切な場所に振り分けられるまでの仮置き
 
 ### 2. /learn-pattern — 構築パターンを記録
 
@@ -109,9 +119,10 @@ trigger → step1 → step2 → ...
 注意すべきポイント
 ```
 
-**パターンの保存先:**
-- **汎用パターン** → `docs/patterns/recipe-patterns/` — Workato 全般に適用できるもの
-- **組織ドメインパターン** → `projects/docs/patterns/` — 特定の業務や組織に固有のもの
+**パターンの保存先:** `org/docs/patterns/recipe-patterns/<name>.md`（汎用 / 組織ドメインともに集約）
+
+汎用 / 組織ドメインの区別はパターン本文の「スコープ」セクションで表現する（パスでは分けない）。
+過去のバージョンで `projects/docs/patterns/` に記録されたパターンは読み込み時に併読される（後方互換）。
 
 **パターンの活用:**
 - `/create-recipe` のステップ設計時に自動参照される
@@ -173,4 +184,4 @@ trigger → step1 → step2 → ...
 - **重複を避ける**: 各スキルは追記前に既存内容をチェックする
 - **適切な場所に配置する**: `docs/learned-patterns.md` は仮置き場所。発見した知見は適切なドキュメントに直接追記する
 - **古い情報を更新する**: コネクタの仕様変更があれば `/sync-connectors` で上書き更新
-- **組織固有と汎用を分ける**: 業務ルールに依存するパターンは `projects/docs/patterns/` に、Workato 共通のパターンは `docs/patterns/recipe-patterns/` に配置
+- **組織固有と汎用を区別する**: パターンは `org/docs/patterns/recipe-patterns/` に集約し、本文の「スコープ」セクションで汎用 / 組織ドメインを表現する（kit 還流候補の判別に使う）

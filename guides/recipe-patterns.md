@@ -9,14 +9,19 @@ Workato エキスパートが持つ構築ノウハウを「パターン」とし
 - **レシピ全体**: 承認ワークフロー（申請 → 承認 → 後続処理）
 - **レシピの一部**: ページネーションループ（API の全件取得）
 
-## 2つのカタログ
+## カタログの構成
 
-| カタログ | 場所 | 内容 |
-|---|---|---|
-| 汎用 | `docs/patterns/recipe-patterns/` | Workato プラットフォーム共通のパターン。どの組織でも使える |
-| 組織ドメイン | `projects/docs/patterns/` | 組織固有の構築パターン。社内の SaaS 連携や業務フローに紐づく |
+書き込み先は `org/docs/patterns/recipe-patterns/` に一本化されている。読み込み時は kit canonical とレガシーパスも併読する。
 
-判断の目安: 「Workato を使う他の組織でも同じ構成になるか？」 — Yes なら汎用、No なら組織ドメイン。
+| カタログ | 場所 | 書き手 | 内容 |
+|---|---|---|---|
+| kit canonical | `docs/patterns/recipe-patterns/` | kit メンテナ | Workato プラットフォーム共通のパターン。read-only（利用者は編集しない） |
+| 組織側 | `org/docs/patterns/recipe-patterns/` | `/learn-pattern` | 組織が記録したパターン。汎用 / 組織ドメインともにここに集約 |
+| レガシー | `projects/docs/patterns/` | （新規書き込みなし） | 旧バージョンで記録されたパターン。後方互換のため読み込みのみ |
+
+汎用 / 組織ドメインの区別はパターン本文の「スコープ」セクションで表現し、ファイルパスでは分けない。
+
+`/create-recipe` や `/design` は 3 カタログすべてを併読し、矛盾は組織側（`org/docs/`）が優先（`@.claude/rules/org-knowledge-overlay.md` 参照）。
 
 ## パターンの流れ
 

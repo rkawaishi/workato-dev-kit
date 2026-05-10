@@ -1,12 +1,14 @@
 ---
 name: learn-pattern
-description: レシピ構築パターンをカタログに記録・更新する。Workato エキスパートが他者サポート用にナレッジを蓄積する。
+description: レシピ構築パターンを org/docs/patterns/recipe-patterns/ に記録・更新する。Workato エキスパートが他者サポート用にナレッジを蓄積する。
 ---
 
 # $learn-pattern
 
-Workato エキスパートが構築パターンを `docs/patterns/recipe-patterns/` に記録するスキル。
+Workato エキスパートが構築パターンを **`org/docs/patterns/recipe-patterns/`** に記録するスキル。
 エキスパートが既に持っている知見をドキュメント化することが目的。レシピは参考素材として任意で指定する。
+
+書き込み先は組織ナレッジ層 1 箇所のみ（kit submodule の `docs/` には書かない）。詳細は `AGENTS.md`。
 
 ## 使い方
 
@@ -19,9 +21,10 @@ Workato エキスパートが構築パターンを `docs/patterns/recipe-pattern
 
 ### 1. エキスパートの意図を確認
 
-まず既存パターンを把握する:
-- `docs/patterns/recipe-patterns/_index.md` — 汎用パターン
-- `projects/docs/patterns/` — 組織ドメインのパターン（存在すれば）
+まず既存パターンを把握する（kit canonical と組織側を併読、矛盾は org 側優先）:
+- `docs/patterns/recipe-patterns/_index.md` — kit canonical の汎用パターン
+- `org/docs/patterns/recipe-patterns/_index.md` — 組織が記録したパターン（存在すれば）
+- `projects/docs/patterns/_index.md` — 組織ドメインのレガシーパターン（存在すれば、後方互換のため読み込みのみ）
 
 利用者に何をしたいかを確認する:
 
@@ -31,9 +34,9 @@ Workato エキスパートが構築パターンを `docs/patterns/recipe-pattern
 A. 新しいパターンを追加（例: ページネーションループ、バッチ処理 etc.）
 B. 既存パターンに知見を追記（注意点、バリエーション etc.）
 
-蓄積先:
-- 汎用（docs/patterns/recipe-patterns/）: <パターン名を列挙>
-- 組織ドメイン（projects/docs/patterns/）: <パターン名を列挙>
+既存パターン:
+- org/docs/patterns/recipe-patterns/: <パターン名を列挙>
+- (legacy) projects/docs/patterns/: <パターン名を列挙、存在すれば>
 ```
 
 引数でパターン名や意図が明確な場合はこの質問をスキップして先に進む。
@@ -53,10 +56,20 @@ B. 既存パターンに知見を追記（注意点、バリエーション etc.
 
 エキスパートの知見をドキュメント化する。
 
+書き込み先は **`org/docs/patterns/recipe-patterns/<pattern-name>.md`** に統一。
+ディレクトリが存在しなければ `mkdir -p org/docs/patterns/recipe-patterns/` で作成する。
+
 #### 新規パターンのテンプレート
 
 ```markdown
 # <パターン名> (<English Name>)
+
+## スコープ
+
+- [ ] 汎用 — Workato を使う他の組織でも同じ構成になる
+- [ ] 組織ドメイン — 自組織の業務・SaaS 連携に紐づく
+
+（該当する方にチェック。kit 還流を検討する場合は「汎用」のみが候補）
 
 ## いつ使うか
 
@@ -96,8 +109,9 @@ B. 既存パターンに知見を追記（注意点、バリエーション etc.
 
 **記述のガイドライン**:
 
-- パターンは **特定のコネクタや組織に依存しない汎用的な形** で記述する
-- レシピの具体的な値（チャンネル名、プロジェクト名等）は抽象化する
+- 汎用パターンは **特定のコネクタや組織に依存しない形** で記述する
+- 組織ドメインパターンは具体的な業務・SaaS を含めて構わない
+- レシピの具体的な値（チャンネル名、プロジェクト名等）のうち抽象化できるものは抽象化する
 - 「なぜこの構造にするのか」の理由を設計判断ポイントに含める
 - エキスパートが口頭で伝えるような実装上の勘所を「既知の注意点」に記録する
 
@@ -110,28 +124,23 @@ B. 既存パターンに知見を追記（注意点、バリエーション etc.
 
 ### 4. インデックスの更新
 
-新しいパターンを作成した場合、蓄積先に応じたインデックスを更新する:
-
-- **汎用パターン**: `docs/patterns/recipe-patterns/_index.md` のパターン一覧テーブルに行を追加
-- **組織ドメインパターン**: `projects/docs/patterns/_index.md` に行を追加（ファイルが存在しなければ `docs/patterns/recipe-patterns/_index.md` と同じ形式で作成）
+新しいパターンを作成した場合、`org/docs/patterns/recipe-patterns/_index.md` のパターン一覧テーブルに行を追加する。
+ファイルが存在しなければ `docs/patterns/recipe-patterns/_index.md`（kit canonical）と同じ形式で新規作成する。
 
 ### 5. 確認
 
 作成・更新したパターンファイルの内容を利用者に提示し、過不足がないか確認する。
 エキスパートの知見が正確に反映されているかが最も重要。
 
-## 蓄積先の判断
+## 蓄積先
 
-パターンには 2 つの蓄積先がある。どちらに置くかは利用者が判断する:
+書き込み先は `org/docs/patterns/recipe-patterns/` の 1 箇所のみ。汎用 / 組織ドメインの区別はパターン本文の「スコープ」セクションで表現する（パスでは分けない）。
 
-| 蓄積先 | 内容 | 例 |
-|---|---|---|
-| `docs/patterns/recipe-patterns/` | Workato プラットフォームに紐づく汎用パターン | ページネーションループ、ブロッキングアクションの配置ルール |
-| `projects/docs/patterns/` | 組織ドメインに紐づくパターン | 社内承認フローの構成、特定 SaaS 連携の定石 |
+**書き込まない場所**:
+- `docs/patterns/recipe-patterns/`（kit canonical、read-only）
+- `projects/docs/patterns/`（レガシー。既存ファイルは読み込みのみ。新規書き込みは org 側に集約）
 
-迷った場合の目安: 「Workato を使う他の組織でも同じ構成になるか？」→ Yes なら汎用、No なら組織ドメイン。
-
-`projects/docs/patterns/` が存在しない場合はディレクトリを作成する。
+将来 kit へ還流する価値の高い汎用パターンが溜まったら、別途 kit リポジトリに PR を立てる（現時点ではスコープ外）。
 
 ## 出力
 
@@ -142,11 +151,12 @@ B. 既存パターンに知見を追記（注意点、バリエーション etc.
 
 ## Git 管理
 
-書き込み先リポジトリは蓄積先によって異なる:
+書き込み先はワークスペースリポジトリの `org/docs/patterns/recipe-patterns/`（kit submodule の外）:
 
-| 蓄積先 | リポジトリ | コミット先 |
-|---|---|---|
-| `docs/patterns/recipe-patterns/` | kit（submodule） | kit/ 内でコミット → workato-dev-kit に PR |
-| `projects/docs/patterns/` | ワークスペースリポジトリ | ワークスペースルートでコミット |
+```bash
+cd <workspace-root>
+git add org/docs/patterns/recipe-patterns/
+git commit -m "docs(org): record pattern <pattern-name>"
+```
 
-両方に書き込んだ場合は、kit 側は workato-dev-kit の PR に、ワークスペース側はワークスペースリポジトリに個別にコミット。
+**kit submodule (`kit/`) には commit しない**。
