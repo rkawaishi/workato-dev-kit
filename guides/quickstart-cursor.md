@@ -21,7 +21,7 @@ git init
 # workato-dev-kit を submodule として追加
 git submodule add https://github.com/rkawaishi/workato-dev-kit.git kit
 
-# セットアップスクリプトを実行（symlink 作成、設定ファイル生成）
+# セットアップスクリプトを実行（Cursor 用ファイルをコピー、設定ファイル生成）
 bash kit/setup.sh
 
 # 初回コミット
@@ -33,7 +33,8 @@ git add -A && git commit -m "Initial setup with workato-dev-kit"
 ```
 my-org-workato/                 ← 作業ルート
 ├── .claude/                    ← kit から symlink（+ 組織独自ルール/スキルを追加可）
-├── .cursor/                    ← kit から symlink（Cursor 用ルール・スキル）
+├── .cursor/                    ← kit からコピー（symlink 非対応のため実ファイル）
+│   └── .kit-manifest           # kit-managed なファイル追跡（gitignore 対象）
 ├── docs/ → kit/docs/           ← symlink
 ├── guides/ → kit/guides/       ← symlink
 ├── kit/                        ← git submodule（読み取り専用）
@@ -66,12 +67,17 @@ workato init
 
 ```bash
 git submodule update --remote kit
-bash kit/setup.sh
-git add kit && git commit -m "Update workato-dev-kit"
+bash kit/setup.sh    # ← Cursor では再実行が必須（kit の最新を .cursor/ にコピー）
+git add kit .cursor && git commit -m "Update workato-dev-kit"
 ```
 
-新しいスキルやルールが追加された場合、`setup.sh` が自動で symlink を作成します。
-組織独自に追加したファイル（symlink でないもの）は上書きされません。
+`.cursor/` 配下は symlink ではなく実ファイルコピーなので、**kit を更新したら必ず `bash kit/setup.sh` を再実行**してください。再実行しないと Cursor は古いルール・スキルを使い続けます。
+
+- 新しいスキル・ルールが kit に追加されると、コピーが追加されます
+- kit から削除されたファイルは `.cursor/.kit-manifest` で追跡されており、自動で prune されます
+- 組織独自に `.cursor/rules/` や `.cursor/skills/` に追加したファイル（manifest に含まれないもの）は保持されます
+
+> **なぜ Cursor だけコピー？** Cursor は `.cursor/rules/*.mdc` や `.cursor/skills/<name>/` の symlink を確実に解決できず、エラーなしで読み込みが失敗するため。詳細は [architecture.md](architecture.md#対応エディタ) を参照。
 
 ## 6. Workato プロジェクトを取得
 
@@ -206,11 +212,11 @@ git push origin feature/learn-jira-fields
 | `workato-cli.mdc` | `.workatoenv`, `projects/**`, `connectors/**` |
 | `workato-project.mdc` | 常時適用（プロジェクト全体のコンテキスト） |
 
-これらのルールとスキルは kit メンテナーが `framework/claude/` から `python3 scripts/sync_agents.py` で事前生成しており、利用者リポジトリには `bash kit/setup.sh` 実行時に symlink が張られます。kit を更新するには:
+これらのルールとスキルは kit メンテナーが `framework/claude/` から `python3 scripts/sync_agents.py` で事前生成しており、利用者リポジトリには `bash kit/setup.sh` 実行時にコピーされます（Cursor は symlink を確実に解決できないため）。kit を更新するには:
 
 ```bash
 git submodule update --remote kit
-bash kit/setup.sh    # 新規スキル/ルールの symlink を追加・古いものを除去
+bash kit/setup.sh    # 新規スキル/ルールをコピー、古いものを prune
 ```
 
 ## よくある質問

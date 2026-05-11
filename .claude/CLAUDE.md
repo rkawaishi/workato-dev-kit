@@ -44,24 +44,27 @@ workato-dev-kit/                  ← このリポジトリ
 
 ## 利用者ビュー
 
-利用者リポジトリ（kit を submodule 追加した側）では `bash kit/setup.sh` を実行すると、以下の symlink が張られる：
+利用者リポジトリ（kit を submodule 追加した側）では `bash kit/setup.sh` を実行すると、以下が作成される。Cursor のみ実ファイルコピー、それ以外は symlink：
 
-| 利用者側のパス | symlink 先 |
-|---|---|
-| `.claude/rules/<file>.md` | `kit/framework/claude/rules/<file>.md` |
-| `.claude/skills/<name>/` | `kit/framework/claude/skills/<name>/` |
-| `.claude/hooks/<file>.sh` | `kit/framework/claude/hooks/<file>.sh` |
-| `.claude/settings.json` | （初回コピー、hook パスを `kit/framework/claude/hooks/...` に展開） |
-| `.claude/CLAUDE.md` | （初回コピー、`framework/claude/CLAUDE.md` の内容を取り込み） |
-| `.cursor/rules/<file>.mdc` | `kit/framework/cursor/rules/<file>.mdc` |
-| `.cursor/skills/<name>/` | `kit/framework/cursor/skills/<name>/` |
-| `.cursor/hooks.json` | `kit/framework/cursor/hooks.json` |
-| `.agents/skills/<name>/` | `kit/framework/codex/skills/<name>/` |
-| `.gemini/skills/<name>/` | `kit/framework/gemini/skills/<name>/` |
-| `AGENTS.md` | `kit/framework/AGENTS.md` |
-| `GEMINI.md` | `kit/framework/AGENTS.md`（同じ実体） |
+| 利用者側のパス | 配布方法 | リンク/コピー元 |
+|---|---|---|
+| `.claude/rules/<file>.md` | symlink | `kit/framework/claude/rules/<file>.md` |
+| `.claude/skills/<name>/` | symlink | `kit/framework/claude/skills/<name>/` |
+| `.claude/hooks/<file>.sh` | symlink | `kit/framework/claude/hooks/<file>.sh` |
+| `.claude/settings.json` | 初回コピー | hook パスを `kit/framework/claude/hooks/...` に展開 |
+| `.claude/CLAUDE.md` | 初回コピー | `framework/claude/CLAUDE.md` の内容を取り込み |
+| `.cursor/rules/<file>.mdc` | **コピー** | `kit/framework/cursor/rules/<file>.mdc` |
+| `.cursor/skills/<name>/...` | **コピー（再帰）** | `kit/framework/cursor/skills/<name>/...` |
+| `.cursor/hooks.json` | **コピー** | `kit/framework/cursor/hooks.json` |
+| `.cursor/.kit-manifest` | 生成 | kit-managed なファイル一覧（次回 setup で prune 判定に使用） |
+| `.agents/skills/<name>/` | symlink | `kit/framework/codex/skills/<name>/` |
+| `.gemini/skills/<name>/` | symlink | `kit/framework/gemini/skills/<name>/` |
+| `AGENTS.md` | symlink | `kit/framework/AGENTS.md` |
+| `GEMINI.md` | symlink | `kit/framework/AGENTS.md`（同じ実体） |
 
-利用者はこれら symlink と同じディレクトリに **独自ファイルを追加できる**（setup.sh は既存の非 symlink ファイルを保持する）。
+利用者はこれら symlink/コピーと同じディレクトリに **独自ファイルを追加できる**（setup.sh は symlink 配布側では非 symlink ファイルを、Cursor 配布側では manifest に含まれないファイルを保持する）。
+
+**Cursor だけコピー方式の理由**: Cursor IDE は `.cursor/rules/*.mdc` や `.cursor/skills/<name>/` の symlink を確実に解決できない（forum.cursor.com で多数の不具合報告。silent load failure、再起動後に検出されない等）。v2.5 で部分修正されたが再発報告あり。実ファイルコピーに切り替えて、kit 更新時は `bash kit/setup.sh` を再実行して再コピーする運用。
 
 ### 組織ナレッジ層 `org/`（利用者側のみ存在）
 
@@ -99,12 +102,16 @@ workato-dev-kit/                  ← このリポジトリ
 
 ## テスト
 
-- `setup.sh` を変更したら、テスト用ディレクトリで実行して symlink が正しく張られることを確認する：
+- `setup.sh` を変更したら、テスト用ディレクトリで実行して symlink/コピーが正しく作成されることを確認する：
   ```
   TEST=/tmp/kit-test-$$ && mkdir -p "$TEST" && cd "$TEST"
   ln -s "$(git -C <kit-repo> rev-parse --show-toplevel)" kit
   bash kit/setup.sh
-  ls -la .claude/rules .claude/skills .claude/hooks .cursor/rules .cursor/skills
+  ls -la .claude/rules .claude/skills .claude/hooks      # symlink のはず
+  ls -la .cursor/rules .cursor/skills .cursor/hooks.json # 実ファイル（コピー）のはず
+  cat .cursor/.kit-manifest                              # kit-managed ファイル一覧
+  # 2 回目の実行で冪等性を確認（差分が出ないこと）
+  bash kit/setup.sh
   ```
 - `scripts/sync_agents.py` を変更したら、リポジトリで実行して `framework/cursor/rules/*.mdc` と `framework/cursor/skills/*/SKILL.md` が再生成されることを確認する。CI（`.github/workflows/sync-check.yml`）でドリフトを自動検出する
 
