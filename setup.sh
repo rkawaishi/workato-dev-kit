@@ -353,7 +353,9 @@ if [ -d "$KIT_DIR/framework/cursor" ]; then
     find "$CURSOR_DST" -mindepth 1 -type d -empty -delete 2>/dev/null || true
   fi
 
-  # 各 kit ファイルをコピー
+  # 各 kit ファイルをコピー。実際にコピーしたパスを次回用 manifest に記録する
+  # （= 利用者ファイル上書き保護のために skip したパスは manifest に含めない）
+  COPIED_PATHS="$(mktemp)"
   copied=0
   skipped=0
   while IFS= read -r rel_path; do
@@ -361,9 +363,18 @@ if [ -d "$KIT_DIR/framework/cursor" ]; then
     src="$KIT_DIR/framework/cursor/$rel_path"
     dst="$CURSOR_DST/$rel_path"
 
-    # 利用者ファイル保護: dst が実ファイル かつ 旧 manifest に存在しない = 利用者が追加したもの
-    if [ -f "$dst" ] && [ ! -L "$dst" ] && [ -f "$MANIFEST" ]; then
-      if ! grep -qxF "$rel_path" "$MANIFEST"; then
+    # 利用者ファイル保護:
+    # - manifest が無い（初回実行）: 既存の実ファイルは全て利用者の手書きファイルとして保護
+    #   旧 symlink 方式 setup.sh の「非 symlink ファイルには触れない」挙動を踏襲し、
+    #   手書きの .cursor/hooks.json や、symlink から実ファイルに置き換えた独自版を守る
+    # - manifest がある（2 回目以降）: dst が実ファイル かつ 旧 manifest に無い = 利用者ファイル
+    #   （新 manifest にはコピーしたパスだけ含めるので、初回保護されたパスは引き続き「manifest に無い」扱いになる）
+    if [ -f "$dst" ] && [ ! -L "$dst" ]; then
+      if [ ! -f "$MANIFEST" ]; then
+        echo "  SKIP .cursor/$rel_path (existing real file, preserving on first run — delete it to opt into kit version)"
+        skipped=$((skipped + 1))
+        continue
+      elif ! grep -qxF "$rel_path" "$MANIFEST"; then
         echo "  SKIP .cursor/$rel_path (user file, preserving)"
         skipped=$((skipped + 1))
         continue
@@ -372,11 +383,13 @@ if [ -d "$KIT_DIR/framework/cursor" ]; then
 
     mkdir -p "$(dirname "$dst")"
     cp "$src" "$dst"
+    echo "$rel_path" >> "$COPIED_PATHS"
     copied=$((copied + 1))
   done < "$NEW_MANIFEST"
 
-  # manifest を更新
-  mv "$NEW_MANIFEST" "$MANIFEST"
+  # manifest を更新（実際にコピーしたパスのみ記録）。利用者の独自ファイルは含めない
+  sort "$COPIED_PATHS" > "$MANIFEST"
+  rm -f "$NEW_MANIFEST" "$COPIED_PATHS"
 
   echo "  ✓ Copied $copied kit-managed file(s) into .cursor/"
   if [ $skipped -gt 0 ]; then
