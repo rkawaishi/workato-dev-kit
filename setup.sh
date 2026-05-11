@@ -279,6 +279,7 @@ ENTRIES=(
   "*.pem"
   "*.secret"
   "*.credential*"
+  ".cursor/.kit-manifest"
 )
 
 added=0
@@ -295,54 +296,104 @@ else
   echo "  ✓ .gitignore already up to date"
 fi
 
-# ── 8. Cursor 配布 ──────────────────────────────────────
+# ── 8. Cursor 配布（コピー方式）──────────────────────────
 # framework/cursor/ は kit 側で生成済み（python3 scripts/sync_agents.py）。
-# 利用者の Cursor 環境に届けるため symlink を張る。
+#
+# 他のエージェント（Claude / Codex / Gemini）は symlink で配布するが、Cursor は
+# symlink を確実に解決できないため実ファイルとしてコピーする。
+#   - .cursor/rules/*.mdc symlink は silent load failure する（forum.cursor.com）
+#   - .cursor/skills/<name>/ ディレクトリ symlink は再起動後に検出されなくなる
+#   - v2.5 で部分修正されたが再発報告あり
+#
+# kit-managed なファイルは .cursor/.kit-manifest で追跡し、kit から削除された
+# ファイルは prune、利用者が独自に追加したファイル（manifest にない実ファイル）は
+# 触らない。
 if [ -d "$KIT_DIR/framework/cursor" ]; then
   echo ""
-  echo "--- Setting up .cursor/rules/ ---"
-  prune_stale_links "$WORKSPACE_ROOT/.cursor/rules" "framework/cursor/rules/"
-  link_files_in_dir \
-    "$KIT_DIR/framework/cursor/rules" \
-    "$WORKSPACE_ROOT/.cursor/rules" \
-    "../../$KIT_REL/framework/cursor/rules"
+  echo "--- Setting up .cursor/ (copy mode — Cursor does not reliably follow symlinks) ---"
 
-  echo ""
-  echo "--- Setting up .cursor/skills/ ---"
-  mkdir -p "$WORKSPACE_ROOT/.cursor/skills"
-  prune_stale_links "$WORKSPACE_ROOT/.cursor/skills" "framework/cursor/skills/"
+  CURSOR_DST="$WORKSPACE_ROOT/.cursor"
+  MANIFEST="$CURSOR_DST/.kit-manifest"
+  mkdir -p "$CURSOR_DST"
 
-  for skill_dir in "$KIT_DIR/framework/cursor/skills"/*/; do
-    [ -d "$skill_dir" ] || continue
-    skill_name="$(basename "$skill_dir")"
+  # 旧 setup.sh が張った symlink を撤去（実ファイル/ディレクトリは利用者ファイルとして保持）
+  if [ -d "$CURSOR_DST" ]; then
+    while IFS= read -r -d '' link; do
+      target="$(readlink "$link")"
+      case "$target" in
+        *"framework/cursor/"*)
+          rm "$link"
+          echo "  CLEANED legacy symlink: .cursor/${link#$CURSOR_DST/}"
+          ;;
+      esac
+    done < <(find "$CURSOR_DST" -mindepth 1 -type l -print0 2>/dev/null)
+  fi
 
-    dst="$WORKSPACE_ROOT/.cursor/skills/$skill_name"
-    rel_target="../../$KIT_REL/framework/cursor/skills/$skill_name"
+  # 新しい kit-managed ファイル一覧を作成
+  NEW_MANIFEST="$(mktemp)"
+  (
+    cd "$KIT_DIR/framework/cursor"
+    find rules skills -type f 2>/dev/null | sort
+    [ -f hooks.json ] && echo "hooks.json"
+  ) > "$NEW_MANIFEST"
 
-    if [ -L "$dst" ]; then
-      rm "$dst"
-    elif [ -e "$dst" ]; then
-      echo "  SKIP skills/$skill_name (not a symlink, preserving user skill)"
-      continue
+  # 旧 manifest にあって新 manifest に無いファイルを削除（kit が提供しなくなったもの）
+  if [ -f "$MANIFEST" ]; then
+    while IFS= read -r rel_path; do
+      [ -z "$rel_path" ] && continue
+      if ! grep -qxF "$rel_path" "$NEW_MANIFEST"; then
+        target="$CURSOR_DST/$rel_path"
+        if [ -f "$target" ] && [ ! -L "$target" ]; then
+          rm "$target"
+          echo "  PRUNED .cursor/$rel_path (kit no longer provides this)"
+        fi
+      fi
+    done < "$MANIFEST"
+    # 空ディレクトリを掃除（利用者ファイルがあるディレクトリは type d -empty に該当しないので安全）
+    find "$CURSOR_DST" -mindepth 1 -type d -empty -delete 2>/dev/null || true
+  fi
+
+  # 各 kit ファイルをコピー。実際にコピーしたパスを次回用 manifest に記録する
+  # （= 利用者ファイル上書き保護のために skip したパスは manifest に含めない）
+  COPIED_PATHS="$(mktemp)"
+  copied=0
+  skipped=0
+  while IFS= read -r rel_path; do
+    [ -z "$rel_path" ] && continue
+    src="$KIT_DIR/framework/cursor/$rel_path"
+    dst="$CURSOR_DST/$rel_path"
+
+    # 利用者ファイル保護:
+    # - manifest が無い（初回実行）: 既存の実ファイルは全て利用者の手書きファイルとして保護
+    #   旧 symlink 方式 setup.sh の「非 symlink ファイルには触れない」挙動を踏襲し、
+    #   手書きの .cursor/hooks.json や、symlink から実ファイルに置き換えた独自版を守る
+    # - manifest がある（2 回目以降）: dst が実ファイル かつ 旧 manifest に無い = 利用者ファイル
+    #   （新 manifest にはコピーしたパスだけ含めるので、初回保護されたパスは引き続き「manifest に無い」扱いになる）
+    if [ -f "$dst" ] && [ ! -L "$dst" ]; then
+      if [ ! -f "$MANIFEST" ]; then
+        echo "  SKIP .cursor/$rel_path (existing real file, preserving on first run — delete it to opt into kit version)"
+        skipped=$((skipped + 1))
+        continue
+      elif ! grep -qxF "$rel_path" "$MANIFEST"; then
+        echo "  SKIP .cursor/$rel_path (user file, preserving)"
+        skipped=$((skipped + 1))
+        continue
+      fi
     fi
 
-    ln -s "$rel_target" "$dst"
-    echo "  ✓ skills/$skill_name → $rel_target"
-  done
+    mkdir -p "$(dirname "$dst")"
+    cp "$src" "$dst"
+    echo "$rel_path" >> "$COPIED_PATHS"
+    copied=$((copied + 1))
+  done < "$NEW_MANIFEST"
 
-  echo ""
-  echo "--- Setting up .cursor/hooks.json ---"
-  HOOKS_DST="$WORKSPACE_ROOT/.cursor/hooks.json"
-  HOOKS_REL="../$KIT_REL/framework/cursor/hooks.json"
-  if [ -L "$HOOKS_DST" ]; then
-    rm "$HOOKS_DST"
-    ln -s "$HOOKS_REL" "$HOOKS_DST"
-    echo "  ✓ .cursor/hooks.json → $HOOKS_REL"
-  elif [ -e "$HOOKS_DST" ]; then
-    echo "  SKIP .cursor/hooks.json (not a symlink, preserving user file)"
-  else
-    ln -s "$HOOKS_REL" "$HOOKS_DST"
-    echo "  ✓ .cursor/hooks.json → $HOOKS_REL"
+  # manifest を更新（実際にコピーしたパスのみ記録）。利用者の独自ファイルは含めない
+  sort "$COPIED_PATHS" > "$MANIFEST"
+  rm -f "$NEW_MANIFEST" "$COPIED_PATHS"
+
+  echo "  ✓ Copied $copied kit-managed file(s) into .cursor/"
+  if [ $skipped -gt 0 ]; then
+    echo "  ✓ Preserved $skipped user file(s)"
   fi
 fi
 

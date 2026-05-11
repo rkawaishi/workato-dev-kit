@@ -44,7 +44,7 @@ git init
 # Add workato-dev-kit as a submodule under kit/
 git submodule add https://github.com/rkawaishi/workato-dev-kit.git kit
 
-# Run the setup script (creates symlinks, generates settings)
+# Run the setup script (creates symlinks/copies, generates settings)
 bash kit/setup.sh
 
 # Initialize the Platform CLI
@@ -64,8 +64,9 @@ my-org-workato/                 ← your workspace (working root)
 │   ├── skills/                 # symlinks to kit + your own skills
 │   ├── hooks/                  # symlinks to kit
 │   └── settings.json           # generated (customizable)
-├── .cursor/                    ← Cursor (symlinks)
+├── .cursor/                    ← Cursor (copies — symlinks not reliably resolved)
 │   ├── rules/, skills/, hooks.json
+│   └── .kit-manifest           # tracks kit-managed files
 ├── .agents/skills/             ← Codex CLI (symlinks)
 ├── .gemini/skills/             ← Gemini CLI (symlinks)
 ├── AGENTS.md → kit/...         ← agent-neutral spec (Codex / Aider / etc.)
@@ -81,11 +82,13 @@ my-org-workato/                 ← your workspace (working root)
 
 ```bash
 git submodule update --remote kit
-bash kit/setup.sh    # add new symlinks, prune removed ones
-git add kit && git commit -m "Update workato-dev-kit"
+bash kit/setup.sh    # add new symlinks, prune removed ones, re-copy .cursor/
+git add kit .cursor && git commit -m "Update workato-dev-kit"
 ```
 
-**Adding your own skills/rules:** drop regular files into `.claude/rules/` or `.claude/skills/`. They coexist with kit-managed symlinks — `setup.sh` never overwrites real (non-symlink) files.
+> **Cursor users must re-run `setup.sh` on every update**: `.cursor/` is populated with real-file copies (not symlinks) because Cursor doesn't reliably resolve symlinks for `.cursor/rules/*.mdc` and `.cursor/skills/<name>/`. See [architecture.md](guides/architecture.md#対応エディタ).
+
+**Adding your own skills/rules:** drop regular files into `.claude/rules/` or `.claude/skills/`. They coexist with kit-managed symlinks — `setup.sh` never overwrites real (non-symlink) files. For Cursor, `.cursor/.kit-manifest` tracks kit-managed files; real files not in the manifest are preserved as user files.
 
 ## Workspace structure
 
@@ -173,7 +176,7 @@ This is the layout of `workato-dev-kit` itself. Organizations consume it as `kit
 ```
 workato-dev-kit/                 ← this repo (added as kit/ submodule downstream)
 ├── .claude/                     # for kit dev itself (no Workato user skills)
-├── framework/                   # the distribution (symlinked into user editors)
+├── framework/                   # the distribution (symlinked/copied into user editors)
 │   ├── claude/                  # canonical source
 │   │   ├── CLAUDE.md            #   user-facing spec (Workato dev rules)
 │   │   ├── rules/               #   8 rules (recipe format, etc.)

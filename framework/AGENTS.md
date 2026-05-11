@@ -8,7 +8,7 @@ Workato (エンタープライズ iPaaS) の自動化開発を Claude Code / Cur
 ## リポジトリ構造
 
 このリポジトリは **フレームワーク** であり、組織のワークスペースリポジトリに `kit/` として submodule 追加して使う。
-`bash kit/setup.sh` でスキル・ルール・ドキュメントへの symlink を作成する。
+`bash kit/setup.sh` でスキル・ルール・ドキュメントへの symlink（Cursor のみコピー）を作成する。
 
 ```
 my-org-workato/                   ← 組織のリポジトリ（作業ルート）
