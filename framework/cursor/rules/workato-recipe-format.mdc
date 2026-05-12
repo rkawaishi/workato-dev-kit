@@ -6,64 +6,64 @@ alwaysApply: false
 
 # Workato Recipe JSON Format
 
-## トップレベル構造
+## Top-level structure
 
 ```json
 {
-  "name": "レシピ名",
-  "description": "マークダウン対応の説明文",
+  "name": "Recipe name",
+  "description": "Description (Markdown supported)",
   "version": 1,
   "private": true,
   "concurrency": 1,
-  "code": { /* トリガー + アクションツリー */ },
-  "config": [ /* コネクション設定 */ ]
+  "code": { /* trigger + action tree */ },
+  "config": [ /* connection configuration */ ]
 }
 ```
 
-### `code` 配下のトリガーにある `format_version`
+### `format_version` on the trigger inside `code`
 
-Workato が新しいレシピ構造を区別するため、トリガーステップに `"format_version": 2` が付与されることがある（UI で保存後の pull で出現）。新規生成時は省略可、push 時は保持する。
+Workato may stamp `"format_version": 2` on the trigger step so it can distinguish a newer recipe structure (it appears after pulling a UI-saved recipe). You can omit it when generating from scratch, but preserve it on push.
 
-## UI 由来のフィールド（手書きでは付けないが push 後に現れる）
+## UI-only fields (don't write them by hand, but they appear after pushing)
 
-| フィールド | 場所 | 意味 |
+| Field | Where | Meaning |
 |---|---|---|
-| `dynamicPickListSelection` | ステップ | UI の pick list で選択した値の表示用ラベル。例: `{"event_name": "Slash Command (slash_command)"}` |
-| `toggleCfg` | ステップ | 入力フィールドの toggle 状態。`true` = カスタム入力モード、`false` = pick list モード |
-| `title` | アクションステップ | アクション表示名のオーバーライド（null で default） |
-| `description` | アクションステップ | コネクタが返すアクション説明文（HTML spans 含む）。pull 時に自動付与 |
-| `custom: true` | config の account_id | カスタムコネクタ接続を示すフラグ（pull 時に自動付与） |
+| `dynamicPickListSelection` | step | Display label for a pick-list selection. Example: `{"event_name": "Slash Command (slash_command)"}` |
+| `toggleCfg` | step | Toggle state of input fields. `true` = custom-input mode, `false` = pick-list mode. |
+| `title` | action step | Override for the action's display name (`null` = default). |
+| `description` | action step | The action description returned by the connector (may include HTML spans). Added automatically on pull. |
+| `custom: true` | config's `account_id` | Marks a custom-connector connection (added automatically on pull). |
 
-これらは UI で編集せずに JSON を手書きする場合は省略して構わない（push 時に Workato が補完する）。手動編集後も削除せずに残すのが安全。
+You can omit these when writing JSON by hand — Workato fills them in on push. Once present (e.g. after pull), keep them; do not delete them.
 
-## code: ステップツリー（再帰構造）
+## `code`: step tree (recursive)
 
-各ステップは以下のフィールドを持つ:
+Each step has:
 
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
-| `number` | int | ステップ番号（0始まり、トリガーが0） |
-| `provider` | string | コネクタ名（例: `gmail`, `slack`, `salesforce`） |
-| `name` | string | アクション名（例: `new_email`, `post_message`） |
-| `as` | string | ステップの参照名（datapill で使用） |
-| `keyword` | string | `"trigger"` / `"action"` / `"foreach"` |
-| `input` | object | 入力パラメータ（datapill 参照を含む） |
-| `block` | array | 子ステップの配列（ネスト可） |
-| `filter` | object | 条件フィルタ（optional） |
-| `comment` | string | ステップのコメント（optional） |
-| `uuid` | string | UUID v4 |
-| `extended_output_schema` | array/null | カスタム出力スキーマ。**トリガーとアクションの両方に設定推奨** — 省略すると UI でリフレッシュが必要 |
-| `extended_input_schema` | array/null | カスタム入力スキーマ。`return_result` 等では必須 |
+| `number` | int | Step number (0-based; trigger is 0). |
+| `provider` | string | Connector name (e.g. `gmail`, `slack`, `salesforce`). |
+| `name` | string | Action name (e.g. `new_email`, `post_message`). |
+| `as` | string | Step reference name (used in datapills). |
+| `keyword` | string | `"trigger"` / `"action"` / `"foreach"`. |
+| `input` | object | Input parameters (may include datapill references). |
+| `block` | array | Array of child steps (nestable). |
+| `filter` | object | Conditional filter (optional). |
+| `comment` | string | Step comment (optional). |
+| `uuid` | string | UUID v4. |
+| `extended_output_schema` | array/null | Custom output schema. **Recommended on both triggers and actions** — omitting it forces a UI refresh. |
+| `extended_input_schema` | array/null | Custom input schema. Required on `return_result` and similar. |
 
-### `as` フィールドの命名規則
+### Naming convention for `as`
 
-| コンテキスト | `as` の値 |
+| Context | `as` value |
 |---|---|
-| 通常レシピ | アクション名と同じ値（例: `new_email`, `post_message`） |
-| Genie スキルレシピ | ランダム 8文字 hex（例: `a7c3e1f9`） |
-| `slack_bot` コネクタ | 通常レシピでもランダム 8文字 hex |
+| Normal recipe | Same as the action name (e.g. `new_email`, `post_message`). |
+| Genie skill recipe | Random 8-character hex (e.g. `a7c3e1f9`). |
+| `slack_bot` connector | Random 8-character hex even in normal recipes. |
 
-### Slack イベントトリガー
+### Slack event trigger
 
 ```json
 {
@@ -76,17 +76,17 @@ Workato が新しいレシピ構造を区別するため、トリガーステッ
 }
 ```
 
-- イベント種別は `webhook_suffix` フィールドで指定（`event_type` ではない）
+- The event type goes in `webhook_suffix` (not `event_type`).
 
-### keyword の種別
+### `keyword` values
 
-- `"trigger"` — レシピの起点（number: 0 のステップ）
-- `"action"` — 通常のアクションステップ
-- `"foreach"` — ループ。`source` フィールドでイテレート対象を指定、`block` に子ステップ
+- `"trigger"` — the start of the recipe (step number 0).
+- `"action"` — a normal action step.
+- `"foreach"` — a loop. Use `source` for the iteration target and `block` for child steps.
 
-### Genie ワークフロー用トリガー
+### Trigger for Genie workflows
 
-provider が `workato_genie` の場合:
+When the provider is `workato_genie`:
 ```json
 {
   "provider": "workato_genie",
@@ -94,41 +94,41 @@ provider が `workato_genie` の場合:
   "keyword": "trigger",
   "input": {
     "requires_user_confirmation": "false",
-    "description": "スキルの説明",
+    "description": "Description of the skill",
     "parameters_schema_json": "[{\"name\":\"param1\",\"type\":\"string\",...}]",
     "result_schema_json": "[{\"name\":\"response\",\"type\":\"string\",...}]"
   }
 }
 ```
 
-## Genie 呼び出し (`assign_task_to_genie`)
+## Calling a Genie (`assign_task_to_genie`)
 
-レシピから AI エージェント（Genie）を呼び出す:
+Call an AI agent (Genie) from a recipe:
 
 ```json
 {
   "provider": "workato_genie",
   "name": "assign_task_to_genie",
   "keyword": "action",
-  "dynamicPickListSelection": { "genie_handle": "Genie名" },
+  "dynamicPickListSelection": { "genie_handle": "Genie name" },
   "toggleCfg": { "genie_handle": true },
   "input": {
     "genie_handle": {
       "zip_name": "genie.agentic_genie.json",
-      "name": "Genie名",
+      "name": "Genie name",
       "folder": ""
     },
-    "task_instructions": "タスク指示文（datapill 可）"
+    "task_instructions": "Task instructions (datapills allowed)"
   }
 }
 ```
 
-## Genie スキルレシピのパラメータ参照
+## Parameter references in a Genie skill recipe
 
-- パラメータは `parameters` オブジェクト配下にネスト:
+- Parameters are nested under a `parameters` object:
   `path:["parameters","<param_name>"]`
-- `workflow_return_result` / `return_result` は `input.result.<field>` に個別マッピング
-- **`extended_output_schema` と `extended_input_schema` を必ず設定する** — 省略するとエディタでリロードが必要になる
+- `workflow_return_result` / `return_result` maps individually to `input.result.<field>`.
+- **Always set both `extended_output_schema` and `extended_input_schema`** — omitting them forces an editor reload.
   ```json
   {
     "provider": "workato_genie",
@@ -162,16 +162,16 @@ provider が `workato_genie` の場合:
 
 ## Custom Action (`__adhoc_http_action`)
 
-コネクタに適切なアクションがない場合、API を直接呼び出す:
+When a connector lacks the action you need, call the API directly:
 
 ```json
 {
   "provider": "<connector>",
   "name": "__adhoc_http_action",
-  "as": "<任意の参照名>",
+  "as": "<reference_name>",
   "keyword": "action",
   "input": {
-    "mnemonic": "表示名",
+    "mnemonic": "Display name",
     "verb": "get",
     "response_type": "json",
     "path": "api/endpoint",
@@ -188,33 +188,33 @@ provider が `workato_genie` の場合:
 }
 ```
 
-- `name` は常に `"__adhoc_http_action"`（全コネクタ共通）
-- `input.verb`: HTTP メソッド（`get`, `post`, `put`, `delete`）
-- `input.path`: API パス（コネクタの base URI に追加）
-- `input.input.schema`: リクエストパラメータスキーマ（JSON文字列）
-- `input.input.data`: パラメータ値（datapill 可）
-- `input.output`: レスポンススキーマ（JSON文字列）
+- `name` is always `"__adhoc_http_action"` (across every connector).
+- `input.verb`: HTTP method (`get`, `post`, `put`, `delete`).
+- `input.path`: API path (appended to the connector's base URI).
+- `input.input.schema`: request-parameter schema (as a JSON string).
+- `input.input.data`: parameter values (datapills allowed).
+- `input.output`: response schema (as a JSON string).
 
-## Datapill 記法
+## Datapill notation
 
-データ参照は `_dp()` 関数で記述:
+Data references use the `_dp()` function:
 ```
 #{_dp('{"pill_type":"output","provider":"<provider>","line":"<as>","path":["field","nested_field"]}')}
 ```
 
-- `pill_type`: 通常 `"output"`
-- `provider`: 参照元ステップの `provider`
-- `line`: 参照元ステップの `as` 値
-- `path`: フィールドパス配列。リストの現在アイテムは `{"path_element_type":"current_item"}` を使用
+- `pill_type`: usually `"output"`.
+- `provider`: the source step's `provider`.
+- `line`: the source step's `as` value.
+- `path`: array of field segments. For the current loop item, use `{"path_element_type":"current_item"}`.
 
-### その他のデータ参照
+### Other ways to reference data
 
 ```ruby
-#{_('data.gmail.new_email.subject')}                          # ドット記法
-=_('data.gmail.new_email.attachments').pluck('filename').join(', ')  # Ruby式
+#{_('data.gmail.new_email.subject')}                          # dot notation
+=_('data.gmail.new_email.attachments').pluck('filename').join(', ')  # Ruby expression
 ```
 
-## filter: 条件フィルタ
+## `filter`: conditional filter
 
 ```json
 {
@@ -231,17 +231,17 @@ provider が `workato_genie` の場合:
 }
 ```
 
-operand 値（JSON 内の文字列）:
+`operand` values (the literal string in JSON):
 
-| 表示名 | JSON operand |
+| Display | JSON `operand` |
 |---|---|
 | contains | `contains` |
 | doesn't contain | `not_contains` |
 | starts with | `starts_with` |
-| doesn't start with | `not_starts_with` (※要確認) |
+| doesn't start with | `not_starts_with` (unverified) |
 | ends with | `ends_with` |
-| doesn't end with | `not_ends_with` (※要確認) |
-| equals | **`equals_to`** (※ `equals` ではない) |
+| doesn't end with | `not_ends_with` (unverified) |
+| equals | **`equals_to`** (not `equals`) |
 | doesn't equal | `not_equals` |
 | greater than | `greater_than` |
 | less than | `less_than` |
@@ -250,7 +250,7 @@ operand 値（JSON 内の文字列）:
 | is present | `is_present` |
 | is not present | `is_not_present` |
 
-## config: コネクション参照
+## `config`: connection references
 
 ```json
 {
@@ -265,11 +265,11 @@ operand 値（JSON 内の文字列）:
 }
 ```
 
-`account_id` が `null` の場合はコネクション未設定。
+If `account_id` is `null`, the connection has not been configured yet.
 
-### クロスプロジェクト参照
+### Cross-project references
 
-別プロジェクトのコネクションを参照する場合、`folder` にプロジェクト名を指定:
+To reference a connection in a different project, put the project name in `folder`:
 ```json
 "account_id": {
   "zip_name": "Other Project/Connections/shared_jira.connection.json",
@@ -278,28 +278,28 @@ operand 値（JSON 内の文字列）:
 }
 ```
 
-## スキーマ定義（extended_output_schema / parameters_schema_json）
+## Schema definitions (`extended_output_schema` / `parameters_schema_json`)
 
 ```json
 {
   "name": "field_name",
   "type": "string",           // string, number, boolean, object, array
-  "label": "表示名",
+  "label": "Display name",
   "control_type": "text",     // text, number, url, select, multiselect, checkbox
   "optional": false,
-  "hint": "入力のヒント",
-  "properties": [],           // type=object の場合の子フィールド
-  "of": "object",             // type=array の場合の要素型
-  "parse_output": "float_conversion"  // 出力パース方法（optional）
+  "hint": "Input hint",
+  "properties": [],           // child fields when type=object
+  "of": "object",             // element type when type=array
+  "parse_output": "float_conversion"  // output parsing (optional)
 }
 ```
 
-## job_report_schema / job_report_config
+## `job_report_schema` / `job_report_config`
 
-レシピ実行レポートのカスタムカラム:
+Custom columns for the recipe job report:
 ```json
 "job_report_schema": [
-  { "name": "custom_column_1", "label": "表示名" }
+  { "name": "custom_column_1", "label": "Display name" }
 ],
 "job_report_config": {
   "custom_column_1": "#{_('data.provider.step.field')}"
