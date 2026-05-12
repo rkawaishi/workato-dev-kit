@@ -22,7 +22,11 @@ my-org-workato/                   ← 組織のリポジトリ（作業ルート
 ├── kit/                          ← git submodule（workato-dev-kit、読み取り専用）
 ├── projects/                     ← 組織のレシピ
 │   └── <project-name>/
-│       ├── DESIGN.md
+│       ├── specs/                # 仕様駆動アーティファクト
+│       │   └── <NNN>-<slug>/     # 例: 001-it-onboarding
+│       │       ├── spec.md       # 要件 (WHAT/WHY)
+│       │       ├── plan.md       # Workato 構成 (HOW)
+│       │       └── tasks.md      # 実行タスク
 │       ├── Recipes/
 │       ├── Pages/
 │       └── ...
@@ -33,11 +37,18 @@ my-org-workato/                   ← 組織のリポジトリ（作業ルート
 
 フレームワーク更新: `git submodule update --remote kit && bash kit/setup.sh`
 
-### 設計書 (DESIGN.md)
+### 仕様駆動アーティファクト (spec.md / plan.md / tasks.md)
 
-各プロジェクトに `DESIGN.md` を配置。セッション開始時に読み、実装後に更新する。
-`.workatoignore` に含めて `workato pull` で消えないようにする。
-作成・更新は `/design` スキルを使用。
+各フィーチャーを `projects/<project-name>/specs/<NNN>-<slug>/` 配下の 3 ファイルに分割して書く:
+- `spec.md` — ユーザー体験と業務要件（WHAT/WHY、Workato 用語禁止）
+- `plan.md` — Workato 構成（HOW、Data Table / Recipe / Connection 等）
+- `tasks.md` — 実行可能タスク（`[P]` 並列マーク + 種類タグ）
+
+セッション開始時にこれらを読み、`/spec` → `/clarify` → `/plan` → `/tasks` → `/analyze` → `/implement` の順で進める。詳細は `@guides/lifecycle.md`。
+
+`.workatoignore` に `specs/` を含めて `workato pull` で消えないようにする。
+
+> **旧 DESIGN.md からの移行**: 既存プロジェクトは `/design migrate <project>` で specs/ に変換する。新規プロジェクトでは `/design` 系は使わない（Phase D で deprecate 予定）。
 
 ## ナレッジの参照優先順位
 
@@ -69,7 +80,7 @@ Workato には「API Client」という名前の似て非なる 4 系統（Devel
 
 1. **docs-first**: アクション/トリガーを使う前に `@docs/connectors/<provider>.md`（Pre-built、kit canonical）と `@org/docs/connectors/<provider>.md`（組織側の補正・追記、存在すれば）を必ず参照する。カスタムは `@connectors/docs/<provider>.md`。公式ドキュメントに無ければ WebFetch で補完
 2. **既存プロジェクトの grep 禁止**: input/output スキーマを得る目的で `projects/<other-project>/Recipes/` を漁るのは禁止。個別プロジェクト固有のロジック・命名・datapill 参照が混入し、ナレッジの欠落も可視化されなくなる（例外: `@docs/patterns/recipe-patterns/`、`@org/docs/patterns/recipe-patterns/`、`@projects/docs/patterns/`（レガシー）でのパターン学習目的の参照は可）
-3. **未学習は記録＋`/learn-recipe` 必須**: ドキュメントに無いアクションをベストエフォート実装した場合は `DESIGN.md` の「Unlearned Actions」または GitHub Issue に記録し、push/pull 後に `/learn-recipe <project-name>` を回して `org/docs/` に追記。学習後はエントリから外す
+3. **未学習は記録＋`/learn-recipe` 必須**: ドキュメントに無いアクションをベストエフォート実装した場合は `specs/<NNN>-<slug>/plan.md` の「Unlearned Actions」と同ディレクトリ `tasks.md` の `[learn]` タスクに記録（または GitHub Issue）。push/pull 後に `/learn-recipe <project-name>` を回すと `org/docs/` に追記されると同時に plan.md / tasks.md の該当エントリも自動整理される
 
 ## 開発ルール
 
@@ -91,16 +102,22 @@ Workato には「API Client」という名前の似て非なる 4 系統（Devel
 
 | スキル | 用途 |
 |---|---|
-| `/create-recipe` | レシピ JSON を対話的に生成 |
-| `/create-workflow-app` | Workflow App を構築 |
+| `/spec` | フィーチャー要件 (spec.md) を作成 (技術中立) |
+| `/clarify` | spec.md の Open Questions を消化 |
+| `/plan` | spec.md → plan.md (Workato 構成) |
+| `/tasks` | plan.md → tasks.md (タグ付きタスク) |
+| `/analyze` | spec ↔ plan ↔ tasks の整合性検証 (read-only) |
+| `/implement` | tasks.md を読み既存スキルに振り分け (薄い orchestrator) |
+| `/create-recipe` | レシピ JSON を生成 (plan.md を読む) |
+| `/create-workflow-app` | Workflow App を構築 (plan.md を読む) |
 | `/create-genie` | Genie / MCP サーバーを生成 |
 | `/create-connector` | カスタムコネクタをスキャフォールド |
 | `/catalog` | 共有アセットのスキャン・カタログ化 |
 | `/validate-recipe` | JSON 構造を検証 |
 | `/pull-project` | Workato からプロジェクトを pull |
 | `/push-project` | プロジェクトを push（バリデーション付き） |
-| `/learn-recipe` | レシピからフィールド情報を学習しドキュメントに反映 |
+| `/learn-recipe` | レシピからフィールド情報を学習 + plan.md/tasks.md の Unlearned/[learn] を整理 |
 | `/learn-pattern` | レシピから構築パターンを抽出しカタログに蓄積 |
 | `/sync-connectors` | コネクタ情報を収集・更新（Pre-built: API、カスタム: connector.rb パース） |
 | `/auto-learn` | 1 コネクタの全 op を Claude in Chrome で自律収集（対話なし、不確実なものは skip + log）。完全性より網羅性を優先 |
-| `/design` | プロジェクト設計書の作成・更新・参照 |
+| `/design` | **レガシー**: DESIGN.md の参照・更新と `/design migrate` での specs/ 移行のみ。Phase D で deprecate 予定 |

@@ -92,12 +92,12 @@ python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.
 - [ ] `git status` で未コミット変更を確認
   - pull は上書き（サイレント）・削除（y/N プロンプト）でローカルを書き換える
   - 未コミットの編集があれば commit または stash してから pull
-- [ ] `.workatoignore` に `DESIGN.md` など pull 対象外にしたいファイルを登録
+- [ ] `.workatoignore` に `specs/`（仕様駆動アーティファクト）、`DESIGN.md`（legacy）、`DESIGN.md.legacy.*`（移行後の保全）など pull 対象外にしたいファイルを登録
 
 ### `workato init` で既存ディレクトリを初期化する場合
 
 - `workato init` は非空ディレクトリを `DIRECTORY_NOT_EMPTY` で拒否する（`--force` 相当のオプションは無い）
-- すでに `DESIGN.md` などを置いたディレクトリで `.workatoenv` だけ欲しい場合:
+- すでに `specs/` や `DESIGN.md` などを置いたディレクトリで `.workatoenv` だけ欲しい場合:
 
 ```bash
 # 一時ディレクトリに init
