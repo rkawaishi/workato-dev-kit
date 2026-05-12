@@ -29,7 +29,7 @@ $spec → $clarify → $plan → $tasks → $analyze → $implement
 
 ### 1. spec.md を読む
 
-- `projects/<project>/specs/<NNN>-<slug>$spec.md` を読む
+- `projects/<project>/specs/<NNN>-<slug>/spec.md` を読む
 - `## Open Questions` セクションの未チェック項目（`- [ ] ...`）を抽出
 - 全てチェック済みなら「Open Questions は全て解決済みです。$plan に進めます。」と案内して終了
 
@@ -133,7 +133,7 @@ A: マネージャー1名 + 必要に応じて部門長
 ## Git 管理
 
 ```bash
-git add projects/<project-name>/specs/<NNN>-<slug>$spec.md
+git add projects/<project-name>/specs/<NNN>-<slug>/spec.md
 git commit -m "clarify(<project>/<slug>): resolve open questions"
 git push origin
 ```

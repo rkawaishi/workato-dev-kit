@@ -50,7 +50,7 @@ $spec → $clarify → $plan → $tasks → $analyze → $implement
 
 ### 1. 前提チェック
 
-- `projects/<project>/specs/<NNN>-<slug>$tasks.md` を読む
+- `projects/<project>/specs/<NNN>-<slug>/tasks.md` を読む
 - 存在しなければ「先に $tasks を実行してください」と案内して中断
 - `$analyze` を実行することを推奨（未実行なら警告）
 
@@ -203,7 +203,7 @@ Phase 2 に [P] タスクが 3 件あります:
 タスクごとに commit するか Phase 単位で commit するかはユーザー判断。デフォルトは Phase 単位:
 
 ```bash
-git add projects/<project-name>/specs/<NNN>-<slug>$tasks.md projects/<project-name>/Recipes/ ...
+git add projects/<project-name>/specs/<NNN>-<slug>/tasks.md projects/<project-name>/Recipes/ ...
 git commit -m "implement(<project>/<slug>): phase <N> complete"
 git push origin
 ```

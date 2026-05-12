@@ -5,7 +5,7 @@ description: フィーチャーの要件（UX・WHAT/WHY）を spec.md に書き
 
 # $spec
 
-フィーチャーの **要件（WHAT/WHY）** を `projects/<project>/specs/<NNN>-<slug>$spec.md` に書き起こすスキル。
+フィーチャーの **要件（WHAT/WHY）** を `projects/<project>/specs/<NNN>-<slug>/spec.md` に書き起こすスキル。
 
 仕様駆動ワークフローの最初のステップ。技術スタック（Workato 構成）には踏み込まず、ユーザー体験と業務要件だけを固める。技術への落とし込みは `$plan` の責務。
 
@@ -33,7 +33,7 @@ $spec → $clarify → $plan → $tasks → $analyze → $implement
 - `projects/<project-name>/specs/` を `ls` し、既存のフィーチャー番号から **次の連番** を決める（`001`, `002`, ...）
 - フィーチャーのスラグ（短い英語キーワード、kebab-case）をユーザーに確認
   - 例: `it-onboarding`, `expense-approval`, `slack-digest`
-- 最終パス: `projects/<project-name>/specs/<NNN>-<slug>$spec.md`
+- 最終パス: `projects/<project-name>/specs/<NNN>-<slug>/spec.md`
 
 ### 2. UX ヒアリング
 
@@ -103,7 +103,7 @@ $spec → $clarify → $plan → $tasks → $analyze → $implement
 ### 6. 次ステップの案内
 
 ```
-✓ spec.md を作成しました: projects/<project>/specs/<NNN>-<slug>$spec.md
+✓ spec.md を作成しました: projects/<project>/specs/<NNN>-<slug>/spec.md
 
 Open Questions が <N> 件残っています。
 次は $clarify <project>/<NNN>-<slug> で消化してください。
@@ -189,7 +189,7 @@ specs/
 ## Git 管理
 
 ```bash
-git add projects/<project-name>/specs/<NNN>-<slug>$spec.md projects/<project-name>/.workatoignore
+git add projects/<project-name>/specs/<NNN>-<slug>/spec.md projects/<project-name>/.workatoignore
 git commit -m "spec(<project>/<slug>): initial spec"
 git push origin
 ```

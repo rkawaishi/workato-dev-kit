@@ -29,7 +29,7 @@ $spec → $clarify → $plan → $tasks → $analyze → $implement
 
 ### 1. 前提チェック
 
-- `projects/<project>/specs/<NNN>-<slug>$spec.md` を読む
+- `projects/<project>/specs/<NNN>-<slug>/spec.md` を読む
 - `## Open Questions` の未チェック項目があれば中断:
   ```
   Open Questions が <N> 件未解決です。先に $clarify <project>/<NNN>-<slug> を実行してください。
@@ -111,7 +111,7 @@ Workato 公式ドキュメントや `docs/connectors/`・`connectors/docs/` に 
 ### 9. 次ステップの案内
 
 ```
-✓ plan.md を作成しました: projects/<project>/specs/<NNN>-<slug>$plan.md
+✓ plan.md を作成しました: projects/<project>/specs/<NNN>-<slug>/plan.md
 
 主要な構成:
 - <Architecture サマリ 3-5 件>
@@ -130,7 +130,7 @@ Workato 公式ドキュメントや `docs/connectors/`・`connectors/docs/` に 
 - Status: Draft
 - Created: <YYYY-MM-DD>
 - Last updated: <YYYY-MM-DD>
-- Spec: .$spec.md
+- Spec: ./spec.md
 - Project: <project-name>
 
 ## Architecture Overview
@@ -219,7 +219,7 @@ draft → submitted → approved → completed
 ## Git 管理
 
 ```bash
-git add projects/<project-name>/specs/<NNN>-<slug>$plan.md
+git add projects/<project-name>/specs/<NNN>-<slug>/plan.md
 git commit -m "plan(<project>/<slug>): initial workato design"
 git push origin
 ```

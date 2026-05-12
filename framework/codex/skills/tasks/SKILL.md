@@ -26,7 +26,7 @@ $spec → $clarify → $plan → $tasks → $analyze → $implement
 
 ### 1. plan.md を読む
 
-- `projects/<project>/specs/<NNN>-<slug>$plan.md` を読む
+- `projects/<project>/specs/<NNN>-<slug>/plan.md` を読む
 - 既存 `tasks.md` があれば **更新モード**（チェック状態を保持して差分追加）
 
 ### 2. タスクを抽出してタグ付け
@@ -107,7 +107,7 @@ $spec → $clarify → $plan → $tasks → $analyze → $implement
 1. `[validate]` — push 前検証
 2. `[push]` — Workato へデプロイ
 3. `[manual]` — 新規コネクションがある場合は認証案内
-4. `[manual]` — UI でテスト実行
+4. `[test]` — UI でテスト実行
 5. `[pull]` — 調整内容を取り込み
 6. `[learn]` — Unlearned Actions を学習
 7. `[learn-pattern]` — 新しい構築パターンがあれば追加
@@ -119,7 +119,7 @@ $spec → $clarify → $plan → $tasks → $analyze → $implement
 ### 7. 次ステップの案内
 
 ```
-✓ tasks.md を作成しました: projects/<project>/specs/<NNN>-<slug>$tasks.md
+✓ tasks.md を作成しました: projects/<project>/specs/<NNN>-<slug>/tasks.md
 
 合計 <N> タスク（並列可能: <M> 件、学習タスク: <L> 件）
 
@@ -136,8 +136,8 @@ $implement <project>/<NNN>-<slug> で実装に進めます。
 - Status: Draft
 - Created: <YYYY-MM-DD>
 - Last updated: <YYYY-MM-DD>
-- Spec: .$spec.md
-- Plan: .$plan.md
+- Spec: ./spec.md
+- Plan: ./plan.md
 
 ## Progress
 - Total: <N>
@@ -196,7 +196,7 @@ $implement <project>/<NNN>-<slug> で実装に進めます。
 ## Git 管理
 
 ```bash
-git add projects/<project-name>/specs/<NNN>-<slug>$tasks.md
+git add projects/<project-name>/specs/<NNN>-<slug>/tasks.md
 git commit -m "tasks(<project>/<slug>): initial breakdown"
 git push origin
 ```

@@ -107,7 +107,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 1. `[validate]` — push 前検証
 2. `[push]` — Workato へデプロイ
 3. `[manual]` — 新規コネクションがある場合は認証案内
-4. `[manual]` — UI でテスト実行
+4. `[test]` — UI でテスト実行
 5. `[pull]` — 調整内容を取り込み
 6. `[learn]` — Unlearned Actions を学習
 7. `[learn-pattern]` — 新しい構築パターンがあれば追加
