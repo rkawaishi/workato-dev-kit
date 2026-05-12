@@ -292,7 +292,7 @@ $auto-learn <provider> 完了
   - 学習元行を最新に更新
   - フィールド表は **ユニオンで追記**（同名は新情報で置換）
   - 重複ラベルは **末尾に注記**を残す（例: `> ⚠ 同一 label "User" が 2 箇所に出現。内部パスは要マニュアル確認`）
-- 新規セクションは [$learn-recipe](..$learn-recipe/SKILL.md) と同じフォーマット
+- 新規セクションは [$learn-recipe](../learn-recipe/SKILL.md) と同じフォーマット
 
 ## 残課題（マニュアルフィードバック前提）
 
@@ -388,7 +388,7 @@ git commit -m "auto-learn: <provider> N op (M ok / K failed)"
 
 ## 関連スキル / ドキュメント
 
-- [$sync-connectors](..$sync-connectors/SKILL.md) — Triggers/Actions 一覧の収集（このスキルの上流）
-- [$learn-recipe](..$learn-recipe/SKILL.md) — 既存レシピからのフィールド学習（マニュアルフィードバック手段）
+- [$sync-connectors](../sync-connectors/SKILL.md) — Triggers/Actions 一覧の収集（このスキルの上流）
+- [$learn-recipe](../learn-recipe/SKILL.md) — 既存レシピからのフィールド学習（マニュアルフィードバック手段）
 - [docs/patterns/auto-learn-ui-operations.md](../../../docs/patterns/auto-learn-ui-operations.md) — UI 操作の DOM セレクタ完全リファレンス
 - [Issue #27](https://github.com/rkawaishi/workato-dev-kit/issues/27) — 設計動機

@@ -9,8 +9,11 @@ Workato Workflow App を構築するスキル。UI 操作は Workflow App の有
 
 ## 使い方
 
-- `/create-workflow-app` — 対話的に新しい Workflow App を構築
-- `/create-workflow-app <name>` — 指定名で構築開始
+- `/create-workflow-app <project>/<NNN>-<slug>` — `plan.md` からコンテキストを取り込んで構築（**推奨**、`/implement` 経由の自動起動はこのパターン）
+- `/create-workflow-app` — 対話的に新しい Workflow App を構築（plan.md が無い場合のフォールバック）
+- `/create-workflow-app <name>` — 指定名で構築開始（DESIGN.md は参照しない。spec-driven 以前のレガシー呼び出し）
+
+> **注**: spec-driven workflow への移行に伴い、旧 `DESIGN.md` 参照は廃止。新規プロジェクトは `/spec` から開始し、既存プロジェクトは `/design migrate` で specs/ に変換してから実行する。
 
 ## 前提知識
 
@@ -18,6 +21,20 @@ Workato Workflow App を構築するスキル。UI 操作は Workflow App の有
 - `docs/platform/workflow-apps.md` — 構築パターン、プロバイダー/アクション
 - `docs/patterns/deployment-guide.md` — デプロイ手順、よくあるエラー
 - `GEMINI.md` — lcap_app / workato_db_table / lcap_page の JSON 構造
+
+## Phase 0: plan.md からのコンテキスト引き当て
+
+`<project>/<NNN>-<slug>` が指定された場合、`projects/<project>/specs/<NNN>-<slug>/plan.md` を読み、以下を **既定値** として取り込む:
+
+| plan.md セクション | 取り込み内容 |
+|---|---|
+| `## New Components` `### Data Tables` | テーブル名、フィールド定義 |
+| `## New Components` `### Pages` | ページ役割、主要コンポーネント |
+| `## Stage Transitions` | ステージ遷移図 |
+| `## New Components` `### Recipes` | 同時生成するレシピ定義 |
+| `## Resource Inventory` | リソース値（外部サービスの選択肢） |
+
+plan.md が無い場合は Phase 1 からの対話モードへフォールバック。
 
 ## Phase 1: 設計 + プロジェクト作成
 
