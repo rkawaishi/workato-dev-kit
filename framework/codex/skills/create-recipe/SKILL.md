@@ -63,7 +63,7 @@ plan.md が無い・読めない場合は対話的ヒアリングモードにフ
   - または: `https://docs.workato.com/en/connectors/<name>/actions.html`
 - 取得したフィールド情報は `docs/connectors/<connector>.md` に追記して蓄積する
 - **禁止**: `projects/<other-project>/Recipes/` を grep して JSON サンプルからフィールドをコピーしない。個別プロジェクト固有のロジック・命名が混入し、ドキュメントの欠落も可視化されなくなる（`AGENTS.md` の「レシピ実装ライフサイクル」参照）
-- 公式ドキュメントにも無くベストエフォートで実装する場合、`specs/<NNN>-<slug>/plan.md` の `## Unlearned Actions` 表に `provider` / `action` を追記する。可能なら `tasks.md` にも対応する `[learn]` タスクを追加（`$tasks --update` で再生成しても良い）
+- 公式ドキュメントにも無くベストエフォートで実装する場合、`projects/<project>/specs/<NNN>-<slug>/plan.md` の `## Unlearned Actions` 表に `provider` / `action` を追記する。可能なら同ディレクトリの `tasks.md` にも対応する `[learn]` タスクを追加（`$tasks --update` で再生成しても良い）
 
 ### 5. リソース情報の自動取得
 
@@ -231,7 +231,7 @@ Slack MCP と Jira MCP からリソース情報を取得しました。
    認証が完了したら教えてください。
    ```
 4. **認証完了後に UI 確認を案内**: レシピ構造、フィールドマッピングの確認
-5. **学習（必須）**: pull → `$learn-recipe` で学習。`plan.md` の `## Unlearned Actions` または `tasks.md` の `[learn]` タスクで記録したアクションを使った場合は **スキップ禁止**（ドキュメント欠落を放置しないため）。学習完了したらエントリ / タスクを完了させる
+5. **学習（必須）**: pull → `$learn-recipe` で学習。`projects/<project>/specs/<NNN>-<slug>/plan.md` の `## Unlearned Actions` または同ディレクトリ `tasks.md` の `[learn]` タスクで記録したアクションを使った場合は **スキップ禁止**（ドキュメント欠落を放置しないため）。学習完了したらエントリ / タスクを完了させる
 6. **テスト実行**: UI でテスト → エラーがあれば分析・修正
 7. **パターン蓄積**: 新しい構築パターンが含まれていれば `$learn-pattern` でカタログに追加
 
