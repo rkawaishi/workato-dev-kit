@@ -13,6 +13,9 @@ description: プロジェクトの設計書 (DESIGN.md) を作成・更新・参
 - `/design <project-name>` — 指定プロジェクトの設計書を表示
 - `/design new <project-name>` — 新規設計書を作成（ヒアリング → 設計）
 - `/design update` — 現在の進捗で設計書を更新
+- `/design migrate <project-name>` — 既存 DESIGN.md を `specs/<NNN>-<slug>/{spec,plan,tasks}.md` に分割移行
+
+> **移行ガイダンス**: 仕様駆動ワークフローへ完全移行する前提で、`/design new` は新規プロジェクトでは `/spec` の利用を推奨。既存プロジェクトは `/design migrate` で specs/ に変換してください。
 
 ## 設計書の場所
 
@@ -218,6 +221,119 @@ Last updated: <YYYY-MM-DD>
 4. Status と Last updated を更新
 5. 新たな Decisions や Open Issues があれば追記
 6. 変更内容をサマリー表示
+
+### `/design migrate <project-name>` — DESIGN.md → specs/ 移行
+
+既存の `DESIGN.md` を仕様駆動ワークフローのアーティファクト (`spec.md` / `plan.md` / `tasks.md`) に **ベストエフォートで分割** する。完全に機械的にはマッピングできないため、不明瞭な点は `Open Questions` / `Open Issues` に書き出し、`/clarify` で続きを消化できる状態にする。
+
+#### 前提チェック
+
+1. `projects/<project-name>/DESIGN.md` を読む。無ければ「DESIGN.md がありません。`/spec <project-name>` で新規作成してください」と案内して中断
+2. `projects/<project-name>/specs/` が既に存在し中身がある場合は確認:
+   ```
+   既に specs/ 配下にアーティファクトがあります:
+   - specs/001-foo/spec.md
+   - specs/001-foo/plan.md
+   
+   どうしますか？
+   1. 中断（手動マージ推奨）
+   2. specs/002-migrated/ として並列で生成
+   3. specs/001-foo/ を上書き（破壊的、非推奨）
+   ```
+
+#### 移行先の決定
+
+- フィーチャースラグ: ユーザーに確認（デフォルト `main`、またはプロジェクト名から派生）
+- 連番: **前提チェックの結果に従う**
+  - `specs/` が存在しない or 空 → `001`
+  - 既存 specs/ があり**並列生成（オプション 2）**を選択 → `specs/` 配下の最大連番 + 1（例: `001-foo/` があれば `002`）
+  - 既存 specs/ があり**上書き（オプション 3）**を選択 → 上書き対象の既存連番をそのまま使用（例: `specs/001-foo/` を選んだなら `001`）
+- 最終パス: `projects/<project-name>/specs/<NNN>-<slug>/{spec,plan,tasks}.md`（`<NNN>` は上で決まった連番）
+
+#### セクション・マッピング
+
+DESIGN.md の各セクションを以下の規則で振り分け:
+
+| DESIGN.md セクション | 移行先 | 補足 |
+|---|---|---|
+| `# <タイトル>` | spec.md `# <タイトル>` + plan.md `# <タイトル> — Plan` + tasks.md `# <タイトル> — Tasks` | 共通タイトル |
+| `## Status`, `Last updated` | 各アーティファクトの `## Metadata` | spec/plan/tasks 全てに引き継ぐ |
+| `## User Experience` 配下のロール別ステップ | spec.md `## User Stories` | ほぼそのままコピー |
+| `## Architecture` `### 適用パターン` | plan.md `## Applied Patterns` | パターン名と参照リンクを保持 |
+| `## Architecture` `### 既存アセットの再利用` | plan.md `## Reused Assets` | アセット名と用途 |
+| `## Architecture` `### 新規作成` `- **Data Table**:` | plan.md `## New Components` `### Data Tables` | フィールド一覧含む |
+| `## Architecture` `### 新規作成` `- **ステージ**:` | plan.md `## Stage Transitions` | 遷移図化 |
+| `## Architecture` `### 新規作成` `- **外部連携**:` | plan.md `## New Components` `### Connections` または spec.md `## External Touchpoints` | プロバイダー名のみは spec、技術詳細は plan |
+| `## Architecture` `### 新規作成` `- **レシピ構成**:` | plan.md `## New Components` `### Recipes` | メイン/Function/ハンドラ別 |
+| `## Implementation Checklist` | tasks.md `## Tasks` | 種類タグを推定して付与（下記） |
+| `## Unlearned Actions` 表 | plan.md `## Unlearned Actions` 表 + tasks.md `[learn]` タスク化 | 両方に反映 |
+| `## Decisions` | UX 系 → spec.md `## Decisions` / 技術系 → plan.md `## Decisions` | 文面から判断、迷ったら spec へ |
+| `## Open Issues` | plan.md `## Open Issues` | デプロイ後確認系は plan へ |
+
+#### Implementation Checklist の種類タグ推定
+
+| Checklist 文言 | 推定タグ |
+|---|---|
+| 「Data Table スキーマ」「テーブル」 | `[data-table]` |
+| 「ページ」「フォーム」「画面」 | `[page]` |
+| 「レシピ」「Recipe Function」 | `[recipe]` / `[function]` |
+| 「コネクション」「認証」 | `[connection]` |
+| 「MCP」「Genie」「スキルレシピ」 | `[mcp]` |
+| 「pull」「learn-recipe」 | `[pull]` / `[learn]` |
+| 「テスト」「動作確認」「E2E」 | `[test]` |
+| 「カスタムコネクタ」「connector.rb」 | `[connector]` |
+| 上記いずれにも該当しない | `[manual]`（要手動確認のため `Open Issues` にも追記） |
+
+依存関係はベストエフォートで推定（`[recipe]` は `[data-table]` `[connection]` の後、など）。確度が低い場合は注記に `(depends: ?)` と書き、`/analyze` で検出可能にする。
+
+#### Open Questions / Open Issues の生成
+
+機械的に判定できなかった項目は以下のいずれかに書き出す:
+
+- spec.md `## Open Questions`:
+  - User Stories の役割が不明瞭
+  - Success Criteria が DESIGN.md に無い（要ヒアリング）
+  - Out of Scope が明文化されていない（要確認）
+- plan.md `## Open Issues`:
+  - リソース未取得（Step 2 で取得すべき）
+  - パターン適用の確信度が低い項目
+  - ステージ遷移が不明瞭
+- tasks.md には常に `[manual]` 化された不明瞭タスクが残る可能性あり
+
+#### 移行後の処理
+
+1. DESIGN.md を **`DESIGN.md.legacy.<YYYY-MM-DD>` にリネーム**（削除はしない、後から参照できるよう保存）
+2. `.workatoignore` に `DESIGN.md.legacy.*` を追加（workato pull で消えないように）
+3. 既存 `.workatoignore` に `specs/` が無ければ追記
+
+#### 結果案内
+
+```
+✓ 移行完了: projects/<project-name>/
+
+生成ファイル:
+- specs/001-<slug>/spec.md         (<N> Open Questions あり)
+- specs/001-<slug>/plan.md         (<M> Open Issues あり)
+- specs/001-<slug>/tasks.md        (<T> タスク、うち <K> 件は [manual] で要確認)
+
+リネーム:
+- DESIGN.md → DESIGN.md.legacy.<YYYY-MM-DD>
+
+次のアクション:
+1. /clarify <project>/001-<slug> で Open Questions を消化
+2. /analyze <project>/001-<slug> で整合性を確認
+3. /implement <project>/001-<slug> で続きの実装に進む
+
+レビュー推奨:
+- spec.md の User Stories が DESIGN.md の意図を保っているか
+- tasks.md の種類タグが妥当か（[manual] が多い場合は再分類が必要）
+```
+
+#### 移行時の禁則
+
+- **DESIGN.md を削除しない**: リネームのみ。元データを失わない
+- **specs/ を上書きしない**: 既に specs/ が存在する場合は明示的にユーザー確認を取る
+- **不明確な技術用語を spec.md に持ち込まない**: DESIGN.md 内で Workato 用語（Recipe, Datapill, Workflow App 等）が User Experience に混ざっていたら、spec.md には業務語に意訳して書く（自信が無ければ Open Questions 化）
 
 ## `.workatoignore` の管理
 
