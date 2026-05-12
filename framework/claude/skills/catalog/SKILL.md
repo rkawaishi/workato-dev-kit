@@ -1,12 +1,12 @@
 ---
-description: 組織の共有アセット（Recipe Function、コネクション）をスキャンしてカタログ化する。/create-recipe や /design から参照される。
+description: 組織の共有アセット（Recipe Function、コネクション）をスキャンしてカタログ化する。/create-recipe や /plan から参照される。
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # /catalog
 
 組織の `projects/` 配下にある **共有プロジェクト** のアセットをスキャンし、カタログファイルを生成・更新するスキル。
-他のスキル（`/create-recipe`, `/design`）がカタログを参照して、既存アセットの再利用を提案する。
+他のスキル（`/create-recipe`, `/plan`）がカタログを参照して、既存アセットの再利用を提案する。
 
 **重要**: private スコープのプロジェクトはスキャンしない。部門限定の閲覧制御を尊重する。
 
@@ -159,18 +159,18 @@ Last updated: <YYYY-MM-DD>
    ```
 4. ユーザーが承認すれば、`call_recipe` や `config` で共有アセットを参照するレシピを生成
 
-### `/design` からの参照
+### `/plan` からの参照
 
-`/design new` の Phase 3（技術設計）で:
+`/plan <project>/<NNN>-<slug>` の技術設計フェーズで:
 
 1. カタログを読み込み
-2. ユーザー体験から必要な機能を特定
-3. 共有アセットで対応可能な部分を明示
-4. 対応できない部分について新規作成を計画
+2. spec.md のユーザー体験から必要な機能を特定
+3. 共有アセットで対応可能な部分を `plan.md` の `## Reused Assets` に列挙
+4. 対応できない部分について `## New Components` に新規作成を計画
 
 ## 共通化の提案
 
-private プロジェクト間でロジックの重複を検出した場合（`/learn-recipe` や `/design` 時）:
+private プロジェクト間でロジックの重複を検出した場合（`/learn-recipe` や `/plan` 時）:
 - 具体的なコード内容は露出しない
 - 「同様のロジックが複数プロジェクトで使われているため、共通の Recipe Function への切り出しを検討してはどうか」と提案する
 - 共通化するかどうかはユーザーが判断

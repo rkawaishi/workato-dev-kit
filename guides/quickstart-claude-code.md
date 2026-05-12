@@ -96,10 +96,10 @@ Claude Code が起動すると、`.claude/` フォルダのスキルとルール
 
 ## 8. 最初のプロジェクトを作る
 
-### 方法 A: 設計から始める（推奨）
+### 方法 A: 仕様駆動ワークフローで始める（推奨）
 
 ```
-あなた: /design new "[App] 経費申請"
+あなた: /spec "[App] 経費申請"
 ```
 
 Claude が以下をヒアリングします:
@@ -109,7 +109,15 @@ Claude が以下をヒアリングします:
 4. 最終的に何が起きれば成功か
 5. 既存のツールやデータソースはあるか
 
-ヒアリング後、ユーザー体験を整理 → 技術設計に変換 → `DESIGN.md` を生成します。
+ヒアリング結果から `projects/<project>/specs/001-<slug>/spec.md`（要件・WHAT/WHY）が生成され、未確定な点は `## Open Questions` に記録されます。続けて:
+
+```
+あなた: /clarify <project>/001-<slug>   # Open Questions を消化
+あなた: /plan <project>/001-<slug>      # Workato 構成 (plan.md)
+あなた: /tasks <project>/001-<slug>     # 実行タスク (tasks.md)
+あなた: /analyze <project>/001-<slug>   # spec ↔ plan ↔ tasks の整合性チェック
+あなた: /implement <project>/001-<slug> # /create-recipe 等に振り分けて実装
+```
 
 ### 方法 B: すぐに作り始める
 
@@ -179,9 +187,11 @@ Workato UI 上でレシピやコネクションをまとめる単位です。`wo
 
 ワークスペースリポジトリに直接含まれます。`git add projects/<name> && git commit` で通常通り管理してください。
 
-### Q: DESIGN.md は workato pull で消える？
+### Q: spec.md / plan.md / tasks.md は workato pull で消える？
 
-各プロジェクトの `.workatoignore` に `DESIGN.md` を記載しておけば消えません。`/design new` コマンドが自動で設定します。
+各プロジェクトの `.workatoignore` に `specs/` を記載しておけば消えません。`/spec` コマンドが初回に自動で設定します。
+
+> 旧 `DESIGN.md` を使っているプロジェクトは `/design migrate <project>` で `specs/` に変換できます。`/design new` は廃止されました。
 
 ### Q: Cursor でも使える？
 

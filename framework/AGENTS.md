@@ -51,7 +51,7 @@ my-org-workato/                   ← 組織のリポジトリ（作業ルート
 
 `.workatoignore` に `specs/` を含めて `workato pull` で消えないようにする。
 
-> **旧 DESIGN.md からの移行**: 既存プロジェクトは `/design migrate <project>` で specs/ に変換する。新規プロジェクトでは `/design` 系は使わない（Phase D で deprecate 予定）。
+> **旧 DESIGN.md からの移行**: 既存プロジェクトは `/design migrate <project>` で specs/ に変換する。新規プロジェクトでは `/design` 系は使わない（`/design new` は廃止済み、`/design` と `/design update` は warning 付きで互換動作のみ）。
 
 ## ナレッジの参照優先順位
 
@@ -123,7 +123,7 @@ Workato には「API Client」という名前の似て非なる 4 系統（Devel
 | `/learn-pattern` | レシピから構築パターンを抽出しカタログに蓄積 |
 | `/sync-connectors` | コネクタ情報を収集・更新（Pre-built: API、カスタム: connector.rb パース） |
 | `/auto-learn` | 1 コネクタの全 op を Claude in Chrome で自律収集（対話なし、不確実なものは skip + log）。完全性より網羅性を優先 |
-| `/design` | **レガシー**: DESIGN.md の参照・更新と `/design migrate` での specs/ 移行のみ。Phase D で deprecate 予定 |
+| `/design` | **Deprecated**: `/design migrate` のみ通常利用。`/design` (view), `/design update` は warning 付きで互換動作。`/design new` は廃止 |
 
 ---
 
