@@ -148,7 +148,6 @@ Phase 末尾に達したら:
 - パターン蓄積: <件数>
 
 次のアクション候補:
-- $design update（DESIGN.md 移行期の場合）
 - $catalog scan（共有アセットを更新する場合）
 - 次フィーチャーの $spec
 ```

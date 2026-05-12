@@ -105,21 +105,37 @@ workato pull
 git add projects/<project-name> && git commit -m "Add IT Onboarding workflow"
 ```
 
-### 設計書 (DESIGN.md)
+### 仕様駆動アーティファクト (spec.md / plan.md / tasks.md)
 
-各プロジェクトに `DESIGN.md` を配置して設計・進捗・意思決定を記録。
-`.workatoignore` に含めて `workato pull` で消えないようにする。
+各プロジェクトの各フィーチャーを `projects/<project>/specs/<NNN>-<slug>/` 配下の 3 ファイルに分けて記録:
+
+- `spec.md` — ユーザー体験と業務要件 (WHAT/WHY、Workato 用語禁止)
+- `plan.md` — Workato 構成 (HOW)
+- `tasks.md` — 実行可能タスク (`[P]` 並列マーク + 種類タグ)
+
+`.workatoignore` に `specs/` を含めて `workato pull` で消えないようにする。
 
 ```bash
-/design new "[App] IT Onboarding"   # 作成
-/design "[App] IT Onboarding"       # 参照
-/design update                      # 実装状況を自動更新
+/spec "[App] IT Onboarding"                # spec.md を作成
+/clarify "[App] IT Onboarding"/001-main    # Open Questions を消化
+/plan "[App] IT Onboarding"/001-main       # plan.md を作成
+/tasks "[App] IT Onboarding"/001-main      # tasks.md を作成
+/analyze "[App] IT Onboarding"/001-main    # 整合性チェック
+/implement "[App] IT Onboarding"/001-main  # 実装スキルへ振り分け
 ```
+
+> 旧 `DESIGN.md` 単一ファイル運用は **Deprecated**。`/design migrate <project>` で `specs/` に分割移行する。`/design new` は廃止済み。
 
 ## スキル一覧
 
 | スキル | 説明 |
 |---|---|
+| `/spec` | フィーチャー要件 (spec.md) を作成（技術中立） |
+| `/clarify` | spec.md の Open Questions を消化 |
+| `/plan` | spec.md → plan.md（Workato 構成） |
+| `/tasks` | plan.md → tasks.md（タグ付き実行タスク） |
+| `/analyze` | spec ↔ plan ↔ tasks の整合性検証 (read-only) |
+| `/implement` | tasks.md を読み既存スキルに振り分け（薄い orchestrator） |
 | `/create-recipe` | レシピ JSON を対話的に生成 |
 | `/create-workflow-app` | Workflow App を段階的に構築 (Data Table, ページ, レシピ) |
 | `/create-genie` | Genie / MCP サーバー + スキルの構成を生成 |
@@ -128,11 +144,11 @@ git add projects/<project-name> && git commit -m "Add IT Onboarding workflow"
 | `/validate-recipe` | レシピ JSON の構造を検証 |
 | `/pull-project` | Workato リモートからプロジェクトを pull |
 | `/push-project` | ローカル変更を push (バリデーション + レシピ起動対応) |
-| `/learn-recipe` | pull したレシピからフィールド情報を学習 |
+| `/learn-recipe` | pull したレシピからフィールド情報を学習 + plan.md/tasks.md の Unlearned/[learn] を整理 |
 | `/learn-pattern` | レシピ構築パターンをカタログに記録・更新 |
 | `/sync-connectors` | コネクタ情報を収集・更新（Pre-built: API、カスタム: connector.rb パース） |
 | `/auto-learn` | 1 コネクタの全 op を Claude in Chrome で自律収集（対話なし） |
-| `/design` | プロジェクト設計書の作成・更新・参照 |
+| `/design` | **Deprecated**: `/design migrate` で旧 DESIGN.md → specs/ 移行のみ通常利用 |
 
 詳細は [スキルリファレンス](guides/skills-reference.md) と [ライフサイクルと責務マップ](guides/lifecycle.md) を参照。
 
@@ -152,13 +168,18 @@ git add projects/<project-name> && git commit -m "Add IT Onboarding workflow"
 ### 新規プロジェクト
 
 ```
-/design new "<project-name>"     ← 設計書を作成
-/create-workflow-app             ← Workflow App を構築（またはレシピ単体）
-/push-project --start            ← push + レシピ起動
+/spec "<project-name>"                       ← spec.md を作成 (業務要件)
+/clarify "<project-name>"/001-<slug>         ← Open Questions を消化
+/plan "<project-name>"/001-<slug>            ← plan.md を作成 (Workato 構成)
+/tasks "<project-name>"/001-<slug>           ← tasks.md を作成
+/analyze "<project-name>"/001-<slug>         ← 整合性チェック
+/implement "<project-name>"/001-<slug>       ← /create-recipe 等に振り分けて実装
+/push-project --start                        ← push + レシピ起動
 Workato UI で確認・調整
-/pull-project → /learn-recipe    ← 学習サイクル
-/design update                   ← 設計書の進捗を更新
+/pull-project → /learn-recipe                ← 学習サイクル（plan.md/tasks.md も自動整理）
 ```
+
+> 旧 DESIGN.md 単一ファイル運用のプロジェクトは `/design migrate <project>` で specs/ に変換してから本フローに合流。`/design new` は廃止済み。
 
 ### 学習サイクル
 

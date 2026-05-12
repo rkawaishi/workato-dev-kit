@@ -21,7 +21,7 @@ Workato エキスパートが持つ構築ノウハウを「パターン」とし
 
 汎用 / 組織ドメインの区別はパターン本文の「スコープ」セクションで表現し、ファイルパスでは分けない。
 
-`/create-recipe` や `/design` は 3 カタログすべてを併読し、矛盾は組織側（`org/docs/`）が優先（`@.claude/rules/org-knowledge-overlay.md` 参照）。
+`/create-recipe` や `/plan` は 3 カタログすべてを併読し、矛盾は組織側（`org/docs/`）が優先（`@.claude/rules/org-knowledge-overlay.md` 参照）。
 
 ## パターンの流れ
 
@@ -33,7 +33,7 @@ Workato エキスパートが持つ構築ノウハウを「パターン」とし
 別の開発者がレシピを作成する
   → /create-recipe がカタログを自動参照
   → パターンに基づいたステップ構成を提案
-  → /design でもプロジェクト設計時にパターンを提案
+  → /plan でも spec.md → plan.md 変換時にパターンを提案
 ```
 
 ## /learn-pattern の使い方
