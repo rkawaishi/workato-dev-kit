@@ -5,9 +5,32 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 
 # /create-recipe
 
-Workato レシピ JSON ファイルを対話的に生成するスキル。
+Workato レシピ JSON ファイルを生成するスキル。仕様駆動ワークフロー (`/spec` → `/plan` → `/tasks` → `/implement`) で `[recipe]` / `[function]` / `[handler]` タスクから呼ばれることを想定する。
+
+## 使い方
+
+- `/create-recipe <project>/<NNN>-<slug>` — `plan.md` からコンテキストを取り込んで生成（**推奨**、`/implement` 経由の自動起動はこのパターン）
+- `/create-recipe <project>` — フィーチャー未確定でプロジェクトだけ指定（plan.md があれば探して提示）
+- `/create-recipe` — 文脈推定。`<project>/<NNN>-<slug>` を確認
+
+> **注**: spec-driven workflow への移行に伴い、旧 `DESIGN.md` 参照は廃止。新規プロジェクトは `/spec` から開始し、既存プロジェクトは `/design migrate` で specs/ に変換してから実行する。
 
 ## 手順
+
+### 0. plan.md からのコンテキスト引き当て
+
+`<project>/<NNN>-<slug>` が指定されている場合（または推定できる場合）、`projects/<project>/specs/<NNN>-<slug>/plan.md` を読み、以下を **既定値** として取り込む:
+
+| plan.md セクション | 取り込み内容 |
+|---|---|
+| `## New Components` `### Recipes` | 生成対象のレシピ定義（トリガー、フロー、入出力） |
+| `## New Components` `### Connections` | 使用するコネクション（プロバイダー、認証方式） |
+| `## Reused Assets` | `call_recipe` で参照すべき共有 Function / Connection |
+| `## Resource Inventory` | リソース値（Slack channel、Jira project 等） — ヒアリング不要 |
+| `## Applied Patterns` | 構築パターン（ステップ構成の指針） |
+| `## Unlearned Actions` | ベストエフォート実装フラグ |
+
+plan.md が無い・読めない場合は対話的ヒアリングモードにフォールバック（後続の Step 1 へ）。
 
 ### 1. レシピの設計をヒアリング
 
@@ -40,7 +63,7 @@ Workato レシピ JSON ファイルを対話的に生成するスキル。
   - または: `https://docs.workato.com/en/connectors/<name>/actions.html`
 - 取得したフィールド情報は `docs/connectors/<connector>.md` に追記して蓄積する
 - **禁止**: `projects/<other-project>/Recipes/` を grep して JSON サンプルからフィールドをコピーしない。個別プロジェクト固有のロジック・命名が混入し、ドキュメントの欠落も可視化されなくなる（`@.claude/CLAUDE.md` の「レシピ実装ライフサイクル」参照）
-- 公式ドキュメントにも無くベストエフォートで実装する場合、プロジェクトの `DESIGN.md` の「Unlearned Actions」に `provider` / `action` を記録する
+- 公式ドキュメントにも無くベストエフォートで実装する場合、`specs/<NNN>-<slug>/plan.md` の `## Unlearned Actions` 表に `provider` / `action` を追記する。可能なら `tasks.md` にも対応する `[learn]` タスクを追加（`/tasks --update` で再生成しても良い）
 
 ### 5. リソース情報の自動取得
 
@@ -208,7 +231,7 @@ Slack MCP と Jira MCP からリソース情報を取得しました。
    認証が完了したら教えてください。
    ```
 4. **認証完了後に UI 確認を案内**: レシピ構造、フィールドマッピングの確認
-5. **学習（必須）**: pull → `/learn-recipe` で学習。`DESIGN.md` の「Unlearned Actions」に記録したアクションを使った場合は **スキップ禁止**（ドキュメント欠落を放置しないため）。学習完了したらそのエントリを削除する
+5. **学習（必須）**: pull → `/learn-recipe` で学習。`plan.md` の `## Unlearned Actions` または `tasks.md` の `[learn]` タスクで記録したアクションを使った場合は **スキップ禁止**（ドキュメント欠落を放置しないため）。学習完了したらエントリ / タスクを完了させる
 6. **テスト実行**: UI でテスト → エラーがあれば分析・修正
 7. **パターン蓄積**: 新しい構築パターンが含まれていれば `/learn-pattern` でカタログに追加
 
