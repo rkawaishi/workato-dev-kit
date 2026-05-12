@@ -1,29 +1,30 @@
 #!/usr/bin/env bash
-# setup.sh — workato-dev-kit を submodule として消費するためのセットアップスクリプト
+# setup.sh — bootstrap script for consuming workato-dev-kit as a submodule.
 #
-# 利用者のリポジトリで実行すると、kit 内のスキル・ルール・ドキュメント等への
-# シンボリックリンクを作成し、Claude Code / Cursor がフレームワークを認識できるようにする。
+# Run this from your workspace repository to create symlinks into the
+# kit's skills, rules, and docs so Claude Code / Cursor / Codex CLI /
+# Gemini CLI can pick them up.
 #
 # Usage:
 #   git submodule add https://github.com/<org>/workato-dev-kit.git kit
 #   bash kit/setup.sh
 #
-# 冪等: 何度実行しても同じ結果になる。既存のシンボリックリンクは更新され、
-# 利用者が追加した独自ファイルは保持される。
+# Idempotent: repeated runs produce the same result. Existing symlinks
+# are refreshed, and user-added files are preserved.
 
 set -euo pipefail
 
-# ── 位置の検出 ──────────────────────────────────────────────
+# ── Locate ourselves ─────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 KIT_DIR="$SCRIPT_DIR"
 
-# kit/ の親ディレクトリ = 利用者のワークスペースルート
+# Parent of kit/ = consumer workspace root.
 WORKSPACE_ROOT="$(cd "$KIT_DIR/.." && pwd)"
 
-# kit ディレクトリ名（通常 "kit" だが別名もサポート）
+# Kit directory name (usually "kit"; we support other names too).
 KIT_NAME="$(basename "$KIT_DIR")"
 
-# ワークスペースルートからの相対パス（symlink に使用）
+# Path from the workspace root to the kit (used in symlink targets).
 KIT_REL="$KIT_NAME"
 
 echo "=== workato-dev-kit setup ==="
@@ -33,14 +34,14 @@ echo ""
 
 cd "$WORKSPACE_ROOT"
 
-# ── ヘルパー関数 ────────────────────────────────────────────
+# ── Helpers ──────────────────────────────────────────────────
 
-# ファイル単位のシンボリックリンクを作成（ディレクトリ内の各ファイルに対して）
-# 利用者が同じディレクトリに独自ファイルを追加できるようにする
+# Symlink each file inside src_dir into dst_dir so the user can add
+# their own files alongside kit-managed ones.
 link_files_in_dir() {
-  local src_dir="$1"   # kit 内のソースディレクトリ（絶対パス）
-  local dst_dir="$2"   # ワークスペース内のリンク先ディレクトリ（絶対パス）
-  local rel_prefix="$3" # ワークスペースルートからの相対パス
+  local src_dir="$1"   # Absolute path of the kit-side source dir.
+  local dst_dir="$2"   # Absolute path of the workspace-side dir.
+  local rel_prefix="$3" # Relative path from the workspace root.
 
   mkdir -p "$dst_dir"
 
@@ -64,13 +65,14 @@ link_files_in_dir() {
   done
 }
 
-# 利用者ディレクトリ内の壊れた kit-managed symlink を削除する
-# ・symlink 以外（利用者の実ファイル/ディレクトリ）には触れない
-# ・kit を指している symlink のみ対象（target 文字列に kit_marker を含むもの）
-# ・target が解決できないもの（kit 側で削除/リネームされたもの）だけ削除
+# Remove broken kit-managed symlinks from the consumer's directory.
+# - Never touch non-symlinks (those are user files / dirs).
+# - Only touch symlinks whose target contains the kit_marker path.
+# - Only delete symlinks whose target no longer resolves (i.e. the
+#   kit has removed or renamed the original file).
 prune_stale_links() {
-  local dst_dir="$1"      # 利用者側のディレクトリ（絶対パス）
-  local kit_marker="$2"   # symlink target に含まれているはずの kit 側パス断片
+  local dst_dir="$1"      # Consumer-side directory (absolute path).
+  local kit_marker="$2"   # Kit-side path fragment the symlink target should contain.
 
   [ -d "$dst_dir" ] || return 0
 
@@ -89,7 +91,7 @@ prune_stale_links() {
   done
 }
 
-# ディレクトリ単位のシンボリックリンクを作成
+# Create a directory-level symlink.
 link_dir() {
   local src_dir="$1"
   local dst_name="$2"
@@ -108,7 +110,7 @@ link_dir() {
   echo "  ✓ $dst_name → $rel_target"
 }
 
-# ── 1. .claude/rules/ （ファイル単位 symlink）──────────────
+# ── 1. .claude/rules/ (per-file symlinks) ────────────────────
 echo "--- Setting up .claude/rules/ ---"
 prune_stale_links "$WORKSPACE_ROOT/.claude/rules" "framework/claude/rules/"
 link_files_in_dir \
@@ -116,7 +118,7 @@ link_files_in_dir \
   "$WORKSPACE_ROOT/.claude/rules" \
   "../../$KIT_REL/framework/claude/rules"
 
-# ── 2. .claude/skills/ （ディレクトリ単位 symlink: 各スキルフォルダ）─
+# ── 2. .claude/skills/ (per-skill directory symlinks) ────────
 echo ""
 echo "--- Setting up .claude/skills/ ---"
 mkdir -p "$WORKSPACE_ROOT/.claude/skills"
@@ -140,7 +142,7 @@ for skill_dir in "$KIT_DIR/framework/claude/skills"/*/; do
   echo "  ✓ skills/$skill_name → $rel_target"
 done
 
-# ── 3. .claude/hooks/ （ファイル単位 symlink）─────────────
+# ── 3. .claude/hooks/ (per-file symlinks) ────────────────────
 echo ""
 echo "--- Setting up .claude/hooks/ ---"
 prune_stale_links "$WORKSPACE_ROOT/.claude/hooks" "framework/claude/hooks/"
@@ -149,7 +151,7 @@ link_files_in_dir \
   "$WORKSPACE_ROOT/.claude/hooks" \
   "../../$KIT_REL/framework/claude/hooks"
 
-# ── 4. docs/ guides/ scripts/ templates/ （ディレクトリ symlink）─
+# ── 4. docs/ guides/ scripts/ templates/ (directory symlinks) ──
 echo ""
 echo "--- Setting up top-level directories ---"
 link_dir "$KIT_DIR/docs"      "docs"      "docs"
@@ -157,7 +159,7 @@ link_dir "$KIT_DIR/guides"    "guides"    "guides"
 link_dir "$KIT_DIR/scripts"   "scripts"   "scripts"
 link_dir "$KIT_DIR/templates" "templates" "templates"
 
-# ── 5. .claude/settings.json のマージ ────────────────────
+# ── 5. .claude/settings.json merge ───────────────────────────
 echo ""
 echo "--- Setting up .claude/settings.json ---"
 
@@ -165,12 +167,12 @@ KIT_SETTINGS="$KIT_DIR/framework/claude/settings.json"
 USER_SETTINGS="$WORKSPACE_ROOT/.claude/settings.json"
 
 if [ ! -f "$USER_SETTINGS" ]; then
-  # 初回: kit の settings.json をコピー（hook パスを書き換え）
+  # First run: copy the kit's settings.json template, rewriting hook paths.
   #
-  # 値は env 経由で Python に渡す。`python3 -c "..."` 内にシェル変数を直接展開すると、
-  # パスにクォート・改行・バックスラッシュが含まれた場合に Python コードが破綻する
-  # （あるいは任意コード実行に近い挙動になる）。ヒアドキュメントは <<'PY' でクォート
-  # しておけば変数展開も完全に防げる。
+  # We pass values via env vars to Python. Splicing shell variables straight
+  # into `python3 -c "..."` would break if paths contain quotes, newlines, or
+  # backslashes (and could approach arbitrary code execution). A <<'PY'
+  # heredoc fully disables variable expansion inside the Python block.
   KIT_SETTINGS="$KIT_SETTINGS" USER_SETTINGS="$USER_SETTINGS" KIT_REL="$KIT_REL" \
     python3 <<'PY'
 import json
@@ -183,10 +185,10 @@ kit_rel = os.environ['KIT_REL']
 with open(kit_settings) as f:
     s = json.load(f)
 
-# Hook のコマンドパスを kit/framework/claude/ 配下に書き換え
-# テンプレート上は ".claude/hooks/<name>" と書かれているが、実体は
-# kit/framework/claude/hooks/<name>。利用者の ".claude/settings.json" には
-# 実体パスを直接埋め込む（symlink を経由しない）。
+# Rewrite hook command paths to point inside kit/framework/claude/.
+# The template uses ".claude/hooks/<name>", but the real files live at
+# kit/framework/claude/hooks/<name>. We embed the real path directly in
+# the consumer's .claude/settings.json (i.e. no symlink indirection).
 for event in s.get('hooks', {}).values():
     for group in event:
         for hook in group.get('hooks', []):
@@ -200,8 +202,9 @@ with open(user_settings, 'w') as f:
 PY
   echo "  ✓ Created .claude/settings.json (from kit template)"
 else
-  # 既存設定: 旧版 setup.sh が書いた hook パスを framework/claude/ 配下に書き換える。
-  # 利用者が追加した hook（kit 由来でないもの）には手を付けない。
+  # Existing settings: migrate hook paths written by older setup.sh to the
+  # framework/claude/ layout. Leave hooks the user added (non-kit ones)
+  # alone.
   USER_SETTINGS="$USER_SETTINGS" KIT_REL="$KIT_REL" \
     python3 <<'PY'
 import json
@@ -234,7 +237,7 @@ else:
 PY
 fi
 
-# ── 6. CLAUDE.md の生成 ──────────────────────────────────
+# ── 6. Generate CLAUDE.md ────────────────────────────────────
 echo ""
 echo "--- Setting up CLAUDE.md ---"
 
@@ -245,13 +248,13 @@ if [ ! -f "$CLAUDE_MD" ]; then
   cat > "$CLAUDE_MD" << 'HEREDOC'
 # Workato Workspace
 
-このワークスペースは [workato-dev-kit](kit/) をフレームワークとして使用しています。
+This workspace uses [workato-dev-kit](kit/) as its framework.
 
-## フレームワーク
+## Framework
 
 HEREDOC
 
-  # kit の CLAUDE.md の内容を取り込み（最初の見出し行を除く）
+  # Append the kit's CLAUDE.md (skipping its top-level heading).
   tail -n +2 "$KIT_CLAUDE_MD" >> "$CLAUDE_MD"
 
   echo "  ✓ Created .claude/CLAUDE.md"
@@ -259,7 +262,7 @@ else
   echo "  EXISTS .claude/CLAUDE.md (not overwritten)"
 fi
 
-# ── 7. .gitignore の更新 ─────────────────────────────────
+# ── 7. Update .gitignore ─────────────────────────────────────
 echo ""
 echo "--- Updating .gitignore ---"
 
@@ -296,18 +299,19 @@ else
   echo "  ✓ .gitignore already up to date"
 fi
 
-# ── 8. Cursor 配布（コピー方式）──────────────────────────
-# framework/cursor/ は kit 側で生成済み（python3 scripts/sync_agents.py）。
+# ── 8. Cursor distribution (copy mode) ───────────────────────
+# framework/cursor/ is pre-generated on the kit side via
+# `python3 scripts/sync_agents.py`.
 #
-# 他のエージェント（Claude / Codex / Gemini）は symlink で配布するが、Cursor は
-# symlink を確実に解決できないため実ファイルとしてコピーする。
-#   - .cursor/rules/*.mdc symlink は silent load failure する（forum.cursor.com）
-#   - .cursor/skills/<name>/ ディレクトリ symlink は再起動後に検出されなくなる
-#   - v2.5 で部分修正されたが再発報告あり
+# Other agents (Claude / Codex / Gemini) get symlinks, but Cursor cannot
+# reliably resolve symlinks, so we ship real files instead:
+#   - .cursor/rules/*.mdc symlinks load silently as empty (forum.cursor.com)
+#   - .cursor/skills/<name>/ directory symlinks stop being detected after a restart
+#   - v2.5 partially fixed this, but regressions have been reported
 #
-# kit-managed なファイルは .cursor/.kit-manifest で追跡し、kit から削除された
-# ファイルは prune、利用者が独自に追加したファイル（manifest にない実ファイル）は
-# 触らない。
+# We track kit-managed files in .cursor/.kit-manifest. Files dropped by
+# the kit are pruned; files the user added themselves (real files not
+# listed in the manifest) are left untouched.
 if [ -d "$KIT_DIR/framework/cursor" ]; then
   echo ""
   echo "--- Setting up .cursor/ (copy mode — Cursor does not reliably follow symlinks) ---"
@@ -316,7 +320,8 @@ if [ -d "$KIT_DIR/framework/cursor" ]; then
   MANIFEST="$CURSOR_DST/.kit-manifest"
   mkdir -p "$CURSOR_DST"
 
-  # 旧 setup.sh が張った symlink を撤去（実ファイル/ディレクトリは利用者ファイルとして保持）
+  # Remove symlinks left by older setup.sh runs (keep real files / dirs
+  # so user-authored content survives).
   if [ -d "$CURSOR_DST" ]; then
     while IFS= read -r -d '' link; do
       target="$(readlink "$link")"
@@ -329,7 +334,7 @@ if [ -d "$KIT_DIR/framework/cursor" ]; then
     done < <(find "$CURSOR_DST" -mindepth 1 -type l -print0 2>/dev/null)
   fi
 
-  # 新しい kit-managed ファイル一覧を作成
+  # Build the new list of kit-managed files.
   NEW_MANIFEST="$(mktemp)"
   (
     cd "$KIT_DIR/framework/cursor"
@@ -337,7 +342,8 @@ if [ -d "$KIT_DIR/framework/cursor" ]; then
     [ -f hooks.json ] && echo "hooks.json"
   ) > "$NEW_MANIFEST"
 
-  # 旧 manifest にあって新 manifest に無いファイルを削除（kit が提供しなくなったもの）
+  # Drop files that were in the old manifest but no longer ship with the
+  # kit (i.e. the kit retired them).
   if [ -f "$MANIFEST" ]; then
     while IFS= read -r rel_path; do
       [ -z "$rel_path" ] && continue
@@ -349,12 +355,13 @@ if [ -d "$KIT_DIR/framework/cursor" ]; then
         fi
       fi
     done < "$MANIFEST"
-    # 空ディレクトリを掃除（利用者ファイルがあるディレクトリは type d -empty に該当しないので安全）
+    # Clean up empty directories. Directories containing user files are
+    # not empty and so are not removed by -type d -empty.
     find "$CURSOR_DST" -mindepth 1 -type d -empty -delete 2>/dev/null || true
   fi
 
-  # 各 kit ファイルをコピー。実際にコピーしたパスを次回用 manifest に記録する
-  # （= 利用者ファイル上書き保護のために skip したパスは manifest に含めない）
+  # Copy each kit file. Record the paths we actually copied as the next
+  # manifest — paths we skipped (to protect user files) stay out of it.
   COPIED_PATHS="$(mktemp)"
   copied=0
   skipped=0
@@ -363,12 +370,15 @@ if [ -d "$KIT_DIR/framework/cursor" ]; then
     src="$KIT_DIR/framework/cursor/$rel_path"
     dst="$CURSOR_DST/$rel_path"
 
-    # 利用者ファイル保護:
-    # - manifest が無い（初回実行）: 既存の実ファイルは全て利用者の手書きファイルとして保護
-    #   旧 symlink 方式 setup.sh の「非 symlink ファイルには触れない」挙動を踏襲し、
-    #   手書きの .cursor/hooks.json や、symlink から実ファイルに置き換えた独自版を守る
-    # - manifest がある（2 回目以降）: dst が実ファイル かつ 旧 manifest に無い = 利用者ファイル
-    #   （新 manifest にはコピーしたパスだけ含めるので、初回保護されたパスは引き続き「manifest に無い」扱いになる）
+    # User file protection:
+    # - No manifest yet (first run): every existing real file is treated
+    #   as user-authored and preserved. This mirrors the old symlink-mode
+    #   setup.sh behaviour of "do not touch non-symlinks", protecting
+    #   hand-written .cursor/hooks.json or user-replaced files.
+    # - Manifest exists (subsequent runs): a real file whose path is NOT
+    #   in the old manifest is a user file. (Only paths we actually
+    #   copied last time end up in the new manifest, so first-run-
+    #   protected paths stay outside the manifest indefinitely.)
     if [ -f "$dst" ] && [ ! -L "$dst" ]; then
       if [ ! -f "$MANIFEST" ]; then
         echo "  SKIP .cursor/$rel_path (existing real file, preserving on first run — delete it to opt into kit version)"
@@ -387,7 +397,8 @@ if [ -d "$KIT_DIR/framework/cursor" ]; then
     copied=$((copied + 1))
   done < "$NEW_MANIFEST"
 
-  # manifest を更新（実際にコピーしたパスのみ記録）。利用者の独自ファイルは含めない
+  # Update the manifest with only the paths we actually copied; do not
+  # record user-authored files there.
   sort "$COPIED_PATHS" > "$MANIFEST"
   rm -f "$NEW_MANIFEST" "$COPIED_PATHS"
 
@@ -397,8 +408,8 @@ if [ -d "$KIT_DIR/framework/cursor" ]; then
   fi
 fi
 
-# ── 9. Codex CLI 配布 ────────────────────────────────────
-# Codex CLI（skills モード）は ``.agents/skills/<name>/SKILL.md`` を読む。
+# ── 9. Codex CLI distribution ────────────────────────────────
+# Codex CLI (skills mode) reads ``.agents/skills/<name>/SKILL.md``.
 if [ -d "$KIT_DIR/framework/codex" ]; then
   echo ""
   echo "--- Setting up .agents/skills/ ---"
@@ -424,8 +435,8 @@ if [ -d "$KIT_DIR/framework/codex" ]; then
   done
 fi
 
-# ── 10. Gemini CLI 配布 ──────────────────────────────────
-# Gemini CLI（skills モード）は ``.gemini/skills/<name>/SKILL.md`` を読む。
+# ── 10. Gemini CLI distribution ──────────────────────────────
+# Gemini CLI (skills mode) reads ``.gemini/skills/<name>/SKILL.md``.
 if [ -d "$KIT_DIR/framework/gemini" ]; then
   echo ""
   echo "--- Setting up .gemini/skills/ ---"
@@ -451,10 +462,11 @@ if [ -d "$KIT_DIR/framework/gemini" ]; then
   done
 fi
 
-# ── 11. AGENTS.md / GEMINI.md（エージェント横断の規約）────
-# Codex CLI / Gemini CLI / Aider 等が読むエージェント中立ドキュメント。
-# 中身は CLAUDE.md + rules を集約したもので、kit 側で生成済み。
-# Gemini は GEMINI.md を読むため、AGENTS.md と同じ実体を別名で symlink する。
+# ── 11. AGENTS.md / GEMINI.md (cross-agent conventions) ──────
+# Agent-neutral document consumed by Codex CLI / Gemini CLI / Aider etc.
+# Its content aggregates CLAUDE.md + rules and is pre-generated by the
+# kit. Gemini reads GEMINI.md, so we symlink it to the same AGENTS.md
+# target under a second name.
 if [ -f "$KIT_DIR/framework/AGENTS.md" ]; then
   echo ""
   echo "--- Setting up AGENTS.md / GEMINI.md ---"
@@ -474,7 +486,7 @@ if [ -f "$KIT_DIR/framework/AGENTS.md" ]; then
   done
 fi
 
-# ── 完了 ────────────────────────────────────────────────
+# ── Done ─────────────────────────────────────────────────────
 echo ""
 echo "=== Setup complete ==="
 echo ""

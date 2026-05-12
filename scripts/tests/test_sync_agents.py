@@ -157,17 +157,17 @@ def test_cursor_strips_at_docs():
 def test_cursor_strips_at_org():
     # @org/ is the newer overlay-layer prefix; must be stripped just
     # like @docs/.
-    assert sa.rewrite_skill_body("併読 @org/docs/connectors/foo.md") == "併読 org/docs/connectors/foo.md"
+    assert sa.rewrite_skill_body("see also @org/docs/connectors/foo.md") == "see also org/docs/connectors/foo.md"
 
 
 def test_cursor_rewrites_at_claude_rules_md_to_mdc():
-    body = "詳細は @.claude/rules/workato-recipe-format.md 参照"
-    assert sa.rewrite_skill_body(body) == "詳細は .cursor/rules/workato-recipe-format.mdc 参照"
+    body = "see @.claude/rules/workato-recipe-format.md for details"
+    assert sa.rewrite_skill_body(body) == "see .cursor/rules/workato-recipe-format.mdc for details"
 
 
 def test_cursor_rewrites_unprefixed_claude_rules_md_to_mdc():
-    body = ".claude/rules/workato-cli.md を読む"
-    assert sa.rewrite_skill_body(body) == ".cursor/rules/workato-cli.mdc を読む"
+    body = "read .claude/rules/workato-cli.md"
+    assert sa.rewrite_skill_body(body) == "read .cursor/rules/workato-cli.mdc"
 
 
 def test_cursor_rewrites_at_claude_skills_to_cursor_skills():
@@ -190,18 +190,18 @@ def test_cursor_rewrite_does_not_cross_lines():
 
 
 def test_codex_collapses_rules_md_to_agents_md():
-    body = "詳細は @.claude/rules/workato-cli.md"
-    assert sa.rewrite_codex_body(body, None) == "詳細は AGENTS.md"
+    body = "see @.claude/rules/workato-cli.md for details"
+    assert sa.rewrite_codex_body(body, None) == "see AGENTS.md for details"
 
 
 def test_codex_collapses_unprefixed_rules_to_agents_md():
-    body = ".claude/rules/workato-recipe-format.md 参照"
-    assert sa.rewrite_codex_body(body, None) == "AGENTS.md 参照"
+    body = "see .claude/rules/workato-recipe-format.md"
+    assert sa.rewrite_codex_body(body, None) == "see AGENTS.md"
 
 
 def test_codex_skill_dir_to_dollar():
-    body = "実行は @.claude/skills/create-recipe で"
-    assert sa.rewrite_codex_body(body, None) == "実行は $create-recipe で"
+    body = "invoke via @.claude/skills/create-recipe"
+    assert sa.rewrite_codex_body(body, None) == "invoke via $create-recipe"
 
 
 def test_codex_strips_at_org():
@@ -219,8 +219,8 @@ def test_codex_slash_pattern_returns_none_for_empty_set():
 def test_codex_slash_pattern_matches_known_skill():
     pat = sa._build_codex_slash_pattern({"create-recipe", "push-project"})
     assert pat is not None
-    out = pat.sub(r"$\1", "次は /create-recipe を呼ぶ")
-    assert out == "次は $create-recipe を呼ぶ"
+    out = pat.sub(r"$\1", "next, call /create-recipe")
+    assert out == "next, call $create-recipe"
 
 
 def test_codex_slash_pattern_skips_unknown_skill():
@@ -287,14 +287,14 @@ def test_codex_slash_pattern_preserves_path_segment():
 
 
 def test_gemini_collapses_rules_to_gemini_md():
-    body = "詳細は @.claude/rules/workato-cli.md"
-    assert sa.rewrite_gemini_body(body) == "詳細は GEMINI.md"
+    body = "see @.claude/rules/workato-cli.md for details"
+    assert sa.rewrite_gemini_body(body) == "see GEMINI.md for details"
 
 
 def test_gemini_skill_dir_keeps_slash():
     # Gemini uses the / invocation syntax, so cross-references stay /.
-    body = "実行は @.claude/skills/create-recipe"
-    assert sa.rewrite_gemini_body(body) == "実行は /create-recipe"
+    body = "invoke via @.claude/skills/create-recipe"
+    assert sa.rewrite_gemini_body(body) == "invoke via /create-recipe"
 
 
 def test_gemini_strips_at_org():
