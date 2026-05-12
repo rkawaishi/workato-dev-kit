@@ -257,6 +257,32 @@ def test_codex_longer_names_match_first():
     assert pat.sub(r"$\1", "/create-recipe") == "$create-recipe"
 
 
+def test_codex_slash_pattern_preserves_placeholder_path():
+    # ``<NNN>-<slug>/spec.md`` is a template file path. The ``>`` of the
+    # closing angle bracket is not ``\w`` but still signals a path context,
+    # so the rewrite must leave ``/spec`` intact.
+    pat = sa._build_codex_slash_pattern({"spec", "plan", "tasks"})
+    assert pat is not None
+    assert (
+        pat.sub(r"$\1", "projects/<project>/specs/<NNN>-<slug>/spec.md")
+        == "projects/<project>/specs/<NNN>-<slug>/spec.md"
+    )
+
+
+def test_codex_slash_pattern_preserves_filename_reference():
+    # ``/spec.md`` mid-sentence is a filename, not a command — keep as is.
+    pat = sa._build_codex_slash_pattern({"spec"})
+    assert pat is not None
+    assert pat.sub(r"$\1", "see /spec.md for details") == "see /spec.md for details"
+
+
+def test_codex_slash_pattern_preserves_path_segment():
+    # ``/spec/foo`` uses the skill name as a directory segment — keep as is.
+    pat = sa._build_codex_slash_pattern({"spec"})
+    assert pat is not None
+    assert pat.sub(r"$\1", "look at /spec/foo for context") == "look at /spec/foo for context"
+
+
 # --- Gemini body rewrites (rewrite_gemini_body) ---------------------
 
 
