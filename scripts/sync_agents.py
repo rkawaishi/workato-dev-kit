@@ -224,10 +224,10 @@ def _build_codex_slash_pattern(names: set[str]) -> re.Pattern[str] | None:
     # Negative lookbehind blocks word chars AND ``>`` so placeholders like
     # ``<slug>/spec.md`` don't trigger a rewrite (the ``>`` from the closing
     # angle bracket is not ``\w`` but still denotes a path context). Negative
-    # lookahead blocks ``.`` and word chars so filenames like ``/spec.md`` and
-    # paths like ``/spec/foo`` are left intact while ``/spec``, ``` `/spec` ```,
+    # lookahead blocks ``/``, ``.`` and word chars so filenames like ``/spec.md``
+    # and paths like ``/spec/foo`` are left intact while ``/spec``, ``` `/spec` ```,
     # and ``/spec <args>`` still match.
-    return re.compile(rf"(?<![\w>])/({alts})(?![.\w])\b")
+    return re.compile(rf"(?<![\w>])/({alts})(?![/.\w])\b")
 
 
 # Codex skill body rewrites. Order matches Cursor's rewrites for the
