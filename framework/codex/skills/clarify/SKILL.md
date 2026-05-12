@@ -1,136 +1,135 @@
 ---
 name: clarify
-description: spec.md の Open Questions を 1 件ずつ消化して本文に反映する。$spec の後、$plan の前に実行。中断後の再開はこのスキルから。
+description: Resolve spec.md's Open Questions one by one and fold the answers into the body. Run after $spec and before /plan. Resume from this skill after an interruption. Japanese prompts are also supported.
 ---
 
 # $clarify
 
-`spec.md` の `## Open Questions` セクションに残っている未確定事項を **1 件ずつ消化** し、回答を spec 本文に反映するスキル。
+Resolve the unresolved items in `spec.md`'s `## Open Questions` section **one at a time** and reflect each answer in the body of spec.md.
 
-仕様駆動ワークフローで `$spec` と `$plan` の間に位置する。`$spec` が書き出した曖昧点をここで全て潰してから設計に進むことで、後工程の手戻りを防ぐ。
+In the spec-driven workflow this skill sits between `$spec` and `$plan`. Closing every ambiguity here, before moving to design, avoids rework downstream.
 
-**中断耐性の要**: コンテキスト枯渇や中断で `$spec` の途中状態が失われても、Open Questions がファイルに残っている限り `$clarify` で再開できる。
+**Key to resumability**: even if `$spec`'s working state is lost to context exhaustion or an interruption, as long as Open Questions remain in the file you can resume with `$clarify`.
 
-## 使い方
+## Usage
 
-- `$clarify <project>/<NNN>-<slug>` — 指定フィーチャーの Open Questions を消化
-- `$clarify <project>` — プロジェクト内で Open Questions が残る最新フィーチャーを自動選択
-- `$clarify` — カレントセッションの文脈から推定（曖昧なら確認）
+- `$clarify <project>/<NNN>-<slug>` — resolve Open Questions for a specific feature
+- `$clarify <project>` — auto-pick the latest feature in the project that still has Open Questions
+- `$clarify` — infer from the current session context (ask if ambiguous)
 
-## ワークフロー
+## Workflow
 
 ```
 $spec → $clarify → $plan → $tasks → $analyze → $implement
           ↑
-        ここ
+       you are here
 ```
 
-## 手順
+## Procedure
 
-### 1. spec.md を読む
+### 1. Read spec.md
 
-- `projects/<project>/specs/<NNN>-<slug>/spec.md` を読む
-- `## Open Questions` セクションの未チェック項目（`- [ ] ...`）を抽出
-- 全てチェック済みなら「Open Questions は全て解決済みです。$plan に進めます。」と案内して終了
+- Read `projects/<project>/specs/<NNN>-<slug>/spec.md`.
+- Extract unchecked items (`- [ ] ...`) from the `## Open Questions` section.
+- If everything is checked, say "All Open Questions are resolved. Proceed to /plan." and stop.
 
-### 2. 質問を 1 件ずつ提示
+### 2. Ask one question at a time
 
-**1 件ずつ** 提示する。まとめて聞かない（回答品質が落ちる）。
-
-```
-Open Questions が <N> 件残っています。1件ずつ確認させてください。
-
-[1/N] <質問内容>
-
-選択肢の候補（あれば）:
-- A: <案>
-- B: <案>
-- C: その他（自由記述）
-
-回答をお願いします。
-```
-
-### 3. 回答を反映
-
-回答を得たら **その場で spec.md を更新** する:
-
-1. 該当する Open Questions の項目を `- [x]` にチェック
-2. 回答に応じて spec 本文の該当セクションを更新
-   - 承認者の範囲が決まった → User Stories の該当ロールを更新
-   - 通知経路が決まった → External Touchpoints を更新
-   - 制約が判明 → Constraints / Non-functional に追記
-   - 範囲外と判明 → Out of Scope に移動
-3. `## Decisions` セクションに `<YYYY-MM-DD>: <決定> — <理由>` を追記
-4. `Last updated` を更新
-
-### 4. 派生する Open Questions の追加
-
-回答から **新たな曖昧点** が浮かんだら、その場で Open Questions に追記する（同じセッションで連続消化可）。
-
-例:
-```
-Q: 承認者は単一ですか複数ですか？
-A: マネージャー1名 + 必要に応じて部門長
-→ 新規 Open Question: 「部門長承認が必要な条件は？金額/カテゴリ/役職等」
-```
-
-### 5. 全消化後の案内
-
-全 Open Questions がチェック済みになったら:
+Present **one question at a time**. Don't batch — answer quality drops when you do.
 
 ```
-✓ Open Questions を全て解決しました（<N> 件）。
+<N> Open Questions remain. Let me confirm them one at a time.
 
-主要な決定:
-- <Decisions から重要なものを 3-5 件サマリ>
+[1/N] <question>
 
-次は $plan <project>/<NNN>-<slug> で Workato 構成への落とし込みに進めます。
+Possible options (if any):
+- A: <option>
+- B: <option>
+- C: Other (free text)
+
+Please answer.
 ```
 
-## 質問の進め方のコツ
+### 3. Reflect the answer
 
-### Yes/No で済む質問は選択肢化
+As soon as you have an answer, **update spec.md immediately**:
+
+1. Check off the matching Open Question item (`- [x]`).
+2. Update the relevant section of the spec body based on the answer.
+   - Approver scope decided → update the corresponding role in User Stories.
+   - Notification channel decided → update External Touchpoints.
+   - Constraint found → add to Constraints / Non-functional.
+   - Confirmed out of scope → move to Out of Scope.
+3. Append `<YYYY-MM-DD>: <decision> — <reason>` to `## Decisions`.
+4. Update `Last updated`.
+
+### 4. Add derived Open Questions
+
+If an answer reveals **new ambiguities**, append them to Open Questions immediately (you can keep resolving them in the same session).
+
+Example:
+```
+Q: Is there a single approver or multiple?
+A: One manager + a department head when needed.
+→ New Open Question: "Under what conditions is department-head approval required? Amount / category / role?"
+```
+
+### 5. Wrap-up after everything is resolved
+
+When every Open Question is checked off:
 
 ```
-✗ 「再申請は可能ですか？」（オープン）
-○ 「却下後の再申請を許可しますか？ A: 許可（編集して再提出）, B: 許可（新規作成のみ）, C: 不可」
+✓ All Open Questions resolved (<N> total).
+
+Key decisions:
+- <summarize 3–5 important entries from Decisions>
+
+Next, proceed to $plan <project>/<NNN>-<slug> to map this into Workato configuration.
 ```
 
-### 業務シナリオで聞く
+## Tips for asking
 
-技術選択肢ではなくシナリオで聞く:
+### Turn yes/no questions into multiple choice
+
 ```
-✗ 「Slack 通知の channel は public ですか private ですか？」
-○ 「承認依頼が届いたとき、誰がそれを見られる必要がありますか？ 承認者だけ / 部門全員 / 全社」
+✗ "Is resubmission allowed?" (open-ended)
+○ "After a rejection, do you allow resubmission? A: yes (edit + resubmit), B: yes (only as a new request), C: no"
 ```
 
-### 「分からない」を許容
+### Ask in business scenarios, not technology choices
 
-ユーザーが「今は決められない」と答えた場合:
-- Open Questions に残したまま `- [ ] <質問>（deferred: <YYYY-MM-DD> 時点で未決）` に書き換える
-- `$plan` 側で **仮置き + Decision Required** として扱う
-- 後で再度 `$clarify` を呼べる
+```
+✗ "Is the Slack notification channel public or private?"
+○ "When an approval request lands, who needs to see it? Only the approver / the whole department / the whole company?"
+```
 
-## 反映ルール
+### Accept "I don't know"
 
-| 質問の種類 | 反映先 |
+If the user says "I can't decide right now":
+- Keep the item in Open Questions but rewrite it as `- [ ] <question> (deferred: undecided as of <YYYY-MM-DD>)`.
+- Treat it in `$plan` as a **placeholder + Decision Required**.
+- The user can call `$clarify` again later.
+
+## Reflection rules
+
+| Question kind | Section to update |
 |---|---|
-| ユーザーの行動・体験 | User Stories |
-| 成功条件・観測点 | Success Criteria |
-| 連携する外部サービス | External Touchpoints |
-| 性能・セキュリティ・運用要件 | Constraints / Non-functional |
-| やらないこと | Out of Scope |
-| なぜそう決めたか | Decisions |
+| User behavior or experience | User Stories |
+| Success conditions / observable points | Success Criteria |
+| External services we integrate with | External Touchpoints |
+| Performance, security, operational requirements | Constraints / Non-functional |
+| What we are not going to do | Out of Scope |
+| Why we decided this way | Decisions |
 
-**禁止**: spec.md に技術用語（Recipe, Datapill, Workflow App 等）を入れない。技術への落とし込みは `$plan` の責務。
+**Prohibited**: do not introduce technical terms (Recipe, Datapill, Workflow App, etc.) into spec.md. Mapping to technology is `$plan`'s responsibility.
 
-## 守るべきルール
+## Rules to follow
 
-- **1 件ずつ消化**: 一括で聞くと回答が浅くなる。1 件ずつファイル更新まで完結させる
-- **ファイル更新を都度行う**: 5 件まとめてヒアリング → まとめて反映、は NG。各回答ごとに spec.md を save する（中断対策）
-- **Decisions に理由も書く**: `A に決定` だけでなく `A に決定 — B はコストが高く C はユーザー教育が必要なため`
+- **One at a time**: batching makes answers shallow. Always close the loop on each question — including the file update — before moving to the next.
+- **Update the file each time**: do not interview 5 items and write all the changes at the end. Save spec.md after each answer (interruption insurance).
+- **Decisions get reasons**: not just `decided on A`, but `decided on A — B is too expensive and C needs user training`.
 
-## Git 管理
+## Git management
 
 ```bash
 git add projects/<project-name>/specs/<NNN>-<slug>/spec.md
