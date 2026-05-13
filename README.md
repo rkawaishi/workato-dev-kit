@@ -1,252 +1,253 @@
 # Workato Dev Kit
 
-[English](README.en.md) | 日本語
-
 [![tests](https://github.com/rkawaishi/workato-dev-kit/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/rkawaishi/workato-dev-kit/actions/workflows/tests.yml)
 [![sync-check](https://github.com/rkawaishi/workato-dev-kit/actions/workflows/sync-check.yml/badge.svg?branch=main)](https://github.com/rkawaishi/workato-dev-kit/actions/workflows/sync-check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
-[![editors](https://img.shields.io/badge/editors-Claude%20Code%20%7C%20Cursor%20%7C%20Codex%20CLI%20%7C%20Gemini%20CLI-orange.svg)](#特徴)
+[![editors](https://img.shields.io/badge/editors-Claude%20Code%20%7C%20Cursor%20%7C%20Codex%20CLI%20%7C%20Gemini%20CLI-orange.svg)](#features)
 
-Workato (エンタープライズ iPaaS) の自動化開発を AI コーディングエージェントで行うためのツールキット。
-[Claude Code](https://claude.com/claude-code) / [Cursor](https://cursor.com) / [Codex CLI](https://github.com/openai/codex) / [Gemini CLI](https://github.com/google-gemini/gemini-cli) に対応。
+A toolkit for developing on Workato (enterprise iPaaS) with AI coding agents.
+Supports [Claude Code](https://claude.com/claude-code), [Cursor](https://cursor.com), [Codex CLI](https://github.com/openai/codex), and [Gemini CLI](https://github.com/google-gemini/gemini-cli).
 
-レシピ開発、Workflow App 構築、AI エージェント (Genie / MCP) 作成、カスタムコネクタ開発をカバーする。
+Covers recipe development, Workflow App construction, AI agent creation (Genie / MCP), and custom connector development.
 
-## 特徴
+> The documentation is in English. The toolkit still works for Japanese-speaking users — Claude, Cursor, and the other agents respond in whatever language you write your prompts in, so you can keep working in Japanese while the underlying docs stay English.
 
-- **レシピの JSON 生成** — Workato レシピを対話的に構築し `workato push` でデプロイ
-- **Workflow App の構築** — Data Table、ページ、承認フローを JSON で定義
-- **MCP サーバーの構築** — AI エージェントが使えるツールを MCP プロトコルで公開
-- **Genie (AI エージェント)** — スキル付き AI エージェントの構成を生成
-- **カスタムコネクタ** — Connector SDK (Ruby DSL) の開発支援
-- **ナレッジベース** — 316 コネクタ、7 ロジックパターン、13 プラットフォーム機能のドキュメント
-- **学習サイクル** — pull → 分析 → パターン蓄積 → 次回生成に反映
-- **設計書管理** — プロジェクトごとの DESIGN.md でセッション跨ぎの計画・進捗追跡
+## Features
 
-## 前提条件
+- **Recipe JSON generation** — build a Workato Recipe interactively, then deploy it with `workato push`
+- **Workflow App construction** — Data Tables, pages, and approval flows expressed as JSON
+- **MCP server construction** — expose tools to AI agents over the MCP protocol
+- **Genie (AI agents)** — generate AI agent configurations with attached skills
+- **Custom connectors** — assistance for Connector SDK (Ruby DSL) development
+- **Knowledge base** — docs for 316 connectors, 7 logic patterns, and 13 platform features
+- **Learning cycle** — pull → analyze → accumulate patterns → feed back into the next generation
+- **Spec-driven artifacts** — `spec.md` / `plan.md` / `tasks.md` per feature, with cross-session continuity
 
-- [Workato](https://www.workato.com/) アカウント + API トークン
+## Prerequisites
+
+- A [Workato](https://www.workato.com/) account and API token
 - [Workato Platform CLI](https://github.com/workato-devs/workato-platform-cli) (`pipx install workato-platform-cli`)
-- 対応エディタのいずれか — [Claude Code](https://claude.com/claude-code) / [Cursor](https://cursor.com) / [Codex CLI](https://github.com/openai/codex) / [Gemini CLI](https://github.com/google-gemini/gemini-cli)
+- One of the supported editors: [Claude Code](https://claude.com/claude-code), [Cursor](https://cursor.com), [Codex CLI](https://github.com/openai/codex), or [Gemini CLI](https://github.com/google-gemini/gemini-cli)
 
-## セットアップ
+## Setup
 
-> 詳しい手順は **[Quick Start (Claude Code)](guides/quickstart-claude-code.md)** または **[Quick Start (Cursor)](guides/quickstart-cursor.md)** を参照。
+> For the full walkthrough, see **[Quick Start (Claude Code)](guides/quickstart-claude-code.md)** or **[Quick Start (Cursor)](guides/quickstart-cursor.md)**.
 
-組織のワークスペースリポジトリに workato-dev-kit を submodule として追加します。フレームワークの更新は `git submodule update` で取り込めます。
+Add workato-dev-kit as a submodule of your organization's workspace repository. You can update the framework later with `git submodule update`.
 
 ```bash
-# 組織のワークスペースリポジトリを作成
+# Create your organization's workspace repository
 mkdir my-org-workato && cd my-org-workato
 git init
 
-# workato-dev-kit を submodule として追加
+# Add workato-dev-kit as a submodule
 git submodule add https://github.com/rkawaishi/workato-dev-kit.git kit
 
-# セットアップスクリプトを実行（symlink/コピー作成、設定ファイル生成）
+# Run the setup script (creates symlinks/copies and config files)
 bash kit/setup.sh
 
-# Platform CLI の初期化
+# Initialize the Platform CLI
 workato init
 
-# 初回コミット
+# Initial commit
 git add -A && git commit -m "Initial setup with workato-dev-kit"
 ```
 
-セットアップ後のディレクトリ構造:
+Resulting directory layout:
 
 ```
-my-org-workato/                 ← 組織のリポジトリ（作業ルート）
-├── .claude/                    ← Claude Code 用
-│   ├── CLAUDE.md               # 自動生成（カスタマイズ可）
-│   ├── rules/                  # kit のルール (symlink) + 組織独自ルール
-│   ├── skills/                 # kit のスキル (symlink) + 組織独自スキル
-│   ├── hooks/                  # kit のフック (symlink)
-│   └── settings.json           # 自動生成（カスタマイズ可）
-├── .cursor/                    ← Cursor 用 (コピー、symlink 非対応のため)
+my-org-workato/                 ← your organization's repository (the working root)
+├── .claude/                    ← for Claude Code
+│   ├── CLAUDE.md               # auto-generated (customizable)
+│   ├── rules/                  # kit rules (symlinks) + your own rules
+│   ├── skills/                 # kit skills (symlinks) + your own skills
+│   ├── hooks/                  # kit hooks (symlinks)
+│   └── settings.json           # auto-generated (customizable)
+├── .cursor/                    ← for Cursor (copies, because Cursor does not reliably follow symlinks)
 │   ├── rules/, skills/, hooks.json
-│   └── .kit-manifest           # kit-managed ファイル追跡
-├── .agents/skills/             ← Codex CLI 用 (symlink)
-├── .gemini/skills/             ← Gemini CLI 用 (symlink)
-├── AGENTS.md → kit/...         ← Codex / Aider 等のエージェント中立規約
-├── GEMINI.md → kit/...         ← AGENTS.md と同じ実体
-├── docs/ → kit/docs/           ← ナレッジベース (symlink)
+│   └── .kit-manifest           # tracks kit-managed files
+├── .agents/skills/             ← for Codex CLI (symlinks)
+├── .gemini/skills/             ← for Gemini CLI (symlinks)
+├── AGENTS.md → kit/...         ← agent-neutral conventions for Codex / Aider / etc.
+├── GEMINI.md → kit/...         ← same file as AGENTS.md (different name)
+├── docs/ → kit/docs/           ← knowledge base (symlink)
 ├── guides/ → kit/guides/       ← symlink
-├── kit/                        ← git submodule (読み取り専用)
-├── projects/                   ← 組織のレシピ
-└── connectors/                 ← 組織のカスタムコネクタ
+├── kit/                        ← git submodule (read-only)
+├── projects/                   ← your organization's recipes
+└── connectors/                 ← your organization's custom connectors
 ```
 
-**フレームワークの更新:**
+**Updating the framework:**
 
 ```bash
 git submodule update --remote kit
-bash kit/setup.sh    # 新しいスキル/ルールの symlink を追加・古いものを除去、.cursor/ は再コピー
+bash kit/setup.sh    # add symlinks for new skills/rules, prune retired ones, re-copy .cursor/
 git add kit .cursor && git commit -m "Update workato-dev-kit"
 ```
 
-> **Cursor 利用時は再実行が必須**: `.cursor/` 配下は symlink ではなく実ファイルコピーなので、kit を更新したら必ず `bash kit/setup.sh` を再実行してください。Cursor IDE が symlink を確実に解決できない（[詳細](guides/architecture.md#対応エディタ)）ため。
+> **Cursor users must re-run setup**: `.cursor/` ships as real file copies (not symlinks), so re-run `bash kit/setup.sh` after every kit update. Cursor IDE cannot reliably resolve symlinks ([details](guides/architecture.md#supported-editors)).
 
-**組織独自のスキル/ルールの追加:** `.claude/rules/` や `.claude/skills/` に通常のファイルとして追加すれば、kit のものと共存します（symlink でない実ファイルは setup.sh で上書きされません）。Cursor は `.cursor/.kit-manifest` で kit-managed ファイルを追跡し、manifest にない実ファイル（利用者ファイル）は保持されます。
+**Adding your own skills or rules:** drop them into `.claude/rules/` or `.claude/skills/` as regular files; they coexist with the kit's content. (`setup.sh` does not overwrite real files, only refreshes symlinks.) For Cursor, `.cursor/.kit-manifest` tracks kit-managed files, and any real file not in the manifest is preserved as a user file.
 
-## ワークスペース構造
+## Workspace structure
 
-組織のレシピ・コネクタは `projects/` と `connectors/` に配置します。
+Place your organization's recipes and connectors under `projects/` and `connectors/`.
 
-### レシピプロジェクト (projects/)
+### Recipe projects (projects/)
 
 ```bash
-# Workato からプロジェクトを pull
+# Pull a project from Workato
 workato projects use "<project-name>"
 workato pull
 
-# 開発 → コミット
+# Develop, then commit
 git add projects/<project-name> && git commit -m "Add IT Onboarding workflow"
 ```
 
-### 仕様駆動アーティファクト (spec.md / plan.md / tasks.md)
+### Spec-driven artifacts (spec.md / plan.md / tasks.md)
 
-各プロジェクトの各フィーチャーを `projects/<project>/specs/<NNN>-<slug>/` 配下の 3 ファイルに分けて記録:
+Record each feature of each project in three files under `projects/<project>/specs/<NNN>-<slug>/`:
 
-- `spec.md` — ユーザー体験と業務要件 (WHAT/WHY、Workato 用語禁止)
-- `plan.md` — Workato 構成 (HOW)
-- `tasks.md` — 実行可能タスク (`[P]` 並列マーク + 種類タグ)
+- `spec.md` — user experience and business requirements (WHAT/WHY; no Workato terminology)
+- `plan.md` — Workato configuration (HOW)
+- `tasks.md` — executable tasks (with `[P]` parallel markers and kind tags)
 
-`.workatoignore` に `specs/` を含めて `workato pull` で消えないようにする。
+Add `specs/` to `.workatoignore` so it isn't wiped out by `workato pull`.
 
 ```bash
-/spec "[App] IT Onboarding"                # spec.md を作成
-/clarify "[App] IT Onboarding"/001-main    # Open Questions を消化
-/plan "[App] IT Onboarding"/001-main       # plan.md を作成
-/tasks "[App] IT Onboarding"/001-main      # tasks.md を作成
-/analyze "[App] IT Onboarding"/001-main    # 整合性チェック
-/implement "[App] IT Onboarding"/001-main  # 実装スキルへ振り分け
+/spec "[App] IT Onboarding"                # create spec.md
+/clarify "[App] IT Onboarding"/001-main    # resolve Open Questions
+/plan "[App] IT Onboarding"/001-main       # create plan.md
+/tasks "[App] IT Onboarding"/001-main      # create tasks.md
+/analyze "[App] IT Onboarding"/001-main    # consistency check
+/implement "[App] IT Onboarding"/001-main  # dispatch to implementation skills
 ```
 
-> 旧 `DESIGN.md` 単一ファイル運用は **Deprecated**。`/design migrate <project>` で `specs/` に分割移行する。`/design new` は廃止済み。
+> The old single-file `DESIGN.md` workflow is **deprecated**. Use `/design migrate <project>` to split an existing DESIGN.md into `specs/`. `/design new` is retired.
 
-## スキル一覧
+## Skills
 
-| スキル | 説明 |
+| Skill | Description |
 |---|---|
-| `/spec` | フィーチャー要件 (spec.md) を作成（技術中立） |
-| `/clarify` | spec.md の Open Questions を消化 |
-| `/plan` | spec.md → plan.md（Workato 構成） |
-| `/tasks` | plan.md → tasks.md（タグ付き実行タスク） |
-| `/analyze` | spec ↔ plan ↔ tasks の整合性検証 (read-only) |
-| `/implement` | tasks.md を読み既存スキルに振り分け（薄い orchestrator） |
-| `/create-recipe` | レシピ JSON を対話的に生成 |
-| `/create-workflow-app` | Workflow App を段階的に構築 (Data Table, ページ, レシピ) |
-| `/create-genie` | Genie / MCP サーバー + スキルの構成を生成 |
-| `/create-connector` | カスタムコネクタをスキャフォールド |
-| `/catalog` | 共有アセットのスキャン・カタログ化 |
-| `/validate-recipe` | レシピ JSON の構造を検証 |
-| `/pull-project` | Workato リモートからプロジェクトを pull |
-| `/push-project` | ローカル変更を push (バリデーション + レシピ起動対応) |
-| `/learn-recipe` | pull したレシピからフィールド情報を学習 + plan.md/tasks.md の Unlearned/[learn] を整理 |
-| `/learn-pattern` | レシピ構築パターンをカタログに記録・更新 |
-| `/sync-connectors` | コネクタ情報を収集・更新（Pre-built: API、カスタム: connector.rb パース） |
-| `/auto-learn` | 1 コネクタの全 op を Claude in Chrome で自律収集（対話なし） |
-| `/design` | **Deprecated**: `/design migrate` で旧 DESIGN.md → specs/ 移行のみ通常利用 |
+| `/spec` | Create feature requirements (spec.md), technology-agnostic |
+| `/clarify` | Resolve Open Questions in spec.md |
+| `/plan` | spec.md → plan.md (Workato configuration) |
+| `/tasks` | plan.md → tasks.md (tagged executable tasks) |
+| `/analyze` | Verify spec ↔ plan ↔ tasks consistency (read-only) |
+| `/implement` | Read tasks.md and dispatch to existing skills (thin orchestrator) |
+| `/create-recipe` | Generate a recipe JSON interactively |
+| `/create-workflow-app` | Build a Workflow App in stages (Data Table, pages, recipes) |
+| `/create-genie` | Generate a Genie / MCP server + skills configuration |
+| `/create-connector` | Scaffold a custom connector |
+| `/catalog` | Scan and catalog shared assets |
+| `/validate-recipe` | Validate recipe JSON structure |
+| `/pull-project` | Pull a project from Workato |
+| `/push-project` | Push local changes (with validation and recipe start) |
+| `/learn-recipe` | Learn field info from pulled recipes; reconcile plan.md/tasks.md Unlearned/[learn] entries |
+| `/learn-pattern` | Record or update recipe construction patterns in the catalog |
+| `/sync-connectors` | Collect and update connector info (pre-built: API; custom: parse `connector.rb`) |
+| `/auto-learn` | Autonomously collect all operations for one connector via Claude in Chrome (no prompts) |
+| `/design` | **Deprecated**: only `/design migrate` (legacy DESIGN.md → specs/) is in normal use |
 
-詳細は [スキルリファレンス](guides/skills-reference.md) と [ライフサイクルと責務マップ](guides/lifecycle.md) を参照。
+See [skill reference](guides/skills-reference.md) and [lifecycle and responsibility map](guides/lifecycle.md) for details.
 
-### エディタ別の使い方
+### Editor-specific usage
 
-| エディタ | スキル配置 | 呼び出し |
+| Editor | Skill location | Invocation |
 |---|---|---|
 | Claude Code | `.claude/skills/<name>/` | `/skill-name` |
 | Cursor | `.cursor/skills/<name>/` | `/skill-name` |
-| Codex CLI | `.agents/skills/<name>/` | `$skill-name` ※slash 構文を `$` に書き換え済み |
+| Codex CLI | `.agents/skills/<name>/` | `$skill-name` (slash syntax rewritten to `$`) |
 | Gemini CLI | `.gemini/skills/<name>/` | `/skill-name` |
 
-エージェント横断の規約 (`CLAUDE.md` + `rules/` を集約) は `AGENTS.md` / `GEMINI.md`（同じ実体）として配布されます。
+Cross-agent conventions (`CLAUDE.md` + `rules/` aggregated) are distributed as `AGENTS.md` / `GEMINI.md` (the same file under two names).
 
-## 開発フロー
+## Development flow
 
-### 新規プロジェクト
-
-```
-/spec "<project-name>"                       ← spec.md を作成 (業務要件)
-/clarify "<project-name>"/001-<slug>         ← Open Questions を消化
-/plan "<project-name>"/001-<slug>            ← plan.md を作成 (Workato 構成)
-/tasks "<project-name>"/001-<slug>           ← tasks.md を作成
-/analyze "<project-name>"/001-<slug>         ← 整合性チェック
-/implement "<project-name>"/001-<slug>       ← /create-recipe 等に振り分けて実装
-/push-project --start                        ← push + レシピ起動
-Workato UI で確認・調整
-/pull-project → /learn-recipe                ← 学習サイクル（plan.md/tasks.md も自動整理）
-```
-
-> 旧 DESIGN.md 単一ファイル運用のプロジェクトは `/design migrate <project>` で specs/ に変換してから本フローに合流。`/design new` は廃止済み。
-
-### 学習サイクル
+### New project
 
 ```
-workato pull → /learn-recipe → docs/ 更新 → 次回の生成がより正確に
-             → /learn-pattern → パターンカタログ更新 → workato-dev-kit に PR
+/spec "<project-name>"                       ← create spec.md (business requirements)
+/clarify "<project-name>"/001-<slug>         ← resolve Open Questions
+/plan "<project-name>"/001-<slug>            ← create plan.md (Workato configuration)
+/tasks "<project-name>"/001-<slug>           ← create tasks.md
+/analyze "<project-name>"/001-<slug>         ← consistency check
+/implement "<project-name>"/001-<slug>       ← dispatch to /create-recipe etc.
+/push-project --start                        ← push + start recipes
+(adjust in the Workato UI)
+/pull-project → /learn-recipe                ← learning cycle (auto-reconciles plan.md/tasks.md)
 ```
 
-## ディレクトリ構成
+> Projects on the legacy single-file `DESIGN.md` should run `/design migrate <project>` to convert into `specs/` before joining this flow. `/design new` is retired.
 
-このリポジトリ（workato-dev-kit）の構成。組織のワークスペースリポジトリに `kit/` として submodule 追加して使う。
-
-正本は `framework/claude/`。Cursor / Codex / Gemini 向けは `scripts/sync_agents.py` で自動生成される。kit を Claude Code で開いたときに `/create-recipe` 等の Workato 用スキルが誤って提供されないよう、ルートの `.claude/` には **このリポジトリ自身を開発するための設定** だけを置く。
+### Learning cycle
 
 ```
-workato-dev-kit/                 ← このリポジトリ (kit/ として submodule 追加)
-├── .claude/                     # kit 自体の開発用（Workato 用スキルは含まない）
-├── framework/                   # 配布物（利用者の各エディタ設定に symlink/コピーされる）
-│   ├── claude/                  # 正本 (canonical source)
-│   │   ├── CLAUDE.md            #   利用者向け規約（Workato 開発ルール）
-│   │   ├── rules/               #   8 ルール（recipe フォーマット等）
-│   │   ├── skills/              #   13 スキル
-│   │   ├── hooks/               #   自動化フック
-│   │   └── settings.json        #   利用者向け設定テンプレート
-│   ├── cursor/                  # 自動生成: rules/*.mdc + skills/ + hooks.json (手書き)
-│   ├── codex/skills/            # 自動生成 (slash 構文を $ に書き換え)
-│   ├── gemini/skills/           # 自動生成
-│   └── AGENTS.md                # 自動生成: CLAUDE.md + rules を集約。GEMINI.md も同じ実体
-├── docs/                        # ナレッジベース
-│   ├── connectors/              #   316 コネクタ
-│   ├── connector-sdk/           #   Connector SDK リファレンス
-│   ├── logic/                   #   7 ロジックパターン
-│   ├── platform/                #   13 プラットフォーム機能
-│   └── patterns/                #   デプロイガイド、共有アセット、構築パターン
-├── guides/                      # 利用者向けガイド
+workato pull → /learn-recipe → update docs/ → next generation is more accurate
+             → /learn-pattern → update pattern catalog → PR back to workato-dev-kit
+```
+
+## Repository layout
+
+This is the layout of the workato-dev-kit repository itself, which consumers add as a `kit/` submodule.
+
+The canonical source is `framework/claude/`. The Cursor / Codex / Gemini variants are auto-generated by `scripts/sync_agents.py`. The root-level `.claude/` only contains settings **for developing this repository itself**, so that opening kit/ in Claude Code does not accidentally surface the Workato authoring skills like `/create-recipe`.
+
+```
+workato-dev-kit/                 ← this repository (add as a kit/ submodule)
+├── .claude/                     # for developing the kit itself (no Workato authoring skills)
+├── framework/                   # distributables (symlinked / copied into the consumer's editor configs)
+│   ├── claude/                  # canonical source
+│   │   ├── CLAUDE.md            #   consumer-facing conventions (Workato authoring rules)
+│   │   ├── rules/               #   8 rules (recipe format, etc.)
+│   │   ├── skills/              #   19 skills
+│   │   ├── hooks/               #   automation hooks
+│   │   └── settings.json        #   consumer-facing settings template
+│   ├── cursor/                  # auto-generated: rules/*.mdc + skills/ + hooks.json (hand-maintained)
+│   ├── codex/skills/            # auto-generated (slash syntax rewritten to $)
+│   ├── gemini/skills/           # auto-generated
+│   └── AGENTS.md                # auto-generated: CLAUDE.md + rules aggregated. GEMINI.md is the same file.
+├── docs/                        # knowledge base
+│   ├── connectors/              #   316 connectors
+│   ├── connector-sdk/           #   Connector SDK reference
+│   ├── logic/                   #   7 logic patterns
+│   ├── platform/                #   13 platform features
+│   └── patterns/                #   deployment guide, shared assets, construction patterns
+├── guides/                      # consumer-facing guides
 ├── scripts/
 │   ├── sync_agents.py           #   framework/claude/ → cursor/codex/gemini/ + AGENTS.md
-│   ├── sync-cursor-rules.sh     #   後方互換ラッパー
+│   ├── sync-cursor-rules.sh     #   backwards-compatible wrapper
 │   └── workato-api.py
-├── templates/                   # 利用者リポジトリ向けテンプレ (.gitignore 等)
-└── setup.sh                     # 利用者リポジトリ用セットアップスクリプト
+├── templates/                   # templates for consumer repositories (.gitignore, etc.)
+├── i18n/GLOSSARY.md             # canonical English wording for terms used across the kit
+└── setup.sh                     # setup script run inside a consumer repository
 ```
 
-### 配布物の編集
+### Editing distributables
 
-- スキル・ルールは `framework/claude/` を編集する
-- 編集後は **`python3 scripts/sync_agents.py`** を必ず実行（`framework/{cursor,codex,gemini}/` と `AGENTS.md` を再生成）
-- 元の編集と再生成された配布物の両方をコミットに含める（CI でドリフトを自動検出）
+- Edit `framework/claude/` for skills and rules
+- After editing, always run **`python3 scripts/sync_agents.py`** to regenerate `framework/{cursor,codex,gemini}/` and `AGENTS.md`
+- Commit both the source edit and the regenerated outputs (CI detects drift automatically)
 
-詳細は [.claude/CLAUDE.md](.claude/CLAUDE.md) を参照。
+See [.claude/CLAUDE.md](.claude/CLAUDE.md) for details.
 
-## CLI クイックリファレンス
+## CLI quick reference
 
 ```bash
-workato projects list --source remote   # プロジェクト一覧
-workato projects use "<name>"           # プロジェクト切替
-workato pull                            # リモートから取得
-workato push                            # リモートへ反映
-workato push --restart-recipes          # push + 実行中レシピを再起動
-workato push --delete                   # 不要なリモートアセットも削除
-workato assets                          # プロジェクトのアセット一覧（ID 付き）
-workato recipes start --id <id>         # レシピ起動
-workato jobs list --recipe-id <id>      # ジョブ一覧
+workato projects list --source remote   # list projects
+workato projects use "<name>"           # switch project
+workato pull                            # pull from remote
+workato push                            # push to remote
+workato push --restart-recipes          # push and restart any running recipes
+workato push --delete                   # also delete remote assets that no longer exist locally
+workato assets                          # list project assets (with IDs)
+workato recipes start --id <id>         # start a recipe
+workato jobs list --recipe-id <id>      # list jobs for a recipe
 ```
 
-## ライセンス
+## License
 
-MIT License. 詳細は [LICENSE](LICENSE) を参照。
+MIT License. See [LICENSE](LICENSE).
 
-> **注意**: このツールキットは Workato の公式製品ではありません。Workato の利用については [Workato Terms of Service](https://www.workato.com/legal/terms-of-service) を確認してください。
+> **Note**: this toolkit is not an official Workato product. Refer to the [Workato Terms of Service](https://www.workato.com/legal/terms-of-service) for the terms governing your use of Workato.
