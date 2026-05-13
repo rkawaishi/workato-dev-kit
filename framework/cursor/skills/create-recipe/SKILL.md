@@ -1,243 +1,243 @@
 ---
 name: create-recipe
-description: Workato レシピ JSON を対話的に生成する。プロバイダー、トリガー、アクションを指定して .recipe.json と .connection.json を作成。
+description: Generate Workato recipe JSON interactively. Pick a provider, trigger, and actions to produce a .recipe.json and a .connection.json. Japanese prompts are also supported.
 ---
 
 # /create-recipe
 
-Workato レシピ JSON ファイルを生成するスキル。仕様駆動ワークフロー (`/spec` → `/plan` → `/tasks` → `/implement`) で `[recipe]` / `[function]` / `[handler]` タスクから呼ばれることを想定する。
+Generates Workato recipe JSON files. In the spec-driven workflow (`/spec` → `/plan` → `/tasks` → `/implement`), this skill is invoked from `[recipe]` / `[function]` / `[handler]` tasks.
 
-## 使い方
+## Usage
 
-- `/create-recipe <project>/<NNN>-<slug>` — `plan.md` からコンテキストを取り込んで生成（**推奨**、`/implement` 経由の自動起動はこのパターン）
-- `/create-recipe <project>` — フィーチャー未確定でプロジェクトだけ指定（plan.md があれば探して提示）
-- `/create-recipe` — 文脈推定。`<project>/<NNN>-<slug>` を確認
+- `/create-recipe <project>/<NNN>-<slug>` — pull context from `plan.md` and generate (**preferred**; this is how `/implement` invokes it automatically)
+- `/create-recipe <project>` — only the project is fixed; if a `plan.md` exists we look it up and confirm with the user
+- `/create-recipe` — infer from context; confirm `<project>/<NNN>-<slug>`
 
-> **注**: spec-driven workflow への移行に伴い、旧 `DESIGN.md` 参照は廃止。新規プロジェクトは `/spec` から開始し、既存プロジェクトは `/design migrate` で specs/ に変換してから実行する。
+> **Note**: as part of the migration to the spec-driven workflow, the legacy `DESIGN.md` reference is retired. Start new projects with `/spec`; for existing projects, run `/design migrate` first to convert into `specs/`.
 
-## 手順
+## Procedure
 
-### 0. plan.md からのコンテキスト引き当て
+### 0. Pull context from plan.md
 
-`<project>/<NNN>-<slug>` が指定されている場合（または推定できる場合）、`projects/<project>/specs/<NNN>-<slug>/plan.md` を読み、以下を **既定値** として取り込む:
+When `<project>/<NNN>-<slug>` is supplied (or can be inferred), read `projects/<project>/specs/<NNN>-<slug>/plan.md` and take the following as **defaults**:
 
-| plan.md セクション | 取り込み内容 |
+| plan.md section | What to pull in |
 |---|---|
-| `## New Components` `### Recipes` | 生成対象のレシピ定義（トリガー、フロー、入出力） |
-| `## New Components` `### Connections` | 使用するコネクション（プロバイダー、認証方式） |
-| `## Reused Assets` | `call_recipe` で参照すべき共有 Function / Connection |
-| `## Resource Inventory` | リソース値（Slack channel、Jira project 等） — ヒアリング不要 |
-| `## Applied Patterns` | 構築パターン（ステップ構成の指針） |
-| `## Unlearned Actions` | ベストエフォート実装フラグ |
+| `## New Components` `### Recipes` | The target recipe definition (trigger, flow, inputs/outputs) |
+| `## New Components` `### Connections` | Connections to use (provider, auth method) |
+| `## Reused Assets` | Shared Functions / Connections to reference via `call_recipe` |
+| `## Resource Inventory` | Resource values (Slack channel, Jira project, etc.) — no interview needed |
+| `## Applied Patterns` | Construction patterns (step-composition guidance) |
+| `## Unlearned Actions` | Best-effort-implementation flag |
 
-plan.md が無い・読めない場合は対話的ヒアリングモードにフォールバック（後続の Step 1 へ）。
+If plan.md does not exist or cannot be read, fall back to the interactive interview mode (continue to Step 1).
 
-### 1. レシピの設計をヒアリング
+### 1. Interview the recipe design
 
-ユーザーに以下を確認:
-- **レシピの目的**: 何を自動化したいか
-- **トリガー**: どのアプリのどのイベントで起動するか（例: Gmail で新着メール受信）
-- **アクション**: トリガー後に何をするか（例: Google Drive にファイルをアップロード）
-- **条件**: フィルタ条件があるか
-- **格納先プロジェクト**: どのプロジェクトディレクトリに作成するか
+Confirm with the user:
+- **Recipe purpose**: what you want to automate.
+- **Trigger**: which app's which event starts the recipe (e.g. "new email in Gmail").
+- **Actions**: what happens after the trigger (e.g. "upload file to Google Drive").
+- **Conditions**: any filter conditions.
+- **Target project**: which project directory the file goes into.
 
-### 2. 共有アセットカタログの確認
+### 2. Check the shared asset catalog
 
-`projects/CATALOG.md` が存在するか確認し、存在すれば読み込む。要件に合致する既存アセットを検索:
-- **コネクション**: 同じ provider の共有コネクションがあるか → あれば再利用を提案
-- **Recipe Function**: 必要なロジック（マネージャー取得、通知送信等）が既に存在するか → あれば `call_recipe` で参照
-- 合致するアセットがあればユーザーに提案し、承認を得てからレシピに組み込む
+If `projects/CATALOG.md` exists, read it. Look for existing assets matching the requirements:
+- **Connections**: if a shared connection for the same provider exists → propose reusing it.
+- **Recipe Functions**: if the logic you need (manager lookup, notification sender, etc.) already exists → propose calling it via `call_recipe`.
+- If you find matching assets, propose them to the user and bake them in only after they approve.
 
-カタログがない場合はスキップ。`/catalog scan` で生成できることを案内する。
+If the catalog is missing, skip this and tell the user it can be generated with `/catalog scan`.
 
-### 3. コネクタのナレッジを確認
+### 3. Check the connector knowledge
 
-- `docs/connectors/_index.md` で利用するコネクタを特定
-- `docs/connectors/<connector>.md` を読み、利用可能なトリガー/アクションとフィールド情報を確認
+- Use `docs/connectors/_index.md` to identify the connector you'll use.
+- Read `docs/connectors/<connector>.md` for available triggers/actions and field info.
 
-### 4. フィールド情報の確認
+### 4. Verify field details
 
-- コネクタドキュメントに該当アクションの Input/Output fields セクションがあればそれを使用
-- **フィールド情報が未蓄積の場合**: 公式ドキュメントを WebFetch で取得
-  - URL パターン: `https://docs.workato.com/en/connectors/<name>/<action-name>.html`
-  - または: `https://docs.workato.com/en/connectors/<name>/actions.html`
-- 取得したフィールド情報は `docs/connectors/<connector>.md` に追記して蓄積する
-- **禁止**: `projects/<other-project>/Recipes/` を grep して JSON サンプルからフィールドをコピーしない。個別プロジェクト固有のロジック・命名が混入し、ドキュメントの欠落も可視化されなくなる（`@.claude/CLAUDE.md` の「レシピ実装ライフサイクル」参照）
-- 公式ドキュメントにも無くベストエフォートで実装する場合、`projects/<project>/specs/<NNN>-<slug>/plan.md` の `## Unlearned Actions` 表に `provider` / `action` を追記する。可能なら同ディレクトリの `tasks.md` にも対応する `[learn]` タスクを追加（`/tasks --update` で再生成しても良い）
+- If the connector doc has an Input/Output fields section for the target action, use it.
+- **If the field info is missing**: fetch the official docs with WebFetch.
+  - URL pattern: `https://docs.workato.com/en/connectors/<name>/<action-name>.html`
+  - Or: `https://docs.workato.com/en/connectors/<name>/actions.html`
+- Append what you fetched to `docs/connectors/<connector>.md` so the knowledge accumulates.
+- **Prohibited**: do not grep `projects/<other-project>/Recipes/` to copy fields from sample JSON. That leaks project-specific logic and naming, and it hides documentation gaps (see "Recipe implementation lifecycle" in `@.claude/CLAUDE.md`).
+- If you have to implement best-effort because there's no documentation anywhere, append `provider` / `action` to the `## Unlearned Actions` table in `projects/<project>/specs/<NNN>-<slug>/plan.md`. If possible, add a matching `[learn]` task to the same directory's `tasks.md` (or regenerate via `/tasks --update`).
 
-### 5. リソース情報の自動取得
+### 5. Auto-fetch resource info
 
-レシピで使用するプロバイダーに対して、MCP サーバーや CLI ツール経由でリソース情報を自動取得する。
+For each provider used by the recipe, pull resource information through an MCP server or CLI tool.
 
-#### 手順
+#### Procedure
 
-1. **環境設定の読み込み**: `.resource-providers.yml` を読む。ファイルが存在しない場合は初回セットアップを案内するか、スキップして Step 6 へ進む（`docs/platform/resource-providers.md` の「初回セットアップ」参照）
-2. **プロバイダーの照合**: Step 1 のヒアリングで決まったプロバイダーが `.resource-providers.yml` に定義されているか確認
-3. **ツール検出と実行**: 定義されたプロバイダーに対して、`docs/platform/resource-providers.md` の「スキルでの利用手順」に従いツールを検出・実行
-4. **選択肢の提示**: 取得した情報をユーザーに選択肢として提示
+1. **Load the environment config**: read `.resource-providers.yml`. If it doesn't exist, either walk the user through the initial setup or skip to Step 6 (see "Initial setup" in `docs/platform/resource-providers.md`).
+2. **Match providers**: check whether the providers chosen in Step 1 are defined in `.resource-providers.yml`.
+3. **Detect and run tools**: for each defined provider, detect and run the tool following "How skills use this" in `docs/platform/resource-providers.md`.
+4. **Present choices**: surface the retrieved info to the user as multiple-choice.
    ```
-   Jira プロジェクト一覧を取得しました:
+   Fetched the Jira project list:
    1. DEV - Development
    2. OPS - Operations
-   どのプロジェクトに起票しますか？
+   Which project should the ticket land in?
    ```
-5. **フォールバック**: 設定ファイルがない、プロバイダー未定義、ツール検出失敗、取得エラーのいずれの場合もサイレントにスキップし、Step 6 のヒアリングで従来通り確認する
+5. **Fallback**: in any of the failure modes (no config file, undefined provider, tool detection failure, fetch error), silently skip and fall back to the normal interview in Step 6.
 
-> **重要**: 取得に失敗してもブロッキングにしない。エラーメッセージを表示せず、従来のヒアリングフローに自然に移行する。
+> **Important**: never block on a fetch failure. Do not show error messages — transition naturally to the interview flow.
 
-### 6. 入力値の決定とヒアリング（重要）
+### 6. Decide and interview input values (important)
 
-各ステップの `input` フィールドについて、値の決定方法を分類する:
+Classify each step's `input` fields by how the value is decided:
 
-#### A. 自動決定できる値（ヒアリング不要）
-- **datapill 参照**: 前のステップの出力を参照する値
-  - 例: Jira の description に Slack メッセージの text を入れる
-- **固定値**: レシピのロジックから一意に決まる値
-  - 例: `"type": "expense"`, `"status": "active"`
-- **リソース自動取得済み**: Step 5 でユーザーが選択した値（プロジェクトキー、チャンネル ID 等）
+#### A. Auto-decidable values (no interview needed)
+- **Datapill references**: values that reference an earlier step's output.
+  - e.g. putting a Slack message's text into Jira's description.
+- **Fixed values**: values uniquely determined by the recipe logic.
+  - e.g. `"type": "expense"`, `"status": "active"`.
+- **Auto-fetched in Step 5**: values the user already picked (project keys, channel IDs, etc.).
 
-#### B. ユーザーに確認が必要な値
-以下のような入力値は、レシピのロジックだけでは決定できない。**JSON 生成前にユーザーにヒアリングする**。
-ただし Step 5 で既に取得・選択済みの値はスキップする。
+#### B. Values that need user confirmation
+These cannot be decided from the recipe logic alone. **Interview the user before generating JSON.**
+Skip values that were already picked in Step 5.
 
-| カテゴリ | 例 | ヒアリング例 |
+| Category | Examples | Sample question |
 |---|---|---|
-| **送信先・投稿先** | Slack のチャンネル名/ID、メール宛先 | 「どのチャンネルに投稿しますか？」 |
-| **プロジェクト・スペース** | Jira プロジェクト、Confluence スペース | 「どの Jira プロジェクトに起票しますか？」 |
-| **カテゴリ・タイプ選択** | Jira イシュータイプ、優先度 | 「イシュータイプは Task, Bug, Story のどれですか？」 |
-| **データソース固有** | Google Sheets のシート名、DB テーブル名 | 「どのシートを検索しますか？」 |
-| **テンプレート・フォーマット** | メッセージテンプレート、件名フォーマット | 「メッセージの形式はどうしますか？」 |
-| **閾値・条件値** | フィルタの閾値、日数指定 | 「何日以内のチケットを対象にしますか？」 |
-| **認証・接続先固有** | API エンドポイント、データベース名 | 「接続先の環境はどれですか？」 |
+| **Send / post target** | Slack channel name / ID, email recipient | "Which channel should we post to?" |
+| **Project / space** | Jira project, Confluence space | "Which Jira project should the ticket land in?" |
+| **Category / type selection** | Jira issue type, priority | "Issue type — Task, Bug, or Story?" |
+| **Data source specifics** | Google Sheets sheet name, DB table name | "Which sheet are we searching?" |
+| **Templates / formats** | Message template, subject line format | "What format should the message use?" |
+| **Thresholds / conditions** | Filter threshold, day count | "Tickets from how many days back?" |
+| **Auth / endpoint specifics** | API endpoint, database name | "Which environment is the connection target?" |
 
-> **注意**: アクションの input フィールド情報がドキュメントにない場合でも、データソース系のアクション（検索、取得等）は対象リソースの指定（シート名、テーブル名、プロジェクト名等）が必ず必要になる。フィールド詳細が不明でも、「このアクションの対象は何ですか？」のヒアリングは行うこと。
+> **Note**: even when input field info is missing from the docs, data-source-style actions (search, fetch, etc.) always need a target resource (sheet name, table name, project name, etc.). Even if the field details are unclear, ask "What does this action target?".
 
-#### C. コネクション接続後に決まる値
-- Salesforce のオブジェクト種別やカスタムフィールドなど、コネクション接続後に動的に取得される値
-- これらは `input: {}` にしてデプロイ後に UI で設定する
+#### C. Values that are decided only after the connection is configured
+- Salesforce object types, custom fields, etc. — dynamically retrieved after the connection is configured.
+- Leave these out: set `input: {}` and configure them in the UI after deploy.
 
-#### ヒアリングの進め方
+#### How to run the interview
 
-1. 全ステップの input フィールドを洗い出す
-2. 各フィールドを A/B/C に分類（Step 5 で取得済みの値は A に含める）
-3. B に該当するフィールドをまとめてユーザーに質問する（1フィールドずつではなく一括で）
-4. 回答を得てから JSON 生成に進む
+1. Enumerate the input fields of every step.
+2. Classify each as A/B/C (values already picked in Step 5 count as A).
+3. Ask the user about every B at once (not one field at a time).
+4. Once you have the answers, proceed to JSON generation.
 
-ヒアリング例（リソース自動取得なしの場合）:
+Sample (without auto-fetch):
 ```
-レシピ生成の前に、いくつかの設定値を確認させてください:
+Before I generate the recipe, let me confirm a few values:
 
-1. **Slack 投稿先チャンネル**: どのチャンネルに通知を投稿しますか？（例: #general, #it-helpdesk）
-2. **Jira プロジェクト**: チケットをどのプロジェクトに作成しますか？（例: IT, HELPDESK）
-3. **Jira イシュータイプ**: イシュータイプは何にしますか？（例: Task, Bug, Story）
-4. **承認期限**: 承認タスクの期限は何日ですか？（デフォルト: 7日）
+1. **Slack channel for posting**: which channel should the notifications go to? (e.g. #general, #it-helpdesk)
+2. **Jira project**: which project should the ticket be created in? (e.g. IT, HELPDESK)
+3. **Jira issue type**: which issue type? (e.g. Task, Bug, Story)
+4. **Approval deadline**: how many days for the approval task? (default: 7)
 ```
 
-ヒアリング例（リソース自動取得ありの場合）:
+Sample (with auto-fetch):
 ```
-Slack MCP と Jira MCP からリソース情報を取得しました。
+I retrieved resource info from the Slack and Jira MCPs.
 
-**Slack チャンネル** — 以下から投稿先を選んでください:
+**Slack channels** — pick a post target:
 1. #general (C01234567)
 2. #it-helpdesk (C07654321)
 3. #dev-notifications (C09876543)
 
-**Jira プロジェクト DEV** の Issue Type: Bug, Story, Task, Epic
-→ イシュータイプはどれにしますか？
+**Jira project DEV** issue types: Bug, Story, Task, Epic
+→ Which issue type?
 
-残りの確認事項:
-- **承認期限**: 承認タスクの期限は何日ですか？（デフォルト: 7日）
+Remaining items:
+- **Approval deadline**: how many days for the approval task? (default: 7)
 ```
 
-### 7. JSON 構造のリファレンスを読む
+### 7. Read the JSON structure reference
 
 - `.cursor/rules/workato-recipe-format.mdc`
-- ロジックステップが必要なら `docs/logic/` の該当ファイル
+- If logic steps are needed, read the relevant file under `docs/logic/`.
 
-### 8. ステップ構成の設計（パターン適用）
+### 8. Design the step composition (apply patterns)
 
-ヒアリング結果をもとにステップ構成を設計する。このとき、パターンカタログから適用可能なパターンを探す。
+Use the interview results to design the step composition. As you do, look for patterns in the catalog that apply.
 
-1. パターンカタログを読む（kit と組織側を併読、矛盾は組織側が優先）:
-   - `docs/patterns/recipe-patterns/_index.md` — kit canonical のパターン
-   - `org/docs/patterns/recipe-patterns/_index.md` — 組織が記録したパターン（存在すれば）
-   - `projects/docs/patterns/` — レガシーパターン（存在すれば、後方互換のため読み込みのみ）
-2. ヒアリングで決まった要件を分解し、各部分に該当するパターンを特定する:
-   - 例: 「API から全件取得して DB に反映」→ **ページネーションループ** + **データ同期**
-   - 例: 「申請 → 承認 → Jira 起票」→ **承認ワークフロー**
-   - パターンは **レシピ全体** にも **一部のステップ** にも適用される
-3. 該当パターンファイルを読み、ステップ構成・設計判断ポイント・既知の注意点を取り込む
-4. 複数パターンを組み合わせる場合は、レシピ内での配置順を決める
+1. Read the pattern catalog (kit and org sides; org wins on conflicts):
+   - `docs/patterns/recipe-patterns/_index.md` — kit canonical patterns
+   - `org/docs/patterns/recipe-patterns/_index.md` — org-recorded patterns (if present)
+   - `projects/docs/patterns/` — legacy patterns (read-only for backwards compatibility)
+2. Decompose the interview's requirements and find a pattern for each piece:
+   - e.g. "fetch everything from an API and sync into a DB" → **pagination loop** + **data sync**
+   - e.g. "submit → approve → create Jira" → **approval workflow**
+   - A pattern can apply to **the whole recipe** or to **just a few steps**.
+3. Read the matching pattern files; pull in their step composition, decision points, and known caveats.
+4. When combining multiple patterns, decide the order in which they appear in the recipe.
 
-パターンに該当しない部分は以下を参照:
-- `docs/logic/data-pills.md` で datapill 記法を確認
-- `docs/logic/` の該当ファイルでロジックステップの構文を確認
-- `docs/patterns/deployment-guide.md` でデプロイ時の注意事項を確認
-- 同じプロジェクト内の既存レシピがあれば参照
+For parts that don't match a pattern, consult:
+- `docs/logic/data-pills.md` for datapill notation.
+- The relevant file under `docs/logic/` for the syntax of any logic step.
+- `docs/patterns/deployment-guide.md` for deploy-time caveats.
+- Existing recipes in the same project, when applicable.
 
-### 9. ファイルを生成
+### 9. Generate the files
 
-`.cursor/rules/workato-project-structure.mdc` に従う:
-- `<project>/Recipes/<snake_case_name>.recipe.json` — レシピ本体
-- `<project>/Connections/<prefix>_<provider>.connection.json` — コネクション（未存在の場合のみ）
-- JSON 内の `zip_name` / `folder` もサブフォルダパスに合わせる
+Follow `.cursor/rules/workato-project-structure.mdc`:
+- `<project>/Recipes/<snake_case_name>.recipe.json` — the recipe.
+- `<project>/Connections/<prefix>_<provider>.connection.json` — connection (only if it doesn't exist yet).
+- Make sure `zip_name` / `folder` inside the JSON match the subfolder path.
 
-## 生成ルール
+## Generation rules
 
-- `number` はトリガーが 0、以降のステップは 1, 2, 3... と連番
-- 各ステップに `uuid` (v4) を生成する
-- `as` フィールドはステップの参照名。Genie ワークフロー以外では `name` と同じ値を使う
-- Genie ワークフローの場合は `as` にランダムな8文字 hex を使う
-- `config` 配列には使用する全プロバイダーのコネクション参照を含める
-- `version` は新規作成時は 1
-- `private` は true
-- `concurrency` は 1（デフォルト）
+- `number` starts at 0 for the trigger; subsequent steps are 1, 2, 3, ...
+- Generate a UUID (v4) for every step.
+- `as` is the step's reference name. Outside Genie workflows, use the same value as `name`.
+- For Genie workflows, use a random 8-character hex string for `as`.
+- The `config` array must include connection references for every provider in use.
+- `version` is 1 for a new recipe.
+- `private` is true.
+- `concurrency` is 1 (default).
 
-## input フィールドの設定
+## Setting input fields
 
-- **A（自動決定）**: datapill や固定値で埋める
-- **B（ヒアリング済み）**: Step 6 で確認した値を使う
-- **C（コネクション依存）**: `input` に含めない（デプロイ後に UI で設定）
+- **A (auto)**: fill with a datapill or a fixed value.
+- **B (interviewed)**: use the value from Step 6.
+- **C (connection-dependent)**: leave out of `input` (configure in the UI after deploy).
 
-フィールド情報がドキュメントにない場合は、`input` を空 `{}` にして push し、UI で設定後に pull して学習する。
+When field info is missing from the docs, push with `input: {}`, then configure in the UI and pull to learn.
 
-## datapill 生成
+## Generating datapills
 
-入力フィールドで他ステップの出力を参照する場合:
+To reference another step's output in an input field:
 ```
 #{_dp('{"pill_type":"output","provider":"<provider>","line":"<as>","path":["<field>"]}')}
 ```
 
-- `provider` と `line` は参照元ステップの値を使う
-- `path` はフィールド名の配列（ネスト時は複数要素）
-- **path の値はコネクタドキュメントの Output fields を参照して正確に指定する**
+- `provider` and `line` come from the source step.
+- `path` is an array of field names (nested = multiple elements).
+- **Look up each `path` value in the connector docs' Output fields — get it exactly right.**
 
-## 出力とデプロイガイド
+## Output and deployment guide
 
-生成完了後、以下を表示:
-- 生成したファイル一覧
-- レシピの構造サマリー（トリガー → アクションのフロー）
-- ヒアリングで埋めた値のサマリー
-- C（コネクション依存）で空にしたフィールドがあればその旨を明記
+After generation, display:
+- The list of generated files.
+- A structural summary of the recipe (trigger → action flow).
+- A summary of the values you filled in from the interview.
+- Any fields you left empty for C (connection-dependent), explicitly called out.
 
-その後、`docs/patterns/deployment-guide.md` の「レシピのデプロイフロー」に従い、段階的にデプロイを案内する:
+Then, following "Recipe deployment flow" in `docs/patterns/deployment-guide.md`, walk through the deploy in stages:
 
-1. **push**: `workato push` で全アセットを push
-2. **push 後にプロジェクト URL を案内**: `.workatoenv` の `folder_id` + リージョンから URL を生成
-3. **新規コネクションがある場合**: まずコネクション認証を案内（レシピ確認より先）
+1. **Push**: `workato push` to push every asset.
+2. **After push, share the project URL**: build it from `.workatoenv`'s `folder_id` + the region.
+3. **For new connections**: guide the user through connection auth **before** the recipe review.
    ```
-   まずコネクションの認証を行ってください:
+   First, authenticate the connection:
    - <connection_name> (<provider>)
-   認証が完了したら教えてください。
+   Let me know when authentication is done.
    ```
-4. **認証完了後に UI 確認を案内**: レシピ構造、フィールドマッピングの確認
-5. **学習（必須）**: pull → `/learn-recipe` で学習。`projects/<project>/specs/<NNN>-<slug>/plan.md` の `## Unlearned Actions` または同ディレクトリ `tasks.md` の `[learn]` タスクで記録したアクションを使った場合は **スキップ禁止**（ドキュメント欠落を放置しないため）。学習完了したらエントリ / タスクを完了させる
-6. **テスト実行**: UI でテスト → エラーがあれば分析・修正
-7. **パターン蓄積**: 新しい構築パターンが含まれていれば `/learn-pattern` でカタログに追加
+4. **After auth, guide UI verification**: recipe structure, field mappings.
+5. **Learning (mandatory)**: pull → `/learn-recipe`. **Do not skip** if you used any action recorded in `projects/<project>/specs/<NNN>-<slug>/plan.md`'s `## Unlearned Actions` or the same directory's `tasks.md` `[learn]` tasks (otherwise documentation gaps stay open). Once learning is done, close out the entry / task.
+6. **Test run**: test in the UI; analyze and fix errors if any.
+7. **Pattern accumulation**: if the recipe contains a new construction pattern, add it to the catalog via `/learn-pattern`.
 
-## Git 管理
+## Git management
 
-生成ファイル (`Recipes/`, `Connections/`) は `projects/<project-name>/` に配置される。ワークスペースリポジトリでコミット:
+Generated files (`Recipes/`, `Connections/`) live under `projects/<project-name>/`. Commit them in the workspace repository:
 
 ```bash
 git add projects/<project-name>/Recipes/ projects/<project-name>/Connections/
@@ -245,4 +245,4 @@ git commit -m "Add recipe: <name>"
 git push origin
 ```
 
-`workato push` は Workato API へのデプロイで git とは独立。
+`workato push` is the deploy to the Workato API, separate from git.

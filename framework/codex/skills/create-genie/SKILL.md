@@ -1,100 +1,100 @@
 ---
 name: create-genie
-description: Workato Genie (AIエージェント) + スキル + レシピの構成一式を対話的に生成する。
+description: Interactively generate a Workato Genie (AI agent), its skills, and the supporting recipes. Japanese prompts are also supported.
 ---
 
 # $create-genie
 
-Workato Genie（AIエージェント）の構成ファイル一式を生成するスキル。
-Genie 単体、MCP サーバー単体、または両方の組み合わせに対応。
+Generate the full file set for a Workato Genie (AI agent).
+Supports Genie alone, MCP server alone, or both.
 
-## Genie vs MCP Server — いつどちらを作るか
+## Genie vs MCP Server — when to use which
 
 | | Genie | MCP Server |
 |---|---|---|
-| **用途** | 会話型AIエージェント | 外部AIへのツール公開 |
-| **利用チャネル** | Slack, Teams, Workato GO | Claude Desktop, Cursor, ChatGPT |
-| **ファイル** | `.agentic_genie.json` | `.mcp_server.json` |
-| **スキル参照方式** | `references` で直接参照 | `tools[]` 配列で順序・説明付き参照 |
-| **AI 指示** | `instructions`（システムプロンプト） | `tools[].description`（ツール選択指示） |
+| **Purpose** | Conversational AI agent | Expose tools to external AIs |
+| **Channels** | Slack, Teams, Workato GO | Claude Desktop, Cursor, ChatGPT |
+| **Files** | `.agentic_genie.json` | `.mcp_server.json` |
+| **Skill references** | Direct via `references` | Ordered + described via the `tools[]` array |
+| **AI instructions** | `instructions` (system prompt) | `tools[].description` (tool-selection guidance) |
 
-- **Genie のみ**: 社内チャットで使う会話型エージェント
-- **MCP Server のみ**: 外部 AI エディタ/チャットからツールとして呼ぶ
-- **両方**: Genie でも使え、外部 AI からも呼べる（スキル・レシピは共有可能）
+- **Genie only**: a conversational agent for internal chat.
+- **MCP Server only**: tools callable from external AI editors / chat.
+- **Both**: usable inside Genie and callable externally (skills/recipes can be shared).
 
-## 手順
+## Procedure
 
-1. ユーザーに以下を確認:
-   - **Genie の目的**: どんなAIエージェントを作るか
-   - **対象ユーザー**: 誰が使うか
-   - **スキル一覧**: Genie が持つスキル（それぞれの用途）
-   - **AI プロバイダー**: `anthropic` / `openai`（デフォルト: `anthropic`）
-   - **格納先プロジェクト**: どのプロジェクトディレクトリに作成するか
-   - **MCP 公開**: MCP サーバーとしても公開するか（デフォルト: No）
-   - **VUA**: Verified User Access が必要か（エンドユーザー認証情報で API 呼出し）
+1. Interview the user:
+   - **Genie purpose**: what AI agent are we building?
+   - **Target users**: who uses it?
+   - **Skill list**: which skills should the Genie have (purposes of each)?
+   - **AI provider**: `anthropic` / `openai` (default: `anthropic`).
+   - **Target project**: which project directory to create in.
+   - **MCP exposure**: also expose as an MCP server? (default: No.)
+   - **VUA**: is Verified User Access needed (API calls using the end user's credentials)?
 
-2. リファレンスを読む:
+2. Read the references:
    - `AGENTS.md`
    - `AGENTS.md`
    - `AGENTS.md`
-   - `docs/connectors/_index.md` + 該当コネクタのナレッジ
+   - `docs/connectors/_index.md` + relevant connector knowledge
    - `docs/platform/agent-studio.md`
    - `docs/platform/mcp.md`
 
-3. 既存の Genie があれば構造を参照
+3. If an existing Genie is available, reference its structure.
 
-4. Genie 構成ファイルを生成（`AGENTS.md` に従う）:
-   - `<project>/Agents/<name>.agentic_genie.json` — Genie 本体
-   - スキルごとに:
-     - `<project>/Agents/<skill_name>.agentic_skill.json` — スキル定義
-   - MCP 公開する場合: `<project>/Agents/<name>.mcp_server.json` — MCP サーバー定義
-   - JSON 内の `zip_name` / `folder` にサブフォルダパスを含める
+4. Generate the Genie configuration files (following `AGENTS.md`):
+   - `<project>/Agents/<name>.agentic_genie.json` — the Genie itself.
+   - For each skill:
+     - `<project>/Agents/<skill_name>.agentic_skill.json` — skill definition.
+   - For MCP exposure: `<project>/Agents/<name>.mcp_server.json` — MCP server definition.
+   - Make sure `zip_name` / `folder` inside the JSON include the subfolder path.
 
-5. スキル用レシピは **`$create-recipe` に委譲** する:
-   - 各スキルに必要なレシピの要件（トリガー: `workato_genie/start_workflow`、パラメータ、外部連携先）を整理
-   - `$create-recipe` を呼び出してレシピを生成（ヒアリング含む）
-   - Genie スキルレシピ固有の設定（`as` にランダム hex、`parameters_schema_json` 等）は `$create-recipe` のスキルが処理する
+5. **Delegate skill recipes to `$create-recipe`**:
+   - Lay out each skill's recipe requirements (trigger: `workato_genie/start_workflow`, parameters, external integration targets).
+   - Invoke `$create-recipe` to generate the recipe (with interview).
+   - `$create-recipe` handles the Genie-skill-recipe specifics (`as` is random hex, `parameters_schema_json`, etc.).
 
-## Genie instructions の生成
+## Generating the Genie's `instructions`
 
-以下のセクション構成でプロンプトを生成:
+Generate the prompt using this section structure:
 
 ```markdown
 You are a [Role] Agent
 
 **What's my job?**
-[主な責務の説明]
+[Description of the primary responsibilities]
 
 **Who will need my help?**
-[対象ユーザーのリスト]
+[List of target users]
 
 **How do I get things done?**
-[行動パターンのリスト]
+[List of behavior patterns]
 
 **What should I avoid?**
-[禁止事項のリスト]
+[List of prohibitions]
 
 **What results do you want me to track?**
-[追跡すべき指標]
+[Metrics to follow]
 
 **How should I talk to people?**
-[コミュニケーションスタイル]
+[Communication style]
 
 **Any extra tips?**
-[追加のヒント]
+[Anything else]
 ```
 
-## スキル用レシピの生成ルール
+## Rules for generating a skill recipe
 
-- トリガー: `workato_genie` / `start_workflow`
-- `as` にはランダム8文字 hex を使用（Genie スキルレシピ固有の規則）
-- `input.parameters_schema_json`: 入力パラメータのスキーマ（JSON文字列）
-- `input.result_schema_json`: 出力スキーマ（JSON文字列）
-- `input.requires_user_confirmation`: `"false"`（デフォルト）
-- `input.description`: スキルの trigger_description と同じ
-- パラメータ参照: `path:["parameters","<param_name>"]` — `parameters` 配下にネスト
-- 最終ステップ: `workato_genie` / `workflow_return_result` で結果を返す
-- `workflow_return_result` の入力: `input.result.<field>` に個別マッピング
+- Trigger: `workato_genie` / `start_workflow`.
+- Use a random 8-character hex value for `as` (Genie-skill-recipe convention).
+- `input.parameters_schema_json`: input parameter schema (JSON string).
+- `input.result_schema_json`: output schema (JSON string).
+- `input.requires_user_confirmation`: `"false"` (default).
+- `input.description`: same as the skill's `trigger_description`.
+- Parameter reference: `path:["parameters","<param_name>"]` — nested under `parameters`.
+- Final step: `workato_genie` / `workflow_return_result` returns the result.
+- `workflow_return_result` input: map each field individually as `input.result.<field>`.
   ```json
   "input": {
     "result": {
@@ -103,17 +103,17 @@ You are a [Role] Agent
     }
   }
   ```
-- `extended_output_schema` / `extended_input_schema` には `result` オブジェクト配下に result_schema_json のフィールドが展開される
-- 中間ステップ: 実際の業務ロジック（Salesforce 検索、API呼び出し等）
+- `extended_output_schema` / `extended_input_schema` expand the `result_schema_json` fields under a `result` object.
+- Intermediate steps: the actual business logic (Salesforce lookup, API calls, etc.).
 
-## MCP サーバーファイルの生成
+## Generating the MCP server file
 
-MCP 公開する場合、`<project>/Agents/<name>.mcp_server.json` を生成:
+For MCP exposure, generate `<project>/Agents/<name>.mcp_server.json`:
 
 ```json
 {
-  "name": "サーバー名",
-  "description": "MCP サーバーの説明（AI がサーバー選択に使用）",
+  "name": "Server name",
+  "description": "MCP server description (the AI uses this to choose a server)",
   "auth_type": "workato_idp",
   "tools_type": "project_assets",
   "tools": [
@@ -136,80 +136,80 @@ MCP 公開する場合、`<project>/Agents/<name>.mcp_server.json` を生成:
 }
 ```
 
-### MCP ツール description のガイドライン
+### Guidelines for MCP tool `description`
 
-- AI がツール選択に使う指示文。Genie の `trigger_description` より詳細に書く
-- 「Use this tool when...」「Do not use this tool when...」形式が推奨
-- 各ツールの使い分けが明確になるように記述する
+- This is the instruction the AI uses to pick a tool. Make it more detailed than a Genie's `trigger_description`.
+- Prefer "Use this tool when..." / "Do not use this tool when..." phrasing.
+- Make the distinction between tools unambiguous.
 
-### スキル名の注意
+### Caveats around skill names
 
-MCP サーバーにスキルを紐付けると、Workato がスキルの `zip_name` をレシピ名ベースにリネームすることがある。スキルのファイル名はレシピ名と一致させておくのが安全。
+When you attach a skill to an MCP server, Workato may rename the skill's `zip_name` to match the recipe name. Keep the skill's file name in lockstep with the recipe name.
 
-### MCP サーバーのデプロイ注意事項
+### MCP server deployment caveats
 
-- **初回 push**: MCP サーバー、スキル、スキルレシピが一括で作成される
-- **更新時の `PG::UniqueViolation` エラー**: スキルが既に存在する状態で再 push するとこのエラーが発生する。CLI の `--delete` では `agentic_skill` と `mcp_server` は削除できない（`Skipped` になる）。**ユーザーに UI で手動削除してもらってから再 push** する必要がある
-- **スキルレシピの `extended_output_schema`**: `add_record` 等のアクションに `extended_output_schema` がないと、後続ステップで datapill が認識されず起動エラーになる。全アクションに設定すること
+- **First push**: the MCP server, skills, and skill recipes are created together.
+- **`PG::UniqueViolation` on update**: re-pushing while the skill already exists triggers this error. `agentic_skill` and `mcp_server` cannot be removed via the CLI's `--delete` (they show up as `Skipped`). **Ask the user to delete them manually in the UI**, then re-push.
+- **`extended_output_schema` on skill recipes**: actions like `add_record` need `extended_output_schema`; without it, downstream steps can't see the datapills and the recipe fails to start. Set it on every action.
 
-### MCP のみの場合（Genie なし）
+### MCP only (no Genie)
 
-Genie を作らず MCP サーバーだけを作る場合:
-1. スキル用レシピ（`workato_genie/start_workflow` トリガー）を生成
-2. スキル定義（`.agentic_skill.json`）を生成
-3. MCP サーバー定義（`.mcp_server.json`）を生成
-4. Genie 本体（`.agentic_genie.json`）は不要
+When building only an MCP server without a Genie:
+1. Generate the skill recipe (`workato_genie/start_workflow` trigger).
+2. Generate the skill definition (`.agentic_skill.json`).
+3. Generate the MCP server definition (`.mcp_server.json`).
+4. No Genie file (`.agentic_genie.json`) needed.
 
 ```
-MCP Server → Skills → Recipes（Genie なし）
+MCP Server → Skills → Recipes (no Genie)
 ```
 
-## レシピから Genie を呼び出す: `assign_task_to_genie`
+## Calling a Genie from a recipe: `assign_task_to_genie`
 
-レシピ内から Genie にタスクを委譲するアクション:
+Delegate a task to a Genie from inside a recipe:
 
 ```json
 {
   "provider": "workato_genie",
   "name": "assign_task_to_genie",
   "keyword": "action",
-  "dynamicPickListSelection": { "genie_handle": "Genie名" },
+  "dynamicPickListSelection": { "genie_handle": "Genie name" },
   "toggleCfg": { "genie_handle": true },
   "input": {
     "genie_handle": {
       "zip_name": "Agents/genie.agentic_genie.json",
-      "name": "Genie名",
+      "name": "Genie name",
       "folder": "Agents"
     },
-    "task_instructions": "タスク指示文（datapill 可）"
+    "task_instructions": "Task instructions (datapills allowed)"
   }
 }
 ```
 
-- `genie_handle`: 呼び出し先の Genie を参照（zip_name で指定）
-- `task_instructions`: Genie に渡すタスク指示（datapill でコンテキストを注入可能）
-- 用途: 承認フロー内で Genie に分析を依頼、イベント駆動で Genie にタスクを振る等
+- `genie_handle`: references the Genie to invoke (by `zip_name`).
+- `task_instructions`: task instructions for the Genie (you can inject context via datapills).
+- Use cases: ask a Genie to analyze something during an approval flow, dispatch tasks to a Genie on event triggers, etc.
 
-## 出力とデプロイガイド
+## Output and deployment guide
 
-生成完了後、以下を表示:
-- 生成ファイル一覧
-- 構成図:
-  - Genie のみ: `Genie → Skills → Recipes`
-  - MCP 付き: `Genie → Skills → Recipes ← MCP Server`
-- 各スキルの trigger_description サマリー
-- MCP 公開の場合: MCP サーバーの tools[] サマリー
+After generation, display:
+- The list of generated files.
+- Architecture diagram:
+  - Genie only: `Genie → Skills → Recipes`.
+  - With MCP: `Genie → Skills → Recipes ← MCP Server`.
+- A summary of each skill's `trigger_description`.
+- For MCP: a summary of the MCP server's `tools[]`.
 
-`docs/patterns/deployment-guide.md` に従い、デプロイを段階的に案内する:
-1. コネクション先行 push → UI 認証（新規コネクションがある場合）
-2. 全アセット push
-3. UI でスキルレシピのフィールドマッピング確認を案内
-4. MCP の場合: サーバー有効化と AI クライアント設定を案内
-5. テスト実行を案内
+Follow `docs/patterns/deployment-guide.md` and walk through the deploy:
+1. Push connections first → guide UI auth (for new connections).
+2. Push every other asset.
+3. Guide the user through the field-mapping review of skill recipes in the UI.
+4. For MCP: guide server enablement and AI-client configuration.
+5. Guide the test run.
 
-## Git 管理
+## Git management
 
-生成ファイル (`Agents/`, `Recipes/`, `Connections/`) は `projects/<project-name>/` に配置される。ワークスペースリポジトリでコミット:
+Generated files (`Agents/`, `Recipes/`, `Connections/`) live under `projects/<project-name>/`. Commit them in the workspace repository:
 
 ```bash
 git add projects/<project-name>/Agents/ projects/<project-name>/Recipes/ projects/<project-name>/Connections/
