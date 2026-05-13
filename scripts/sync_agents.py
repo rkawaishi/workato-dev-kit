@@ -395,11 +395,12 @@ def sync_agents_md() -> None:
         "",
         "---",
         "",
-        "# ファイルフォーマット詳細ルール",
+        "# File format rules",
         "",
-        "Claude Code 利用時は本セクションの内容が `@.claude/rules/<name>.md` "
-        "として個別参照される。AGENTS.md / GEMINI.md / Codex CLI など個別ルール"
-        "ファイルを読まないエージェント向けに、以下に集約する。",
+        "When using Claude Code, the content of this section is referenced "
+        "individually as `@.claude/rules/<name>.md`. For agents that do not "
+        "load per-rule files — AGENTS.md / GEMINI.md / Codex CLI — the same "
+        "content is consolidated below.",
         "",
     ]
 
@@ -410,13 +411,13 @@ def sync_agents_md() -> None:
         globs = extract_paths(fm)
 
         # Demote H1→H2, H2→H3, etc., so the rule's top-level heading
-        # nests under our "ファイルフォーマット詳細ルール" section.
+        # nests under our "File format rules" section.
         body_demoted = demote_headings(body.lstrip("\n"), levels=1).rstrip()
 
         # Insert applicability annotation right after the (now H2)
         # top-level heading.
         if globs:
-            globs_line = "*適用対象: " + ", ".join(f"`{g}`" for g in globs) + "*"
+            globs_line = "*Applies to: " + ", ".join(f"`{g}`" for g in globs) + "*"
             lines = body_demoted.split("\n")
             for i, ln in enumerate(lines):
                 if ln.startswith("## "):

@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # sync-cursor-rules.sh
 #
-# 後方互換ラッパー。実体は scripts/sync_agents.py に移行済み。
-# 既存のドキュメント・利用者の手元のメモから呼ばれるためファイルを残してある。
+# Backwards-compatible wrapper. The implementation lives in
+# scripts/sync_agents.py. This file is kept because existing
+# documentation and user notes still reference it.
 
 set -eo pipefail
 

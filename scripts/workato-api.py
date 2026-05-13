@@ -682,11 +682,11 @@ def _write_frontmatter(md_path: Path, fm: dict, connector_name: str | None = Non
     else:
         name = connector_name or md_path.stem
         body = (
-            f"# {name} コネクタ\n\n"
+            f"# {name} connector\n\n"
             f"Provider: `{name}`\n"
             f"Source: Custom (Connector SDK)\n\n"
-            f"> `/sync-connectors --custom {name}` を実行して "
-            f"トリガー/アクション/フィールド情報を反映してください。\n"
+            f"> Run `/sync-connectors --custom {name}` to populate "
+            f"trigger / action / field metadata.\n"
         )
 
     fm_lines = "\n".join(f"{k}: {v}" for k, v in fm.items())

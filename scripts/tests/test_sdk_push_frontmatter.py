@@ -65,7 +65,7 @@ def test_write_frontmatter_creates_stub_when_missing():
         wa._write_frontmatter(p, {"connector_id": "99"}, connector_name="my_conn")
         text = p.read_text()
         assert text.startswith("---\nconnector_id: 99\n---\n")
-        assert "my_conn コネクタ" in text
+        assert "my_conn connector" in text
 
 
 def test_write_frontmatter_preserves_body_on_update():
