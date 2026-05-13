@@ -154,13 +154,13 @@ Recommend not running $implement until BLOCKER count reaches 0.
 
 ```
 🔴 BLOCKER: <N>
-  → Fix by re-running $plan or /tasks.
+  → Fix by re-running `$plan` or `$tasks`.
 
 🟡 WARNINGS only:
-  → Review, and proceed to $implement if you're satisfied.
+  → Review, and proceed to `$implement` if you're satisfied.
 
 🟢 INFO only:
-  → Proceed to /implement.
+  → Proceed to `$implement`.
 ```
 
 ## Rules to follow

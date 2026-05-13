@@ -1,6 +1,6 @@
 ---
 name: clarify
-description: Resolve spec.md's Open Questions one by one and fold the answers into the body. Run after /spec and before /plan. Resume from this skill after an interruption. Japanese prompts are also supported.
+description: Resolve spec.md's Open Questions one by one and fold the answers into the body. Run after `/spec` and before `/plan`. Resume from this skill after an interruption. Japanese prompts are also supported.
 ---
 
 # /clarify
@@ -31,7 +31,7 @@ In the spec-driven workflow this skill sits between `/spec` and `/plan`. Closing
 
 - Read `projects/<project>/specs/<NNN>-<slug>/spec.md`.
 - Extract unchecked items (`- [ ] ...`) from the `## Open Questions` section.
-- If everything is checked, say "All Open Questions are resolved. Proceed to /plan." and stop.
+- If everything is checked, say "All Open Questions are resolved. Proceed to `/plan`." and stop.
 
 ### 2. Ask one question at a time
 

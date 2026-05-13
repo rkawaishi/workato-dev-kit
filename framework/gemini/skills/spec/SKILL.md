@@ -1,6 +1,6 @@
 ---
 name: spec
-description: Capture a feature's requirements (UX, WHAT/WHY) in spec.md. No technical detail — that lives in /plan. Use at the start of a project or when adding a new feature. Japanese prompts are also supported.
+description: Capture a feature's requirements (UX, WHAT/WHY) in spec.md. No technical detail — that lives in `/plan`. Use at the start of a project or when adding a new feature. Japanese prompts are also supported.
 ---
 
 # /spec
@@ -147,7 +147,7 @@ You can proceed directly to /plan <project>/<NNN>-<slug>.
 - [ ] <condition 2>
 
 ## External Touchpoints
-<!-- External services or data sources we integrate with. Use business names ("ticketing system"), not vendor names; technology choices come in /plan. -->
+<!-- External services or data sources we integrate with. Use business names ("ticketing system"), not vendor names; technology choices come in `/plan`. -->
 - <service>: <purpose>
 - <service>: <purpose>
 
@@ -160,7 +160,7 @@ You can proceed directly to /plan <project>/<NNN>-<slug>.
 - <item>
 
 ## Open Questions
-<!-- Unresolved items to be addressed by /clarify. This checklist is the resumption point. -->
+<!-- Unresolved items to be addressed by `/clarify`. This checklist is the resumption point. -->
 - [ ] <question 1>
 - [ ] <question 2>
 
