@@ -1,109 +1,109 @@
 ---
-description: Workato CLI ツール
+description: Workato CLI Tools
 globs: ".workatoenv,projects/**,connectors/**"
 alwaysApply: false
 ---
 
-# Workato CLI ツール
+# Workato CLI Tools
 
-3つのツールを使い分ける:
+Pick the right one of three tools:
 
-## 1. Platform CLI（プロジェクト管理）
+## 1. Platform CLI (project management)
 
-インストール: `pipx install workato-platform-cli`
+Install: `pipx install workato-platform-cli`
 
-主なコマンド:
+Common commands:
 - Init: `workato init --non-interactive --profile <profile> --project-id <id> --folder-name "projects/<name>"`
 - Pull: `workato projects use "<name>" && workato pull`
 - Push: `workato push`
-- Push (再起動付き): `workato push --restart-recipes`
-- Push (削除付き): `workato push --delete`
-- レシピ起動: `workato recipes start --id <id>` / `workato recipes start --all`
+- Push (with restart): `workato push --restart-recipes`
+- Push (with delete): `workato push --delete`
+- Start a recipe: `workato recipes start --id <id>` / `workato recipes start --all`
 
-## 2. API ヘルパー（CLI にない機能の補完）
+## 2. API helper (complements the CLI)
 
-Platform CLI にないAPI操作を補完するスクリプト。workspace_id ベースでプロファイルを自動解決する。
+A script that fills the gaps in Platform CLI by calling the API directly. Profile auto-resolves from `workspace_id`.
 
 ```bash
 python3 scripts/workato-api.py <command>
 ```
 
-| コマンド | 用途 |
+| Command | Use |
 |---|---|
-| `jobs list --recipe-id <id> [--status <s>]` | ジョブ一覧 |
-| `jobs get --recipe-id <id> --job-id <id>` | ジョブ詳細 |
-| `connectors list-platform [--provider <name>]` | Pre-built コネクタ情報 |
-| `connectors list-custom` | カスタムコネクタ一覧 |
-| `recipes list [--folder-id <id>]` | レシピ一覧（JSON） |
-| `sdk push --connector <path> [--connector-id <id>]` | カスタムコネクタ push（**推奨**） |
-| `profile show` | プロファイル解決結果 |
+| `jobs list --recipe-id <id> [--status <s>]` | List jobs |
+| `jobs get --recipe-id <id> --job-id <id>` | Job detail |
+| `connectors list-platform [--provider <name>]` | Pre-built connector info |
+| `connectors list-custom` | List custom connectors |
+| `recipes list [--folder-id <id>]` | List recipes (JSON) |
+| `sdk push --connector <path> [--connector-id <id>]` | Push a custom connector (**recommended**) |
+| `profile show` | Show the resolved profile |
 
-## 3. Connector SDK CLI（カスタムコネクタ開発・ローカルテスト）
+## 3. Connector SDK CLI (custom connector development & local testing)
 
-インストール: `gem install workato-connector-sdk`
+Install: `gem install workato-connector-sdk`
 
-**注意:** Platform CLI と同じ `workato` コマンド名を使うため、`bundle exec` でスコープして衝突を避ける。
+**Note:** this gem ships a `workato` command that collides with Platform CLI. Always scope it with `bundle exec`.
 
 ```bash
 cd connectors/<name>
-bundle exec workato new <PATH>           # 新規作成
-bundle exec workato exec <PATH> test     # ローカルテスト
+bundle exec workato new <PATH>           # create
+bundle exec workato exec <PATH> test     # local test
 ```
 
-### カスタムコネクタの push
+### Pushing a custom connector
 
-**API ヘルパーを使う（推奨）。** Ruby 不要、Platform CLI のプロファイルで認証。
+**Use the API helper (recommended).** No Ruby needed; authenticates via Platform CLI's profile.
 
 ```bash
-# 新規作成
+# First push
 python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb --title "<Title>"
-# 既存コネクタの更新
+# Update an existing connector
 python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb --connector-id <id>
 ```
 
-> `bundle exec workato push` や `workato sdk push` も使えるが、API ヘルパーの方がプロファイル自動解決・リリース自動化の点で推奨。
+> `bundle exec workato push` and `workato sdk push` also work, but the API helper is preferred for its profile auto-resolution and release automation.
 
-## コネクタの分類
+## Connector taxonomy
 
-- **Pre-built**: Workato 公式の標準コネクタ（1,000+）
-- **Universal**: HTTP, OpenAPI, GraphQL, SOAP — 標準にない API 用
-- **Community**: ユーザー共有コネクタ
-- **Custom**: Connector SDK で自作 → `connectors/` ディレクトリ
-- **Custom Action**: コネクタ内の `__adhoc_http_action` で API 直接呼出し
+- **Pre-built**: Workato's official standard connectors (1,000+).
+- **Universal**: HTTP, OpenAPI, GraphQL, SOAP — for APIs that don't have a standard connector.
+- **Community**: connectors shared by other users.
+- **Custom**: built with Connector SDK → lives in `connectors/`.
+- **Custom Action**: in-connector `__adhoc_http_action` calls to hit an API directly.
 
-## Pull/Push ハマりポイント
+## Pull / Push pitfalls
 
-`workato pull` / `workato push` は Workato リモートを正として動く。ローカル命名やファイル構造がリモートの規約と合わないと、サイレントに rename/上書き/重複が起こる。以下を必ずチェックする。
+`workato pull` / `workato push` treats the Workato remote as the source of truth. If local naming or file structure doesn't match the remote's conventions, you can silently get renames / overwrites / duplicates. Always check the following.
 
-### ファイル命名・構造（push 前）
+### File naming and structure (before push)
 
-- [ ] **Connection ファイル名 = display name の snake_case（先頭に workspace 名を含める）**
-  - 例: display name `Key Broker | Workato Developer API`（workspace 名 = `Key Broker`）→ ファイル名は `Connections/key_broker_workato_developer_api.connection.json`
-  - **display name が workspace 名で始まっていないと、push 後に Workato が workspace 名を自動 prepend してファイルごと rename する**。次回 pull で「元ファイルが削除され、新ファイルが追加された」形に見えて混乱の元
-  - 対策: display name を `<Workspace 名> | <用途>` 形式で先に確定し、その snake_case をファイル名に使う
-- [ ] **Data Table JSON は business columns のみ**
-  - Record ID / Created time / Last modified time などの system columns をローカルで書かない（独自 UUID を入れるとリモート側で別 UUID が振られて pull 時に重複が発生）
-  - system columns は `workato pull` 時に自動取得される
-- [ ] **`*.connection.json` に認証情報は含めない**（Workato が自動で除外）
+- [ ] **Connection file name = snake_case of the display name (with the workspace name prefix)**
+  - Example: display name `Key Broker | Workato Developer API` (workspace name = `Key Broker`) → file name `Connections/key_broker_workato_developer_api.connection.json`.
+  - **If the display name does not start with the workspace name, Workato auto-prefixes it on push and renames the file.** The next `pull` then looks like "old file deleted, new file added", which causes confusion.
+  - Workaround: decide on the display name as `<Workspace> | <Purpose>` first, then use its snake_case as the file name.
+- [ ] **Data Table JSON: business columns only**
+  - Do not write system columns (Record ID / Created time / Last modified time) locally. If you assign your own UUID, the remote assigns a different one and you get duplicates on pull.
+  - System columns are fetched automatically by `workato pull`.
+- [ ] **No credentials in `*.connection.json`** (Workato strips them automatically).
 
-### Pull 前チェック
+### Pre-pull checks
 
-- [ ] `git status` で未コミット変更を確認
-  - pull は上書き（サイレント）・削除（y/N プロンプト）でローカルを書き換える
-  - 未コミットの編集があれば commit または stash してから pull
-- [ ] `.workatoignore` に `specs/`（仕様駆動アーティファクト）、`DESIGN.md`（legacy）、`DESIGN.md.legacy.*`（移行後の保全）など pull 対象外にしたいファイルを登録
+- [ ] Check for uncommitted changes with `git status`.
+  - Pull overwrites (silently) and deletes (with a y/N prompt) local files.
+  - Commit or stash any uncommitted edits before pulling.
+- [ ] Add files you want excluded from pull to `.workatoignore` — e.g. `specs/` (spec-driven artifacts), `DESIGN.md` (legacy), `DESIGN.md.legacy.*` (preserved after migration).
 
-### `workato init` で既存ディレクトリを初期化する場合
+### Running `workato init` against an existing directory
 
-- `workato init` は非空ディレクトリを `DIRECTORY_NOT_EMPTY` で拒否する（`--force` 相当のオプションは無い）
-- すでに `specs/` や `DESIGN.md` などを置いたディレクトリで `.workatoenv` だけ欲しい場合:
+- `workato init` refuses non-empty directories with `DIRECTORY_NOT_EMPTY` (there is no `--force`-style option).
+- If you only need `.workatoenv` in a directory that already has `specs/` or `DESIGN.md`:
 
 ```bash
-# 一時ディレクトリに init
+# Init into a temporary directory
 workato init --non-interactive --profile <profile> --project-id <id> \
   --folder-name "projects/_tmp_init_$$"
 
-# .workatoenv だけ本来のディレクトリに移動
+# Move only .workatoenv into the real directory
 mv "projects/_tmp_init_$$/.workatoenv" "projects/<name>/"
 rm -rf "projects/_tmp_init_$$"
 ```
