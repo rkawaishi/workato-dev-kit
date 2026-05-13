@@ -1,50 +1,50 @@
 ---
 name: pull-project
-description: Workato リモートからプロジェクトを pull する。引数なしで現在のプロジェクト、プロジェクト名指定で切り替え後 pull。
+description: Pull a project from the Workato remote. No argument pulls the current project; passing a name switches first and then pulls.
 ---
 
 # $pull-project
 
-Workato Platform CLI でリモートからプロジェクトを pull する。
+Pull a project from the remote via the Workato Platform CLI.
 
-## 使い方
+## Usage
 
-- `$pull-project` — 現在のプロジェクトを pull
-- `$pull-project <project-name>` — 指定プロジェクトに切り替えて pull
-- `$pull-project --all` — 全リモートプロジェクトを pull
-- `$pull-project --list` — リモートプロジェクト一覧を表示
+- `$pull-project` — pull the current project
+- `$pull-project <project-name>` — switch to the specified project and pull
+- `$pull-project --all` — pull every remote project
+- `$pull-project --list` — show the list of remote projects
 
-## 実行手順
+## Procedure
 
-### 0. Pull 前チェック（必須）
+### 0. Pre-pull check (mandatory)
 
-pull は未コミット変更をサイレントに上書きする。ワークスペースリポジトリで対象プロジェクトの未コミット変更を確認する:
+Pull silently overwrites uncommitted local changes. Check the workspace repository for uncommitted changes in the target project:
 
 ```bash
 git status projects/<project-name>/
 ```
 
-未コミット変更がある場合は、ユーザーに commit / stash を提案してから pull に進む。何も聞かずに pull すると編集中のファイルが失われる可能性がある。`--all` では対象プロジェクトごとにこのチェックを繰り返す。ワークスペースリポジトリが git 管理下でない場合はこのチェックをスキップする。
+If there are uncommitted changes, suggest the user commits or stashes them before pulling. Pulling without asking can lose in-progress edits. For `--all`, repeat this check per project. If the workspace repository is not under git, skip this check.
 
-### 引数なし / プロジェクト名指定
+### No argument / project name supplied
 ```bash
-# プロジェクト名指定の場合は先に切り替え
+# When a name is supplied, switch first
 workato projects use "<project-name>"
-# pull
+# Pull
 workato pull
 ```
 
-### --all の場合
-1. `workato projects list --source remote --output-mode json` でリモート一覧取得
-2. 各プロジェクトについて:
-   - ローカルに存在しない場合: `workato init --non-interactive --profile default --project-id <id> --folder-name "projects/<name>"`
-   - 存在する場合: **ステップ 0 の git status チェックを実施** → `workato projects use "<name>" && workato pull`
+### `--all`
+1. Get the remote list: `workato projects list --source remote --output-mode json`
+2. For each project:
+   - Not present locally: `workato init --non-interactive --profile default --project-id <id> --folder-name "projects/<name>"`
+   - Present locally: **run the git status check from Step 0** → `workato projects use "<name>" && workato pull`
 
-### --list の場合
+### `--list`
 ```bash
 workato projects list --source both
 ```
 
-## 出力
+## Output
 
-pull 完了後、変更されたファイルの一覧を表示。新しいパターンが見つかった場合は `$learn-recipe` の実行を提案。
+After pull completes, list the modified files. If a new pattern emerged, suggest running `$learn-recipe`.

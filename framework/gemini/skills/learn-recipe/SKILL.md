@@ -1,155 +1,155 @@
 ---
 name: learn-recipe
-description: レシピ JSON を分析してフィールド情報やパターン知識を組織ナレッジ層 (org/docs/) に追記する。pull したレシピから学習し、組織のナレッジベースを拡充する。
+description: Analyze recipe JSON and accumulate field info / pattern findings into the organization knowledge layer (`org/docs/`). Learn from pulled recipes to grow the org knowledge base. Japanese prompts are also supported.
 ---
 
 # /learn-recipe
 
-レシピ JSON を分析し、発見した知見を **組織ナレッジ層 `org/docs/`** に直接追記するスキル。
-中間ファイルへの蓄積ではなく、各ドキュメントを直接拡充する。
+Analyze recipe JSON and append every finding directly into the **organization knowledge layer `org/docs/`**.
+We don't accumulate findings in an intermediate file — we grow each doc directly.
 
-書き込み先は **すべて `org/docs/` 配下**（kit の `docs/` は触らない）。詳細は `GEMINI.md`。
+All writes target `org/docs/<relative-path>`; the kit's `docs/` is left alone. See `GEMINI.md`.
 
-## 使い方
+## Usage
 
-- `/learn-recipe <file-path>` — 特定のレシピを分析
-- `/learn-recipe <project-name>` — プロジェクト内の全レシピを分析
-- `/learn-recipe` — 全プロジェクトの全レシピを分析
+- `/learn-recipe <file-path>` — analyze a specific recipe
+- `/learn-recipe <project-name>` — analyze every recipe in a project
+- `/learn-recipe` — analyze every recipe across every project
 
-## 分析対象と追記先
+## What we learn and where it goes
 
-すべての追記先は `org/docs/<相対パス>`。kit の `docs/<同じ相対パス>` を Read して既知の情報と重複する内容は書かない（差分・補正・組織固有の追加情報のみ）。
+Every write target is `org/docs/<relative-path>`. Read the kit's `docs/<same-relative-path>` first and **skip** anything already documented there (only write differences, corrections, and org-specific additions).
 
-### 1. フィールド情報（最重要）
+### 1. Field info (most important)
 
-各ステップから input/output フィールドスキーマを抽出する。
+Extract input/output field schemas from each step.
 
-抽出元:
-- `extended_output_schema` — アクション/トリガーの出力フィールド
-- `extended_input_schema` — アクション/トリガーの入力フィールド
-- `input` — 実際の入力値（datapill 参照含む）
-- `parameters_schema_json` — Genie/Function のパラメータ（JSON 文字列）
-- `result_schema_json` — Genie/Function の結果（JSON 文字列）
-- `input.input.schema` — Custom Action のリクエストスキーマ
-- `input.output` — Custom Action のレスポンススキーマ
+Sources:
+- `extended_output_schema` — action / trigger output fields
+- `extended_input_schema` — action / trigger input fields
+- `input` — the actual input value (including datapill references)
+- `parameters_schema_json` — Genie / Function parameters (JSON string)
+- `result_schema_json` — Genie / Function result (JSON string)
+- `input.input.schema` — Custom Action request schema
+- `input.output` — Custom Action response schema
 
-**追記先**: `org/docs/connectors/<provider>.md` の該当アクション/トリガーセクション
+**Destination**: the matching action / trigger section of `org/docs/connectors/<provider>.md`.
 
-フォーマット:
+Format:
 ```markdown
 ### <action_name>
 
 #### Input fields
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
 | field_name | type | Yes/- | label |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | field_name | type | label |
 | parent.child | type | label (nested) |
 ```
 
-### 2. 新しいプロバイダー/アクション
+### 2. New providers / actions
 
-レシピ内で未知の provider/name の組み合わせを発見した場合（kit の `docs/connectors/<provider>.md` に存在しないアクション）。
+When you find an unknown `provider`/`name` combination in a recipe (i.e. an action that doesn't appear in the kit's `docs/connectors/<provider>.md`).
 
-**追記先**:
-- Pre-built コネクタ → `org/docs/connectors/<provider>.md` のトリガー/アクション一覧テーブル
-- Workato 内部プロバイダー → `org/docs/platform/workflow-apps.md` または `org/docs/platform/agent-studio.md`
+**Destination**:
+- Pre-built connectors → the trigger / action list table in `org/docs/connectors/<provider>.md`.
+- Workato-internal providers → `org/docs/platform/workflow-apps.md` or `org/docs/platform/agent-studio.md`.
 
-### 3. JSON 構造の知見
+### 3. JSON-structure findings
 
-レシピ JSON の構造に関する新しい発見（新しい keyword、未知のフィールド、特殊な構造等）。組織のレシピで遭遇した範囲の知見として `org/docs/` に蓄積する。
+New discoveries about recipe JSON structure (new keywords, unknown fields, unusual constructs, etc.) — anything observed within the org's recipes. Accumulate them in `org/docs/`.
 
-**追記先**:
-- レシピ構造全般 → `org/docs/learned-patterns.md`（後で kit に PR したい一般的な発見はここに）
-- ロジック（if/loop/error）→ `org/docs/logic/` の該当ファイル
+**Destination**:
+- General recipe-structure findings → `org/docs/learned-patterns.md` (file general findings you'd like to upstream to the kit later here).
+- Logic (if / loop / error) → the relevant file under `org/docs/logic/`.
 
-### 4. datapill パターン
+### 4. Datapill patterns
 
-新しい datapill 記法や参照パターンの発見。
+New datapill notations or reference patterns.
 
-**追記先**: `org/docs/logic/data-pills.md`
+**Destination**: `org/docs/logic/data-pills.md`.
 
-### 5. デプロイ関連の知見
+### 5. Deploy-related findings
 
-push/pull 時の挙動に関する新発見（フィールドリセット、スキーマ展開、バージョン変更等）。
+New behavior observed on push/pull (field reset, schema expansion, version change, etc.).
 
-**追記先**: `org/docs/patterns/deployment-guide.md`
+**Destination**: `org/docs/patterns/deployment-guide.md`.
 
-### 6. 分類が不明な知見
+### 6. Findings that don't fit elsewhere
 
-上記のどこにも当てはまらない新発見。
+Anything that doesn't match the categories above.
 
-**追記先**: `org/docs/learned-patterns.md`（一時保管。後で適切なファイルに移動する）
+**Destination**: `org/docs/learned-patterns.md` (temporary holding; move to the right file later).
 
-## 分析手順
+## Analysis procedure
 
-1. 対象レシピの `.recipe.json` を読み込む
-2. 全ステップを再帰的に走査
-3. 各ステップについて:
-   a. `provider` と `name` が既知か確認（`docs/connectors/<provider>.md` と `org/docs/connectors/<provider>.md` の両方を参照）
-   b. `extended_output_schema` / `extended_input_schema` があればフィールド情報を抽出
-   c. 新しい構造パターンがあれば記録
-4. 追記先（`org/docs/<...>`）のディレクトリが無ければ `mkdir -p` で作成
-5. 追記先ファイルを読み、既存内容と重複しないか確認
-6. kit 側の `docs/<同じ相対パス>` も読み、kit に既知の情報なら **書かない**
-7. 新しい知見のみ追記
+1. Read the target `.recipe.json`.
+2. Walk every step recursively.
+3. For each step:
+   a. Check whether `provider` and `name` are known (consult both `docs/connectors/<provider>.md` and `org/docs/connectors/<provider>.md`).
+   b. If `extended_output_schema` / `extended_input_schema` is present, extract the field info.
+   c. Record any new structural patterns.
+4. If the destination directory under `org/docs/<...>` doesn't exist, create it with `mkdir -p`.
+5. Read the destination file and check for duplicates.
+6. Read the kit-side `docs/<same-relative-path>` too; if the info is already there, **do not write it**.
+7. Append only the new findings.
 
-## 重複チェック
+## Duplicate check
 
-追記前に以下の 2 つを Grep で検索し、同じ内容が既にないか確認する:
-- 追記先の `org/docs/<path>.md`
-- 対応する kit 側 `docs/<同じパス>.md`
+Before writing, grep both files for the same content:
+- The destination `org/docs/<path>.md`
+- The corresponding kit-side `docs/<same-path>.md`
 
-- kit 側に同じアクション名のフィールド情報がある → 差分（org 固有のフィールドや補正）のみ追加
-- 同じルールが既にある → スキップ
+- The kit already has field info for the same action → add only the diff (org-specific fields or corrections).
+- The same rule already exists → skip.
 
-## 出力
+## Output
 
-分析完了後、以下を報告:
-- 分析したファイル数
-- 追記したドキュメント一覧（すべて `org/docs/` 配下）と追記内容のサマリー
-- 新たに発見したパターン（あれば）
+After analysis, report:
+- The number of files analyzed.
+- The list of updated docs (all under `org/docs/`) with a summary of what was appended.
+- Any newly discovered patterns.
 
-## Unlearned Actions の整理
+## Reconciling Unlearned Actions
 
-プロジェクトを対象に実行した場合、`projects/<project-name>/specs/` 配下の **全フィーチャー** の `plan.md` と `tasks.md` をスキャンし、今回学習した `provider` / `action` に対応するエントリを整理する（`GEMINI.md` の「レシピ実装ライフサイクル」参照）。
+When run against a project, scan every feature's `plan.md` and `tasks.md` under `projects/<project-name>/specs/` and reconcile entries that correspond to the `provider` / `action` you just learned (see "Recipe implementation lifecycle" in `GEMINI.md`).
 
-### plan.md の `## Unlearned Actions` 表
+### `## Unlearned Actions` table in plan.md
 
-`projects/<project-name>/specs/<NNN>-<slug>/plan.md` ごとに以下を実行:
+For each `projects/<project-name>/specs/<NNN>-<slug>/plan.md`:
 
-1. `## Unlearned Actions` 表があるか確認
-2. 今回学習した `provider` / `action` に該当する行があれば **削除**
-3. 全行が削除されたら表を「（学習済み）」と注記して残す（表自体は削除せず、履歴として保持）
+1. Check for a `## Unlearned Actions` table.
+2. If a row matches the just-learned `provider` / `action`, **delete the row**.
+3. When every row is deleted, leave the table in place with a note "(learned)" — keep it as a history record.
 
-### tasks.md の `[learn]` タスク
+### `[learn]` tasks in tasks.md
 
-`projects/<project-name>/specs/<NNN>-<slug>/tasks.md` ごとに以下を実行:
+For each `projects/<project-name>/specs/<NNN>-<slug>/tasks.md`:
 
-1. `[learn]` タグ付きで `provider/action` を含む未完了タスク（`- [ ]`）を検索
-2. 該当タスクを `- [x]` にチェック
-3. 完了後の `Last updated` を更新
+1. Find unfinished tasks (`- [ ]`) tagged `[learn]` that mention `provider/action`.
+2. Check them off as `- [x]`.
+3. Update `Last updated`.
 
-### 報告
+### Reporting
 
 ```
-Unlearned Actions の整理:
-- plan.md から削除: <N> 行 (<feature> 等)
-- tasks.md でチェックオン: <M> タスク (<feature> 等)
+Unlearned Actions reconciliation:
+- Rows removed from plan.md: <N> (in <feature> etc.)
+- Tasks checked off in tasks.md: <M> (in <feature> etc.)
 
-未完了の Unlearned Actions が残るフィーチャー:
-- <project>/specs/<NNN>-<slug>: <残数> 件
+Features still carrying unfinished Unlearned Actions:
+- <project>/specs/<NNN>-<slug>: <remaining count>
 ```
 
-> **後方互換**: 旧形式 `projects/<project-name>/DESIGN.md` の `## Unlearned Actions` は **読み取らない**（Phase B でハードカットオーバー済み）。既存プロジェクトに DESIGN.md しか無い場合は `/design migrate` で先に specs/ に変換すること。
+> **Backwards compatibility**: the legacy `## Unlearned Actions` in `projects/<project-name>/DESIGN.md` is **not read** (hard-cutover in Phase B). If a project still only has DESIGN.md, run `/design migrate` first to convert into `specs/`.
 
-## Git 管理
+## Git management
 
-書き込み先は **ワークスペースリポジトリ内の `org/docs/`** と `projects/<name>/specs/` 配下:
+Writes happen in the workspace repository, under `org/docs/` and `projects/<name>/specs/`:
 
 ```bash
 cd <workspace-root>
@@ -157,4 +157,4 @@ git add org/docs/ projects/<name>/specs/
 git commit -m "docs(org): learn from <project-name> recipes"
 ```
 
-**kit submodule (`kit/`) には commit しない**。kit 標準への還流が必要な一般的知見が溜まったら、別途 kit リポジトリに PR を立てる。
+**Do not commit to the kit submodule (`kit/`).** When you accumulate general findings worth upstreaming, open a separate PR against the kit repository.

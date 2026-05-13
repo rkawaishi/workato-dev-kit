@@ -1,78 +1,78 @@
 ---
 name: catalog
-description: 組織の共有アセット（Recipe Function、コネクション）をスキャンしてカタログ化する。/create-recipe や /plan から参照される。
+description: Scan the organization's shared assets (Recipe Functions, connections) and catalog them. Referenced by `/create-recipe` and `/plan`. Japanese prompts are also supported.
 ---
 
 # /catalog
 
-組織の `projects/` 配下にある **共有プロジェクト** のアセットをスキャンし、カタログファイルを生成・更新するスキル。
-他のスキル（`/create-recipe`, `/plan`）がカタログを参照して、既存アセットの再利用を提案する。
+Scans assets in the **shared projects** under the organization's `projects/` and generates / updates a catalog file.
+Other skills (`/create-recipe`, `/plan`) consult the catalog to propose reusing existing assets.
 
-**重要**: private スコープのプロジェクトはスキャンしない。部門限定の閲覧制御を尊重する。
+**Important**: do not scan private-scope projects. Respect departmental visibility controls.
 
-## 使い方
+## Usage
 
-- `/catalog` — カタログを表示
-- `/catalog scan` — 共有プロジェクトをスキャンしてカタログを再生成
-- `/catalog config` — スコープ設定を表示・編集
-- `/catalog add <file-path>` — 手動でアセットをカタログに追加
+- `/catalog` — display the catalog
+- `/catalog scan` — scan shared projects and regenerate the catalog
+- `/catalog config` — view / edit scope settings
+- `/catalog add <file-path>` — manually add an asset to the catalog
 
-## ファイル構成
+## File layout
 
 ```
 projects/
-├── CATALOG.md              ← 共有アセットカタログ（自動生成）
-├── CATALOG_CONFIG.yaml     ← プロジェクトのスコープ定義
+├── CATALOG.md              ← shared asset catalog (auto-generated)
+├── CATALOG_CONFIG.yaml     ← per-project scope definitions
 ├── Shared/                 ← scope: global
 ├── Finance - Common/       ← scope: team:finance
-├── [App] IT Onboarding/    ← scope: private（カタログ対象外）
+├── [App] IT Onboarding/    ← scope: private (excluded from catalog)
 └── [App] Expense Report/   ← scope: private
 ```
 
-いずれも `.workatoignore` で保護する。
+All of these should be protected via `.workatoignore`.
 
-## プロジェクトスコープ
+## Project scopes
 
 ### CATALOG_CONFIG.yaml
 
-各プロジェクトの公開範囲を定義する:
+Define the visibility of each project:
 
 ```yaml
 # projects/CATALOG_CONFIG.yaml
 projects:
   Shared:
-    scope: global          # 全チーム公開、カタログに掲載
-    description: 組織横断の共通ロジック・コネクション
+    scope: global          # public to all teams; included in the catalog
+    description: Org-wide shared logic and connections
 
   "Finance - Common":
-    scope: team:finance    # Finance チーム内で共有、カタログに掲載
-    description: 経理部門の共通レシピ
+    scope: team:finance    # shared within the Finance team; included in the catalog
+    description: Common recipes for the Finance team
 
   "[App] IT Onboarding":
-    scope: private         # カタログ対象外
-    description: IT部門の入社オンボーディング
+    scope: private         # excluded from the catalog
+    description: IT onboarding for new hires
 
-# 未記載のプロジェクトは private として扱う
+# Projects not listed here are treated as private
 ```
 
-### スコープの種類
+### Scope types
 
-| スコープ | カタログ掲載 | 用途 |
+| Scope | Catalog inclusion | Use case |
 |---|---|---|
-| `global` | 全アセットを掲載 | 全チーム共通（Shared プロジェクト等） |
-| `team:<name>` | 全アセットを掲載（チーム名付き） | 部門内共通（Finance - Common 等） |
-| `private` | **掲載しない** | プロジェクト固有（Workflow App 等） |
+| `global` | Every asset is listed | Shared across the org (e.g. the Shared project) |
+| `team:<name>` | Every asset is listed (with team name) | Shared within a department (e.g. Finance - Common) |
+| `private` | **Not listed** | Project-specific (e.g. a Workflow App) |
 
-### 初回セットアップ
+### Initial setup
 
-`/catalog config` で対話的に設定:
+`/catalog config` walks you through this interactively:
 
-1. `projects/` 配下のプロジェクト一覧を表示
-2. 各プロジェクトのスコープをユーザーに確認
-3. `CATALOG_CONFIG.yaml` を生成
-4. `.workatoignore` に `CATALOG_CONFIG.yaml` と `CATALOG.md` を追加
+1. Show the project list under `projects/`.
+2. Confirm the scope of each project with the user.
+3. Generate `CATALOG_CONFIG.yaml`.
+4. Add `CATALOG_CONFIG.yaml` and `CATALOG.md` to `.workatoignore`.
 
-## カタログの構造
+## Catalog structure
 
 ```markdown
 # Shared Asset Catalog
@@ -80,7 +80,7 @@ Last updated: <YYYY-MM-DD>
 
 ## Connections
 
-| 名前 | Provider | プロジェクト | スコープ |
+| Name | Provider | Project | Scope |
 |---|---|---|---|
 | Shared \| Slack | slack_bot | Shared | global |
 | Shared \| Jira | jira | Shared | global |
@@ -89,89 +89,89 @@ Last updated: <YYYY-MM-DD>
 ## Recipe Functions
 
 ### fnc: Get line manager
-- **プロジェクト**: Shared (global)
-- **ファイル**: `Shared/Recipes/fnc_get_line_manager.recipe.json`
-- **入力**: `employee_email` (string) — 従業員のメールアドレス
-- **出力**: `manager_name` (string), `manager_email` (string)
-- **用途**: HRMS / Google Sheets からマネージャー情報を取得
+- **Project**: Shared (global)
+- **File**: `Shared/Recipes/fnc_get_line_manager.recipe.json`
+- **Input**: `employee_email` (string) — the employee's email address
+- **Output**: `manager_name` (string), `manager_email` (string)
+- **Purpose**: look up manager info from HRMS / Google Sheets
 
 ## MCP Servers
 
-| 名前 | プロジェクト | スコープ | ツール数 |
+| Name | Project | Scope | Tools |
 |---|---|---|---|
 | IT Onboarding | Shared | global | 1 |
 ```
 
-## `/catalog scan` — スキャン手順
+## `/catalog scan` — procedure
 
-### 1. スコープ設定の読み込み
+### 1. Load scope settings
 
-`projects/CATALOG_CONFIG.yaml` を読む。存在しなければ `/catalog config` を案内。
+Read `projects/CATALOG_CONFIG.yaml`. If it's missing, point the user to `/catalog config`.
 
-### 2. 対象プロジェクトのフィルタ
+### 2. Filter target projects
 
-`scope` が `global` または `team:*` のプロジェクトのみスキャン対象。
-`private` および未記載のプロジェクトはスキップ。
+Only scan projects whose `scope` is `global` or `team:*`.
+Skip `private` projects and projects not listed in the config.
 
-### 3. コネクションの収集
+### 3. Collect connections
 
-対象プロジェクトの `*.connection.json` をスキャン。
-各ファイルから `name` と `provider` を抽出。
+Scan `*.connection.json` in the target projects.
+Extract `name` and `provider` from each file.
 
-### 4. Recipe Function の収集
+### 4. Collect Recipe Functions
 
-`fnc_*.recipe.json` または `fnc: *` という名前のレシピをスキャン。
-各ファイルから以下を抽出:
+Scan recipes whose name starts with `fnc_*.recipe.json` or `fnc: *`.
+From each file, extract:
 
-- `name` — レシピ名
-- `code.input.parameters_schema_json` — 入力パラメータスキーマ（JSON 文字列をパース）
-- `code.input.result_schema_json` — 出力スキーマ（JSON 文字列をパース）
-- レシピの `comment` — 用途の説明
+- `name` — recipe name
+- `code.input.parameters_schema_json` — input parameter schema (parse the JSON string)
+- `code.input.result_schema_json` — output schema (parse the JSON string)
+- The recipe's `comment` — purpose description
 
-パラメータスキーマから各フィールドの `name`, `type`, `label`, `optional` を抽出してカタログに記載。
+For each parameter field, extract `name`, `type`, `label`, `optional` and list them in the catalog.
 
-### 5. Workflow App / MCP サーバーの収集
+### 5. Collect Workflow Apps / MCP servers
 
-対象プロジェクトの `*.lcap_app.json` と `*.mcp_server.json` をスキャン。
+Scan `*.lcap_app.json` and `*.mcp_server.json` in the target projects.
 
-### 6. カタログファイルの生成
+### 6. Generate the catalog file
 
-収集した情報を `projects/CATALOG.md` に書き出す。
-既存のカタログがあれば差分更新（手動で追加した `用途` 等の記述は保持）。
+Write the collected info to `projects/CATALOG.md`.
+If an existing catalog is present, do a diff update (preserve manually-added descriptions like `Purpose`).
 
-## 他スキルからの参照
+## How other skills consume this
 
-### `/create-recipe` からの参照
+### From `/create-recipe`
 
-`/create-recipe` がレシピを生成する際:
+When `/create-recipe` is generating a recipe:
 
-1. `projects/CATALOG.md` が存在するか確認
-2. 存在すれば読み込み、要件に合致する既存の **共有** アセットを検索:
-   - コネクション: 同じ provider の共有コネクションがあるか
-   - Recipe Function: 必要なロジックが既に存在するか
-3. 合致するアセットがあれば提案:
+1. Check whether `projects/CATALOG.md` exists.
+2. If so, load it and search for **shared** assets that match the requirements:
+   - Connections: is there a shared connection for the same provider?
+   - Recipe Functions: does the logic already exist?
+3. If matches are found, propose them:
    ```
-   既存の共有アセットが利用可能です:
-   - fnc: Get line manager (Shared / global) — マネージャー検索
-   - Shared | Slack (slack_bot / global) — Slack コネクション
+   Existing shared assets are available:
+   - fnc: Get line manager (Shared / global) — manager lookup
+   - Shared | Slack (slack_bot / global) — Slack connection
 
-   これらを使用しますか？
+   Use these?
    ```
-4. ユーザーが承認すれば、`call_recipe` や `config` で共有アセットを参照するレシピを生成
+4. On user approval, generate a recipe that references the shared assets via `call_recipe` or `config`.
 
-### `/plan` からの参照
+### From `/plan`
 
-`/plan <project>/<NNN>-<slug>` の技術設計フェーズで:
+In the technical-design phase of `/plan <project>/<NNN>-<slug>`:
 
-1. カタログを読み込み
-2. spec.md のユーザー体験から必要な機能を特定
-3. 共有アセットで対応可能な部分を `plan.md` の `## Reused Assets` に列挙
-4. 対応できない部分について `## New Components` に新規作成を計画
+1. Load the catalog.
+2. From the user experience in spec.md, identify the required capabilities.
+3. List the parts covered by shared assets in `plan.md`'s `## Reused Assets`.
+4. Plan the remainder under `## New Components` for new development.
 
-## 共通化の提案
+## Proposing consolidation
 
-private プロジェクト間でロジックの重複を検出した場合（`/learn-recipe` や `/plan` 時）:
-- 具体的なコード内容は露出しない
-- 「同様のロジックが複数プロジェクトで使われているため、共通の Recipe Function への切り出しを検討してはどうか」と提案する
-- 共通化するかどうかはユーザーが判断
-- 共通化する場合は scope: global / team の共有プロジェクトに配置し、カタログに登録
+When you detect duplicate logic across private projects (during `/learn-recipe` or `/plan`):
+- Do not expose the specific code content.
+- Suggest: "the same logic appears in multiple projects; consider extracting it into a shared Recipe Function."
+- The user decides whether to consolidate.
+- If they do, place it in a `global` / `team` shared project and register it in the catalog.
