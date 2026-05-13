@@ -1,157 +1,157 @@
 ---
 name: learn-pattern
-description: レシピ構築パターンを org/docs/patterns/recipe-patterns/ に記録・更新する。Workato エキスパートが他者サポート用にナレッジを蓄積する。
+description: Record or update recipe construction patterns in `org/docs/patterns/recipe-patterns/`. Workato experts use this to accumulate know-how that helps others. Japanese prompts are also supported.
 ---
 
 # /learn-pattern
 
-Workato エキスパートが構築パターンを **`org/docs/patterns/recipe-patterns/`** に記録するスキル。
-エキスパートが既に持っている知見をドキュメント化することが目的。レシピは参考素材として任意で指定する。
+A Workato expert records construction patterns into **`org/docs/patterns/recipe-patterns/`**.
+The goal is to document know-how the expert already has. A reference recipe can be supplied as optional source material.
 
-書き込み先は組織ナレッジ層 1 箇所のみ（kit submodule の `docs/` には書かない）。詳細は `GEMINI.md`。
+The write target is a single location in the org knowledge layer (the kit submodule's `docs/` is left alone). See `GEMINI.md`.
 
-## 使い方
+## Usage
 
-- `/learn-pattern` — パターンの記録を開始（対話）
-- `/learn-pattern ページネーションループ` — パターン名を指定して記録
-- `/learn-pattern 承認ワークフロー 注意点追加` — 既存パターンに追記
-- `/learn-pattern <file-path>` — レシピを参考素材として指定（パターンは対話で決める）
+- `/learn-pattern` — start recording a pattern (interactive)
+- `/learn-pattern "Pagination loop"` — specify the pattern name
+- `/learn-pattern "Approval workflow" "additional caveats"` — append to an existing pattern
+- `/learn-pattern <file-path>` — supply a recipe as reference material (the pattern itself is decided interactively)
 
-## 手順
+## Procedure
 
-### 1. エキスパートの意図を確認
+### 1. Confirm the expert's intent
 
-まず既存パターンを把握する（kit canonical と組織側を併読、矛盾は org 側優先）:
-- `docs/patterns/recipe-patterns/_index.md` — kit canonical の汎用パターン
-- `org/docs/patterns/recipe-patterns/_index.md` — 組織が記録したパターン（存在すれば）
-- `projects/docs/patterns/_index.md` — 組織ドメインのレガシーパターン（存在すれば、後方互換のため読み込みのみ）
+First survey existing patterns (read kit canonical and org sides; org wins on conflicts):
+- `docs/patterns/recipe-patterns/_index.md` — kit canonical, generic patterns.
+- `org/docs/patterns/recipe-patterns/_index.md` — org-recorded patterns (if present).
+- `projects/docs/patterns/_index.md` — legacy org-domain patterns (if present; read-only for backwards compatibility).
 
-利用者に何をしたいかを確認する:
+Ask the user what they want to record:
 
 ```
-何を記録しますか？
+What are we recording?
 
-A. 新しいパターンを追加（例: ページネーションループ、バッチ処理 etc.）
-B. 既存パターンに知見を追記（注意点、バリエーション etc.）
+A. A new pattern (e.g. pagination loop, batch processing, etc.)
+B. An addition to an existing pattern (caveats, variations, etc.)
 
-既存パターン:
-- org/docs/patterns/recipe-patterns/: <パターン名を列挙>
-- (legacy) projects/docs/patterns/: <パターン名を列挙、存在すれば>
+Existing patterns:
+- org/docs/patterns/recipe-patterns/: <list pattern names>
+- (legacy) projects/docs/patterns/: <list pattern names if any>
 ```
 
-引数でパターン名や意図が明確な場合はこの質問をスキップして先に進む。
+Skip this question and proceed when the argument already makes the name / intent clear.
 
-### 2. パターンの内容をヒアリング
+### 2. Interview the pattern
 
-エキスパートにパターンの要点を聞く。全てを聞く必要はなく、利用者が話した内容をベースに構成する:
+Ask the expert for the key points. You don't need to ask everything — build the structure from what they say:
 
-- **どういう場面で使うか** — どんな要件のときにこの構成にするか
-- **構成の要点** — どのステップをどう組み合わせるか
-- **なぜこの構成か** — 他の方法ではなくこの構成を選ぶ理由
-- **ハマりどころ** — 知らないと踏む落とし穴
+- **When is it used** — what kind of requirement makes you reach for this composition?
+- **Composition highlights** — which steps go where?
+- **Why this composition** — why pick this over alternatives?
+- **Gotchas** — pitfalls you only learn the hard way.
 
-参考レシピが指定されている場合は `.recipe.json` を読み、構造を要約して提示する。エキスパートの説明と照合しながらパターンを具体化する。
+If a reference recipe is supplied, read the `.recipe.json` and summarize its structure for the expert. Use it to make the pattern concrete by cross-referencing the expert's description.
 
-### 3. パターンの記述
+### 3. Write the pattern
 
-エキスパートの知見をドキュメント化する。
+Document the expert's know-how.
 
-書き込み先は **`org/docs/patterns/recipe-patterns/<pattern-name>.md`** に統一。
-ディレクトリが存在しなければ `mkdir -p org/docs/patterns/recipe-patterns/` で作成する。
+The write target is unified at **`org/docs/patterns/recipe-patterns/<pattern-name>.md`**.
+Create the directory with `mkdir -p org/docs/patterns/recipe-patterns/` if it doesn't exist.
 
-#### 新規パターンのテンプレート
+#### Template for a new pattern
 
 ```markdown
-# <パターン名> (<English Name>)
+# <Pattern name> (<English Name>)
 
-## スコープ
+## Scope
 
-- [ ] 汎用 — Workato を使う他の組織でも同じ構成になる
-- [ ] 組織ドメイン — 自組織の業務・SaaS 連携に紐づく
+- [ ] Generic — other organizations using Workato would reach the same composition
+- [ ] Org-domain — tied to this organization's business or SaaS landscape
 
-（該当する方にチェック。kit 還流を検討する場合は「汎用」のみが候補）
+(Check whichever applies. Only "Generic" is a candidate for upstreaming to the kit.)
 
-## いつ使うか
+## When to use
 
-| 条件 | 該当 |
+| Condition | Applies |
 |---|---|
-| <条件1> | Yes |
-| <条件2> | Optional |
+| <condition 1> | Yes |
+| <condition 2> | Optional |
 
-## レシピ構成図
+## Recipe diagram
 
 \```
-[コンテキスト]
+[context]
     │
     ├── [Action/Loop/IF] <step description>
     └── ...
 \```
 
-## ステップ構成
+## Step composition
 
-| # | Provider | Action | 目的 |
+| # | Provider | Action | Purpose |
 |---|---|---|---|
-| N | provider | action_name | 説明 |
+| N | provider | action_name | description |
 
-## 設計判断ポイント
+## Design decision points
 
-| 判断 | 推奨 | 理由 |
+| Decision | Recommended | Reason |
 |---|---|---|
 
-## 既知の注意点
+## Known gotchas
 
-- <注意点>
+- <gotcha>
 
-## 参照
+## References
 
-- <関連ドキュメントやパターン>
+- <related docs or patterns>
 ```
 
-**記述のガイドライン**:
+**Writing guidelines**:
 
-- 汎用パターンは **特定のコネクタや組織に依存しない形** で記述する
-- 組織ドメインパターンは具体的な業務・SaaS を含めて構わない
-- レシピの具体的な値（チャンネル名、プロジェクト名等）のうち抽象化できるものは抽象化する
-- 「なぜこの構造にするのか」の理由を設計判断ポイントに含める
-- エキスパートが口頭で伝えるような実装上の勘所を「既知の注意点」に記録する
+- Write generic patterns in a form that **doesn't depend on any specific connector or organization**.
+- Org-domain patterns can include concrete business processes and SaaS names.
+- Abstract concrete recipe values (channel names, project names, etc.) when abstraction is possible.
+- Put the "why this composition" reasons under design decision points.
+- Capture the kind of implementation tips an expert would convey verbally under known gotchas.
 
-#### 既存パターンへの追記
+#### Appending to an existing pattern
 
-追記前に Grep で重複がないか確認し、新しい知見のみ追記する:
-- 新しい設計判断ポイント
-- 新しい注意点（Gotcha）
-- 構成図のバリエーション
+Before appending, grep for duplicates. Only add new insights:
+- New design decision points.
+- New gotchas.
+- Variations of the composition.
 
-### 4. インデックスの更新
+### 4. Update the index
 
-新しいパターンを作成した場合、`org/docs/patterns/recipe-patterns/_index.md` のパターン一覧テーブルに行を追加する。
-ファイルが存在しなければ `docs/patterns/recipe-patterns/_index.md`（kit canonical）と同じ形式で新規作成する。
+When you create a new pattern, add a row to the pattern list in `org/docs/patterns/recipe-patterns/_index.md`.
+If the file doesn't exist, create it using the same format as `docs/patterns/recipe-patterns/_index.md` (kit canonical).
 
-### 5. 確認
+### 5. Confirm
 
-作成・更新したパターンファイルの内容を利用者に提示し、過不足がないか確認する。
-エキスパートの知見が正確に反映されているかが最も重要。
+Show the user the created / updated pattern file and confirm it is complete.
+The most important thing is that the expert's know-how is captured accurately.
 
-## 蓄積先
+## Where things accumulate
 
-書き込み先は `org/docs/patterns/recipe-patterns/` の 1 箇所のみ。汎用 / 組織ドメインの区別はパターン本文の「スコープ」セクションで表現する（パスでは分けない）。
+The single write target is `org/docs/patterns/recipe-patterns/`. The generic / org-domain distinction is captured in the pattern's "Scope" section (not by path).
 
-**書き込まない場所**:
-- `docs/patterns/recipe-patterns/`（kit canonical、read-only）
-- `projects/docs/patterns/`（レガシー。既存ファイルは読み込みのみ。新規書き込みは org 側に集約）
+**Do not write to**:
+- `docs/patterns/recipe-patterns/` (kit canonical, read-only).
+- `projects/docs/patterns/` (legacy; existing files are read-only. New writes consolidate into the org side).
 
-将来 kit へ還流する価値の高い汎用パターンが溜まったら、別途 kit リポジトリに PR を立てる（現時点ではスコープ外）。
+When valuable generic patterns accumulate for potential upstreaming, open a separate PR against the kit repository (out of scope here).
 
-## 出力
+## Output
 
-完了後、以下を報告:
+After completion, report:
 
-- 作成・更新したパターンファイルと内容のサマリー
-- 関連するフィールド知識の蓄積が必要なら `/learn-recipe` を案内
+- The created / updated pattern files with a content summary.
+- If field-level knowledge also needs accumulating, point to `/learn-recipe`.
 
-## Git 管理
+## Git management
 
-書き込み先はワークスペースリポジトリの `org/docs/patterns/recipe-patterns/`（kit submodule の外）:
+The write target is in the workspace repository's `org/docs/patterns/recipe-patterns/` (outside the kit submodule):
 
 ```bash
 cd <workspace-root>
@@ -159,4 +159,4 @@ git add org/docs/patterns/recipe-patterns/
 git commit -m "docs(org): record pattern <pattern-name>"
 ```
 
-**kit submodule (`kit/`) には commit しない**。
+**Do not commit to the kit submodule (`kit/`).**
