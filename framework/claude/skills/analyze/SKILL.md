@@ -1,93 +1,93 @@
 ---
-description: spec.md / plan.md / tasks.md の整合性を検証する。/implement の前に実行して、要件と実装計画のズレを早期に検出。
+description: Verify spec.md / plan.md / tasks.md consistency. Run after /tasks and before /implement to catch drift between requirements and the implementation plan early.
 allowed-tools: Read, Glob, Grep, Bash
 ---
 
 # /analyze
 
-`spec.md` ↔ `plan.md` ↔ `tasks.md` の **整合性** を検証するスキル。`/tasks` の後・`/implement` の前に実行することで、フェーズ間のドリフトを早期検出する。
+Verify the **consistency** of `spec.md` ↔ `plan.md` ↔ `tasks.md`. Running this after `/tasks` and before `/implement` surfaces phase-to-phase drift early.
 
-## 使い方
+## Usage
 
-- `/analyze <project>/<NNN>-<slug>` — 指定フィーチャーを検証
-- `/analyze <project>` — プロジェクト内の最新フィーチャーを検証
+- `/analyze <project>/<NNN>-<slug>` — verify a specific feature
+- `/analyze <project>` — verify the latest feature in the project
 
-## ワークフロー
+## Workflow
 
 ```
 /spec → /clarify → /plan → /tasks → /analyze → /implement
                                       ↑
-                                    ここ
+                                   you are here
 ```
 
-## 検証項目
+## Checks
 
-### A. 完成度チェック
+### A. Completeness
 
-- [ ] spec.md の `## Open Questions` に未チェック項目が無い
-- [ ] plan.md が存在する
-- [ ] tasks.md が存在する
-- [ ] それぞれの `Last updated` が古すぎないか（spec が plan より新しい → plan の再生成が必要かも）
+- [ ] spec.md's `## Open Questions` has no unchecked items.
+- [ ] plan.md exists.
+- [ ] tasks.md exists.
+- [ ] Each `Last updated` is not stale (spec newer than plan → plan may need regeneration).
 
-### B. spec → plan のトレース
+### B. spec → plan trace
 
-`spec.md` の **各要件が plan で扱われているか** を確認:
+Verify that **every requirement in `spec.md` is addressed in plan**:
 
-| spec 要素 | plan で対応する箇所 | 検出パターン |
+| spec element | Matches in plan | What to look for |
 |---|---|---|
-| User Stories のロール | `New Components` で該当ロールが操作する Page/Recipe がある | 各ロールに対応するアクションが設計されているか |
-| External Touchpoints | `New Components` の Connections or Reused Assets | 言及されたサービスが Connections に出てくるか |
-| Success Criteria | Architecture Overview や Stage Transitions | 観測可能な状態遷移として設計されているか |
-| Constraints | plan の Decisions や Notes | 性能・セキュリティ要件が設計に反映されているか |
-| Out of Scope | plan の範囲外であることの確認 | spec で除外したものが plan で扱われていない |
+| User Stories roles | Pages/recipes operated by that role appear in `New Components` | Is there an action designed for each role? |
+| External Touchpoints | Connections or Reused Assets in `New Components` | Does each mentioned service show up in Connections? |
+| Success Criteria | Architecture Overview / Stage Transitions | Designed as observable state transitions? |
+| Constraints | plan Decisions or Notes | Performance / security constraints reflected? |
+| Out of Scope | plan stays out of those areas | Items the spec excluded are not built in plan |
 
-**Mismatch の検出例**:
-- spec に「却下時に申請者に通知」とあるが plan に対応するレシピが無い
-- spec の External Touchpoints に「Confluence」とあるが plan の Connections に出てこない
-- spec の Out of Scope に「他社員からの代理申請」とあるが plan で代理ロジックが組まれている
+**Mismatch examples**:
+- spec says "notify the requester on rejection" but no recipe in plan covers it.
+- spec's External Touchpoints lists "Confluence" but no Confluence connection in plan.
+- spec's Out of Scope says "no delegated submissions" but plan has delegation logic.
 
-### C. plan → tasks のトレース
+### C. plan → tasks trace
 
-`plan.md` の **各 New Component がタスク化されているか** を確認:
+Verify that **every New Component in plan is tasked**:
 
-| plan 要素 | tasks で対応するタグ | 検出パターン |
+| plan element | Corresponding tag in tasks | What to look for |
 |---|---|---|
-| Data Tables | `[data-table]` | 全テーブルに対応するタスクがある |
-| Pages | `[page]` | 全ページに対応するタスクがある |
-| Recipes（メイン） | `[recipe]` | 全メインレシピに対応するタスクがある |
-| Recipe Functions | `[function]` | 全 Function に対応するタスクがある |
-| Handlers | `[handler]` | 全ハンドラに対応するタスクがある |
-| Connections（新規） | `[connection]` or `[manual]` | 新規コネクションに対応するタスクがある |
-| MCP / Genie | `[mcp]` | 該当タスクがある |
-| Unlearned Actions（行あり）| `[learn]` | 全 unlearned 行に対応する learn タスクがある |
+| Data Tables | `[data-table]` | One task per table |
+| Pages | `[page]` | One task per page |
+| Recipes (main) | `[recipe]` | One task per main recipe |
+| Recipe Functions | `[function]` | One task per function |
+| Handlers | `[handler]` | One task per handler |
+| Connections (new) | `[connection]` or `[manual]` | A task for each new connection |
+| MCP / Genie | `[mcp]` | Has matching tasks |
+| Unlearned Actions (rows) | `[learn]` | One `[learn]` task per unlearned row |
 
-**Mismatch の検出例**:
-- plan に Data Table が 3 つあるが tasks に `[data-table]` タスクが 2 つしかない
-- plan の `Unlearned Actions` 表に 2 行あるが `[learn]` タスクが 0 件
-- tasks に `[recipe]` タスクがあるが plan に対応するレシピ記載がない（過剰実装）
+**Mismatch examples**:
+- plan has 3 Data Tables but tasks has only 2 `[data-table]` tasks.
+- plan's `Unlearned Actions` table has 2 rows but no `[learn]` tasks.
+- tasks has a `[recipe]` that plan never describes (potential over-implementation).
 
-### D. デプロイガイド準拠
+### D. Deployment-guide compliance
 
-`@docs/patterns/deployment-guide.md` のフローが tasks に組み込まれているか:
+Confirm `@docs/patterns/deployment-guide.md`'s flow is embedded in tasks:
 
-- [ ] `[validate]` タスクが `[push]` の前にある
-- [ ] `[push]` タスクがある
-- [ ] 新規コネクションがあれば `[manual]` で認証案内タスクがある
-- [ ] `[test]` タスクがある
-- [ ] `[pull]` タスクが `[test]` の後にある
-- [ ] `[learn]` タスクが `[pull]` の後にある（Unlearned Actions があれば）
+- [ ] `[validate]` precedes `[push]`.
+- [ ] `[push]` exists.
+- [ ] If there is a new connection, `[manual]` guides authentication.
+- [ ] `[test]` exists.
+- [ ] `[pull]` follows `[test]`.
+- [ ] `[learn]` follows `[pull]` (when Unlearned Actions exist).
 
-### E. 依存関係の妥当性
+### E. Dependency sanity
 
-- 並列マーク `[P]` が誤っていないか:
-  - 同じ Data Table を更新する複数の Recipe を `[P]` にしていないか
-  - レシピと、それを参照するハンドラを `[P]` にしていないか
-- `(depends: N)` の指す先が存在するか
-- 循環依存がないか
+- Is `[P]` honest?
+  - Multiple recipes updating the same Data Table should not be `[P]`.
+  - A recipe and a handler that references it should not be `[P]`.
+- Do `(depends: N)` references point to tasks that exist?
+- No circular dependencies?
 
-## 手順
+## Procedure
 
-### 1. ファイルを読み込み
+### 1. Read the files
 
 ```
 projects/<project>/specs/<NNN>-<slug>/
@@ -96,85 +96,85 @@ projects/<project>/specs/<NNN>-<slug>/
   └── tasks.md
 ```
 
-3 ファイルとも存在しなければ、不足を明示してエラー終了。
+If any of the three is missing, report what's missing and stop.
 
-### 2. A〜E の各カテゴリで検証
+### 2. Run checks A–E
 
-各項目を上から順に検証し、結果を **issue list** にまとめる。
+Go through each category in order and build an **issue list**.
 
-issue の重大度:
-- **🔴 BLOCKER**: そのまま `/implement` するとほぼ確実に問題が出る（要件未対応、デプロイガイド違反）
-- **🟡 WARNING**: 注意が必要だが進める判断もある（過剰実装、ドリフト疑い）
-- **🟢 INFO**: 改善提案レベル（命名統一、Decision の追記推奨）
+Severity:
+- **🔴 BLOCKER**: running `/implement` as-is will almost certainly break things (requirement uncovered, deployment guide violated).
+- **🟡 WARNING**: needs attention but proceeding is defensible (over-implementation, possible drift).
+- **🟢 INFO**: improvement suggestion (naming consistency, missing Decision entry).
 
-### 3. レポート出力
+### 3. Emit the report
 
-下記フォーマットで stdout に出力する。**ファイルには書かない**（レポートは一過性）。
-
-```
-# /analyze レポート: <project>/<NNN>-<slug>
-
-## サマリ
-- 🔴 BLOCKER: <N> 件
-- 🟡 WARNING: <M> 件
-- 🟢 INFO: <L> 件
-
-## A. 完成度チェック
-✓ Open Questions: 全て解決済み（<N> 件）
-✓ plan.md / tasks.md: 存在
-🟡 spec.md (2026-05-10) > plan.md (2026-05-08): spec が plan より新しい。plan の再生成を推奨
-
-## B. spec → plan のトレース
-✓ User Stories (申請者, 承認者, 実行者) → 対応する Page/Recipe あり
-✓ External Touchpoints (Slack, Jira) → Connections に対応あり
-🔴 spec の Success Criteria「却下時に申請者通知」→ plan に対応レシピなし
-🟢 spec の Constraints に「7 日以内のレスポンス」あり、plan で言及なし（Decisions 追記推奨）
-
-## C. plan → tasks のトレース
-✓ Data Tables (2 件) → [data-table] タスク 2 件
-🔴 plan.md の Unlearned Actions に 2 行あるが [learn] タスクは 1 件
-🟡 tasks に [recipe] approval_audit があるが plan に対応記載なし（過剰実装の可能性）
-
-## D. デプロイガイド準拠
-✓ [validate] → [push] → [manual] → [test] → [pull] → [learn] の順序 OK
-
-## E. 依存関係の妥当性
-✓ 循環依存なし
-🟡 タスク 5 [P] [page] と タスク 4 [page] が同じ Data Table を更新する可能性（並列化の再検討推奨）
-
-## 推奨アクション
-1. 🔴 spec の「却下通知」を /plan で扱う（plan.md に追記して再 /tasks）
-2. 🔴 unlearned 2 件目を [learn] タスクとして追加（/tasks 再生成）
-3. 🟡 タスク 5 の [P] を外す or タスク 4 との順序を明示
-
-BLOCKER が 0 件になるまで /implement を実行しないことを推奨します。
-```
-
-### 4. 判断の案内
+Print to stdout in this format. **Do not write to a file** — the report is transient.
 
 ```
-🔴 BLOCKER: <N> 件
-  → /plan または /tasks の再実行で修正してください
+# /analyze report: <project>/<NNN>-<slug>
 
-🟡 WARNING のみ:
-  → 内容を確認して問題なければ /implement に進めます
+## Summary
+- 🔴 BLOCKER: <N>
+- 🟡 WARNING: <M>
+- 🟢 INFO: <L>
 
-🟢 INFO のみ:
-  → /implement に進めます
+## A. Completeness
+✓ Open Questions: all resolved (<N>)
+✓ plan.md / tasks.md: present
+🟡 spec.md (2026-05-10) is newer than plan.md (2026-05-08); consider regenerating plan
+
+## B. spec → plan trace
+✓ User Stories (requester, approver, executor) → corresponding pages/recipes present
+✓ External Touchpoints (Slack, Jira) → connections present
+🔴 spec Success Criteria "notify requester on rejection" → no matching recipe in plan
+🟢 spec Constraints says "response within 7 days"; plan has no mention (consider adding to Decisions)
+
+## C. plan → tasks trace
+✓ Data Tables (2) → 2 [data-table] tasks
+🔴 plan.md Unlearned Actions has 2 rows but only 1 [learn] task
+🟡 tasks has [recipe] approval_audit that plan never lists (possible over-implementation)
+
+## D. Deployment-guide compliance
+✓ [validate] → [push] → [manual] → [test] → [pull] → [learn] order OK
+
+## E. Dependency sanity
+✓ No circular dependencies
+🟡 Task 5 [P] [page] and task 4 [page] may write to the same Data Table — reconsider parallelization
+
+## Recommended actions
+1. 🔴 Address spec's "rejection notification" in /plan (update plan.md, regenerate /tasks)
+2. 🔴 Add a [learn] task for the second unlearned action (regenerate /tasks)
+3. 🟡 Drop [P] from task 5 or make its order vs. task 4 explicit
+
+Recommend not running /implement until BLOCKER count reaches 0.
 ```
 
-## 守るべきルール
+### 4. Guidance
 
-- **ファイルを書き換えない**: `/analyze` は read-only。発見した問題の修正は `/plan` か `/tasks` の責務
-- **判断はユーザーに残す**: WARNING は機械的にブロックしない。レポートを出して判断を委ねる
-- **冪等**: 何度実行しても同じレポートが出る
+```
+🔴 BLOCKER: <N>
+  → Fix by re-running `/plan` or `/tasks`.
 
-## 限界
+🟡 WARNINGS only:
+  → Review, and proceed to `/implement` if you're satisfied.
 
-`/analyze` は **アーティファクト間の整合性** を見るだけで、Workato 仕様としての正しさは見ない。
-- レシピ JSON の妥当性 → `/validate-recipe`
-- フィールドスキーマの正しさ → `/learn-recipe` 後の再 `/analyze`
+🟢 INFO only:
+  → Proceed to `/implement`.
+```
 
-## Git 管理
+## Rules to follow
 
-`/analyze` はファイルを書かないので git commit 不要。
+- **Do not modify files**: `/analyze` is read-only. Fixing issues is `/plan` or `/tasks`'s job.
+- **Leave the decision to the user**: don't mechanically block on WARNING — emit the report and defer.
+- **Idempotent**: repeated runs produce the same report.
+
+## Limitations
+
+`/analyze` only checks **artifact-to-artifact consistency**. It does not verify correctness against Workato itself.
+- Recipe JSON validity → `/validate-recipe`.
+- Field schema correctness → re-run `/analyze` after `/learn-recipe`.
+
+## Git management
+
+`/analyze` writes no files, so no commit is needed.

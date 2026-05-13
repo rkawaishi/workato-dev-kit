@@ -1,136 +1,136 @@
 ---
-description: plan.md を読んで実行可能タスクを tasks.md に分解する。並列マーク [P] と種類タグ（[recipe]/[page]/[learn] 等）で /implement が振り分けられる形に。
+description: Read plan.md and break it into executable tasks in tasks.md. Parallel markers [P] and kind tags ([recipe]/[page]/[learn]/etc.) let /implement dispatch the work. Japanese prompts are also supported.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # /tasks
 
-`plan.md` を **実行可能なタスクリスト** に分解し、`tasks.md` を生成するスキル。
+Break `plan.md` into an **executable task list** and write `tasks.md`.
 
-仕様駆動ワークフローで `/plan` の後に位置する。タグと依存関係を明示することで、後段の `/implement` が既存スキルにタスクを振り分けられるようにする。
+This sits after `/plan` in the spec-driven workflow. Explicit tags and dependencies are what let `/implement` later dispatch each task to the right skill.
 
-## 使い方
+## Usage
 
-- `/tasks <project>/<NNN>-<slug>` — 指定フィーチャーの tasks.md を生成
-- `/tasks <project>` — plan.md があり tasks.md が無い最新フィーチャーを自動選択
+- `/tasks <project>/<NNN>-<slug>` — generate tasks.md for a specific feature
+- `/tasks <project>` — auto-pick the latest feature that has plan.md but no tasks.md
 
-## ワークフロー
+## Workflow
 
 ```
 /spec → /clarify → /plan → /tasks → /analyze → /implement
                             ↑
-                          ここ
+                         you are here
 ```
 
-## 手順
+## Procedure
 
-### 1. plan.md を読む
+### 1. Read plan.md
 
-- `projects/<project>/specs/<NNN>-<slug>/plan.md` を読む
-- 既存 `tasks.md` があれば **更新モード**（チェック状態を保持して差分追加）
+- Read `projects/<project>/specs/<NNN>-<slug>/plan.md`.
+- If `tasks.md` already exists, switch to **update mode** (preserve check states, only append new items).
 
-### 2. タスクを抽出してタグ付け
+### 2. Extract tasks and tag them
 
-`plan.md` の各セクションからタスクを切り出し、**種類タグ** と **並列マーク** を付ける。
+For each section of `plan.md`, cut tasks out and apply a **kind tag** and a **parallel marker**.
 
-#### 種類タグ（必須、1 つだけ）
+#### Kind tag (mandatory; exactly one)
 
-| タグ | 担当スキル | 例 |
+| Tag | Owning skill | Example |
 |---|---|---|
-| `[connection]` | （手作業 or `/create-recipe` 内で生成） | コネクション JSON を作成 |
-| `[connector]` | `/create-connector` | カスタムコネクタを実装 |
-| `[data-table]` | `/create-workflow-app` | Data Table スキーマを作成 |
-| `[page]` | `/create-workflow-app` | Workflow App ページを作成 |
-| `[recipe]` | `/create-recipe` | レシピ JSON を生成 |
-| `[function]` | `/create-recipe` | Recipe Function を生成 |
-| `[handler]` | `/create-recipe` | ハンドラレシピ（Slack ボタン等） |
-| `[mcp]` | `/create-genie` | MCP サーバー / Genie / スキル |
-| `[validate]` | `/validate-recipe` | JSON 構造検証 |
-| `[push]` | `/push-project` | Workato へデプロイ |
-| `[pull]` | `/pull-project` | UI 調整後の取り込み |
-| `[learn]` | `/learn-recipe` | Unlearned Actions の学習 |
-| `[learn-pattern]` | `/learn-pattern` | 構築パターンをカタログに追加 |
-| `[manual]` | （ユーザー作業） | UI でのコネクション認証、リソース設定等 |
-| `[test]` | （ユーザー or `/implement`） | エンドツーエンドテスト |
+| `[connection]` | (manual or done inside `/create-recipe`) | Create a connection JSON |
+| `[connector]` | `/create-connector` | Implement a custom connector |
+| `[data-table]` | `/create-workflow-app` | Create a Data Table schema |
+| `[page]` | `/create-workflow-app` | Create a Workflow App page |
+| `[recipe]` | `/create-recipe` | Generate a recipe JSON |
+| `[function]` | `/create-recipe` | Generate a Recipe Function |
+| `[handler]` | `/create-recipe` | Handler recipe (Slack buttons, etc.) |
+| `[mcp]` | `/create-genie` | MCP server / Genie / skill |
+| `[validate]` | `/validate-recipe` | Validate JSON structure |
+| `[push]` | `/push-project` | Deploy to Workato |
+| `[pull]` | `/pull-project` | Pull post-UI changes |
+| `[learn]` | `/learn-recipe` | Learn an Unlearned Action |
+| `[learn-pattern]` | `/learn-pattern` | Add a construction pattern to the catalog |
+| `[manual]` | (user) | UI work like connection auth, resource config |
+| `[test]` | (user or `/implement`) | End-to-end test |
 
-#### 並列マーク `[P]`
+#### Parallel marker `[P]`
 
-依存関係がなく **並列実行可能** なタスクには `[P]` を付ける。`/implement` がこのマークを見て並列起動可否を判断する。
+Tag tasks with `[P]` when they have no dependency on each other and **can run in parallel**. `/implement` uses this marker to decide whether to fan out.
 
-例:
-- `[P] [data-table] requests テーブル` と `[P] [data-table] approvals テーブル` は並列可
-- `[recipe] approval_main` と `[handler] slack_approve_handler` は依存ありなので並列不可（前者の `as` を後者が参照）
+Examples:
+- `[P] [data-table] requests table` and `[P] [data-table] approvals table` are parallel-safe.
+- `[recipe] approval_main` and `[handler] slack_approve_handler` are not parallel-safe (the handler references the `as` of the main recipe).
 
-### 3. 依存関係の表現
+### 3. Express dependencies
 
-並列マークだけでは表現できない順序依存は **タスクの並び順** と必要に応じて `(depends: <task-id>)` 注記で示す。
-
-```
-1. [data-table] requests テーブルを作成
-2. [data-table] approvals テーブルを作成
-3. [P] [page] 申請フォームページ (depends: 1)
-4. [P] [page] 承認画面ページ (depends: 1, 2)
-5. [recipe] approval_main を生成 (depends: 1, 2)
-6. [handler] slack_approve_handler を生成 (depends: 5)
-7. [validate] 全レシピを検証 (depends: 5, 6)
-8. [push] Workato にデプロイ (depends: 7)
-9. [manual] Slack/Jira コネクション認証 (depends: 8)
-10. [test] 申請 → 承認 → 起票の E2E (depends: 9)
-11. [pull] UI 調整内容を取り込み (depends: 10)
-12. [learn] jira/create_issue を学習 (depends: 11)
-```
-
-### 4. Unlearned Actions の自動展開
-
-`plan.md` の `## Unlearned Actions` 表に行があれば、必ず `[learn]` タスクに展開する:
+When the parallel marker alone is not enough, capture the order in the **task numbering** and add `(depends: <task-id>)` notes as needed.
 
 ```
-| provider | action/trigger | 備考 |
+1. [data-table] Create the requests table
+2. [data-table] Create the approvals table
+3. [P] [page] Submission form page (depends: 1)
+4. [P] [page] Approval page (depends: 1, 2)
+5. [recipe] Generate approval_main (depends: 1, 2)
+6. [handler] Generate slack_approve_handler (depends: 5)
+7. [validate] Validate all recipes (depends: 5, 6)
+8. [push] Deploy to Workato (depends: 7)
+9. [manual] Authenticate Slack/Jira connections (depends: 8)
+10. [test] E2E: request → approval → ticket creation (depends: 9)
+11. [pull] Pull UI adjustments (depends: 10)
+12. [learn] Learn jira/create_issue (depends: 11)
+```
+
+### 4. Auto-expand Unlearned Actions
+
+If `plan.md`'s `## Unlearned Actions` table has rows, expand them into `[learn]` tasks:
+
+```
+| provider | action/trigger | notes |
 |---|---|---|
-| jira | create_issue | カスタムフィールドあり |
-| servicenow | create_record | input スキーマ不明 |
+| jira | create_issue | has custom fields |
+| servicenow | create_record | input schema unknown |
 ```
 
 ↓
 
 ```
-- [ ] [learn] jira/create_issue を /learn-recipe で学習しドキュメント化
-- [ ] [learn] servicenow/create_record を /learn-recipe で学習しドキュメント化
+- [ ] [learn] Document jira/create_issue via /learn-recipe
+- [ ] [learn] Document servicenow/create_record via /learn-recipe
 ```
 
-**重要**: `[learn]` タスクは `[push]` → `[pull]` の後に配置する（実装後の学習サイクルを反映）。
+**Important**: place `[learn]` tasks after `[push]` → `[pull]` (post-implementation learning cycle).
 
-### 5. デプロイガイドの組み込み
+### 5. Incorporate the deployment guide
 
-`@docs/patterns/deployment-guide.md` の「レシピのデプロイフロー」に従い、以下を必ずタスク化:
+Follow `@docs/patterns/deployment-guide.md`'s "recipe deployment flow" and always include these tasks:
 
-1. `[validate]` — push 前検証
-2. `[push]` — Workato へデプロイ
-3. `[manual]` — 新規コネクションがある場合は認証案内
-4. `[test]` — UI でテスト実行
-5. `[pull]` — 調整内容を取り込み
-6. `[learn]` — Unlearned Actions を学習
-7. `[learn-pattern]` — 新しい構築パターンがあれば追加
+1. `[validate]` — pre-push validation
+2. `[push]` — deploy to Workato
+3. `[manual]` — guide the user through auth for any new connection
+4. `[test]` — UI test run
+5. `[pull]` — pull UI adjustments
+6. `[learn]` — learn Unlearned Actions
+7. `[learn-pattern]` — add any new construction pattern
 
-### 6. tasks.md を生成
+### 6. Write tasks.md
 
-下記テンプレートに従いファイルに書き出す。
+Use the template below.
 
-### 7. 次ステップの案内
+### 7. Next-step guidance
 
 ```
-✓ tasks.md を作成しました: projects/<project>/specs/<NNN>-<slug>/tasks.md
+✓ Created tasks.md: projects/<project>/specs/<NNN>-<slug>/tasks.md
 
-合計 <N> タスク（並列可能: <M> 件、学習タスク: <L> 件）
+Total <N> tasks (parallel-safe: <M>, learning: <L>)
 
-次は /analyze <project>/<NNN>-<slug> で spec ↔ plan ↔ tasks の整合性を検証してから、
-/implement <project>/<NNN>-<slug> で実装に進めます。
+Next, run /analyze <project>/<NNN>-<slug> to verify spec ↔ plan ↔ tasks
+consistency, then /implement <project>/<NNN>-<slug> to execute.
 ```
 
-## tasks.md テンプレート
+## tasks.md template
 
 ```markdown
-# <フィーチャー名> — Tasks
+# <Feature name> — Tasks
 
 ## Metadata
 - Status: Draft
@@ -146,54 +146,54 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 - Blocked: <0>
 
 ## Tag Legend
-- `[P]` 並列実行可能
-- 種類タグ: `[recipe]`, `[function]`, `[handler]`, `[page]`, `[data-table]`, `[connection]`, `[connector]`, `[mcp]`, `[validate]`, `[push]`, `[pull]`, `[learn]`, `[learn-pattern]`, `[manual]`, `[test]`
-- `(depends: N, M)` 先行タスク ID
+- `[P]` runnable in parallel
+- Kind tags: `[recipe]`, `[function]`, `[handler]`, `[page]`, `[data-table]`, `[connection]`, `[connector]`, `[mcp]`, `[validate]`, `[push]`, `[pull]`, `[learn]`, `[learn-pattern]`, `[manual]`, `[test]`
+- `(depends: N, M)` predecessor task IDs
 
 ## Tasks
 
-### Phase 1: 基盤構築
+### Phase 1: Foundation
 
-- [ ] 1. [P] [data-table] `<table_name>` を作成（フィールド: <一覧>）
-- [ ] 2. [P] [data-table] `<table_name>` を作成
-- [ ] 3. [connection] `<connection_name>` を作成（provider: <provider>, 新規/既存）
+- [ ] 1. [P] [data-table] Create `<table_name>` (fields: <list>)
+- [ ] 2. [P] [data-table] Create `<table_name>`
+- [ ] 3. [connection] Create `<connection_name>` (provider: <provider>, new/existing)
 
-### Phase 2: フロー実装
+### Phase 2: Flow implementation
 
-- [ ] 4. [page] 申請フォームページ (depends: 1)
-- [ ] 5. [P] [page] 承認画面ページ (depends: 1, 2)
-- [ ] 6. [P] [page] 却下通知ページ (depends: 1)
-- [ ] 7. [function] マネージャー取得 Function (depends: 3)
-- [ ] 8. [recipe] `approval_main` レシピ (depends: 1, 2, 7)
+- [ ] 4. [page] Submission form page (depends: 1)
+- [ ] 5. [P] [page] Approval page (depends: 1, 2)
+- [ ] 6. [P] [page] Rejection notification page (depends: 1)
+- [ ] 7. [function] Manager-lookup Function (depends: 3)
+- [ ] 8. [recipe] `approval_main` recipe (depends: 1, 2, 7)
 - [ ] 9. [handler] `slack_approve_handler` (depends: 8)
-- [ ] 10. [mcp] MCP サーバー / スキルレシピ（任意）(depends: 8)
+- [ ] 10. [mcp] MCP server / skill recipe (optional) (depends: 8)
 
-### Phase 3: 検証とデプロイ
+### Phase 3: Validation and deploy
 
-- [ ] 11. [validate] 全 JSON を /validate-recipe で検証 (depends: 8, 9)
-- [ ] 12. [push] /push-project でデプロイ (depends: 11)
-- [ ] 13. [manual] 新規コネクションの認証（UI 操作）(depends: 12)
-- [ ] 14. [test] 申請 → 承認 → 起票の E2E テスト (depends: 13)
+- [ ] 11. [validate] Validate every JSON with /validate-recipe (depends: 8, 9)
+- [ ] 12. [push] Deploy with /push-project (depends: 11)
+- [ ] 13. [manual] Authenticate the new connection in the UI (depends: 12)
+- [ ] 14. [test] E2E: request → approval → ticket creation (depends: 13)
 
-### Phase 4: 学習とフィードバック
+### Phase 4: Learn & feed back
 
-- [ ] 15. [pull] /pull-project で UI 調整内容を取り込み (depends: 14)
-- [ ] 16. [learn] `<provider>/<action>` を /learn-recipe で学習 (depends: 15)
-- [ ] 17. [learn-pattern] 新規パターンを /learn-pattern でカタログ化（該当時）(depends: 15)
+- [ ] 15. [pull] /pull-project to pick up UI adjustments (depends: 14)
+- [ ] 16. [learn] Learn `<provider>/<action>` via /learn-recipe (depends: 15)
+- [ ] 17. [learn-pattern] Catalog new construction pattern via /learn-pattern (if any) (depends: 15)
 
 ## Notes
-<!-- /implement 実行時の注意点、ロールバック条件など -->
-- <注記>
+<!-- Things /implement should watch out for, rollback conditions, etc. -->
+- <note>
 ```
 
-## 守るべきルール
+## Rules to follow
 
-- **種類タグは必須**: タグなしのタスクは `/implement` が振り分けられない
-- **並列マーク `[P]` は誠実に**: 並列起動して壊れるなら付けない（特にレシピは前段の `as` を後段が参照することが多い）
-- **学習タスクを省略しない**: `Unlearned Actions` を `[learn]` 化しないとナレッジ欠落が放置される
-- **plan.md の本文は書き換えない**: タスク化中に設計を変えたくなったら `/plan` を再実行
+- **Kind tags are mandatory**: untagged tasks cannot be dispatched by `/implement`.
+- **Be honest with `[P]`**: don't tag something parallel-safe if running it in parallel would break (recipes often reference the predecessor's `as`).
+- **Don't drop learning tasks**: leaving `Unlearned Actions` un-`[learn]`-ed lets knowledge gaps pile up.
+- **Do not rewrite plan.md's body**: if you want to change the design while tasking, re-run `/plan`.
 
-## Git 管理
+## Git management
 
 ```bash
 git add projects/<project-name>/specs/<NNN>-<slug>/tasks.md
