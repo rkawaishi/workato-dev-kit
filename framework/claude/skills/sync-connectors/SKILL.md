@@ -180,7 +180,7 @@ Provider: `<name>`
   - Compare triggers/actions retrieved from the API with what's in the file.
   - Add anything new.
   - **Always preserve the frontmatter (the `---`-delimited YAML block).** Items like `connector_id` are managed by `sdk push` — never rewrite them.
-  - Preserve sections after `## Field details` (info accumulated by `/learn-recipe`).
+  - Preserve sections after `## Field details` — and the legacy heading `## フィールド詳細` (info accumulated by `/learn-recipe`). Match either heading during the docs migration window.
   - Annotate triggers / actions that flipped to deprecated.
 - **Canonical provider name**: the API's `name` field is the canonical provider name.
 
