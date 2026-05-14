@@ -1,103 +1,103 @@
-# ページネーションループ (Pagination Loop)
+# Pagination loop
 
-## いつ使うか
+## When to use
 
-| 条件 | 該当 |
+| Condition | Applies |
 |---|---|
-| API が一度に返すレコード数に上限がある | Yes |
-| 全件を取得する必要がある | Yes |
-| レート制限のある API を呼ぶ | Optional |
+| The API caps the number of records returned at once | Yes |
+| You need to retrieve all records | Yes |
+| You are calling a rate-limited API | Optional |
 
-## レシピ構成図
+## Recipe shape
 
-### オフセットベース
-
-```
-[コンテキスト] 全件取得が必要な箇所
-    │
-    ├── [Variable] results リスト変数を初期化（カラム定義 = 後続で必要なフィールド）
-    │
-    └── [Repeat while] 取得件数 == page_size（まだ次ページがある）
-        │
-        └── [Handle Errors]
-            ├── Monitor block
-            │   ├── [Action] API からレコード取得（offset = index * page_size）
-            │   └── [Variable] results に取得レコードを追加
-            └── Error block
-                ├── (retry: レート制限対策)
-                └── [Action] エラー通知
-```
-
-### トークンベース
+### Offset-based
 
 ```
-[コンテキスト] 全件取得が必要な箇所
-    │
-    ├── [Variable] results リスト変数を初期化（カラム定義 = 後続で必要なフィールド）
-    ├── [Variable] next_page_token を初期化（空文字 or 初回トークン）
-    │
-    └── [Repeat while] next_page_token が存在する
-        │
-        └── [Handle Errors]
-            ├── Monitor block
-            │   ├── [Action] API からレコード取得（page_token = next_page_token）
-            │   ├── [Variable] results に取得レコードを追加
-            │   └── [Variable] next_page_token をレスポンスの値で更新
-            └── Error block
-                ├── (retry: レート制限対策)
-                └── [Action] エラー通知
+[Context] location that needs to fetch all records
+    |
+    |-- [Variable] initialize results list variable (columns = fields needed downstream)
+    |
+    +-- [Repeat while] fetched count == page_size (more pages remain)
+        |
+        +-- [Handle Errors]
+            |-- Monitor block
+            |   |-- [Action] fetch records from API (offset = index * page_size)
+            |   +-- [Variable] append fetched records to results
+            +-- Error block
+                |-- (retry: rate limit mitigation)
+                +-- [Action] error notification
 ```
 
-## ステップ構成
+### Token-based
 
-### オフセットベース
+```
+[Context] location that needs to fetch all records
+    |
+    |-- [Variable] initialize results list variable (columns = fields needed downstream)
+    |-- [Variable] initialize next_page_token (empty string or initial token)
+    |
+    +-- [Repeat while] next_page_token is present
+        |
+        +-- [Handle Errors]
+            |-- Monitor block
+            |   |-- [Action] fetch records from API (page_token = next_page_token)
+            |   |-- [Variable] append fetched records to results
+            |   +-- [Variable] update next_page_token with the response value
+            +-- Error block
+                |-- (retry: rate limit mitigation)
+                +-- [Action] error notification
+```
 
-Repeat while の `index * page_size` で offset を算出できるため、offset 用の変数は不要。
+## Step composition
 
-| # | keyword / Provider | Action | 目的 |
+### Offset-based
+
+Because Repeat while can compute the offset as `index * page_size`, you do not need a separate offset variable.
+
+| # | keyword / Provider | Action | Purpose |
 |---|---|---|---|
-| N | workato_variable | create_list | results リスト変数を初期化（カラム = 後続で必要なフィールド） |
-| N+1 | repeat_while | | 終了条件: 取得件数 < page_size |
-| N+1.1 | try | | エラーハンドリング |
-| N+1.1.1 | 外部サービス | search / list | offset = index * page_size でレコード取得 |
-| N+1.1.2 | workato_variable | append_list | results に取得レコードを追加 |
-| N+1.1.3 | catch | | レート制限エラー時のリトライ + 通知 |
+| N | workato_variable | create_list | Initialize the results list variable (columns = fields needed downstream) |
+| N+1 | repeat_while | | End condition: fetched count < page_size |
+| N+1.1 | try | | Error handling |
+| N+1.1.1 | External service | search / list | Fetch records with offset = index * page_size |
+| N+1.1.2 | workato_variable | append_list | Append fetched records to results |
+| N+1.1.3 | catch | | Retry + notification on rate-limit errors |
 
-### トークンベース
+### Token-based
 
-next_page_token を変数に保管し、ループごとに更新する。
+Store next_page_token in a variable and update it each loop iteration.
 
-| # | keyword / Provider | Action | 目的 |
+| # | keyword / Provider | Action | Purpose |
 |---|---|---|---|
-| N | workato_variable | create_list | results リスト変数を初期化（カラム = 後続で必要なフィールド） |
-| N+1 | workato_variable | create_variable | next_page_token を初期化 |
-| N+2 | repeat_while | | 終了条件: next_page_token が空 |
-| N+2.1 | try | | エラーハンドリング |
-| N+2.1.1 | 外部サービス | search / list | page_token = next_page_token でレコード取得 |
-| N+2.1.2 | workato_variable | append_list | results に取得レコードを追加 |
-| N+2.1.3 | workato_variable | update_variable | next_page_token をレスポンスの値で更新 |
-| N+2.1.4 | catch | | レート制限エラー時のリトライ + 通知 |
+| N | workato_variable | create_list | Initialize the results list variable (columns = fields needed downstream) |
+| N+1 | workato_variable | create_variable | Initialize next_page_token |
+| N+2 | repeat_while | | End condition: next_page_token is empty |
+| N+2.1 | try | | Error handling |
+| N+2.1.1 | External service | search / list | Fetch records with page_token = next_page_token |
+| N+2.1.2 | workato_variable | append_list | Append fetched records to results |
+| N+2.1.3 | workato_variable | update_variable | Update next_page_token with the response value |
+| N+2.1.4 | catch | | Retry + notification on rate-limit errors |
 
-## 設計判断ポイント
+## Design decision points
 
-| 判断 | 選択肢 | 判断基準 |
+| Decision | Options | Criteria |
 |---|---|---|
-| ページネーション方式 | オフセット / トークン | API の仕様に依存。トークン方式の方がデータの整合性が高い |
-| ページサイズ | API の最大値 / 小さめの値 | レート制限が厳しければ小さめにして 1 リクエストあたりの負荷を下げる |
-| 終了条件 | 取得件数 < page_size / next_token が空 / 合計件数に到達 | API のレスポンスで判断できる情報を使う |
-| エラーハンドリング | try/catch + retry / ループ中断 | レート制限（429）はリトライで回復可能。その他のエラーはループ中断を検討 |
-| 取得データの処理 | ループ内で即処理 / 全件取得後に一括処理 | データ量とメモリ。大量データはループ内で即処理した方が安全 |
+| Pagination scheme | Offset / token | Depends on API spec. Token-based offers stronger data consistency |
+| Page size | API maximum / smaller value | If rate limits are strict, use a smaller value to reduce load per request |
+| End condition | fetched count < page_size / next_token is empty / reached total count | Use information the API response makes available |
+| Error handling | try/catch + retry / break the loop | Rate limits (429) can recover via retry; consider breaking the loop for other errors |
+| Processing fetched data | Process inside the loop / process all after fetching | Data volume and memory. Large data is safer processed inside the loop |
 
-## 既知の注意点
+## Known caveats
 
-- **Repeat while は最大 50,000 回** のイテレーション制限がある。page_size × 50,000 を超えるデータ量の場合は別のアプローチが必要
-- **Repeat while は do-while 型** — 最低 1 回は実行される。データが 0 件でも 1 回は API を呼ぶ
-- **レート制限（429）対策**: try/catch 内で retry を設定する。リトライ間隔は API の制限に合わせる
-- **オフセットのずれ**: ループ中にソース側でレコードが追加・削除されると、オフセットがずれてレコードの重複・欠落が起きる。クリティカルなデータ同期ではトークン方式を優先する
-- **リスト変数のカラム定義**: `create_list` で定義するカラムは API の output_fields 全てではなく、後続ステップで必要なカラムだけで十分。不要なカラムを含めると datapill の選択肢が増えて煩雑になる
-- **空レスポンスの扱い**: API によっては最終ページで空配列を返す場合がある。終了条件を `取得件数 == 0` にするか `取得件数 < page_size` にするかは API の挙動に合わせる
+- **Repeat while caps at 50,000 iterations** - if the data volume exceeds page_size x 50,000, a different approach is needed
+- **Repeat while is do-while** - it runs at least once. The API is called once even when there are zero records
+- **Rate limit (429) mitigation**: set retry inside try/catch. Match the retry interval to the API's limits
+- **Offset drift**: if records are added or deleted on the source during the loop, offsets drift, causing duplicates or omissions. Prefer token-based for critical data sync
+- **List variable columns**: the columns defined in `create_list` need not include every API `output_fields`; only the columns required downstream are enough. Including unnecessary columns clutters datapill choices
+- **Empty response handling**: some APIs return an empty array on the last page. Choose between `fetched count == 0` and `fetched count < page_size` as the end condition based on the API's behavior
 
-## 参照
+## References
 
-- `docs/logic/loops.md` — Repeat while / Repeat for each の構文
-- `docs/logic/error-handling.md` — Handle Errors / retry の構文
+- `docs/logic/loops.md` - Repeat while / Repeat for each syntax
+- `docs/logic/error-handling.md` - Handle Errors / retry syntax

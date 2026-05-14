@@ -1,113 +1,113 @@
 # Workflow Apps
 
-公式: https://docs.workato.com/en/workflow-apps.html
+Official: https://docs.workato.com/en/workflow-apps.html
 
-## 概要
+## Overview
 
-ノーコードのビジュアル開発プラットフォーム。ユーザー操作と自動化ステップを組み合わせたインタラクティブなアプリケーションを構築できる。
+A no-code visual development platform. Lets you build interactive applications that combine user actions with automation steps.
 
-## 主要コンポーネント
+## Key components
 
-### データストレージ
-- 統合された Data Tables でレコード（請求書、リクエスト等）を格納
-- リンクされた複数テーブルをサポート
-- Workflow Apps コネクタ経由でレシピからアクセス
-- レシピをリアルタイムデータソースとして使用可能
+### Data storage
+- Stores records (invoices, requests, etc.) in integrated Data Tables
+- Supports multiple linked tables
+- Accessed from recipes via the Workflow Apps connector
+- Recipes can be used as real-time data sources
 
-### ユーザーインターフェース
-- ポータル（リクエスト一覧、ナビゲーション）を自動生成
-- **Pages**: ドラッグ＆ドロップエディタでカスタムフォーム・ダッシュボードを作成
-- 条件付きロジック、バリデーション、フォームのプリフィル
-- 公開フォーム（外部ユーザー向け）
+### User interface
+- Auto-generated portal (request list, navigation)
+- **Pages**: build custom forms and dashboards with a drag-and-drop editor
+- Conditional logic, validation, form pre-fill
+- Public forms (for external users)
 
-### ビジネスロジック
-- ワークフローレシピでルーティング、承認、データ更新、システム連携を管理
-- New request トリガーでフォーム送信を処理
-- タスクのアサインとワークフロー状態遷移
+### Business logic
+- Workflow recipes manage routing, approvals, data updates, and system integrations
+- The New request trigger handles form submissions
+- Task assignment and workflow stage transitions
 
-## 動作フロー
+## Runtime flow
 
 ```
-UI イベント（フォーム送信等）
-  → レシピがトリガー
-  → 外部データの取得/更新
-  → 結果を UI コンポーネントに返却
+UI event (form submission, etc.)
+  -> Recipe triggers
+  -> Fetch/update external data
+  -> Return results to UI components
 ```
 
-承認ワークフロー:
+Approval workflow:
 ```
-フォーム送信 → New request トリガー → Data Table にレコード作成
-  → ビジネスロジック評価 → タスクアサイン → 承認/却下
+Form submission -> New request trigger -> Create record in Data Table
+  -> Evaluate business logic -> Assign task -> Approve/Reject
 ```
 
-## 主な用途
+## Common use cases
 
-- 部門管理（HR、Finance、IT）
-- 自動化プロセスの例外処理
-- リクエストのルーティングと承認
-- カスタムアプリケーション・フロントエンド
+- Department management (HR, Finance, IT)
+- Exception handling for automated processes
+- Request routing and approvals
+- Custom applications / front ends
 
-## レシピで使用するプロバイダーとアクション
+## Providers and actions used in recipes
 
-### `workato_workflow_task` プロバイダー
+### `workato_workflow_task` provider
 
-Workflow App 専用のトリガーとアクション。
+Triggers and actions dedicated to Workflow Apps.
 
-**トリガー:**
-- `new_requests_realtime` — 新規リクエスト送信時のリアルタイムトリガー。`input.app_id` で対象 Workflow App を指定
-- `app_function_generic_request` — 汎用アプリ関数トリガー（ボタン操作等）。`parameters_schema_json` でパラメータ定義
-- `app_function_load_table_request` — テーブルウィジェットのデータ読み込み。`table_schema_json` でカラム定義
-- `app_function_load_dropdown_request` — ドロップダウンのオプション読み込み
+**Triggers:**
+- `new_requests_realtime` — Real-time trigger fired when a new request is submitted. Specify the target Workflow App via `input.app_id`
+- `app_function_generic_request` — Generic app function trigger (for button actions, etc.). Define parameters via `parameters_schema_json`
+- `app_function_load_table_request` — Data loading for table widgets. Define columns via `table_schema_json`
+- `app_function_load_dropdown_request` — Option loading for dropdowns
 
-**アクション:**
-- `human_review_on_existing_record` — タスクアサイン＆承認/却下待ち（ブロッキング）
-- `change_workflow_stage` — ワークフローステージの変更（例: New → In progress → Done）
-- `update_request` — リクエストレコードのフィールド更新
-- `app_function_return` — アプリ関数の結果を UI に返却（`rows` でテーブル、`items` でドロップダウン）
-- `complete_task` — タスクをプログラマティックに完了する（Slack ボタン等の外部トリガーから使用）
+**Actions:**
+- `human_review_on_existing_record` — Assign a task and wait for approval/rejection (blocking)
+- `change_workflow_stage` — Change the workflow stage (e.g. New -> In progress -> Done)
+- `update_request` — Update fields on a request record
+- `app_function_return` — Return app function results to the UI (`rows` for tables, `items` for dropdowns)
+- `complete_task` — Complete a task programmatically (used from external triggers such as a Slack button)
 
-### complete_task のフィールド
+### `complete_task` fields
 
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
-| `app_id` | reference | Workflow App の lcap_app.json を参照 |
-| `record_id` | datapill | リクエストの Record ID |
+| `app_id` | reference | Reference to the Workflow App's lcap_app.json |
+| `record_id` | datapill | The request's Record ID |
 | `status` | string | `"Approved"` or `"Rejected"` |
 
-`complete_task` は `human_review_on_existing_record` で待機中のタスクを外部から完了させるアクション。Slack ボタンクリック等で承認/却下を Workflow App に反映する際に使用する。
+`complete_task` completes a task that is waiting in `human_review_on_existing_record` from the outside. Use it when reflecting approve/reject results from a Slack button click etc. back into the Workflow App.
 
-### `workato_db_table` プロバイダー
+### `workato_db_table` provider
 
-Data Table への直接 CRUD 操作。
+Direct CRUD operations against Data Tables.
 
-- `get_records` — レコード取得（フィルタ、ソート、ページネーション対応）
-- `update_record` — レコード更新
+- `get_records` — Fetch records (supports filtering, sorting, pagination)
+- `update_record` — Update a record
 
-### `workato_recipe_function` プロバイダー
+### `workato_recipe_function` provider
 
-- `call_recipe` — 別レシピを関数として呼び出し。外部データ取得（HRMS 等）のラッパーとして使用
+- `call_recipe` — Call another recipe as a function. Use it as a wrapper for fetching external data (HRMS, etc.)
 
-### `workato_workflow_task` の詳細 input 一覧
+### Detailed input list for `workato_workflow_task`
 
-**トリガー詳細:**
+**Trigger details:**
 
-| アクション名 | 主要 input |
+| Action name | Key inputs |
 |---|---|
 | `new_requests_realtime` | `app_id` |
 | `app_function_generic_request` | `parameters_schema_json` |
 | `app_function_load_table_request` | `table_schema_json`, `parameters_schema_json` |
 | `app_function_load_dropdown_request` | `search_enabled` |
 
-**アクション詳細:**
+**Action details:**
 
-| アクション名 | 主要 input |
+| Action name | Key inputs |
 |---|---|
 | `human_review_on_existing_record` | `app_id`, `record_id`, `name`, `email`, `workflow_stage_id`, `page_id` |
-| `change_workflow_stage` | `project_id`（lcap_app参照）, `record_id`, `workflow_stage_id` |
+| `change_workflow_stage` | `project_id` (lcap_app reference), `record_id`, `workflow_stage_id` |
 | `update_request` | `app_id`, `record_id`, `parameters` |
-| `app_function_return` | `rows`（テーブル用）or `items`（ドロップダウン用） |
+| `app_function_return` | `rows` (for tables) or `items` (for dropdowns) |
 
-### `human_review_on_existing_record` の詳細構造
+### Detailed structure of `human_review_on_existing_record`
 
 ```json
 {
@@ -115,7 +115,7 @@ Data Table への直接 CRUD 操作。
   "name": "human_review_on_existing_record",
   "keyword": "action",
   "dynamicPickListSelection": {
-    "user_group_id": "グループ名（optional）",
+    "user_group_id": "Group name (optional)",
     "workflow_stage_id": "In progress"
   },
   "toggleCfg": {
@@ -127,7 +127,7 @@ Data Table への直接 CRUD 操作。
   "input": {
     "app_id": { "zip_name": "...", "name": "App Name", "folder": "" },
     "record_id": "#{_dp('...')}",
-    "name": "タスク名（datapill 可）",
+    "name": "Task name (datapill allowed)",
     "email": "#{_dp('...created_by.email...')}",
     "workflow_stage_id": { "name": "In progress" },
     "due_in_days": "14",
@@ -138,30 +138,30 @@ Data Table への直接 CRUD 操作。
 }
 ```
 
-出力: `task` オブジェクト（`is_approved` boolean, `assigned_user`, `assigned_group`, `expires_at`, `link`）と `record` オブジェクト。
+Output: a `task` object (`is_approved` boolean, `assigned_user`, `assigned_group`, `expires_at`, `link`) and a `record` object.
 
-### `workato_db_table` プロバイダーの詳細
+### Details of the `workato_db_table` provider
 
-| アクション名 | 用途 | 主要 input |
+| Action name | Purpose | Key inputs |
 |---|---|---|
-| `add_record` | Data Table にレコード作成 | `table_id`, `parameters` |
-| `get_records` | Data Table からレコード取得 | `table_id`, `limit`, `order_direction`, `filters` |
-| `update_record` | Data Table のレコード更新 | `table_id`, `record_id`, `parameters` |
+| `add_record` | Create a record in a Data Table | `table_id`, `parameters` |
+| `get_records` | Fetch records from a Data Table | `table_id`, `limit`, `order_direction`, `filters` |
+| `update_record` | Update a record in a Data Table | `table_id`, `record_id`, `parameters` |
 
-#### `add_record` の注意点
+#### Notes on `add_record`
 
-- アクション名は `add_record`（`create_record` ではない）
-- `parameters` のフィールドキーは **アンダースコア区切り** の UUID（ハイフンではない）
+- The action name is `add_record` (not `create_record`)
+- Field keys under `parameters` are **underscore-separated** UUIDs (not hyphenated)
   ```json
   "parameters": {
-    "b1a2c3d4_e5f6_4a7b_8c9d_100000000001": "値"
+    "b1a2c3d4_e5f6_4a7b_8c9d_100000000001": "value"
   }
   ```
-- `update_request` の `parameters` も **アンダースコア区切り** を使う（ハイフンではない）
-- **全ての `parameters` フィールド内の UUID キーはアンダースコア区切り** が正しい
-- `extended_input_schema` の `parameters` 内に Data Table の全フィールドがスキーマとして展開される
+- `parameters` for `update_request` also uses **underscore-separated** keys (not hyphenated)
+- **All UUID keys inside any `parameters` field must be underscore-separated**
+- All Data Table fields are expanded as schema inside `parameters` under `extended_input_schema`
 
-#### `get_records` のフィルタ構造
+#### Filter structure for `get_records`
 
 ```json
 "filters": [
@@ -173,35 +173,35 @@ Data Table への直接 CRUD 操作。
 ]
 ```
 
-### `workato_recipe_function` の詳細構造
+### Detailed structure of `workato_recipe_function`
 
 ```json
 {
   "provider": "workato_recipe_function",
   "name": "call_recipe",
   "keyword": "action",
-  "dynamicPickListSelection": { "flow_id": "レシピ名" },
+  "dynamicPickListSelection": { "flow_id": "Recipe name" },
   "input": {
-    "flow_id": "数値ID（文字列）",
-    "parameters": { "ParamName": "値またはdatapill" }
+    "flow_id": "Numeric ID (as a string)",
+    "parameters": { "ParamName": "value or datapill" }
   }
 }
 ```
 
-- 出力は `result` オブジェクト配下に呼び出し先レシピの返り値が格納される
-- `skip: true` が設定されている場合、そのステップはスキップされる（プレースホルダー用途）
+- The callee recipe's return value is stored under the `result` output object
+- If `skip: true` is set, that step is skipped (used for placeholders)
 
-### Workflow App の特殊フィールド型
+### Special Workflow App field types
 
-- `custom_type: "relation"` — 他テーブルへのリレーション。`record_id` と `display_name` を持つ
-- `custom_type: "file"` — ファイルフィールド。`filename` と `file_content` を持つ
-- `created_by` — 共通の作成者オブジェクト（`id`, `name`, `email`, `status`, `user_groups[]`, `is_guest`）
-- `stage` — ワークフローステージ（`id`, `name`）
-- `task` — アクティブタスク（`id`, `name`, `status`, `assigned_user`, `assigned_group`, `expires_at`, `link`）
+- `custom_type: "relation"` — Relation to another table. Has `record_id` and `display_name`
+- `custom_type: "file"` — File field. Has `filename` and `file_content`
+- `created_by` — Shared creator object (`id`, `name`, `email`, `status`, `user_groups[]`, `is_guest`)
+- `stage` — Workflow stage (`id`, `name`)
+- `task` — Active task (`id`, `name`, `status`, `assigned_user`, `assigned_group`, `expires_at`, `link`)
 
-### `extended_input_schema` の内部型宣言（Data Table）
+### Internal type declarations inside `extended_input_schema` (Data Table)
 
-Data Table の `get_records` では、`extended_input_schema` にカラムの型宣言が隠しフィールドとして格納される:
+For `get_records` on a Data Table, column type declarations are stored as hidden fields inside `extended_input_schema`:
 ```json
 {
   "label": "$internal_value_<uuid-with-hyphens>",
@@ -213,9 +213,9 @@ Data Table の `get_records` では、`extended_input_schema` にカラムの型
 }
 ```
 
-## レシピからの Data Table 参照
+## Referencing Data Tables from recipes
 
-レシピ内で Data Table を参照する際は `table_id` に zip 参照を使用:
+When referencing a Data Table from within a recipe, use a zip reference for `table_id`:
 ```json
 "table_id": {
   "zip_name": "employees.workato_db_table.json",
@@ -224,36 +224,36 @@ Data Table の `get_records` では、`extended_input_schema` にカラムの型
 }
 ```
 
-Data Table のカラムは UUID で識別される。レシピ JSON 内では:
-- **input フィールド名**: ハイフン区切り（`11fbe9a6-a16d-4d7e-86ea-afe42ec03005`）
-- **output / datapill パス**: アンダースコア区切り（`11fbe9a6_a16d_4d7e_86ea_afe42ec03005`）
+Data Table columns are identified by UUIDs. Within the recipe JSON:
+- **Input field names**: hyphen-separated (`11fbe9a6-a16d-4d7e-86ea-afe42ec03005`)
+- **Output / datapill paths**: underscore-separated (`11fbe9a6_a16d_4d7e_86ea_afe42ec03005`)
 
-全テーブル共通の予約カラム:
+Reserved columns common to all tables:
 - `11fbe9a6-...` = Record ID
 - `a5612739-...` = Created at
 - `61aae604-...` = Updated at
 
-## 典型的なレシピフロー
+## Typical recipe flows
 
-### 承認ワークフロー
+### Approval workflow
 ```
-new_requests_realtime → call_recipe（外部データ取得）→ update_request
-  → human_review_on_existing_record → if/else → change_workflow_stage
-```
-
-### テーブルウィジェットデータ取得
-```
-app_function_load_table_request → get_records → app_function_return(rows)
+new_requests_realtime -> call_recipe (fetch external data) -> update_request
+  -> human_review_on_existing_record -> if/else -> change_workflow_stage
 ```
 
-### ドロップダウンデータ取得
+### Loading data for a table widget
 ```
-app_function_load_dropdown_request → get_records → app_function_return(items)
+app_function_load_table_request -> get_records -> app_function_return(rows)
 ```
 
-### app_function_return の入力構造
+### Loading data for a dropdown
+```
+app_function_load_dropdown_request -> get_records -> app_function_return(items)
+```
 
-**テーブルウィジェット (`rows`):**
+### Input structure for `app_function_return`
+
+**Table widget (`rows`):**
 ```json
 {
   "rows": {
@@ -263,7 +263,7 @@ app_function_load_dropdown_request → get_records → app_function_return(items
 }
 ```
 
-**ドロップダウン (`items`):**
+**Dropdown (`items`):**
 ```json
 {
   "items": {
@@ -274,52 +274,52 @@ app_function_load_dropdown_request → get_records → app_function_return(items
 }
 ```
 
-### データ更新アプリ関数パターン
+### Data update app function pattern
 ```
-app_function_generic_request トリガー（parameters でパラメータ受取）
-  → workato_db_table.get_records（フィルタで対象レコード検索）
-  → if (レコードが存在)
-      → workato_db_table.update_record
-```
-
-## Workflow App 構築パターン
-
-### 構築の流れ
-
-Workflow App 本体の有効化のみ UI 操作が必要。それ以外は全て JSON で定義し push できる。
-
-```
-1. Workato UI でプロジェクト内の Workflow App を有効化（1回のみ）
-2. JSON で全構成要素を定義 → push
-   - workato_db_table.json（Data Table スキーマ）
-   - lcap_app.json（ステージ、ページ参照、表示カラム）
-   - lcap_page.json（ページ定義: フォーム、レビュー、承認/却下）
-   - recipe.json（ワークフローレシピ）
-   - connection.json（外部サービスコネクション）
-3. pull → 調整 → push のサイクルを繰り返す
+app_function_generic_request trigger (receives parameters)
+  -> workato_db_table.get_records (find target record by filter)
+  -> if (record exists)
+      -> workato_db_table.update_record
 ```
 
-### 何が JSON で定義でき、何が UI 必須か
+## Workflow App construction patterns
 
-| 要素 | JSON で定義可能 | UI 必須 |
+### Build flow
+
+Only enabling the Workflow App itself requires a UI action. Everything else can be defined in JSON and pushed.
+
+```
+1. Enable the Workflow App inside the project from the Workato UI (one-time only)
+2. Define all components in JSON -> push
+   - workato_db_table.json (Data Table schema)
+   - lcap_app.json (stages, page references, displayed columns)
+   - lcap_page.json (page definitions: form, review, approve/reject)
+   - recipe.json (workflow recipes)
+   - connection.json (external service connection)
+3. Repeat the pull -> adjust -> push cycle
+```
+
+### What can be defined in JSON vs. what requires the UI
+
+| Element | Definable in JSON | UI required |
 |---|---|---|
-| Workflow App の有効化 | ❌ | ✅ UI で1回だけ |
-| ワークフローステージ | ✅ `lcap_app.json` の `workflow_stages` | |
-| Data Table スキーマ | ✅ `workato_db_table.json` | |
-| 表示カラム | ✅ `lcap_app.json` の `displayed_columns` | |
-| タブ | ✅ `lcap_app.json` の `tabs` | |
-| ページ（フォーム、レビュー画面等） | ✅ `lcap_page.json` | |
-| ページの紐付け | ✅ `creation_page`, `task_page`, `details_page` | |
-| レシピ | ✅ `.recipe.json` | |
-| コネクション | ✅ `.connection.json`（認証は UI） | |
+| Enabling the Workflow App | No | Yes, once via UI |
+| Workflow stages | Yes, `workflow_stages` in `lcap_app.json` | |
+| Data Table schema | Yes, `workato_db_table.json` | |
+| Displayed columns | Yes, `displayed_columns` in `lcap_app.json` | |
+| Tabs | Yes, `tabs` in `lcap_app.json` | |
+| Pages (forms, review screens, etc.) | Yes, `lcap_page.json` | |
+| Page linkage | Yes, `creation_page`, `task_page`, `details_page` | |
+| Recipes | Yes, `.recipe.json` | |
+| Connections | Yes, `.connection.json` (authentication via UI) | |
 
-### ページの JSON 構造
+### JSON structure of a page
 
-ページ（`lcap_page.json`）は JSON で定義して push できる。既存プロジェクトのページを参考にレイアウトを構成する。
+A page (`lcap_page.json`) can be defined in JSON and pushed. Use existing project pages as references to lay out the page.
 
 ```json
 {
-  "name": "ページ名",
+  "name": "Page name",
   "path": "url-slug",
   "content": {
     "type": "common",
@@ -327,74 +327,74 @@ Workflow App 本体の有効化のみ UI 操作が必要。それ以外は全て
     "background": { "style": "pattern", "pattern": "light-2" },
     "variables": [],
     "handlers": { "pageLoad": null },
-    "layout": [ /* ネストされたコンポーネントツリー */ ]
+    "layout": [ /* Nested component tree */ ]
   }
 }
 ```
 
-#### 共通プロパティ
+#### Common properties
 
-全コンポーネントに共通:
-- `type` — コンポーネント種別
-- `id` — 8桁 hex の一意 ID
-- `name` — コンポーネント名
-- `x`, `width` — グリッド位置（12カラムレイアウト）
-- `visible` — 表示制御（`true` / 条件式）
+Common to all components:
+- `type` — Component kind
+- `id` — Unique 8-digit hex ID
+- `name` — Component name
+- `x`, `width` — Grid position (12-column layout)
+- `visible` — Visibility control (`true` / conditional expression)
 
-データ入力コンポーネント共通:
-- `dataSource` — **Data Table カラムへの保存先**。`dataSource.id` には Data Table フィールドの **title**（UUID ではない）を指定。`null` だと送信時に値が保存されない
-- `editable` — 編集可否（`true` / `false` / 条件式）
-- `validations.required.condition` — 必須入力（`true` / `false` / 条件式）
-- `label`, `hint`, `placeholder` — 表示テキスト
+Common to data-input components:
+- `dataSource` — **Save destination for the Data Table column**. Set `dataSource.id` to the **title** of the Data Table field (not its UUID). If `null`, the value is not saved on submission
+- `editable` — Editability (`true` / `false` / conditional expression)
+- `validations.required.condition` — Required input (`true` / `false` / conditional expression)
+- `label`, `hint`, `placeholder` — Display text
 
-#### 条件付きプロパティ（Conditional）
+#### Conditional properties
 
-公式: https://docs.workato.com/features/conditions.html（ページコンポーネントの条件制御）
+Official: https://docs.workato.com/features/conditions.html (Conditional control of page components)
 
-以下の3つのプロパティは条件式で動的に制御可能:
+The following three properties can be controlled dynamically with conditional expressions:
 
-| プロパティ | 選択肢 | 対象コンポーネント |
+| Property | Choices | Applicable components |
 |---|---|---|
-| **Visible** | Always show / Conditional | ほぼ全コンポーネント |
-| **Editable** | Yes / No / Conditional | 入力系、dropdown、checkbox、table |
-| **Required** | Yes / No / Conditional | 入力系、dropdown、checkbox |
+| **Visible** | Always show / Conditional | Almost all components |
+| **Editable** | Yes / No / Conditional | Input fields, dropdown, checkbox, table |
+| **Required** | Yes / No / Conditional | Input fields, dropdown, checkbox |
 
-- レシピの IF 条件と同様の構文で条件を設定（AND / OR チェーン可能）
-- **Page data modal** を通じて以下のデータを条件に参照可能:
-  - App user 情報（ユーザー、ロール）
-  - Request メタデータ（ステージ等）
-  - 他のページコンポーネントの値
-  - ワークフローステージ
-- 典型的な使い方: 「特定のユーザーが特定のワークフローステージにいるときだけ表示/編集可能にする」
-- JSON での条件式の構造は UI で設定後に pull して確認推奨（※ドキュメントに JSON 形式の記載なし）
+- Conditions use the same syntax as recipe IF conditions (AND / OR chaining supported)
+- Through the **Page data modal** you can reference these as conditions:
+  - App user info (user, role)
+  - Request metadata (stage, etc.)
+  - Values of other page components
+  - Workflow stage
+- Typical usage: "Show/edit only when a specific user is at a specific workflow stage"
+- Recommended: configure the condition in the UI first, then pull and inspect the JSON (no JSON-form documentation exists)
 
-#### データ入力コンポーネント
+#### Data-input components
 
-**コンポーネント type とフィールド型の対応**（重要）:
+**Mapping of component `type` to field type** (important):
 
-| 用途 | コンポーネント `type` | `style` | Data Table フィールド型 |
+| Purpose | Component `type` | `style` | Data Table field type |
 |---|---|---|---|
-| 短いテキスト | `"input"` | `"short-text"` | `short-text` |
-| 長いテキスト | `"input"` | `"long-text"` | `long-text` |
-| 数値 | `"input"` | `"number"` | `number` |
-| メール | `"input"` | `"email"` | `short-text` |
-| 電話番号 | `"input"` | `"phone"` | `short-text` |
+| Short text | `"input"` | `"short-text"` | `short-text` |
+| Long text | `"input"` | `"long-text"` | `long-text` |
+| Number | `"input"` | `"number"` | `number` |
+| Email | `"input"` | `"email"` | `short-text` |
+| Phone | `"input"` | `"phone"` | `short-text` |
 | URL | `"input"` | `"url"` | `short-text` |
-| 日付 | **`"date"`** | 不要 | `date` |
-| 日時 | **`"date"`** | `"date-time"` | `date-time` |
-| 選択式（単一） | **`"dropdown"`** | 不要 | `short-text` |
-| 選択式（複数） | **`"dropdown"`** + `"multiValue": true` | 不要 | `short-text` |
-| チェックボックス | **`"checkbox"`** | 不要 | `boolean` |
-| ファイル | **`"file"`** | 不要 | `file` |
+| Date | **`"date"`** | not needed | `date` |
+| Date and time | **`"date"`** | `"date-time"` | `date-time` |
+| Selection (single) | **`"dropdown"`** | not needed | `short-text` |
+| Selection (multi) | **`"dropdown"`** + `"multiValue": true` | not needed | `short-text` |
+| Checkbox | **`"checkbox"`** | not needed | `boolean` |
+| File | **`"file"`** | not needed | `file` |
 
-> **注意**: date 型に `"type": "input"` + `"style": "date"` を使うとページエディタが壊れる（無限ロード）。
+> **Caution**: Using `"type": "input"` + `"style": "date"` for a date breaks the page editor (infinite loading).
 
-**input コンポーネント** — テキスト・数値・連絡先入力:
+**`input` component** — text, number, contact inputs:
 - `style`: `"short-text"`, `"long-text"`, `"number"`, `"email"`, `"phone"`, `"url"`
-- Contact 系（email, phone, url）は自動バリデーション付き
-- short-text は正規表現バリデーション対応、number は min/max 対応
+- Contact styles (email, phone, url) include automatic validation
+- short-text supports regex validation; number supports min/max
 
-**dropdown コンポーネント** — 選択式入力:
+**`dropdown` component** — selection input:
 ```json
 {
   "type": "dropdown",
@@ -412,66 +412,66 @@ Workflow App 本体の有効化のみ UI 操作が必要。それ以外は全て
   "multiValue": false
 }
 ```
-- `options`: 静的な選択肢リスト（`title` が表示名、`value` が保存値）
-- `dataSource`: 選択値の保存先（Data Table カラム）。**必ず設定すること**
-- `appFunctionOptions`: レシピで動的にオプションを返す場合に使用（`app_function_load_dropdown_request` トリガー）
-- `dataSourceOptions`: Data Table の別カラムを選択肢ソースにする場合
-- `multiValue`: `true` で複数選択（最大20件）。複数選択時のデータソースは手動 or レシピのみ
-- Data Table 側のフィールド型は `short-text` のままでよい
+- `options`: static option list (`title` is displayed, `value` is saved)
+- `dataSource`: destination column for the selected value (Data Table column). **Always set this**
+- `appFunctionOptions`: use this when the recipe returns options dynamically (the `app_function_load_dropdown_request` trigger)
+- `dataSourceOptions`: use this when another Data Table column is the source of options
+- `multiValue`: `true` for multi-select (up to 20). For multi-select, the data source must be manual or recipe-only
+- The Data Table field type can stay `short-text`
 
-**file コンポーネント** — ファイルアップロード/ダウンロード:
-- アップロード: ファイルタイプ制限、最大サイズ（デフォルト10MB、最大500MB）
-- ダウンロード: Data Table の file カラムから表示
-- 公開フォームではマルウェアスキャンあり
+**`file` component** — file upload/download:
+- Upload: file type restriction, max size (default 10MB, up to 500MB)
+- Download: displayed from a Data Table file column
+- Public forms include a malware scan
 
-#### 表示コンポーネント
+#### Display components
 
-- `container` — レイアウトコンテナ（`backgroundColor`, `borderColor`, `padding`: large/medium/small/none）
-- `text` — テキスト表示（マークダウン対応: 見出し、太字、斜体、リンク、リスト）
-- `image` — 画像（プリセット `"illustration-N"` / アップロード / URL）
-- `divider` — 区切り線（`backgroundColor` で色指定）
+- `container` — Layout container (`backgroundColor`, `borderColor`, `padding`: large/medium/small/none)
+- `text` — Text display (Markdown supported: headings, bold, italic, links, lists)
+- `image` — Image (preset `"illustration-N"` / upload / URL)
+- `divider` — Divider line (color via `backgroundColor`)
 
-#### データテーブルコンポーネント
+#### Data table components
 
-- **Data Table** — アプリの主データテーブルのカラムを表示・編集。承認/リクエスト機能のあるアプリのみ
-- **Linked Data Tables / View** — リンクされた別テーブルの表示・編集。フィルタ、カラム並び替え、レコード追加/削除の制御可能
+- **Data Table** — Display and edit columns of the app's main data table. Only for apps with approval/request features
+- **Linked Data Tables / View** — Display and edit linked tables. Supports filters, column reordering, and add/remove control
 
-#### ビジュアルコンポーネント
+#### Visual components
 
-- **Chart** — データの可視化（テーブル、棒グラフ、折れ線、円グラフ、KPI）。**ダッシュボードページのみ**（承認/送信/ブランクページでは使用不可）
+- **Chart** — Data visualization (table, bar, line, pie, KPI). **Dashboard pages only** (cannot be used on approval/submission/blank pages)
 
-#### アクションコンポーネント
+#### Action components
 
-- `button` — ボタン。`style`: `"filled"` (主要) / `"outline"` (補助)
-  - `handlers.click.type` のアクション種別:
-    - `"save-data"` — Data Table にデータ保存（送信フォーム）
-    - `"complete-task"` — タスク完了（承認/却下）
-    - `"open-url"` — URL を開く
-    - `"run-recipe"` — レシピを実行
-    - `"reset-reload"` — コンポーネントのリセット/リロード
+- `button` — Button. `style`: `"filled"` (primary) / `"outline"` (secondary)
+  - Action kinds via `handlers.click.type`:
+    - `"save-data"` — Save data to a Data Table (submission form)
+    - `"complete-task"` — Complete a task (approve/reject)
+    - `"open-url"` — Open a URL
+    - `"run-recipe"` — Run a recipe
+    - `"reset-reload"` — Reset/reload components
 
-#### URL パラメータによるフォームプリフィル
+#### Form pre-fill via URL parameters
 
-公式: https://docs.workato.com/en/workflow-apps/prefill-forms.html
+Official: https://docs.workato.com/en/workflow-apps/prefill-forms.html
 
-フォーム URL に `?prefilled_values=<URL エンコード済み JSON>` を付与してデフォルト値を設定できる。
+Append `?prefilled_values=<URL-encoded JSON>` to the form URL to set default values.
 
-**JSON 構造:**
+**JSON structure:**
 ```json
 {
-  "コンポーネントの Title": {
-    "value": "値",
+  "Component Title": {
+    "value": "Value",
     "disabled": false
   }
 }
 ```
-- キーはコンポーネントの **Title**（ビルダー向け名前）を使用。ユーザー向けの Label ではない
-- `disabled`: `true`（デフォルト）で読み取り専用、`false` で編集可能
-- URL 最大長: 8,000 文字
+- Keys use the component's **Title** (the builder-facing name), not the user-facing Label
+- `disabled`: `true` (default) for read-only, `false` for editable
+- Maximum URL length: 8,000 characters
 
-**対応コンポーネントと値の形式:**
+**Supported components and value formats:**
 
-| コンポーネント | value の型 | 例 |
+| Component | Value type | Example |
 |---|---|---|
 | Text (short/long) | string | `"value": "Peter"` |
 | Number (integer) | number | `"value": 10` |
@@ -479,13 +479,13 @@ Workflow App 本体の有効化のみ UI 操作が必要。それ以外は全て
 | Date | string `"YYYY-MM-DD"` | `"value": "2024-07-26"` |
 | Date and Time | string `"YYYY-MM-DD HH:MM"` | `"value": "2024-07-25 16:00"` |
 | Checkbox | boolean | `"value": true` |
-| Dropdown (手動) | string | `"value": "Sales"` |
-| Dropdown (テーブル) | object | `"value": {"record_id": "uuid", "value": "123"}` |
+| Dropdown (manual) | string | `"value": "Sales"` |
+| Dropdown (table) | object | `"value": {"record_id": "uuid", "value": "123"}` |
 | Description | string | `"value": "Description"` |
 
-### ページ参照の扱い
+### Handling page references
 
-`lcap_app.json` でページファイルと同時に push すれば、ページ参照も正しく解決される。
+If you push page files together with `lcap_app.json`, page references resolve correctly.
 
 ```json
 {
@@ -502,43 +502,43 @@ Workflow App 本体の有効化のみ UI 操作が必要。それ以外は全て
 }
 ```
 
-### 必要なファイル一式
+### Required file set
 
-典型的な承認ワークフローアプリ:
+A typical approval workflow app:
 
 ```
 projects/[App] <Name>/
-├── <name>.lcap_app.json                    # Workflow App 定義
-├── <name>.lcap_app.png                     # アプリアイコン（自動生成）
-├── <table_name>.workato_db_table.json      # Data Table スキーマ
-├── <main_recipe>.recipe.json               # メインレシピ（承認フロー）
-├── fnc_<helper>.recipe.json                # Recipe Function（マネージャー取得等）
-├── <connection>.connection.json            # 外部サービスコネクション
-├── <page>.lcap_page.json + .zip            # ページ定義（UI で作成後 pull で取得）
-└── <query>.insights_query.json             # 分析クエリ（UI で作成後 pull で取得）
+├── <name>.lcap_app.json                    # Workflow App definition
+├── <name>.lcap_app.png                     # App icon (auto-generated)
+├── <table_name>.workato_db_table.json      # Data Table schema
+├── <main_recipe>.recipe.json               # Main recipe (approval flow)
+├── fnc_<helper>.recipe.json                # Recipe Function (e.g., fetch manager)
+├── <connection>.connection.json            # External service connection
+├── <page>.lcap_page.json + .zip            # Page definition (create via UI then pull)
+└── <query>.insights_query.json             # Analytics query (create via UI then pull)
 ```
 
-### 承認ワークフローのレシピテンプレート
+### Recipe template for an approval workflow
 
 ```
-[0] trigger: new_requests_realtime (app_id → lcap_app)
-  [1] action: call_recipe (HRMS からマネージャー取得)
+[0] trigger: new_requests_realtime (app_id -> lcap_app)
+  [1] action: call_recipe (fetch manager from HRMS)
   [2] action: human_review_on_existing_record
-        - email: call_recipe の result.manager_email（動的）
-        - record_id: trigger の request.Record_ID（一貫して trigger から取得）
+        - email: result.manager_email from call_recipe (dynamic)
+        - record_id: trigger's request.Record_ID (always sourced from the trigger)
   [3] if: task.is_approved == true
-    [4] action: 外部システム連携（Jira 起票、Slack 通知等）
-    [5] action: update_request（結果をレコードに保存）
-    [6] action: change_workflow_stage → Done
+    [4] action: external system integration (raise Jira, post to Slack, etc.)
+    [5] action: update_request (persist the result to the record)
+    [6] action: change_workflow_stage -> Done
   [7] else:
-    [8] action: change_workflow_stage → Canceled
+    [8] action: change_workflow_stage -> Canceled
 ```
 
-### `.lcap_app.json` — Workflow App 定義（詳細）
+### `.lcap_app.json` — Workflow App definition (detailed)
 
 ```json
 {
-  "name": "App名",
+  "name": "App name",
   "creation_page": {
     "zip_name": "submit_form.lcap_page.json",
     "name": "Submit form",
@@ -560,7 +560,7 @@ projects/[App] <Name>/
     { "name": "Canceled", "color": 3, "details_page": { "..." } }
   ],
   "tabs": [
-    { "name": "Tab名", "kind": "new_request", "visibility": "all" },
+    { "name": "Tab name", "kind": "new_request", "visibility": "all" },
     { "name": "Analytics", "kind": "user_defined", "visibility": "managers",
       "page": { "zip_name": "analytics.lcap_page.json", "name": "...", "folder": "" } }
   ],
@@ -570,28 +570,28 @@ projects/[App] <Name>/
 }
 ```
 
-- `creation_page`: リクエスト送信フォームの lcap_page を参照
-- `workato_db_table`: バックエンドの Data Table を参照
-- `workflow_stages`: ステージ一覧。各ステージに `task_page`（タスク実行画面）と `details_page`（詳細表示画面）を持てる
-- `tabs`: アプリのタブ。`kind` は `new_request`（デフォルト）/ `user_defined`（カスタムページ）
-- `displayed_columns`: テーブルビューで表示するカラム。UUID は Data Table のフィールド ID、大文字はシステムカラム
-- `color`: ステージの色コード（0=New, 1=In progress, 2=Done/完了系, 3=Canceled, 8=中間ステージ）
+- `creation_page`: reference to the lcap_page used as the submission form
+- `workato_db_table`: reference to the backing Data Table
+- `workflow_stages`: list of stages. Each stage can have a `task_page` (task screen) and `details_page` (details screen)
+- `tabs`: app tabs. `kind` is `new_request` (default) or `user_defined` (custom page)
+- `displayed_columns`: columns shown in the table view. UUIDs are Data Table field IDs; uppercase tokens are system columns
+- `color`: stage color codes (0=New, 1=In progress, 2=Done/completion family, 3=Canceled, 8=intermediate stage)
 
-### `.workato_db_table.json` — Data Table スキーマ（詳細）
+### `.workato_db_table.json` — Data Table schema (detailed)
 
 ```json
 {
-  "name": "テーブル名",
+  "name": "Table name",
   "schema": [
     {
       "id": "UUID",
-      "title": "フィールド名",
+      "title": "Field name",
       "type": "short-text|long-text|number|boolean|date|date-time|file|relation",
       "read_only": false,
       "hidden": false,
       "required": false,
-      "default_value": "デフォルト値（省略可）",
-      "hint": "入力ヒント（省略可）",
+      "default_value": "Default value (optional)",
+      "hint": "Input hint (optional)",
       "metadata": {},
       "relation": {
         "table_id": { "zip_name": "other.workato_db_table.json", "name": "Other Table", "folder": "" },
@@ -603,24 +603,24 @@ projects/[App] <Name>/
 }
 ```
 
-- システムフィールド（Record ID, Created time, Last modified time）は `read_only: true, hidden: true`
-- `type: "relation"` の場合、`relation` オブジェクトで外部テーブルとフィールドを参照
-- フィールド ID は UUID v4 形式。レシピの output やページ内で UUID がカラム名として使われる
-- `project_name`: このテーブルが属するプロジェクト名
+- System fields (Record ID, Created time, Last modified time) are `read_only: true, hidden: true`
+- For `type: "relation"`, reference the foreign table and field via the `relation` object
+- Field IDs are UUID v4. In recipe output and on pages, UUIDs are used as column names
+- `project_name`: name of the project this table belongs to
 
-### `.insights_query.json` — Insights クエリ定義
+### `.insights_query.json` — Insights query definition
 
 ```json
 {
   "page_id": { "zip_name": "page.lcap_page.json", "name": "Page Name", "folder": "" },
-  "name": "クエリ名",
+  "name": "Query name",
   "index": 0,
   "version": "v1",
   "query": {
     "relation": "Aggregate",
     "groupKey": [],
     "aggCalls": [
-      { "qualifier": "hex16桁", "function": "COUNT", "operand": null }
+      { "qualifier": "16-digit hex", "function": "COUNT", "operand": null }
     ],
     "input": {
       "relation": "TableScan",
@@ -628,7 +628,7 @@ projects/[App] <Name>/
       "schema": "public",
       "table": "__ref__1",
       "columnQualifiers": [
-        { "column": "workflow_stage|UUID|assignee|creator|...", "qualifier": "hex16桁" }
+        { "column": "workflow_stage|UUID|assignee|creator|...", "qualifier": "16-digit hex" }
       ]
     }
   },
@@ -641,13 +641,13 @@ projects/[App] <Name>/
 }
 ```
 
-- `page_id`: このクエリが表示される lcap_page を参照
-- `references.__ref__N`: クエリ対象の lcap_app を参照（テーブルスキャン先）
-- `columnQualifiers` の `column` には UUID（Data Table フィールド ID）やシステムカラム名が使われる
-- `aggCalls` の `function`: `COUNT`, `SUM`, `AVG` 等の集約関数
+- `page_id`: reference to the lcap_page where this query is displayed
+- `references.__ref__N`: reference to the lcap_app the query targets (table scan source)
+- `column` in `columnQualifiers` uses a UUID (Data Table field ID) or a system column name
+- `function` in `aggCalls`: aggregate functions such as `COUNT`, `SUM`, `AVG`
 
-### push/pull サイクルの注意
+### Notes on the push/pull cycle
 
-- push した JSON は Workato 側で変換される（`extended_output_schema` 展開、`dynamicPickListSelection` 追加、`version` インクリメント）
-- pull すると push 時と異なるファイルが返ってくるのは正常動作
-- `creation_page: null` で push → UI でページ作成後 pull すると参照が自動設定される
+- JSON you push gets transformed on the Workato side (`extended_output_schema` is expanded, `dynamicPickListSelection` is added, `version` is incremented)
+- It is normal for `pull` to return files different from what you pushed
+- Pushing `creation_page: null` and then creating the page in the UI and pulling auto-populates the reference

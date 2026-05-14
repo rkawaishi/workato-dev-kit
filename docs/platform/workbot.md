@@ -1,54 +1,54 @@
 # Workbot
 
-公式: https://docs.workato.com/en/workbot/overview.html
+Official: https://docs.workato.com/en/workbot/overview.html
 
-## 概要
+## Overview
 
-Workato のチャットボットフレームワーク。Slack / Microsoft Teams / Facebook Workplace 上で動作し、ビジネスアプリケーションをチャットインターフェースに統合する。
+Workato's chatbot framework. Runs on Slack, Microsoft Teams, and Facebook Workplace, integrating business applications into a chat interface.
 
-## 対応プラットフォーム
+## Supported platforms
 
-| プラットフォーム | ドキュメント | provider |
+| Platform | Documentation | provider |
 |---|---|---|
 | Slack | https://docs.workato.com/en/workbot/workbot.html | `slack_bot` |
 | Microsoft Teams | https://docs.workato.com/en/workbot-for-teams/workbot.html | `teams_bot` |
 
-## 主な機能
+## Key capabilities
 
-### モニタリング & 通知
-ビジネスイベント（顧客チケット、フォーム送信、DevOps アラート等）をチャンネルに通知。ユーザー指定のフィルタによるスマート通知対応。
+### Monitoring & notifications
+Notify channels of business events (customer tickets, form submissions, DevOps alerts, etc.). Supports smart notifications with user-defined filters.
 
-### データ操作
-チャットからビジネスアプリのデータを取得・作成・更新。アプリを切り替えずに操作可能。
+### Data operations
+Retrieve, create, and update business application data from chat. Operate without switching apps.
 
-### リクエスト自動化
-社内リソースのプロビジョニングワークフローをチャットから実行。
+### Request automation
+Run internal-resource provisioning workflows from chat.
 
-## 動作の仕組み
+## How it works
 
-- Workbot をチャンネルに招待する必要がある
-- チャンネルでは `@workbot` でメンション（DM では不要）
-- チャンネル内の全員が Workbot コマンドを使用可能
-- インストール時に Workato アカウントの最新アプリコネクションを自動検出
+- Workbot must be invited to a channel
+- In channels, mention `@workbot` (not needed in DMs)
+- Everyone in the channel can use Workbot commands
+- Automatically detects the Workato account's latest app Connections at install time
 
-## レシピとの関係
+## Relationship to recipes
 
-Workbot のトリガー/アクションはレシピで使用する:
-- **トリガー**: Slack/Teams のイベントやコマンドを検知
-- **アクション**: メッセージ投稿、Block Kit 表示、ボタン操作
+Workbot triggers / actions are used in recipes:
+- **Trigger**: Detect Slack / Teams events or commands
+- **Action**: Post messages, render Block Kit, handle button interactions
 
-詳細なトリガー/アクション一覧:
+Full list of triggers / actions:
 - Slack: `@docs/connectors/workbot-for-slack.md`
 - Teams: `@docs/connectors/workbot-for-teams.md`
 
 ## Custom OAuth Profile
 
-標準コネクタにないイベント（`reaction_added` 等）や権限（`channels.history` 等）が必要な場合、Custom OAuth Profile を設定して追加の Slack/Teams スコープを取得する。
+When events not covered by the standard connector (`reaction_added`, etc.) or extra scopes (`channels.history`, etc.) are required, configure a Custom OAuth Profile to obtain additional Slack / Teams scopes.
 
-詳細: `@docs/learned-patterns.md` の「slack vs slack_bot」セクション参照
+Details: see the "slack vs slack_bot" section of `@docs/learned-patterns.md`
 
-## 備考
+## Notes
 
-- CN データセンターでは利用不可
-- プリビルトレシピが用意されており、最小限のセットアップで利用可能
-- Genie（AI エージェント）のチャットインターフェースとしても使用可能
+- Not available in CN data centers
+- Prebuilt recipes are available, enabling minimal-setup adoption
+- Can also be used as the chat interface for a Genie (AI agent)

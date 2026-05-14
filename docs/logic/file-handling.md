@@ -1,47 +1,47 @@
-# ファイル処理
+# File handling
 
-公式: https://docs.workato.com/en/handling-files-and-attachments.html
+Official: https://docs.workato.com/en/handling-files-and-attachments.html
 
-## 概要
+## Overview
 
-Workato は FTP、ファイルシステム、API、S3 等を介してファイルと添付ファイルをアプリ間で転送する。
+Workato transfers files and attachments between apps via FTP, file systems, APIs, S3, and similar transports.
 
-## ファイルの種類
+## File types
 
-### テキストファイル（パース可能）
+### Text files (parseable)
 
-| 形式 | 用途 |
+| Format | Use |
 |---|---|
-| CSV | 表形式データ |
-| TXT, RTF | プレーンテキスト |
-| HTML | Web コンテンツ |
-| JSON | API データ |
-| XML, SOAP | 構造化データ |
-| YAML | 設定ファイル |
+| CSV | Tabular data |
+| TXT, RTF | Plain text |
+| HTML | Web content |
+| JSON | API data |
+| XML, SOAP | Structured data |
+| YAML | Configuration files |
 
-- レシピ内でコンテンツを**パース**して個々のフィールドとして利用可能
-- 例: CSV ファイルを取得 → パース → 各行のデータを Redshift に投入
+- Content can be **parsed** inside a recipe and used as individual fields
+- Example: fetch a CSV file → parse → insert each row into Redshift
 
-### バイナリファイル（パース不可）
+### Binary files (not parseable)
 
-| 形式 | 例 |
+| Format | Examples |
 |---|---|
-| 画像 | jpg, png, gif, bmp, psd |
-| ドキュメント | pdf, doc, docx, ppt, xls, odt |
+| Images | jpg, png, gif, bmp, psd |
+| Documents | pdf, doc, docx, ppt, xls, odt |
 
-- Workato はコンテンツを解釈せずにそのまま転送
-- 例: Salesforce の添付ファイルを Zendesk にアップロード
+- Workato passes content through without interpreting it
+- Example: upload a Salesforce attachment to Zendesk
 
-## 処理パターン
+## Processing patterns
 
-### テキストファイルの処理
-1. コネクタでファイルを取得（FTP, S3, Google Drive 等）
-2. コンテンツをパース（CSV → 行データ、JSON → オブジェクト）
-3. パースしたデータを後続アクションで使用
+### Text file processing
+1. Fetch the file with a connector (FTP, S3, Google Drive, etc.)
+2. Parse the content (CSV → row data, JSON → object)
+3. Use the parsed data in subsequent actions
 
-### バイナリファイルの転送
-1. ソースアプリからファイルコンテンツを取得
-2. そのまま宛先アプリにアップロード（`fileContent` datapill 等）
+### Binary file transfer
+1. Fetch the file content from the source app
+2. Upload it directly to the destination app (via the `fileContent` datapill, etc.)
 
-### ファイルストリーミング
-大容量ファイルの場合、ストリーミング転送に対応するコネクタを使用。
+### File streaming
+For large files, use connectors that support streaming transfer.

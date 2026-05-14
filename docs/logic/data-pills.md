@@ -1,106 +1,106 @@
-# データピルとデータマッピング
+# Datapills and data mapping
 
-公式: https://docs.workato.com/en/recipes/data-pills-and-mapping.html
+Official: https://docs.workato.com/en/recipes/data-pills-and-mapping.html
 
-## データピルとは
+## What is a datapill
 
-トリガーやアクションステップの出力変数。後続のステップで参照してデータフローを構成する。
+An output variable of a trigger or action step. Referenced by subsequent steps to construct the data flow.
 
-## データ型
+## Data types
 
-| 型 | 説明 |
+| Type | Description |
 |---|---|
-| String | 文字列 |
-| Integer / Number | 整数 / 数値 |
-| Date / Datetime | 日付 / 日時 |
-| Boolean | 真偽値 |
-| Object | オブジェクト（ネストされたフィールド群） |
-| List (Array) | リスト（配列） |
+| String | Text string |
+| Integer / Number | Integer / numeric value |
+| Date / Datetime | Date / datetime |
+| Boolean | Boolean value |
+| Object | Object (group of nested fields) |
+| List (Array) | List (array) |
 
-### 型変換フォーミュラ
+### Type conversion formulas
 
-| 変換先 | フォーミュラ |
+| Convert to | Formula |
 |---|---|
-| 整数 | `.to_i` |
-| 浮動小数点 | `.to_f` |
-| 文字列 | `.to_s` |
-| 日付 | `.to_date` |
-| 日時 | `.to_time` |
-| 通貨 | `.to_currency` |
+| Integer | `.to_i` |
+| Float | `.to_f` |
+| String | `.to_s` |
+| Date | `.to_date` |
+| Datetime | `.to_time` |
+| Currency | `.to_currency` |
 
-## マッピングルール
+## Mapping rules
 
-### 変数 vs 定数
+### Variables vs constants
 
-- **変数（datapill）**: トリガーイベントごとに値が変化（例: 各リードの Account Name）
-- **定数**: 固定値（例: メールテンプレート内の固定テキスト）
-- **ハイブリッド**: 1つのフィールドに datapill と定数を混在
+- **Variable (datapill)**: value changes per trigger event (e.g. Account Name for each lead)
+- **Constant**: fixed value (e.g. fixed text inside an email template)
+- **Hybrid**: mix datapills and constants in a single field
 
-### システムデータピル
+### System datapills
 
-全ジョブで利用可能な組み込み datapill:
+Built-in datapills available in every job:
 
-| datapill | 説明 |
+| datapill | Description |
 |---|---|
-| User ID / User name / User email | 実行ユーザー情報 |
-| Recipe ID / Recipe URL / Recipe name | レシピ情報 |
-| Job ID / Job created at | ジョブ情報 |
-| Root recipe ID / Root job ID | ネスト呼出し元 |
-| Is repeat / Repeat count | リトライ情報 |
-| Is test | テストモードかどうか |
+| User ID / User name / User email | Executing user information |
+| Recipe ID / Recipe URL / Recipe name | Recipe information |
+| Job ID / Job created at | Job information |
+| Root recipe ID / Root job ID | Nested call origin |
+| Is repeat / Repeat count | Retry information |
+| Is test | Whether running in test mode |
 
-### エラーデータピル
+### Error datapills
 
-エラーハンドリング（Handle errors）ブロック内で利用可能:
+Available inside an error handling (Handle errors) block:
 
-| datapill | 説明 |
+| datapill | Description |
 |---|---|
-| Error type | エラー種別 |
-| Error message | エラーメッセージ |
-| Retry count | リトライ回数 |
-| Errored step number | エラー発生ステップ番号 |
-| Errored app | エラー発生アプリ |
-| Errored action | エラー発生アクション |
-| Inner message | サードパーティの生レスポンス |
+| Error type | Error category |
+| Error message | Error message |
+| Retry count | Retry count |
+| Errored step number | Step number where the error occurred |
+| Errored app | App where the error occurred |
+| Errored action | Action where the error occurred |
+| Inner message | Raw third-party response |
 
-## JSON 内での datapill 表現（レシピ解析から得た知見）
+## Datapill representation inside JSON (knowledge from recipe analysis)
 
-> 以下は Workato の公式ドキュメントには記載されていない構造情報であり、
-> 実際のレシピ JSON を解析して得た知見である。
+> The structural details below are not in the official Workato documentation;
+> they are findings derived from analysing actual recipe JSON.
 
-### `_dp()` 関数（構造化参照）
+### `_dp()` function (structured reference)
 
 ```
 #{_dp('{"pill_type":"output","provider":"<provider>","line":"<as>","path":["field"]}')}
 ```
 
-- `pill_type`: 通常 `"output"`
-- `provider`: 参照元ステップの provider 名
-- `line`: 参照元ステップの `as` 値
-- `path`: フィールドパス配列。リストの現在アイテムは `{"path_element_type":"current_item"}` を使用
+- `pill_type`: usually `"output"`
+- `provider`: provider name of the referenced step
+- `line`: `as` value of the referenced step
+- `path`: field path array. For the current item in a list, use `{"path_element_type":"current_item"}`
 
-### `_()` ドット記法
-
-```ruby
-#{_('data.provider.step.field')}                    # ドット記法
-```
-
-### `=_()` フォーミュラ付き参照
+### `_()` dot notation
 
 ```ruby
-=_('data.provider.step.list').pluck('f').join(', ') # Ruby式（先頭に = を付ける）
+#{_('data.provider.step.field')}                    # dot notation
 ```
 
-### foreach での path_element_type
+### `=_()` reference with formula
 
-ループ内で現在アイテムを参照する場合、`path` 配列内に `{"path_element_type":"current_item"}` を使用する:
+```ruby
+=_('data.provider.step.list').pluck('f').join(', ') # Ruby expression (prefix with =)
+```
+
+### `path_element_type` in foreach
+
+To reference the current item inside a loop, use `{"path_element_type":"current_item"}` inside the `path` array:
 ```json
 "path": [{"path_element_type":"current_item"}, "field_name"]
 ```
 
-## 注意事項
+## Notes
 
-- **隠しフィールド**: スキーマ未定義のフィールドはブラケット記法で参照: `Parent_object['field_name']`
-- **条件分岐未実行時**: 未実行の分岐のデータピルは null になる
-- **同名フィールド**: 異なるステップの同名データピルに注意。参照元ステップを確認する
-- **必須フィールド**: 設計時にマッピングしても実行時に値が欠損する可能性がある
+- **Hidden fields**: fields not defined in the schema must be referenced with bracket notation: `Parent_object['field_name']`
+- **Unexecuted branches**: datapills from a branch that did not execute are null
+- **Same-named fields**: watch out for datapills with the same name across different steps. Verify the source step
+- **Required fields**: a value mapped at design time may still be missing at runtime

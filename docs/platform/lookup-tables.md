@@ -1,59 +1,59 @@
 # Lookup Tables
 
-公式: https://docs.workato.com/en/features/lookup-tables.html
+Official: https://docs.workato.com/en/features/lookup-tables.html
 
-## 概要
+## Overview
 
-クロスリファレンス用のデータストア。レシピから頻繁に参照するデータをテーブル形式で格納し、API コール削減や静的データのキャッシュに使用する。
+A data store for cross-reference lookups. Stores data frequently referenced from recipes in a tabular form. Used to reduce API calls and to cache static data.
 
-## 主な用途
+## Primary use cases
 
-- 単位変換（メートル ↔ フィート等）
-- ビジネスデータの参照キャッシュ
-- 遅い API のデータキャッシュ
-- 郵便番号 → 都市名のマッピング
+- Unit conversion (meters ↔ feet, etc.)
+- Reference cache for business data
+- Caching data from slow APIs
+- Postal code → city name mapping
 
-## 制限
+## Limits
 
-| 項目 | 上限 |
+| Item | Limit |
 |---|---|
-| ワークスペースあたりのテーブル数 | 100 |
-| テーブルあたりのカラム数 | 10 |
-| テーブルあたりの行数 | 100,000 |
-| 行サイズ | 128 KB |
-| セルあたりのデータ | 10 KB |
-| バッチ操作サイズ | 10,000 |
-| CSV エクスポート | 50,000 行超はエクスポート不可 |
-| Get all entries | 最大 10,000 件まで |
+| Tables per workspace | 100 |
+| Columns per table | 10 |
+| Rows per table | 100,000 |
+| Row size | 128 KB |
+| Data per cell | 10 KB |
+| Batch operation size | 10,000 |
+| CSV export | Cannot export beyond 50,000 rows |
+| Get all entries | Up to 10,000 entries |
 
-## Actions (9種)
+## Actions (9)
 
-| 名前 | 説明 |
+| Name | Description |
 |---|---|
-| Add entry | エントリ作成 |
-| Add entries (batch) | 複数エントリ一括作成 |
-| Lookup entry | カラム値でエントリ検索（最初の一致を返す） |
-| Search entries (batch) | 条件に合う全エントリ検索 |
-| Get all entries (batch) | 全エントリ取得（最大 10,000 件） |
-| Update entry | エントリ更新 |
-| Delete entry | エントリ削除 |
-| Delete multiple entries (batch) | 複数エントリ一括削除 |
-| Truncate table | テーブルの全エントリ削除 |
+| Add entry | Create an entry |
+| Add entries (batch) | Bulk create multiple entries |
+| Lookup entry | Find an entry by column value (returns the first match) |
+| Search entries (batch) | Find all entries matching the criteria |
+| Get all entries (batch) | Retrieve all entries (up to 10,000) |
+| Update entry | Update an entry |
+| Delete entry | Delete an entry |
+| Delete multiple entries (batch) | Bulk delete multiple entries |
+| Truncate table | Delete all entries in the table |
 
-## フォーミュラでの lookup
+## Lookup in formulas
 
 ```ruby
 lookup("TABLE_NAME", "COLUMN": value)["RETURN_COLUMN"]
 ```
 
-Search entries の出力を使ったインメモリ lookup で、繰り返し検索を高速化できる。
+In-memory lookup using the output of Search entries accelerates repeated lookups.
 
-## Data Tables との違い
+## Differences from Data Tables
 
 | | Lookup Tables | Data Tables |
 |---|---|---|
-| 用途 | 参照・マッピングデータ | アプリのデータストア |
-| カラム数上限 | 10 | 制限緩い |
-| 行数上限 | 100,000 | スケーラブル |
-| トリガー | なし | 4種（real-time/batch） |
-| Workflow Apps 連携 | なし | あり |
+| Purpose | Reference / mapping data | Application data store |
+| Column count limit | 10 | Looser limit |
+| Row count limit | 100,000 | Scalable |
+| Triggers | None | 4 (real-time / batch) |
+| Workflow Apps integration | None | Yes |

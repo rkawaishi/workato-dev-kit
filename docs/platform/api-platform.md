@@ -1,46 +1,46 @@
 # API Platform
 
-公式: https://docs.workato.com/en/api-management.html
+Official: https://docs.workato.com/en/api-management.html
 
-## 概要
+## Overview
 
-エンタープライズグレードの API 管理機能。レシピのワークフローを REST エンドポイントとして公開し、API プロキシでレガシーシステムを安全に外部公開できる。
+Enterprise-grade API management. Exposes recipe workflows as REST endpoints and safely externalizes legacy systems through API proxies.
 
-## コアコンポーネント
+## Core components
 
 ### API Recipes & Endpoints
-レシピの機能を REST エンドポイントとして公開。他のレシピから呼び出したり、パートナーとデータを共有したりできる。
+Expose recipe functionality as REST endpoints. Other recipes can invoke them, and data can be shared with partners.
 
 ### API Collections
-エンドポイント（レシピベース・プロキシベース）をコレクションにグループ化。統一的な管理とアクセス制御を提供。
+Group endpoints (recipe-based and proxy-based) into collections. Provides unified management and access control.
 
 ### API Proxies
-クライアントと内部 API の間に立つ仲介者。レガシーや内部システムを直接外部に晒さず安全に公開。
+Intermediaries that sit between clients and internal APIs. Safely expose legacy or internal systems without directly exposing them externally.
 
-## 認証とセキュリティ
+## Authentication and security
 
-| 方式 | 説明 |
+| Method | Description |
 |---|---|
-| OAuth 2.0 | 標準的な OAuth フロー |
-| JWT tokens | JSON Web Token ベースの認証 |
-| OpenID Connect | ID トークンベースの認証 |
-| API Token | HTTP ヘッダー `api-token` で認証 |
+| OAuth 2.0 | Standard OAuth flow |
+| JWT tokens | JSON Web Token-based authentication |
+| OpenID Connect | ID token-based authentication |
+| API Token | Authenticate via the `api-token` HTTP header |
 
-## アクセス制御
+## Access control
 
-| 概念 | 説明 |
+| Concept | Description |
 |---|---|
-| **Clients** | API コレクションへのアクセスを許可されたユーザー |
-| **Access Profiles** | クライアントがアクセスできるコレクションを定義 |
-| **Access Policies** | レート制限とクォータ管理をクライアントごとに設定 |
+| **Clients** | Users granted access to API collections |
+| **Access Profiles** | Define which collections a client can access |
+| **Access Policies** | Configure rate limits and quota management per client |
 
-## モニタリング
+## Monitoring
 
-- レスポンスタイム、エラーレート、トラフィックパターンのリアルタイム可視化
-- 同時実行制限の追跡
-- 容量超過時のリクエストキューイング
+- Real-time visibility into response time, error rate, and traffic patterns
+- Concurrency limit tracking
+- Request queuing when capacity is exceeded
 
-## MCP との関連
+## Relationship to MCP
 
-API Collections のエンドポイントは MCP サーバーとしても公開可能。
-詳細は `@docs/platform/mcp.md` を参照。
+Endpoints in API Collections can also be exposed as MCP servers.
+See `@docs/platform/mcp.md` for details.

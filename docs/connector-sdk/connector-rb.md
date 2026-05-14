@@ -1,51 +1,51 @@
-# connector.rb リファレンス
+# connector.rb reference
 
-公式: https://docs.workato.com/en/developing-connectors/sdk/sdk-reference.html
+Official: https://docs.workato.com/en/developing-connectors/sdk/sdk-reference.html
 
-## トップレベル構造
+## Top-level structure
 
 ```ruby
 {
-  title: 'コネクタ名',
+  title: 'Connector name',
 
   connection: {
-    # 認証・接続設定
+    # Authentication / connection config
   },
 
   test: lambda do |connection|
-    # 接続テスト
+    # Connection test
   end,
 
   actions: {
-    # アクション定義
+    # Action definitions
   },
 
   triggers: {
-    # トリガー定義
+    # Trigger definitions
   },
 
   object_definitions: {
-    # 共通フィールド定義
+    # Shared field definitions
   },
 
   pick_lists: {
-    # ドロップダウンリスト
+    # Dropdown lists
   },
 
   methods: {
-    # 再利用可能なメソッド
+    # Reusable methods
   },
 
-  # 上級機能
-  # secure_tunnel:  OPA 対応
-  # webhook_keys:   静的 Webhook トリガー用
-  # streams:        ファイルストリーミング
+  # Advanced features
+  # secure_tunnel:  OPA support
+  # webhook_keys:   For static webhook triggers
+  # streams:        File streaming
 }
 ```
 
-全てのキーが必須ではない。必要なものだけ定義すればよい。
+Not all keys are required. Define only what you need.
 
-## connection ブロック
+## connection block
 
 ```ruby
 connection: {
@@ -67,25 +67,25 @@ connection: {
 }
 ```
 
-### 認証タイプ
+### Authentication types
 
-| type | 説明 |
+| type | Description |
 |---|---|
-| `basic_auth` | Basic 認証（username + password） |
-| `api_key` | API キー認証 |
-| `oauth2` | OAuth 2.0（authorization_code, client_credentials） |
-| `custom_auth` | カスタム認証フロー |
-| `multi` | 複数認証方式の選択 |
+| `basic_auth` | Basic auth (username + password) |
+| `api_key` | API key authentication |
+| `oauth2` | OAuth 2.0 (authorization_code, client_credentials) |
+| `custom_auth` | Custom authentication flow |
+| `multi` | Choice among multiple authentication methods |
 
-## test ブロック
+## test block
 
 ```ruby
 test: lambda do |connection|
-  get('/me')  # 接続確認 API を呼出し
+  get('/me')  # Call a connection-check API
 end
 ```
 
-## actions ブロック
+## actions block
 
 ```ruby
 actions: {
@@ -115,29 +115,29 @@ actions: {
 }
 ```
 
-### 必須キー
+### Required keys
 
-| キー | 説明 |
+| Key | Description |
 |---|---|
-| `execute` | アクションの実行ロジック（HTTP リクエスト等） |
-| `input_fields` | 入力フィールド定義 |
-| `output_fields` | 出力フィールド（datapill）定義 |
+| `execute` | Action execution logic (HTTP request, etc.) |
+| `input_fields` | Input field definitions |
+| `output_fields` | Output field (datapill) definitions |
 
-### オプションキー
+### Optional keys
 
-| キー | 説明 |
+| Key | Description |
 |---|---|
-| `title` / `subtitle` | UI 表示名 |
-| `description` / `help` | 説明・ガイダンス |
-| `config_fields` | 事前設定フィールド（input_fields の前に表示） |
-| `sample_output` | プレビュー用サンプル出力 |
-| `batch` / `bulk` | バッチ/バルク処理フラグ |
-| `retry_on_response` | リトライ条件（例: `[500, /error/]`） |
-| `max_retries` | 最大リトライ回数（上限 3） |
+| `title` / `subtitle` | UI display names |
+| `description` / `help` | Description and guidance |
+| `config_fields` | Pre-configuration fields (shown before `input_fields`) |
+| `sample_output` | Sample output for preview |
+| `batch` / `bulk` | Batch/bulk processing flags |
+| `retry_on_response` | Retry conditions (e.g. `[500, /error/]`) |
+| `max_retries` | Maximum retries (cap of 3) |
 
-## triggers ブロック
+## triggers block
 
-### ポーリングトリガー
+### Polling trigger
 
 ```ruby
 triggers: {
@@ -168,16 +168,16 @@ triggers: {
 }
 ```
 
-### ポーリングトリガーの必須キー
+### Required keys for polling triggers
 
-| キー | 説明 |
+| Key | Description |
 |---|---|
-| `poll` | データ取得ロジック。`events`, `can_poll_more`, `next_poll` を返す |
-| `dedup` | 重複排除キー（レコード ID 等） |
-| `input_fields` | 入力フィールド |
-| `output_fields` | 出力フィールド |
+| `poll` | Data fetch logic. Returns `events`, `can_poll_more`, `next_poll` |
+| `dedup` | Deduplication key (record ID, etc.) |
+| `input_fields` | Input fields |
+| `output_fields` | Output fields |
 
-### Webhook トリガー（動的）
+### Webhook trigger (dynamic)
 
 ```ruby
 triggers: {
@@ -201,7 +201,7 @@ triggers: {
 }
 ```
 
-## object_definitions ブロック
+## object_definitions block
 
 ```ruby
 object_definitions: {
@@ -218,9 +218,9 @@ object_definitions: {
 }
 ```
 
-アクション/トリガーから `object_definitions['record']` で参照。フィールド定義の重複を防ぐ。
+Reference from an action or trigger as `object_definitions['record']`. Prevents duplicated field definitions.
 
-## pick_lists ブロック
+## pick_lists block
 
 ```ruby
 pick_lists: {
@@ -233,7 +233,7 @@ pick_lists: {
 }
 ```
 
-## methods ブロック
+## methods block
 
 ```ruby
 methods: {
@@ -243,26 +243,26 @@ methods: {
 }
 ```
 
-コネクタ全体から `call('parse_response', response)` で呼び出し。
+Call from anywhere in the connector via `call('parse_response', response)`.
 
-## フィールド定義スキーマ
+## Field definition schema
 
 ```ruby
 {
-  name: 'field_name',           # 必須
+  name: 'field_name',           # Required
   type: 'string',               # string, integer, number, boolean, date, timestamp, object, array
   control_type: 'text',         # text, password, email, url, select, multiselect, checkbox, subdomain
-  label: '表示名',
-  optional: true,               # デフォルト true
-  hint: 'ヘルプテキスト',
-  pick_list: 'statuses',        # pick_lists 内の名前
-  properties: [...],            # type: 'object' の場合の子フィールド
-  of: 'object',                 # type: 'array' の場合の要素型
-  sticky: true                  # 常に表示（折りたたみ防止）
+  label: 'Display name',
+  optional: true,               # Default true
+  hint: 'Help text',
+  pick_list: 'statuses',        # Name from pick_lists
+  properties: [...],            # Child fields when type: 'object'
+  of: 'object',                 # Element type when type: 'array'
+  sticky: true                  # Always show (prevents collapse)
 }
 ```
 
-## HTTP メソッド
+## HTTP methods
 
 ```ruby
 get('path')                      # GET
@@ -272,45 +272,45 @@ patch('path', payload)           # PATCH
 delete('path')                   # DELETE
 ```
 
-### base_uri と path
+### `base_uri` and path
 
-全リクエストに `connection.base_uri` が `URI.join` 相当で結合される。**path を `/` で始めると absolute path 扱いになりホスト直下にリセットされる**ため、`base_uri` 側のパスプレフィックスが落ちる。
+Every request joins `connection.base_uri` with the path as if by `URI.join`. **A path that starts with `/` is treated as an absolute path and resets to the host root**, dropping the path prefix on `base_uri`.
 
 ```ruby
-# IRB で動作を再現（コネクタ内では URI.join は呼ばない。SDK 内部挙動の確認用）
+# Reproduce the behavior in IRB (do not call URI.join inside a connector; this is just to inspect the SDK's behavior).
 require 'uri'
 URI.join('https://example.com/api/', '/users/me').to_s
-# => "https://example.com/users/me"     ← /api/ が消える
+# => "https://example.com/users/me"     <- /api/ is dropped
 URI.join('https://example.com/api/', 'users/me').to_s
 # => "https://example.com/api/users/me"
 ```
 
-**規約**: `base_uri` は末尾スラッシュあり、`get` 等に渡す path は先頭スラッシュなしの相対パスで統一する。
+**Convention**: keep `base_uri` with a trailing slash, and pass paths to `get` etc. as relative paths with no leading slash.
 
-### 戻り値の型
+### Return type
 
-`get`, `post`, `put`, `patch`, `delete` は `Workato::Connector::Sdk::Request < SimpleDelegator` を返す。Array や Hash を返す API でも、直接の型チェックは Delegator 自身を見るため false になる。
+`get`, `post`, `put`, `patch`, `delete` return a `Workato::Connector::Sdk::Request < SimpleDelegator`. Even for APIs that return an Array or Hash, a direct type check inspects the Delegator itself and returns false.
 
 ```ruby
 response = get('items')
-response.is_a?(Array)   # => false（Delegator を見ている）
+response.is_a?(Array)   # => false (it inspects the Delegator)
 response.class          # => Workato::Connector::Sdk::Request
 ```
 
-実体を取り出すには、まず `method_missing` を経由して遅延評価を走らせ、`__getobj__` で実体を得る。`rescue` は **必ず `NoMethodError` に絞る**（修飾子 `rescue` は `StandardError` 全般を飲むためネットワーク例外を隠す）。
+To unwrap the underlying object, first route through `method_missing` to force lazy evaluation, then take `__getobj__` for the value. Always **restrict `rescue` to `NoMethodError`** (a modifier `rescue` swallows all of `StandardError` and would hide network exceptions).
 
 ```ruby
 begin
   response.length
 rescue NoMethodError
-  # length を持たない実体（Hash 等）は素通り
+  # Pass through when the underlying object has no length (e.g. Hash)
 end
-body = response.__getobj__   # 実体（Array / Hash）
+body = response.__getobj__   # The underlying value (Array / Hash)
 ```
 
-### List API の正規化ヘルパー
+### Normalization helper for list APIs
 
-エンドポイントごとに応答包装が異なる API（`[...]` 直接 / `{ "result": [...] }` / `{ "data": [...], "total": N }` / `{ "items": [...], "cursor": "..." }` など）では、`methods` ブロックに共通ヘルパーを置いて `execute` から必ず通す。
+For APIs whose response wrapping varies per endpoint (`[...]` directly / `{ "result": [...] }` / `{ "data": [...], "total": N }` / `{ "items": [...], "cursor": "..." }`, etc.), place a shared helper in the `methods` block and always route through it from `execute`.
 
 ```ruby
 methods: {
@@ -318,7 +318,7 @@ methods: {
     begin
       response.length
     rescue NoMethodError
-      # 実体が Hash 等のケースは素通り
+      # Pass through when the underlying value is a Hash, etc.
     end
     body = begin
       response.__getobj__
@@ -338,4 +338,4 @@ methods: {
 }
 ```
 
-戻り値を `{ items:, next_cursor: }` の固定形に揃えると、トリガー `poll` の `closure` 設計が素直になる。
+Normalizing the return value to a fixed shape `{ items:, next_cursor: }` makes `closure` design for trigger `poll` straightforward.
