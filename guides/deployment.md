@@ -1,138 +1,138 @@
-# デプロイ手順ガイド
+# Deployment guide
 
-ローカルで作成したアセットを Workato にデプロイする手順とトラブルシューティング。
+Steps and troubleshooting for deploying locally built assets to Workato.
 
-Claude Code / Cursor どちらでも同じスキル・同じフローで操作できる。
+The same skills and the same flow apply whether you use Claude Code or Cursor.
 
-## 基本フロー
+## Basic flow
 
-すべてのデプロイは `/push-project` スキルを通じて行う。手動で `workato push` を実行する必要はない。
-
-```
-/push-project                     # 標準プッシュ（バリデーション付き）
-/push-project --start             # プッシュ後にレシピを自動起動
-/push-project --test              # プッシュ後にテスト実行・結果確認
-/push-project --delete            # リモートの不要アセットも削除
-```
-
-## レシピのデプロイ
-
-### 新規レシピ（コネクションも新規の場合）
-
-新しいコネクションを含む場合、**2段階プッシュ** が必要になる。
+All deployments go through the `/push-project` skill. You should not need to run `workato push` manually.
 
 ```
-ステップ 1: /push-project
-  → コネクションのみ先行プッシュ
-  → "Workato UI でコネクションを認証してください" と案内される
-
-ステップ 2: UI でコネクションを認証
-  → 認証情報を入力し、接続テストを実行
-
-ステップ 3: /push-project --start
-  → 残りのアセット（レシピ等）をプッシュ
-  → レシピを起動
+/push-project                     # Standard push (with validation)
+/push-project --start             # Auto-start Recipes after push
+/push-project --test              # Test-run after push and check results
+/push-project --delete            # Also remove unused remote assets
 ```
 
-**なぜ2段階か:** コネクションが未認証だと、レシピ内の `pick_list` フィールド（動的選択肢）が解決できず、プッシュがエラーになる。
+## Deploying Recipes
 
-### 既存レシピの更新
+### New Recipes (with new connections)
+
+When new connections are involved, a **two-stage push** is required.
+
+```
+Step 1: /push-project
+  → Pushes connections only first
+  → You will be prompted: "Please authenticate the connection in the Workato UI"
+
+Step 2: Authenticate the connection in the UI
+  → Enter credentials and run a connection test
+
+Step 3: /push-project --start
+  → Push the remaining assets (Recipes, etc.)
+  → Start the Recipes
+```
+
+**Why two stages:** if a connection is unauthenticated, the `pick_list` fields (dynamic dropdowns) inside the Recipe cannot resolve, and the push will fail.
+
+### Updating existing Recipes
 
 ```
 /push-project --restart-recipes
 ```
 
-稼働中のレシピを更新する場合、`--restart-recipes` で自動的に停止→更新→再起動される。
+When updating a running Recipe, `--restart-recipes` automatically stops, updates, and restarts it.
 
-### テスト実行
+### Test runs
 
 ```
 /push-project --test
 ```
 
-プッシュ後にレシピをテスト実行し、ジョブの成功/失敗を確認する。失敗時はジョブ詳細を取得してエラー分析を行う。
+After pushing, the Recipe is test-run and the job's success/failure is checked. On failure, job details are retrieved for error analysis.
 
-## Workflow App のデプロイ
+## Deploying Workflow Apps
 
-Workflow App は UI での有効化が必要な唯一のケース。
-
-```
-ステップ 1: Workato UI → Settings → Workflow Apps → 有効化
-
-ステップ 2: /push-project
-  → Data Table、アプリ定義、ページ、レシピをまとめてプッシュ
-
-ステップ 3: UI で確認
-  → ページの表示、ステージ遷移、データ登録をテスト
-```
-
-**デプロイ順序:** Data Table → lcap_app.json → Pages → Recipes の順でプッシュされる。依存関係は `/push-project` が自動的に解決する。
-
-## Genie / MCP サーバーのデプロイ
+Workflow App is the only case that requires UI enablement.
 
 ```
-ステップ 1: /push-project
-  → Genie 定義、スキル定義、MCP サーバー定義、スキルレシピをプッシュ
+Step 1: Workato UI → Settings → Workflow Apps → enable
 
-ステップ 2: UI で確認
-  → Agent Studio でスキルが認識されているか確認
-  → MCP サーバーの場合、ツールが discoverable か確認
+Step 2: /push-project
+  → Pushes Data Table, app definition, pages, and Recipes together
 
-ステップ 3: テスト
-  → Genie チャットでスキルを呼び出し、期待通りに動作するか確認
+Step 3: Verify in the UI
+  → Test page rendering, stage transitions, and data entry
 ```
 
-**注意:** `/push-project --delete` は `agentic_skill` と `mcp_server` を削除できない（CLI の制限）。これらの削除は UI から手動で行う。
+**Deployment order:** Data Table → lcap_app.json → Pages → Recipes. `/push-project` resolves the dependencies automatically.
 
-## カスタムコネクタのデプロイ
+## Deploying Genie / MCP server
 
-カスタムコネクタは API ヘルパーで push する（Platform CLI のプロファイルで認証）:
+```
+Step 1: /push-project
+  → Pushes Genie definition, skill definition, MCP server definition, and skill Recipes
+
+Step 2: Verify in the UI
+  → Confirm the skill is recognized in Agent Studio
+  → For MCP servers, confirm the tools are discoverable
+
+Step 3: Test
+  → Invoke the skill from Genie chat and confirm it behaves as expected
+```
+
+**Note:** `/push-project --delete` cannot remove `agentic_skill` or `mcp_server` (CLI limitation). Remove these manually from the UI.
+
+## Deploying custom connectors
+
+Push custom connectors via the API helper (authenticates with the Platform CLI profile):
 
 ```bash
-# Workato へアップロード
+# Upload to Workato
 python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb --title "<Title>"
 
-# 既存コネクタの更新
+# Update an existing connector
 python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb --connector-id <id>
 
-# ローカルテスト（Ruby gem CLI）
+# Local test (Ruby gem CLI)
 cd connectors/<name>
 bundle exec workato exec connector.rb test
 ```
 
-## プッシュ前バリデーション
+## Pre-push validation
 
-`/push-project` は以下のチェックを自動実行する:
+`/push-project` automatically runs the following checks:
 
-| チェック | 対象 | 内容 |
+| Check | Target | Description |
 |---|---|---|
-| JSON 構文 | 全 `.json` ファイル | パース可能かどうか |
-| 必須フィールド | `.recipe.json` | `name`, `code`, `config` の存在 |
-| extended_output_schema | アクションステップ | 後続ステップが参照するフィールド定義の存在 |
-| ページコンポーネント | `.page.json` | `dataSource` 定義の整合性 |
-| UUID 形式 | レシピステップ | `uuid` フィールドの形式チェック |
+| JSON syntax | All `.json` files | Whether they parse |
+| Required fields | `.recipe.json` | Presence of `name`, `code`, `config` |
+| extended_output_schema | Action steps | Presence of field definitions referenced by downstream steps |
+| Page components | `.page.json` | Consistency of `dataSource` definitions |
+| UUID format | Recipe steps | Format check on `uuid` fields |
 
-バリデーションのみ実行したい場合は `/validate-recipe` を使う。
+To run validation only, use `/validate-recipe`.
 
-## トラブルシューティング
+## Troubleshooting
 
-| エラー | 原因 | 対処 |
+| Error | Cause | Fix |
 |---|---|---|
-| `Connection not found` | コネクションが未プッシュまたは未認証 | 2段階プッシュで先にコネクションを認証 |
-| `Token expired` | API トークンの期限切れ | `workato init` で再認証 |
-| `Unresolved reference` | 参照先アセットが存在しない | 依存先を先にプッシュする |
-| `Schema validation error` | JSON 構造が仕様と不一致 | `/validate-recipe` で詳細を確認 |
-| `Recipe is running` | 稼働中レシピの更新 | `--restart-recipes` オプションを使用 |
-| `pick_list resolution failed` | コネクション未認証で動的選択肢が取得不可 | UI でコネクションを認証してから再プッシュ |
-| `Skipped: agentic_skill` | CLI が skill/MCP の削除に未対応 | UI から手動削除 |
+| `Connection not found` | Connection is unpushed or unauthenticated | Use the two-stage push and authenticate the connection first |
+| `Token expired` | API token has expired | Re-authenticate with `workato init` |
+| `Unresolved reference` | The referenced asset does not exist | Push the dependency first |
+| `Schema validation error` | JSON structure does not match the spec | Check details with `/validate-recipe` |
+| `Recipe is running` | Updating a running Recipe | Use the `--restart-recipes` option |
+| `pick_list resolution failed` | Dynamic dropdowns cannot resolve because the connection is unauthenticated | Authenticate the connection in the UI, then push again |
+| `Skipped: agentic_skill` | CLI does not support deleting skill/MCP | Delete manually from the UI |
 
-## デプロイ後の学習サイクル
+## Post-deployment learning cycle
 
-デプロイ後に UI で調整した場合は、必ず pull → learn のサイクルを回す:
+If you adjust things in the UI after deploying, always run the pull → learn cycle:
 
 ```
-/pull-project                     # UI での変更をローカルに取得
-/learn-recipe <project>    # 変更から新しい知見を学習
+/pull-project                     # Pull UI changes back to local
+/learn-recipe <project>    # Learn new insights from the changes
 ```
 
-これにより、UI でしか設定できないフィールド値や、ドキュメント化されていない構造がナレッジベースに蓄積される。
+This accumulates field values that can only be set in the UI, as well as undocumented structures, into the knowledge base.
