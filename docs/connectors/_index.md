@@ -1,52 +1,52 @@
-# Workato コネクタ一覧
+# Workato connectors
 
-## このリストの位置づけ
+## Scope of this list
 
-本ファイルは Workato Pre-built コネクタ **316 件のインベントリ**（コネクタ名・provider key・トリガー数・アクション数）です。`/sync-connectors` が Workato API から自動生成・更新します。
+This file is the **inventory of 316 Workato pre-built connectors** (connector name, provider key, trigger count, action count). `/sync-connectors` auto-generates and updates it from the Workato API.
 
-各コネクタの詳細（個別トリガー/アクションの一覧、フィールド仕様）は **`docs/connectors/<provider>.md`** に分離されています。これらの個別ファイルも `/sync-connectors` がスケルトン（`## Triggers` / `## Actions` テーブル + `## フィールド詳細` 空セクション）を作成しますが、**説明文・フィールド詳細は API から取得できないため空欄**で初期化されます。
+The details for each connector (individual trigger/action lists, field specifications) are split into **`docs/connectors/<provider>.md`** files. `/sync-connectors` creates the skeleton (`## Triggers` / `## Actions` tables + an empty `## Field details` section) in each of those files too, but **descriptions and field details are initialized empty because they cannot be retrieved from the API**.
 
-### ドキュメントの育て方
+### Growing the documentation
 
-説明文・フィールド詳細は以下のサイクルで段階的に充実させていく設計です:
+Descriptions and field details are filled in incrementally through this cycle:
 
-1. **`/learn-recipe <project>`** — 既存レシピの JSON からフィールド使用例を抽出し、該当 `<provider>.md` の `## フィールド詳細` に追記
-2. **`/auto-learn <provider>`** — Workato UI を Claude in Chrome で操作し、全 op の input/output フィールドを自律収集して追記（Claude Code 限定）
-3. **手動補正** — 公式ドキュメントや実機検証で得た知見を `org/docs/connectors/<provider>.md`（組織ナレッジ層）または PR で kit に還元
+1. **`/learn-recipe <project>`** — extract field-usage examples from existing recipe JSON and append them to the relevant `<provider>.md` under `## Field details`.
+2. **`/auto-learn <provider>`** — drive the Workato UI through Claude in Chrome, autonomously collect input/output fields for every op, and append them (Claude Code only).
+3. **Manual corrections** — write knowledge gained from official docs or hands-on verification into `org/docs/connectors/<provider>.md` (the organization knowledge layer) or contribute it back to the kit via PR.
 
-そのため Triggers / Actions テーブルの「説明」列が空欄でも**仕様外ではなく未学習**の意味です。コミュニティ PR でのナレッジ還元は [CONTRIBUTING.md](../../CONTRIBUTING.md) と [connector_doc_update](../../.github/ISSUE_TEMPLATE/connector_doc_update.yml) issue テンプレートを参照してください。
+A blank "Description" column in the Triggers / Actions table therefore means **"not yet learned", not "out of spec"**. To contribute knowledge back via community PR, see [CONTRIBUTING.md](../../CONTRIBUTING.md) and the [connector_doc_update](../../.github/ISSUE_TEMPLATE/connector_doc_update.yml) issue template.
 
-## コネクタの分類
+## Connector classification
 
-### Pre-built Connectors（標準コネクタ）
-Workato が公式に提供するコネクタ。セットアップガイド、必要な権限、利用可能なトリガー/アクション、トラブルシューティングが文書化されている。
+### Pre-built connectors
+Connectors officially provided by Workato. Setup guides, required permissions, available triggers/actions, and troubleshooting are documented.
 
-### Universal Connectors（汎用コネクタ）
-標準コネクタが存在しない API やサービスに接続するための汎用コネクタ。
+### Universal connectors
+Generic connectors for APIs or services that don't have a dedicated pre-built connector.
 
-| コネクタ | 用途 | ドキュメント |
+| Connector | Use | Documentation |
 |---|---|---|
-| **HTTP** | 任意の HTTP API に接続 | https://docs.workato.com/en/developing-connectors/http-v2.html |
-| **OpenAPI** | OpenAPI 仕様で記述された API に接続 | https://docs.workato.com/en/connectors/openapi/ |
-| **GraphQL** | GraphQL API でクエリ/ミューテーション実行 | https://docs.workato.com/en/connectors/graphql.html |
-| **SOAP** | WSDL 記述による Web サービスに接続 | https://docs.workato.com/en/connectors/soap.html |
+| **HTTP** | Connect to any HTTP API | https://docs.workato.com/en/developing-connectors/http-v2.html |
+| **OpenAPI** | Connect to APIs described by an OpenAPI spec | https://docs.workato.com/en/connectors/openapi/ |
+| **GraphQL** | Run queries / mutations against a GraphQL API | https://docs.workato.com/en/connectors/graphql.html |
+| **SOAP** | Connect to web services described by WSDL | https://docs.workato.com/en/connectors/soap.html |
 
-### Community Connectors（コミュニティコネクタ）
-ユーザーが開発・共有したコネクタ。Community Library で検索可能。
+### Community connectors
+User-developed and -shared connectors. Searchable in the Community Library.
 
-### Custom Connectors（カスタムコネクタ）
-Connector SDK を使って自作するコネクタ。プライベートスコープで作成後、共有やマーケットプレイス公開が可能。
-- SDK ドキュメント: https://docs.workato.com/en/developing-connectors/sdk.html
+### Custom connectors
+Connectors built with the Connector SDK. Initially private-scoped; can be shared or published to the marketplace later.
+- SDK docs: https://docs.workato.com/en/developing-connectors/sdk.html
 
 ### Custom Action (`__adhoc_http_action`)
-コネクタ内に適切なアクションがない場合、コネクタの認証を利用しつつ API を直接呼び出す。
-- 詳細: `@.claude/rules/workato-recipe-format.md` の Custom Action セクション参照
+When a connector has no suitable action, call the API directly while still using the connector's authentication.
+- Details: see the Custom Action section in `@.claude/rules/workato-recipe-format.md`.
 
-## 全 Pre-built コネクタ一覧（316件）
+## Full pre-built connector list (316)
 
-API (`workato connectors list --platform`) から取得。`/sync-connectors` で更新。
+Fetched from the API (`workato connectors list --platform`). Refreshed by `/sync-connectors`.
 
-| コネクタ | Provider | Triggers | Actions |
+| Connector | Provider | Triggers | Actions |
 |---|---|---|---|
 | 2Checkout | `two_checkout` | 3 | 0 |
 | 4me | `connector_4me` | 1 | 4 |

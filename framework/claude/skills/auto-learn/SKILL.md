@@ -153,9 +153,7 @@ Inside `processOperation`:
 
 ### Phase 4: Append to docs
 
-In `docs/connectors/<provider>.md`, append each op's result to the `## Action details` / `## Trigger details` sections.
-
-> **Transition compatibility (docs migration window)**: existing connector docs may still use the legacy Japanese headings `## アクション詳細` / `## トリガー詳細` / `## フィールド詳細` / `## 学習サマリ` instead of the English ones. When updating an existing file, detect either heading and append to whichever exists. When creating a new section in a new file, always use the English heading.
+In `docs/connectors/<provider>.md`, append each op's result to the `## Action details` / `## Trigger details` sections:
 
 ```markdown
 ### <op_name> (<Display Title>)
@@ -198,8 +196,6 @@ Append-routing rules (anything other than `'ok'` is treated as a learning-failur
 
 After appending each op's result, add a `## Learning summary` section to the **end** of `docs/connectors/<provider>.md` (below the final `## ...` section). **Replace if it already exists** — this section holds only the latest run's snapshot, and historical runs are tracked via git history.
 
-> **Transition compatibility**: if the file currently has the legacy `## 学習サマリ` heading instead of `## Learning summary`, replace the legacy section with the new English-headed one (do not leave both).
-
 Format (assemble the fields from the run's results; lists separate op names with ` — `; if a set is empty, leave the line in place with `0`):
 
 ```markdown
@@ -241,7 +237,7 @@ Copy each `> ⚠` inline note within an op section (other than `> ⚠ Partial le
 Drop the heading entirely if there is nothing to record.
 ```
 
-This section becomes **the single reference point for "give me follow-ups" requests**. `grep -E "^## (Learning summary|学習サマリ)" docs/connectors/*.md -A 200` produces follow-ups for every connector (the legacy Japanese heading still appears in files that have not yet been migrated).
+This section becomes **the single reference point for "give me follow-ups" requests**. `grep "^## Learning summary" docs/connectors/*.md -A 200` produces follow-ups for every connector.
 
 `--followups` mode reads only this section to aggregate (does not run Phases 1–3). See "Followups mode" at the end of this file.
 
@@ -332,7 +328,7 @@ Non-recoverable situations — tab died, network dropped, logged out, etc. — a
 
 ## Followups mode (`--followups`)
 
-A **read-only aggregation mode** independent of the normal `/auto-learn` execution (no UI operations). It does not run Phases 1–5 at all — just reads the `## Learning summary` (or the legacy `## 学習サマリ`) sections of `docs/connectors/*.md` and lists follow-ups.
+A **read-only aggregation mode** independent of the normal `/auto-learn` execution (no UI operations). It does not run Phases 1–5 at all — just reads the `## Learning summary` sections of `docs/connectors/*.md` and lists follow-ups.
 
 ### Invocation
 
@@ -346,7 +342,7 @@ A **read-only aggregation mode** independent of the normal `/auto-learn` executi
 1. Targets:
    - With `<provider>` → `docs/connectors/<provider>.md` only.
    - Without → all of `docs/connectors/*.md` (exclude non-connector files like `_index.md` after content inspection).
-2. Read each file and extract the `## Learning summary` section — or the legacy `## 学習サマリ` for files not yet migrated — up to the next `## ` or EOF.
+2. Read each file and extract the `## Learning summary` section (up to the next `## ` or EOF).
 3. Connectors without a section go into the `unknown` category as "uncollected" (left over from a past run).
 4. Print a summary table and per-category follow-ups to stdout:
 
