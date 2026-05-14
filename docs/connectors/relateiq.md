@@ -1,14 +1,14 @@
-# SalesforceIQ コネクタ
+# SalesforceIQ connector
 
 Provider: `relateiq`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Create contact | `add_contact` | - |  |
 | Add contact to list | `add_contact_to_list` | - |  |

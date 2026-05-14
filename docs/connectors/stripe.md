@@ -1,10 +1,10 @@
-# Stripe コネクタ
+# Stripe connector
 
 Provider: `stripe`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New charge | `new_charge` | - |  |
 | New object event | `new_event` | - |  |
@@ -13,7 +13,7 @@ Provider: `stripe`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create charge | `create_charge` | - |  |

@@ -1,13 +1,13 @@
-# Email by Workato コネクタ
+# Email by Workato connector
 
 Provider: `email`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Send email | `send_mail` | - |  |

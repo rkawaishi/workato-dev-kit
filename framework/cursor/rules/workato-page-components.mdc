@@ -6,11 +6,11 @@ alwaysApply: false
 
 # Workato Page Component JSON Format
 
-## トップレベル構造
+## Top-level structure
 
 ```json
 {
-  "name": "ページ名",
+  "name": "Page name",
   "path": "url-slug",
   "content": {
     "type": "common",
@@ -18,80 +18,80 @@ alwaysApply: false
     "background": { "style": "pattern", "pattern": "light-2" },
     "variables": [],
     "handlers": { "pageLoad": null },
-    "layout": [ /* ネストされたコンポーネントツリー */ ]
+    "layout": [ /* nested component tree */ ]
   }
 }
 ```
 
-## layout 構造
+## `layout` structure
 
-`layout` は行の配列。各行は `[component, colSpan]` のペアで、行頭に行番号（1始まり）を持つ:
+`layout` is an array of rows. Each row consists of a row number (1-based) followed by `[component, colSpan]` pairs:
 
 ```json
 "layout": [
-  1,                          // 行番号
-  [{ /* component */ }, 0],   // [コンポーネント, colSpan（通常0）]
+  1,                          // row number
+  [{ /* component */ }, 0],   // [component, colSpan (usually 0)]
   [{ /* component */ }, 0]
 ]
 ```
 
-`container` は入れ子の `layout` を持てる。
+A `container` may have its own nested `layout`.
 
-## コンポーネント共通プロパティ
+## Shared component properties
 
-| プロパティ | 説明 |
+| Property | Description |
 |---|---|
-| `type` | コンポーネント種別 |
-| `id` | **8桁 hex** の一意 ID（例: `"cb33ba2c"`） |
-| `name` | コンポーネント名（ビルダー向け） |
-| `x` | グリッド開始位置（0-11、12カラムレイアウト） |
-| `width` | グリッド幅（1-12） |
-| `visible` | `true` / `false` / 条件式 |
+| `type` | Component kind |
+| `id` | **8-digit hex** unique ID (e.g. `"cb33ba2c"`) |
+| `name` | Component name (for the builder) |
+| `x` | Grid starting position (0–11; 12-column layout) |
+| `width` | Grid width (1–12) |
+| `visible` | `true` / `false` / conditional expression |
 
-入力系コンポーネント追加:
+Additional properties for input components:
 
-| プロパティ | 説明 |
+| Property | Description |
 |---|---|
-| `dataSource` | **保存先**（後述）。選択肢ソースではない |
-| `editable` | `true` / `false` / 条件式 |
-| `validations.required.condition` | `true` / `false` / 条件式 |
-| `label` | ユーザー向け表示ラベル |
-| `hint` | 入力ヒント |
-| `placeholder` | プレースホルダー |
+| `dataSource` | **Save destination** (see below). NOT the source of option values. |
+| `editable` | `true` / `false` / conditional expression |
+| `validations.required.condition` | `true` / `false` / conditional expression |
+| `label` | User-facing label |
+| `hint` | Input hint |
+| `placeholder` | Placeholder text |
 
-## dataSource（重要）
+## dataSource (important)
 
-`dataSource` は **Data Table カラムへの保存先** を指定する。選択肢のソースではない。
+`dataSource` specifies the **Data Table column the value is written to**, not the source of option values.
 
 ```json
 "dataSource": {
-  "id": "Employee name",   // Data Table フィールドの title（UUID ではない）
-  "type": "short-text"     // フィールド型
+  "id": "Employee name",   // Data Table field title (NOT its UUID)
+  "type": "short-text"     // field type
 }
 ```
 
-`dataSource: null` → 送信時に値が保存されない。
+`dataSource: null` → the value is not persisted on submit.
 
-## コンポーネント type マッピング
+## Component `type` mapping
 
-| 用途 | `type` | `style` | Data Table フィールド型 |
+| Purpose | `type` | `style` | Data Table field type |
 |---|---|---|---|
-| 短いテキスト | `"input"` | `"short-text"` | `short-text` |
-| 長いテキスト | `"input"` | `"long-text"` | `long-text` |
-| 数値 | `"input"` | `"number"` | `number` |
-| メール | `"input"` | `"email"` | `short-text` |
-| 電話番号 | `"input"` | `"phone"` | `short-text` |
+| Short text | `"input"` | `"short-text"` | `short-text` |
+| Long text | `"input"` | `"long-text"` | `long-text` |
+| Number | `"input"` | `"number"` | `number` |
+| Email | `"input"` | `"email"` | `short-text` |
+| Phone | `"input"` | `"phone"` | `short-text` |
 | URL | `"input"` | `"url"` | `short-text` |
-| 日付 | **`"date"`** | `"date"` | `date` |
-| 日時 | **`"date"`** | `"date-time"` | `date-time` |
-| 選択式（単一） | **`"dropdown"`** | 不要 | `short-text` |
-| 選択式（複数） | **`"dropdown"`** + `multiValue: true` | 不要 | `short-text` |
-| チェックボックス | **`"checkbox"`** | 不要 | `boolean` |
-| ファイル | **`"file"`** | 不要 | `file` |
+| Date | **`"date"`** | `"date"` | `date` |
+| Date-time | **`"date"`** | `"date-time"` | `date-time` |
+| Dropdown (single) | **`"dropdown"`** | not used | `short-text` |
+| Dropdown (multi) | **`"dropdown"`** + `multiValue: true` | not used | `short-text` |
+| Checkbox | **`"checkbox"`** | not used | `boolean` |
+| File | **`"file"`** | not used | `file` |
 
-> **CRITICAL: 日付には必ず `"type": "date"` を使うこと。`"type": "input"` + `"style": "date"` を使うとページエディタが無限ロードで壊れる。**
+> **CRITICAL: dates must use `"type": "date"`. Using `"type": "input"` + `"style": "date"` breaks the page editor with an infinite loading state.**
 
-## input コンポーネント
+## input component
 
 ```json
 {
@@ -110,9 +110,9 @@ alwaysApply: false
 }
 ```
 
-`"long-text"` の場合は `"textareaHeight": 72` を追加。
+For `"long-text"`, add `"textareaHeight": 72`.
 
-## date コンポーネント
+## date component
 
 ```json
 {
@@ -131,7 +131,7 @@ alwaysApply: false
 }
 ```
 
-## dropdown コンポーネント
+## dropdown component
 
 ```json
 {
@@ -158,15 +158,15 @@ alwaysApply: false
 }
 ```
 
-| プロパティ | 説明 |
+| Property | Description |
 |---|---|
-| `options` | 静的な選択肢リスト（`title` = 表示名、`value` = 保存値） |
-| `appFunctionOptions` | レシピで動的にオプションを返す場合（`app_function_load_dropdown_request` トリガー） |
-| `dataSourceOptions` | Data Table の別カラムを選択肢ソースにする場合 |
-| `multiValue` | `true` で複数選択（最大20件） |
-| `labelDataSource` | ラベル用データソース（通常 `null`） |
+| `options` | Static option list (`title` = display, `value` = saved value) |
+| `appFunctionOptions` | Options returned dynamically by a recipe (`app_function_load_dropdown_request` trigger) |
+| `dataSourceOptions` | Use another Data Table column as the source of options |
+| `multiValue` | `true` for multi-select (max 20 entries) |
+| `labelDataSource` | Data source for labels (usually `null`) |
 
-## button コンポーネント
+## button component
 
 ```json
 {
@@ -187,31 +187,31 @@ alwaysApply: false
 }
 ```
 
-`style`: `"filled"`（主要）/ `"outline"`（補助）
+`style`: `"filled"` (primary) / `"outline"` (secondary).
 
 ### click handler types
 
-| type | 用途 |
+| `type` | Use |
 |---|---|
-| `"save-data"` | Data Table にデータ保存（送信フォーム） |
-| `"complete-task"` | タスク完了（承認/却下） |
-| `"open-url"` | URL を開く |
-| `"run-recipe"` | レシピを実行 |
-| `"reset-reload"` | コンポーネントのリセット/リロード |
+| `"save-data"` | Save data to a Data Table (submit form) |
+| `"complete-task"` | Complete a task (approve / reject) |
+| `"open-url"` | Open a URL |
+| `"run-recipe"` | Run a recipe |
+| `"reset-reload"` | Reset / reload components |
 
-## 表示コンポーネント
+## Display components
 
-| type | 用途 | 主要プロパティ |
+| `type` | Use | Key properties |
 |---|---|---|
-| `"container"` | レイアウトコンテナ | `layout`, `backgroundColor`, `borderColor`, `padding` (large/medium/small/none) |
-| `"text"` | テキスト表示（マークダウン対応） | `text`, `alignment`, `color` |
-| `"divider"` | 区切り線 | `backgroundColor` |
-| `"image"` | 画像 | プリセット `"illustration-N"` / URL |
+| `"container"` | Layout container | `layout`, `backgroundColor`, `borderColor`, `padding` (large/medium/small/none) |
+| `"text"` | Text (supports Markdown) | `text`, `alignment`, `color` |
+| `"divider"` | Divider line | `backgroundColor` |
+| `"image"` | Image | A preset like `"illustration-N"` or a URL |
 
-## 条件付きプロパティ
+## Conditional properties
 
-`visible`, `editable`, `validations.required.condition` は条件式で動的に制御可能:
+`visible`, `editable`, and `validations.required.condition` accept conditional expressions:
 
-- レシピの IF 条件と同様の構文（AND / OR チェーン可能）
-- 参照可能データ: App user 情報、Request メタデータ、他コンポーネントの値、ワークフローステージ
-- JSON での条件式構造は UI で設定後に pull して確認推奨
+- Same syntax as a recipe's IF condition (AND / OR chaining allowed).
+- Available data: App user info, request metadata, other component values, workflow stage.
+- For the JSON shape of complex conditions, configure them in the UI and pull to inspect.

@@ -1,10 +1,10 @@
-# Jira コネクタ
+# Jira connector
 
 Provider: `jira`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Deleted object | `deleted_object` | - |  |
 | Export new issues in Jira | `issue_created_bulk` | - |  |
@@ -23,7 +23,7 @@ Provider: `jira`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Assign user to issue | `assign_issue` | - |  |
@@ -44,12 +44,12 @@ Provider: `jira`
 | Update issue status | `update_issue_status` | - |  |
 | Upload attachment | `upload_attachment` | - |  |
 
-## フィールド詳細
+## Field details
 
 ### new_issue
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | id | string | ID |
 | self | string | Self |
@@ -74,14 +74,14 @@ Provider: `jira`
 | changelog.histories[].items[].fromString | string | From string |
 | changelog.histories[].items[].to | string | To |
 | changelog.histories[].items[].toString | string | To string |
-| fields.statuscategorychangedate | date_time | ステータス カテゴリが変更されました |
+| fields.statuscategorychangedate | date_time | Status category changed |
 | fields.issuetype.self | string | Self |
 | fields.issuetype.id | string | ID |
 | fields.issuetype.description | string | Description |
 | fields.issuetype.iconUrl | string | Icon URL |
 | fields.issuetype.name | string | Name |
 | fields.issuetype.subtask | boolean | Sub task |
-| fields.timespent | number | 消費時間 |
+| fields.timespent | number | Time spent |
 | fields.project.self | string | Self |
 | fields.project.id | string | ID |
 | fields.project.key | string | Key |
@@ -90,28 +90,28 @@ Provider: `jira`
 | fields.fixVersions[].id | string | ID |
 | fields.fixVersions[].description | string | Description |
 | fields.fixVersions[].name | string | Name |
-| fields.aggregatetimespent | number | Σ 消費時間 |
-| fields.statusCategory | string | ステータス カテゴリ |
+| fields.aggregatetimespent | number | Σ time spent |
+| fields.statusCategory | string | Status category |
 | fields.resolution.self | string | Self |
 | fields.resolution.id | string | ID |
 | fields.resolution.description | string | Description |
 | fields.resolution.name | string | Name |
-| fields.resolutiondate | date_time | 解決日 |
-| fields.workratio | number | 作業比率 |
-| fields.lastViewed | date_time | 最終閲覧日 |
+| fields.resolutiondate | date_time | Resolved date |
+| fields.workratio | number | Work ratio |
+| fields.lastViewed | date_time | Last viewed |
 | fields.watches.self | string | Self |
 | fields.watches.watchCount | integer | Watch count |
 | fields.watches.isWatching | boolean | Is watching |
-| fields.issuerestriction | string | 制限対象 |
-| fields.thumbnail | string | 画像 |
-| fields.created | date_time | 作成日 |
+| fields.issuerestriction | string | Restricted to |
+| fields.thumbnail | string | Image |
+| fields.created | date_time | Created date |
 | fields.priority.self | string | Self |
 | fields.priority.iconUrl | string | Icon URL |
 | fields.priority.name | string | Name |
 | fields.priority.id | string | ID |
-| fields.labels[] | string | ラベル |
-| fields.timeestimate | number | 残余見積 |
-| fields.aggregatetimeoriginalestimate | number | Σ 初期見積もり |
+| fields.labels[] | string | Labels |
+| fields.timeestimate | number | Remaining estimate |
+| fields.aggregatetimeoriginalestimate | number | Σ original estimate |
 | fields.versions[].self | string | Self |
 | fields.versions[].id | string | ID |
 | fields.versions[].description | string | Description |
@@ -136,7 +136,7 @@ Provider: `jira`
 | fields.assignee.displayName | string | Display name |
 | fields.assignee.active | boolean | Active |
 | fields.assignee.timeZone | string | Time zone |
-| fields.updated | date_time | 更新日 |
+| fields.updated | date_time | Updated date |
 | fields.status.self | string | Self |
 | fields.status.description | string | Description |
 | fields.status.iconUrl | string | Icon URL |
@@ -150,11 +150,11 @@ Provider: `jira`
 | fields.components[].self | string | Self |
 | fields.components[].id | string | ID |
 | fields.components[].name | string | Name |
-| fields.issuekey | string | キー |
-| fields.timeoriginalestimate | number | 初期見積もり |
-| fields.description | string | 説明 |
-| fields.timetracking | string | 時間管理 |
-| fields.security | string | セキュリティ レベル |
+| fields.issuekey | string | Key |
+| fields.timeoriginalestimate | number | Original estimate |
+| fields.description | string | Description |
+| fields.timetracking | string | Time tracking |
+| fields.security | string | Security level |
 | fields.attachment[].self | string | Self |
 | fields.attachment[].filename | string | Filename |
 | fields.attachment[].author.self | string | Self url (nested) |
@@ -167,8 +167,8 @@ Provider: `jira`
 | fields.attachment[].mimeType | string | Mime type |
 | fields.attachment[].content | string | Content |
 | fields.attachment[].thumbnail | string | Thumbnail |
-| fields.aggregatetimeestimate | number | Σ 残余見積 |
-| fields.summary | string | 要約 |
+| fields.aggregatetimeestimate | number | Σ remaining estimate |
+| fields.summary | string | Summary |
 | fields.creator.self | string | Self |
 | fields.creator.key | string | Key |
 | fields.creator.name | string | Name |
@@ -190,15 +190,15 @@ Provider: `jira`
 | fields.reporter.timeZone | string | Time zone |
 | fields.aggregateprogress.progress | integer | Progress |
 | fields.aggregateprogress.total | integer | Total |
-| fields.environment | string | 環境 |
-| fields.duedate | date_time | 期限 |
+| fields.environment | string | Environment |
+| fields.duedate | date_time | Due date |
 | fields.progress.progress | integer | Progress |
 | fields.progress.total | integer | Total |
 | fields.votes.self | string | Self |
 | fields.votes.votes | integer | Votes |
 | fields.votes.hasVoted | boolean | Has voted |
-| fields.comment | string | コメント |
-| fields.worklog[].worklog | string | ログ作業 |
+| fields.comment | string | Comment |
+| fields.worklog[].worklog | string | Work log |
 | fields.parent.id | string | ID |
 | fields.parent.key | string | Key |
 | fields.parent.self | string | Self |
@@ -219,9 +219,9 @@ Provider: `jira`
 | fields.parent.fields.issuetype.id | string | ID (nested) |
 | fields.parent.fields.issuetype.subtask | boolean | Subtask (nested) |
 
-**カスタムフィールド（プロジェクト依存）:**
+**Custom fields (project-dependent):**
 
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | fields.customfield_10034 | string | Vulnerability |
 | fields.customfield_10021[].self | string | Flagged - Self |
@@ -230,19 +230,19 @@ Provider: `jira`
 | fields.customfield_10017 | string | Issue color |
 | fields.customfield_10019 | string | Rank |
 | fields.customfield_10015 | date_time | Start date |
-| fields.customfield_10000 | string | 開発 |
+| fields.customfield_10000 | string | Development |
 | fields.customfield_10001 | string | Team |
 
 ### search_issues
 
 #### Input fields
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| Description | string | - | 検索キーワード |
-| reconcileIssues | string | - | Reconcile Issue IDs (カンマ区切り、最大50件) |
+| Description | string | - | Search keyword |
+| reconcileIssues | string | - | Reconcile Issue IDs (comma-separated, max 50) |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | issues[].id | string | ID |
 | issues[].self | string | Self |
@@ -266,14 +266,14 @@ Provider: `jira`
 | issues[].changelog.histories[].items[].fromString | string | From string |
 | issues[].changelog.histories[].items[].to | string | To |
 | issues[].changelog.histories[].items[].toString | string | To string |
-| issues[].fields.statuscategorychangedate | date_time | ステータス カテゴリが変更されました |
+| issues[].fields.statuscategorychangedate | date_time | Status category changed |
 | issues[].fields.issuetype.self | string | Self |
 | issues[].fields.issuetype.id | string | ID |
 | issues[].fields.issuetype.description | string | Description |
 | issues[].fields.issuetype.iconUrl | string | Icon URL |
 | issues[].fields.issuetype.name | string | Name |
 | issues[].fields.issuetype.subtask | boolean | Sub task |
-| issues[].fields.timespent | number | 消費時間 |
+| issues[].fields.timespent | number | Time spent |
 | issues[].fields.project.self | string | Self |
 | issues[].fields.project.id | string | ID |
 | issues[].fields.project.key | string | Key |
@@ -282,28 +282,28 @@ Provider: `jira`
 | issues[].fields.fixVersions[].id | string | ID |
 | issues[].fields.fixVersions[].description | string | Description |
 | issues[].fields.fixVersions[].name | string | Name |
-| issues[].fields.aggregatetimespent | number | Σ 消費時間 |
-| issues[].fields.statusCategory | string | ステータス カテゴリ |
+| issues[].fields.aggregatetimespent | number | Σ time spent |
+| issues[].fields.statusCategory | string | Status category |
 | issues[].fields.resolution.self | string | Self |
 | issues[].fields.resolution.id | string | ID |
 | issues[].fields.resolution.description | string | Description |
 | issues[].fields.resolution.name | string | Name |
-| issues[].fields.resolutiondate | date_time | 解決日 |
-| issues[].fields.workratio | number | 作業比率 |
-| issues[].fields.lastViewed | date_time | 最終閲覧日 |
+| issues[].fields.resolutiondate | date_time | Resolved date |
+| issues[].fields.workratio | number | Work ratio |
+| issues[].fields.lastViewed | date_time | Last viewed |
 | issues[].fields.watches.self | string | Self |
 | issues[].fields.watches.watchCount | integer | Watch count |
 | issues[].fields.watches.isWatching | boolean | Is watching |
-| issues[].fields.issuerestriction | string | 制限対象 |
-| issues[].fields.thumbnail | string | 画像 |
-| issues[].fields.created | date_time | 作成日 |
+| issues[].fields.issuerestriction | string | Restricted to |
+| issues[].fields.thumbnail | string | Image |
+| issues[].fields.created | date_time | Created date |
 | issues[].fields.priority.self | string | Self |
 | issues[].fields.priority.iconUrl | string | Icon URL |
 | issues[].fields.priority.name | string | Name |
 | issues[].fields.priority.id | string | ID |
-| issues[].fields.labels[] | string | ラベル |
-| issues[].fields.timeestimate | number | 残余見積 |
-| issues[].fields.aggregatetimeoriginalestimate | number | Σ 初期見積もり |
+| issues[].fields.labels[] | string | Labels |
+| issues[].fields.timeestimate | number | Remaining estimate |
+| issues[].fields.aggregatetimeoriginalestimate | number | Σ original estimate |
 | issues[].fields.versions[].self | string | Self |
 | issues[].fields.versions[].id | string | ID |
 | issues[].fields.versions[].description | string | Description |
@@ -328,7 +328,7 @@ Provider: `jira`
 | issues[].fields.assignee.displayName | string | Display name |
 | issues[].fields.assignee.active | boolean | Active |
 | issues[].fields.assignee.timeZone | string | Time zone |
-| issues[].fields.updated | date_time | 更新日 |
+| issues[].fields.updated | date_time | Updated date |
 | issues[].fields.status.self | string | Self |
 | issues[].fields.status.description | string | Description |
 | issues[].fields.status.iconUrl | string | Icon URL |
@@ -342,11 +342,11 @@ Provider: `jira`
 | issues[].fields.components[].self | string | Self |
 | issues[].fields.components[].id | string | ID |
 | issues[].fields.components[].name | string | Name |
-| issues[].fields.issuekey | string | キー |
-| issues[].fields.timeoriginalestimate | number | 初期見積もり |
-| issues[].fields.description | string | 説明 |
-| issues[].fields.timetracking | string | 時間管理 |
-| issues[].fields.security | string | セキュリティ レベル |
+| issues[].fields.issuekey | string | Key |
+| issues[].fields.timeoriginalestimate | number | Original estimate |
+| issues[].fields.description | string | Description |
+| issues[].fields.timetracking | string | Time tracking |
+| issues[].fields.security | string | Security level |
 | issues[].fields.attachment[].self | string | Self |
 | issues[].fields.attachment[].filename | string | Filename |
 | issues[].fields.attachment[].author.self | string | Self url (nested) |
@@ -359,8 +359,8 @@ Provider: `jira`
 | issues[].fields.attachment[].mimeType | string | Mime type |
 | issues[].fields.attachment[].content | string | Content |
 | issues[].fields.attachment[].thumbnail | string | Thumbnail |
-| issues[].fields.aggregatetimeestimate | number | Σ 残余見積 |
-| issues[].fields.summary | string | 要約 |
+| issues[].fields.aggregatetimeestimate | number | Σ remaining estimate |
+| issues[].fields.summary | string | Summary |
 | issues[].fields.creator.self | string | Self |
 | issues[].fields.creator.key | string | Key |
 | issues[].fields.creator.name | string | Name |
@@ -382,15 +382,15 @@ Provider: `jira`
 | issues[].fields.reporter.timeZone | string | Time zone |
 | issues[].fields.aggregateprogress.progress | integer | Progress |
 | issues[].fields.aggregateprogress.total | integer | Total |
-| issues[].fields.environment | string | 環境 |
-| issues[].fields.duedate | date_time | 期限 |
+| issues[].fields.environment | string | Environment |
+| issues[].fields.duedate | date_time | Due date |
 | issues[].fields.progress.progress | integer | Progress |
 | issues[].fields.progress.total | integer | Total |
 | issues[].fields.votes.self | string | Self |
 | issues[].fields.votes.votes | integer | Votes |
 | issues[].fields.votes.hasVoted | boolean | Has voted |
-| issues[].fields.comment | string | コメント |
-| issues[].fields.worklog[].worklog | string | ログ作業 |
+| issues[].fields.comment | string | Comment |
+| issues[].fields.worklog[].worklog | string | Work log |
 | issues[].fields.parent.id | string | ID |
 | issues[].fields.parent.key | string | Key |
 | issues[].fields.parent.self | string | Self |
@@ -401,23 +401,23 @@ Provider: `jira`
 
 ### deleted_object (Deleted object)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: 出力スキーマは Object picklist の選択結果に依存（dynamic）。プロジェクト未選択のため UI 観察では取得不可。
+> ⚠ Partial learning: output schema depends on the Object picklist selection (dynamic). Cannot be fetched via UI observation because no project was selected.
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Object | select | Yes | Yes | Select the object to receive deleted events from Jira. |
 
 ### issue_created_bulk (Export new issues in Jira)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | When first started, this recipe should pick up events from | date-time | - | Yes | When you start recipe for the first time, it picks up trigger events from this specified date and time. Defaults to one hour from time of start of recipe. |
 | JQL where class | string | - | Yes | JQL query to filter the records you want, e.g. `project = "PRJ" AND status = "Done"`. Only issueKey, project, issuetype, status, assignee, reporter, issue.property and cf[id] JQL queries are supported. ORDER BY clause is not supported. |
@@ -429,7 +429,7 @@ Provider: `jira`
 | Start after | date-time | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | CSV content | string | — |
 | Object name | string | — |
@@ -444,11 +444,11 @@ Provider: `jira`
 
 ### issue_created_or_updated_bulk (Export new/updated issues in Jira)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | When first started, this recipe should pick up events from | date-time | - | Yes | When you start recipe for the first time, it picks up trigger events from this specified date and time. Defaults to one hour from time of start of recipe. |
 | JQL where class | string | - | Yes | JQL query to filter the records you want, e.g. `project = "PRJ" AND status = "Done"`. Only issueKey, project, issuetype, status, assignee, reporter, issue.property and cf[id] JQL queries are supported. ORDER BY clause is not supported. |
@@ -460,7 +460,7 @@ Provider: `jira`
 | Start after | date-time | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | CSV content | string | — |
 | Object name | string | — |
@@ -475,24 +475,24 @@ Provider: `jira`
 
 ### new_event (New event)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: 出力スキーマは Object 選択に依存（dynamic）。Object/プロジェクト未選択のため UI 観察では取得不可。
+> ⚠ Partial learning: output schema depends on the Object selection (dynamic). Cannot be fetched via UI observation because no Object/project was selected.
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Object | select | Yes | Yes | Select the object to receive events from Jira. |
 | Event name | string | Yes | Yes | Use a unique name to generate webhook URL. |
 
 ### new_issue_batch (New issue — Batch)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | When first started, this recipe should pick up events from | date-time | - | Yes | When you start recipe for the first time, it picks up trigger events from this specified date and time. Leave empty to get created records one hour ago. |
 | Batch size | integer | - | Yes | Maximum number of records per trigger event. Min 1, max 100, default 100. |
@@ -501,7 +501,7 @@ Provider: `jira`
 | Fields to retrieve | toggle-field | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Range | string | — |
 | First issue ID | string | — |
@@ -517,16 +517,16 @@ Provider: `jira`
 
 ### updated_comment_webhook (New/updated comment)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | JQL WHERE clause | string | - | Yes | JQL query to filter the records you want, e.g. `project = "PRJ" AND status = "Done"`. Only issueKey, project, issuetype, status, assignee, reporter, issue.property and cf[id] JQL queries are supported. ORDER BY clause is not supported. |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | self | string | Self |
 | id | string | ID |
@@ -551,17 +551,17 @@ Provider: `jira`
 
 ### updated_issue_webhook (New/updated issue)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | When first started, this recipe should pick up events from | date-time | Yes | Yes | When you start recipe for the first time, it picks up new/updated issues from this specified date and time. Once recipe has been run or tested, value cannot be changed. |
 | JQL WHERE clause | string | - | Yes | JQL query to filter records (issueKey, project, issuetype, status, assignee, reporter, issue.property, cf[id]). ORDER BY not supported. |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | id | string | ID |
 | self | string | Self |
@@ -572,78 +572,78 @@ Provider: `jira`
 | changelog.total | number | Total |
 | changelog.histories | array | Histories |
 | fields | object | Fields |
-| fields.statuscategorychangedate | date_time | ステータス カテゴリが変更されました |
-| fields.issuetype | object | 課題タイプ |
-| fields.timespent | number | 消費時間 |
-| fields.project | object | プロジェクト |
-| fields.fixVersions | array | 修正バージョン |
-| fields.aggregatetimespent | number | Σ 消費時間 |
-| fields.statusCategory | string | ステータス カテゴリ |
+| fields.statuscategorychangedate | date_time | Status category changed |
+| fields.issuetype | object | Issue type |
+| fields.timespent | number | Time spent |
+| fields.project | object | Project |
+| fields.fixVersions | array | Fix versions |
+| fields.aggregatetimespent | number | Σ time spent |
+| fields.statusCategory | string | Status category |
 | fields.customfield_xxx (Vulnerability) | string | Vulnerability |
-| fields.parent | object | 親 |
-| fields.resolution | object | 解決状況 |
+| fields.parent | object | Parent |
+| fields.resolution | object | Resolution |
 | fields.customfield_xxx (Design) | string | Design |
-| fields.resolutiondate | date_time | 解決日 |
-| fields.workratio | number | 作業比率 |
-| fields.lastViewed | date_time | 最終閲覧日 |
-| fields.watches | object | ウォッチャー |
-| fields.issuerestriction | string | 制限対象 |
-| fields.thumbnail | string | 画像 |
-| fields.created | date_time | 作成日 |
+| fields.resolutiondate | date_time | Resolved date |
+| fields.workratio | number | Work ratio |
+| fields.lastViewed | date_time | Last viewed |
+| fields.watches | object | Watchers |
+| fields.issuerestriction | string | Restricted to |
+| fields.thumbnail | string | Image |
+| fields.created | date_time | Created date |
 | fields.customfield_xxx (Flagged) | array | Flagged |
-| fields.priority | object | 優先度 |
-| fields.labels[] | string | ラベル |
+| fields.priority | object | Priority |
+| fields.labels[] | string | Labels |
 | fields.customfield_xxx (Issue color) | string | Issue color |
 | fields.customfield_xxx (Rank) | string | Rank |
-| fields.timeestimate | number | 残余見積 |
-| fields.aggregatetimeoriginalestimate | number | Σ 初期見積もり |
-| fields.versions | array | 影響するバージョン |
-| fields.issuelinks | array | リンクされた課題 |
-| fields.assignee | object | 担当者 |
-| fields.updated | date_time | 更新日 |
-| fields.status | object | ステータス |
-| fields.components | array | コンポーネント |
-| fields.issuekey | string | キー |
-| fields.timeoriginalestimate | number | 初期見積もり |
-| fields.description | string | 説明 |
-| fields.timetracking | string | 時間管理 |
+| fields.timeestimate | number | Remaining estimate |
+| fields.aggregatetimeoriginalestimate | number | Σ original estimate |
+| fields.versions | array | Affects versions |
+| fields.issuelinks | array | Linked issues |
+| fields.assignee | object | Assignee |
+| fields.updated | date_time | Updated date |
+| fields.status | object | Status |
+| fields.components | array | Components |
+| fields.issuekey | string | Key |
+| fields.timeoriginalestimate | number | Original estimate |
+| fields.description | string | Description |
+| fields.timetracking | string | Time tracking |
 | fields.customfield_xxx (Start date) | date | Start date |
-| fields.security | string | セキュリティ レベル |
-| fields.attachment | array | 添付ファイル |
-| fields.aggregatetimeestimate | number | Σ 残余見積 |
-| fields.summary | string | 要約 |
-| fields.creator | object | 作成者 |
-| fields.subtasks | array | サブタスク |
-| fields.reporter | object | 報告者 |
-| fields.aggregateprogress | object | Σ 進捗状況 |
-| fields.customfield_xxx (開発) | string | 開発 |
+| fields.security | string | Security level |
+| fields.attachment | array | Attachment |
+| fields.aggregatetimeestimate | number | Σ remaining estimate |
+| fields.summary | string | Summary |
+| fields.creator | object | Creator |
+| fields.subtasks | array | Subtasks |
+| fields.reporter | object | Reporter |
+| fields.aggregateprogress | object | Σ progress |
+| fields.customfield_xxx (Development) | string | Development |
 | fields.customfield_xxx (Team) | string | Team |
-| fields.environment | string | 環境 |
-| fields.duedate | date | 期限 |
-| fields.progress | object | 進捗状況 |
-| fields.votes | object | 投票 |
-| fields.comment | string | コメント |
-| fields.worklog | array | ログ作業 |
+| fields.environment | string | Environment |
+| fields.duedate | date | Due date |
+| fields.progress | object | Progress |
+| fields.votes | object | Votes |
+| fields.comment | string | Comment |
+| fields.worklog | array | Work log |
 | webhookData | object | Webhook data |
 | webhookData.timestamp | integer | Timestamp |
 | webhookData.webhookEvent | string | Webhook event |
 | webhookData.user | object | User |
 | webhookData.changelog | object | Changelog |
 
-> ⚠ ラベル名は Workato テナントの Jira UI 言語設定（日本語）に依存。同じトリガーでも英語テナントでは `Issue type` / `Project` / 等で出る。custom field の内部キー（`customfield_10000` 系）は `new_issue` セクションを参照。
+> ⚠ Label names depend on the Workato tenant's Jira UI language setting (Japanese). The same trigger surfaces them as `Issue type` / `Project` / etc. on an English tenant. For custom field internal keys (`customfield_10000` series), see the `new_issue` section.
 
 ### updated_worklog_webhook (New/updated worklog)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: 表示される form-field がなく、Webhook 登録のみ。
+> ⚠ Partial learning: no form-field is shown; webhook registration only.
 
 #### Input fields
-（パラメータなし — Webhook イベント駆動）
+(no parameters — driven by webhook events)
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | self | string | Self |
 | id | string | ID |
@@ -676,18 +676,18 @@ Provider: `jira`
 
 ### updated_issue (Updated issue)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | When first started, this recipe should pick up events from | date-time | Yes | Yes | When you start recipe for the first time, it picks up trigger events from this specified date and time. Once recipe has been run or tested, value cannot be changed. |
 | Trigger poll interval | integer | - | No | — |
 | JQL where class | string | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | id | string | ID |
 | self | string | Self |
@@ -699,15 +699,15 @@ Provider: `jira`
 | changelog.histories | array | Histories |
 | fields | object | Fields |
 
-> 課題本体のフィールド（`fields.*`）の構造は `new_issue` / `updated_issue_webhook` と同等。日本語テナントではラベルが `要約` `担当者` `期限` 等で出る。
+> The structure of the issue body fields (`fields.*`) matches `new_issue` / `updated_issue_webhook`. On a Japanese tenant the labels surface in Japanese (e.g. `要約` for Summary, `担当者` for Assignee, `期限` for Due date).
 
 ### updated_issue_batch (Updated issue — Batch)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | When first started, this recipe should pick up events from | date-time | - | Yes | When you start recipe for the first time, it picks up trigger events from this specified date and time. Leave empty to get updated records one hour ago. |
 | Batch size | integer | - | Yes | Maximum number of records per trigger event. Min 1, max 100, default 100. |
@@ -716,7 +716,7 @@ Provider: `jira`
 | Fields to retrieve | toggle-field | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Range | string | — |
 | First issue ID | string | — |
@@ -732,24 +732,24 @@ Provider: `jira`
 
 ### assign_issue (Assign user to issue)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: output_group_not_found（fire-and-forget アクション。出力スキーマなし）。
+> ⚠ Partial learning: output_group_not_found (fire-and-forget action; no output schema).
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Issue ID or key | string | Yes | Yes | Issue ID or key, e.g. `10105` or `ABC-123`. Use issue ID if your issue moves between projects. |
-| Assignee username | toggle-field | Yes | Yes | Assignee's Jira username (e.g. `johndoe` for `johndoe@workato.com`). Only usable in older Jira server. Cloud では Account ID を使う。 |
+| Assignee username | toggle-field | Yes | Yes | Assignee's Jira username (e.g. `johndoe` for `johndoe@workato.com`). Only usable in older Jira server. On Cloud, use the Account ID. |
 
 ### create_comment (Create comment)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Issue ID or key | string | Yes | Yes | Issue ID or key to add comment to, e.g. `10105` or `ABC-123`. |
 | Comment text | string | Yes | Yes | Use the Jira format `[~username]` to mention a user. |
@@ -757,7 +757,7 @@ Provider: `jira`
 | Role | string | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | self | string | Self |
 | id | string | ID |
@@ -782,11 +782,11 @@ Provider: `jira`
 
 ### create_issue (Create issue)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Project issue type | toggle-field | Yes | Yes | Select the project and issue type for this issue. |
 | Sample project issue type | toggle-field | - | Yes | Select the project and issue type to retrieve custom fields. If Project issue type is not selected, custom fields will not be populated. |
@@ -804,21 +804,21 @@ Provider: `jira`
 | Due date | date | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | id | string | ID |
 | key | string | Key |
 | self | string | Self |
 
-> ⚠ 部分学習: dynamic schema unresolved (Sample project issue type 未選択のためカスタムフィールドは非展開)。プロジェクト固有の custom field 入力は `Sample project issue type` を選択するとフォームに動的に追加される。
+> ⚠ Partial learning: dynamic schema unresolved (custom fields are not expanded because Sample project issue type was not selected). Project-specific custom field inputs are added to the form dynamically once `Sample project issue type` is selected.
 
 ### create_user (Create user)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Email address | string | Yes | Yes | New user's e-mail address. |
 | Products | toggle-field | - | Yes | Products the new user has access to. Select none to create a user without any product access. Leave empty for default access. |
@@ -826,7 +826,7 @@ Provider: `jira`
 | Display name (deprecated) | string | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | self | string | Self url |
 | key | string | Key |
@@ -853,19 +853,19 @@ Provider: `jira`
 
 ### find_user (Get user details)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Username | string | - | No | — |
 | Email | string | - | No | — |
 
-> 必須項目はないが、両方未指定だとアクションは失敗する（Provide at least one search criteria）。
+> There are no required fields, but the action fails if both are left empty (Provide at least one search criteria).
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | self | string | Self |
 | key | string | Key |
@@ -885,32 +885,32 @@ Provider: `jira`
 
 ### get_attachment (Download attachment)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Attachment URI | string | Yes | Yes | Obtainable from the step output of objects that support attachments, e.g. the Content datapill from the Get issue action. |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Attachment content | string | — |
 | Size | integer | — |
 
 ### get_changelog (Get changelog of an issue)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Issue ID or key | string | Yes | Yes | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | self | string | Self |
 | maxResults | string | Max results |
@@ -927,82 +927,82 @@ Provider: `jira`
 
 ### get_issue (Get issue)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Issue ID or key | string | Yes | Yes | Issue ID or key, e.g. `10105` or `ABC-123`. Use issue ID if your issue moves between projects. |
 | Output fields | toggle-field | - | Yes | Select the fields you wish to use in your recipe. All fields will be returned if left blank. |
 
 #### Output fields
-構造は `new_issue` トリガーの出力（fields.* 含む）と同等。主な差分なし。日本語テナントでは label が `要約` `担当者` 等で出る。
+The structure matches the output of the `new_issue` trigger (including `fields.*`); no significant differences. On a Japanese tenant the labels surface in Japanese (e.g. `要約` for Summary, `担当者` for Assignee).
 
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | id | string | ID |
 | self | string | Self |
 | key | string | Key |
 | changelog | object | Changelog |
 | fields | object | Fields |
-| fields.summary | string | 要約 |
-| fields.issuetype | object | 課題タイプ |
-| fields.project | object | プロジェクト |
-| fields.assignee | object | 担当者 |
-| fields.reporter | object | 報告者 |
-| fields.creator | object | 作成者 |
-| fields.status | object | ステータス |
-| fields.priority | object | 優先度 |
-| fields.labels[] | string | ラベル |
-| fields.components | array | コンポーネント |
-| fields.fixVersions | array | 修正バージョン |
-| fields.versions | array | 影響するバージョン |
-| fields.issuelinks | array | リンクされた課題 |
-| fields.subtasks | array | サブタスク |
-| fields.attachment | array | 添付ファイル |
-| fields.comment | string | コメント |
-| fields.worklog | array | ログ作業 |
-| fields.description | string | 説明 |
-| fields.environment | string | 環境 |
-| fields.created | date_time | 作成日 |
-| fields.updated | date_time | 更新日 |
-| fields.duedate | date | 期限 |
-| fields.resolutiondate | date_time | 解決日 |
-| fields.lastViewed | date_time | 最終閲覧日 |
-| fields.timespent | number | 消費時間 |
-| fields.timeestimate | number | 残余見積 |
-| fields.timeoriginalestimate | number | 初期見積もり |
-| fields.aggregatetimespent | number | Σ 消費時間 |
-| fields.aggregatetimeestimate | number | Σ 残余見積 |
-| fields.aggregatetimeoriginalestimate | number | Σ 初期見積もり |
-| fields.workratio | number | 作業比率 |
-| fields.parent | object | 親 |
-| fields.statusCategory | string | ステータス カテゴリ |
-| fields.statuscategorychangedate | date_time | ステータス カテゴリが変更されました |
-| fields.security | string | セキュリティ レベル |
-| fields.issuerestriction | string | 制限対象 |
-| fields.thumbnail | string | 画像 |
-| fields.timetracking | string | 時間管理 |
-| fields.watches | object | ウォッチャー |
-| fields.votes | object | 投票 |
-| fields.progress | object | 進捗状況 |
-| fields.aggregateprogress | object | Σ 進捗状況 |
-| fields.resolution | object | 解決状況 |
-| fields.issuekey | string | キー |
+| fields.summary | string | Summary |
+| fields.issuetype | object | Issue type |
+| fields.project | object | Project |
+| fields.assignee | object | Assignee |
+| fields.reporter | object | Reporter |
+| fields.creator | object | Creator |
+| fields.status | object | Status |
+| fields.priority | object | Priority |
+| fields.labels[] | string | Labels |
+| fields.components | array | Components |
+| fields.fixVersions | array | Fix versions |
+| fields.versions | array | Affects versions |
+| fields.issuelinks | array | Linked issues |
+| fields.subtasks | array | Subtasks |
+| fields.attachment | array | Attachment |
+| fields.comment | string | Comment |
+| fields.worklog | array | Work log |
+| fields.description | string | Description |
+| fields.environment | string | Environment |
+| fields.created | date_time | Created date |
+| fields.updated | date_time | Updated date |
+| fields.duedate | date | Due date |
+| fields.resolutiondate | date_time | Resolved date |
+| fields.lastViewed | date_time | Last viewed |
+| fields.timespent | number | Time spent |
+| fields.timeestimate | number | Remaining estimate |
+| fields.timeoriginalestimate | number | Original estimate |
+| fields.aggregatetimespent | number | Σ time spent |
+| fields.aggregatetimeestimate | number | Σ remaining estimate |
+| fields.aggregatetimeoriginalestimate | number | Σ original estimate |
+| fields.workratio | number | Work ratio |
+| fields.parent | object | Parent |
+| fields.statusCategory | string | Status category |
+| fields.statuscategorychangedate | date_time | Status category changed |
+| fields.security | string | Security level |
+| fields.issuerestriction | string | Restricted to |
+| fields.thumbnail | string | Image |
+| fields.timetracking | string | Time tracking |
+| fields.watches | object | Watchers |
+| fields.votes | object | Votes |
+| fields.progress | object | Progress |
+| fields.aggregateprogress | object | Σ progress |
+| fields.resolution | object | Resolution |
+| fields.issuekey | string | Key |
 
 ### get_issue_comments (Get issue comments — Batch)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Issue ID or key | string | Yes | Yes | Issue ID or key, e.g. `10105` or `ABC-123`. |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | comments | array | — |
 | comments[].self | string | Self |
@@ -1018,16 +1018,16 @@ Provider: `jira`
 
 ### get_object_schema (Get issue schema)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Output fields | toggle-field | - | Yes | Select the fields you wish to use in your recipe. All fields will be returned if left blank. |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | objectName | string | Object name |
 | objectLabel | string | Object label |
@@ -1045,11 +1045,11 @@ Provider: `jira`
 
 ### search_assignable_users (Search assignable users — Batch)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Project ID or key | string | Yes | Yes | Project ID or key of project. |
 | Issue ID or key | string | Yes | Yes | Issue ID or key, e.g. `10105` or `ABC-123`. |
@@ -1057,7 +1057,7 @@ Provider: `jira`
 | Assignee account ID | string | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | users | array | — |
 | users[].self | string | Self url |
@@ -1079,11 +1079,11 @@ Provider: `jira`
 
 ### search_issues_by_JQL (Search issues by JQL — Batch)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | JQL query string | string | Yes | Yes | JQL query string. |
 | Output fields | toggle-field | - | Yes | Select the fields you wish to use in your recipe. All fields will be returned if left blank. |
@@ -1093,7 +1093,7 @@ Provider: `jira`
 | Next page token | string | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | expand | string | Expand |
 | startAt | integer | Start at |
@@ -1109,15 +1109,15 @@ Provider: `jira`
 | List size | integer | — |
 | List index | integer | — |
 
-> issue 詳細フィールドは `search_issues` セクションを参照（同等）。
+> See the `search_issues` section for issue detail fields (equivalent).
 
 ### update_comment (Update comment)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Issue ID or key | string | Yes | Yes | Issue ID or key, e.g. `10105` or `ABC-123`. |
 | Comment ID | string | Yes | Yes | ID of comment to update. |
@@ -1126,7 +1126,7 @@ Provider: `jira`
 | Role | string | - | Yes | Enter role name to restrict visibility of the comment to (e.g. role defined in your Jira account). Use `All Users` to remove restrictions. |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | self | string | Self |
 | id | string | ID |
@@ -1151,16 +1151,16 @@ Provider: `jira`
 
 ### update_issue (Update issue)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: output_group_not_found（fire-and-forget アクション。出力スキーマなし）。custom field の動的解決は Sample project issue type 選択時のみ。
+> ⚠ Partial learning: output_group_not_found (fire-and-forget action; no output schema). Custom fields are resolved dynamically only when Sample project issue type is selected.
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Issue ID or key | string | Yes | Yes | Issue ID or key, e.g. `10105` or `ABC-123`. |
-| Sample project issue type | toggle-field | Yes | Yes | Used to retrieve custom fields specific to project and issue type. Non-English Jira instances should specify system issue types in equivalent English (e.g. `タスク` → `Task`). |
+| Sample project issue type | toggle-field | Yes | Yes | Used to retrieve custom fields specific to project and issue type. Non-English Jira instances should specify system issue types in equivalent English (e.g. the Japanese "Task" issue type should be entered as `Task`). |
 | Reporter account ID | toggle-field | - | Yes | Account ID can be found in the people's page at the end of the URL. |
 | Assignee account ID | toggle-field | - | Yes | Account ID can be found in the people's page at the end of the URL. |
 | Summary | string | - | No | — |
@@ -1176,31 +1176,31 @@ Provider: `jira`
 
 ### update_issue_status (Update issue status)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: output_group_not_found（fire-and-forget アクション。出力スキーマなし）。
+> ⚠ Partial learning: output_group_not_found (fire-and-forget action; no output schema).
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Issue ID or key | string | Yes | Yes | Issue ID or key, e.g. `10105` or `ABC-123`. |
 | Transition name | string | Yes | Yes | Case sensitive name of transition (e.g. `To do`, `In progress`, `Done`). |
 
 ### upload_attachment (Upload attachment)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Issue ID or key | string | Yes | Yes | Issue ID or key, e.g. `10105` or `ABC-123`. |
 | File content | string | Yes | Yes | File content to upload, e.g. Attachment content datapill from output of preceding Download attachment action. |
 | File name | string | Yes | Yes | Filename with extension, e.g. `.pdf`, `.csv`, `.jpg`. |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | attachments | array | — |
 | attachments[].self | string | Self |
@@ -1214,41 +1214,41 @@ Provider: `jira`
 | List size | integer | — |
 | List index | integer | — |
 
-## 備考
-- リアルタイムトリガーには Jira 側の Webhook 登録が必要
-- `search_issues` は UI 上で検索フィールドを指定する形式（JQL 直接入力は `Search issues by JQL` を使用）
-- 日本語テナントのデータツリーは label が日本語（`要約`、`担当者`、`期限` 等）で出る。レシピの datapill 参照では JSON キー（`fields.summary`、`fields.assignee` 等）を使う必要があるため、`new_issue` セクションの英語キー対応表を参照。
-- `update_issue` / `create_issue` の custom field 入力は `Sample project issue type` 選択により動的に追加される。プロジェクトごとに異なるため `/learn-recipe` で個別レシピから補完する。
+## Notes
+- Real-time triggers require webhook registration on the Jira side
+- `search_issues` takes search fields via the UI (use `Search issues by JQL` to enter JQL directly)
+- On a Japanese tenant the data tree labels appear in Japanese (e.g. `要約`, `担当者`, `期限`). Recipe datapill references must use the JSON keys (`fields.summary`, `fields.assignee`, etc.), so consult the English key reference table in the `new_issue` section.
+- Custom field inputs for `update_issue` / `create_issue` are added dynamically when `Sample project issue type` is selected. Because they vary per project, supplement them from specific recipes via `/learn-recipe`.
 
 ---
 
-## 学習サマリ
+## Learning summary
 
-最終実行: 2026-04-27 by /auto-learn
-- 試行: 26 op (10 triggers + 16 actions)
-- 完全成功: 19
-- 部分学習: 7 — `deleted_object`, `new_event`, `updated_worklog_webhook`, `assign_issue`, `create_issue`, `update_issue`, `update_issue_status`
-- 学習失敗: 0
-- スキップ:
+Last run: 2026-04-27 by `/auto-learn`
+- Attempted: 26 op (10 triggers + 16 actions)
+- Fully learned: 19
+- Partially learned: 7 — `deleted_object`, `new_event`, `updated_worklog_webhook`, `assign_issue`, `create_issue`, `update_issue`, `update_issue_status`
+- Failed: 0
+- Skipped:
   - Deprecated: 3
   - adhoc: 1 — `__adhoc_http_action`
-  - 既学習: 2 — `new_issue`, `search_issues`
+  - Already learned: 2 — `new_issue`, `search_issues`
 
-### 要 follow-up
+### Needs follow-up
 
-- **Dynamic schema (要 /learn-recipe)** — Object/Project picklist 未選択により output schema が確定せず
-  - `deleted_object` — トリガー output が Object 選択依存
-  - `new_event` — トリガー output が Object 選択依存
-  - `create_issue` / `update_issue` (custom field 入力) — `Sample project issue type` 選択時のみ展開（プロジェクト固有）
-- **Fire-and-forget (UI 仕様・追加学習不要)**
-  - `assign_issue` — 担当者アサイン
-  - `update_issue` — 課題更新（output_group_not_found）
-  - `update_issue_status` — ステータス更新
+- **Dynamic schema (needs `/learn-recipe`)** — output schema not finalized because Object/Project picklist was not selected
+  - `deleted_object` — trigger output depends on Object selection
+  - `new_event` — trigger output depends on Object selection
+  - `create_issue` / `update_issue` (custom field inputs) — only expanded when `Sample project issue type` is selected (project-specific)
+- **Fire-and-forget (UI design; no further learning needed)**
+  - `assign_issue` — assignee assignment
+  - `update_issue` — issue update (output_group_not_found)
+  - `update_issue_status` — status update
 - **Webhook-only**
-  - `updated_worklog_webhook` — form-field 入力なし、Webhook 登録のみ
+  - `updated_worklog_webhook` — no form-field input; webhook registration only
 
-### 構造的注記（参考）
+### Structural notes (for reference)
 
-- 出力ラベルが日本語化（`要約`, `担当者`, `期限`）— 既存 `new_issue` セクションの英語 JSON キー対応表を要参照
-- `Pagination` / `Visibility` / `Role` / `Time tracking` / `Issue link` 等は内部 control type が空で `string` フォールバック。型精度はマニュアル補完
-- Custom fields (`customfield_xxxxx`) は project + issue type 依存で UI 観察対象外
+- Output labels are localized to Japanese (Summary, Assignee, Due date) — consult the English JSON key reference table in the existing `new_issue` section
+- `Pagination` / `Visibility` / `Role` / `Time tracking` / `Issue link` etc. have an empty internal control type and fall back to `string`. Type precision is filled in manually.
+- Custom fields (`customfield_xxxxx`) depend on project + issue type and are out of scope for UI observation

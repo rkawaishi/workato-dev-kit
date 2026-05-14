@@ -1,17 +1,17 @@
-# JMS tools by Workato コネクタ
+# JMS tools by Workato connector
 
 Provider: `jms`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New message in queue | `new_message_queue` | - |  |
 | New message in topic | `new_message_topic` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Publish message to queue | `publish_to_queue` | - |  |
 | Publish message to topic | `publish_to_topic` | - |  |

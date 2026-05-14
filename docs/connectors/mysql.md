@@ -1,10 +1,10 @@
-# MySQL コネクタ
+# MySQL connector
 
 Provider: `mysql`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New row | `new_row_v2` | - |  |
 | New rows | `new_rows_batch` | Yes |  |
@@ -14,7 +14,7 @@ Provider: `mysql`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Delete rows | `delete_rows` | Yes |  |
 | Execute stored procedure | `execute_procedure` | Yes |  |

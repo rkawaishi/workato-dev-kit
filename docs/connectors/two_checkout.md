@@ -1,10 +1,10 @@
-# 2Checkout コネクタ
+# 2Checkout connector
 
 Provider: `two_checkout`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | INS webhooks | `ins_webhook` | - |  |
 | IPN webhooks | `ipn_webhook` | - |  |
@@ -12,4 +12,4 @@ Provider: `two_checkout`
 
 ## Actions
 
-なし
+None

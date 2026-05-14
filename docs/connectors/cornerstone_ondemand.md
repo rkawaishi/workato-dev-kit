@@ -1,11 +1,11 @@
-# Cornerstone OnDemand コネクタ
+# Cornerstone OnDemand connector
 
 Provider: `cornerstone_ondemand`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-なし
+None

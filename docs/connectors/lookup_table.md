@@ -1,14 +1,14 @@
-# Lookup tables by Workato コネクタ
+# Lookup tables by Workato connector
 
 Provider: `lookup_table`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Add entries | `add_batch_of_entries` | Yes |  |
 | Add entry | `add_entry` | - |  |

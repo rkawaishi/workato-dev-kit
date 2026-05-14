@@ -1,10 +1,10 @@
-# Percolate コネクタ
+# Percolate connector
 
 Provider: `percolate`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Deleted object | `delete_object` | - |  |
 | New object | `new_object` | - |  |
@@ -12,7 +12,7 @@ Provider: `percolate`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Check content workflow step | `check_content_workflow_step` | - |  |

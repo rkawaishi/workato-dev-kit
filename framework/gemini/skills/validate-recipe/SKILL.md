@@ -1,57 +1,57 @@
 ---
 name: validate-recipe
-description: Workato レシピ/Genie JSON の構造を検証し、問題を報告する。引数にファイルパスまたはプロジェクト名を指定。
+description: Validate the structure of Workato recipe / Genie JSON and report issues. Takes a file path or a project name as argument.
 ---
 
 # /validate-recipe
 
-Workato JSON ファイルの構造を検証するスキル。
+Validates the structure of Workato JSON files.
 
-## 使い方
+## Usage
 
-- `/validate-recipe <file-path>` — 特定ファイルを検証
-- `/validate-recipe <project-name>` — プロジェクト内の全ファイルを検証
-- `/validate-recipe` — 引数なしで全プロジェクトを検証
+- `/validate-recipe <file-path>` — validate a specific file
+- `/validate-recipe <project-name>` — validate every file in a project
+- `/validate-recipe` — no argument: validate every project
 
-## 検証項目
+## Checks
 
 ### recipe.json
 
-- [ ] トップレベル必須フィールド: `name`, `version`, `code`, `config`
-- [ ] `code.keyword` が `"trigger"` であること（number: 0）
-- [ ] 全ステップに `number`, `provider`, `name`, `keyword`, `uuid` があること
-- [ ] `number` が連番であること
-- [ ] `uuid` が有効な UUID v4 形式であること
-- [ ] `block` 内のステップが再帰的に正しい構造であること
-- [ ] `config` 内の全 `provider` がレシピ内で使用されていること
-- [ ] datapill 参照 (`_dp`) の `provider` と `line` が実在するステップを指していること
-- [ ] `filter` がある場合、`conditions` 配列と `operand` が存在すること
+- [ ] Required top-level fields: `name`, `version`, `code`, `config`
+- [ ] `code.keyword` is `"trigger"` (number: 0)
+- [ ] Every step has `number`, `provider`, `name`, `keyword`, `uuid`
+- [ ] `number` values are sequential
+- [ ] `uuid` is a valid UUID v4
+- [ ] Steps inside `block` recursively follow the same structure
+- [ ] Every `provider` in `config` is actually used by the recipe
+- [ ] Datapill references (`_dp`) point at a real step (`provider` + `line`)
+- [ ] If `filter` is present, both `conditions` (array) and `operand` exist
 
 ### agentic_genie.json
 
-- [ ] 必須フィールド: `name`, `description`, `instructions`, `ai_provider`, `references`
-- [ ] `references` の各エントリが `type: "agentic_skill"` で `zip_name` が実在するファイルを指していること
-- [ ] `instructions` が空でないこと
+- [ ] Required fields: `name`, `description`, `instructions`, `ai_provider`, `references`
+- [ ] Each `references` entry is `type: "agentic_skill"` and its `zip_name` points to a real file
+- [ ] `instructions` is not empty
 
 ### agentic_skill.json
 
-- [ ] 必須フィールド: `name`, `trigger_description`, `references`
-- [ ] `references.recipe_id` が実在する `.recipe.json` を指していること
-- [ ] 参照先レシピが `workato_genie` / `start_workflow` トリガーを使用していること
+- [ ] Required fields: `name`, `trigger_description`, `references`
+- [ ] `references.recipe_id` points to a real `.recipe.json`
+- [ ] The referenced recipe uses the `workato_genie` / `start_workflow` trigger
 
 ### connection.json
 
-- [ ] 必須フィールド: `name`, `provider`
+- [ ] Required fields: `name`, `provider`
 
-## 出力形式
+## Output format
 
 ```
 ✅ file.recipe.json — OK
 ⚠️  file2.recipe.json — 2 warnings
-  - W001: Step 3 の uuid が未設定
-  - W002: config に未使用の provider "slack" あり
+  - W001: Step 3 is missing its uuid
+  - W002: config contains unused provider "slack"
 ❌ file3.recipe.json — 1 error
-  - E001: code.keyword が "trigger" ではない
+  - E001: code.keyword is not "trigger"
 ```
 
-重要度: ❌ Error（push 時に失敗する可能性）> ⚠️ Warning（動作はするが推奨されない）> ℹ️ Info（参考情報）
+Severity: ❌ Error (likely to fail on push) > ⚠️ Warning (works but discouraged) > ℹ️ Info (informational).

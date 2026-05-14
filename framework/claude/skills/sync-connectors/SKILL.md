@@ -1,251 +1,250 @@
 ---
-description: コネクタ情報を収集しドキュメントを更新する。Pre-built は API 経由で docs/connectors/ を、カスタムコネクタは connector.rb パースで connectors/docs/ を更新。
+description: Collect connector metadata and update the docs. Pre-built connectors are fetched via the API and written to `docs/connectors/`; custom connectors are parsed from `connector.rb` and written to `connectors/docs/`. Japanese prompts are also supported.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch
 ---
 
 # /sync-connectors
 
-コネクタ情報を収集しドキュメントを更新するスキル。
+Collect connector metadata and update the documentation.
 
-- **Pre-built コネクタ**: Workato API から取得 → `docs/connectors/` を更新
-- **カスタムコネクタ**: `connector.rb` をパース → `connectors/docs/` を更新
+- **Pre-built connectors**: fetched from the Workato API → updates `docs/connectors/`.
+- **Custom connectors**: parsed from `connector.rb` → updates `connectors/docs/`.
 
-## 使い方
+## Usage
 
-- `/sync-connectors <provider-name>` — 指定 Pre-built コネクタの情報を取得・更新
-- `/sync-connectors <name1> <name2> ...` — 複数 Pre-built コネクタを一括更新
-- `/sync-connectors --all` — Pre-built + カスタムコネクタを一括更新
-- `/sync-connectors --check` — 既存ドキュメントと API の差分を確認
-- `/sync-connectors --custom` — `connectors/` 配下の全カスタムコネクタをスキャン・更新
-- `/sync-connectors --custom <name>` — 指定カスタムコネクタのみスキャン・更新
+- `/sync-connectors <provider-name>` — fetch and update info for one pre-built connector
+- `/sync-connectors <name1> <name2> ...` — batch-update several pre-built connectors
+- `/sync-connectors --all` — update every pre-built + custom connector
+- `/sync-connectors --check` — diff existing docs against the API
+- `/sync-connectors --custom` — scan and update every custom connector under `connectors/`
+- `/sync-connectors --custom <name>` — scan and update only the specified custom connector
 
-## データソース
+## Data sources
 
-### Pre-built コネクタ
+### Pre-built connectors
 
-#### 1次ソース: Workato API（CLI 経由）
+#### Primary source: the Workato API (via CLI)
 
 ```bash
-# 特定コネクタのトリガー/アクション一覧（JSON）
+# Triggers / actions for a specific connector (JSON)
 python3 scripts/workato-api.py connectors list-platform --provider <name>
 
-# カスタムコネクタ一覧
+# List of custom connectors
 python3 scripts/workato-api.py connectors list-custom
 ```
 
-API から取得できる情報:
-- コネクタ名 (`name`), 表示名 (`title`)
-- カテゴリ, OAuth 対応, deprecated フラグ
-- **トリガー一覧**: `name`, `title`, `deprecated`, `bulk`, `batch`
-- **アクション一覧**: `name`, `title`, `deprecated`, `bulk`, `batch`
+What the API gives you:
+- Connector name (`name`), display title (`title`).
+- Category, OAuth support, deprecated flag.
+- **Trigger list**: `name`, `title`, `deprecated`, `bulk`, `batch`.
+- **Action list**: `name`, `title`, `deprecated`, `bulk`, `batch`.
 
-API から取得 **できない** 情報:
-- input/output フィールドの定義（コネクション接続後のみ）
-- フィールドの型、必須/任意
+What the API does **not** give you:
+- Input / output field definitions (only available after the connection is configured).
+- Field types and required/optional flags.
 
-### カスタムコネクタ
+### Custom connectors
 
-#### ソース: connector.rb（ローカルパース）
+#### Source: `connector.rb` (local parse)
 
-`connectors/<name>/connector.rb` の Ruby DSL を直接読み取って情報を抽出する。
-API コールは不要。Claude が Ruby DSL を理解して以下を抽出:
+Read the Ruby DSL in `connectors/<name>/connector.rb` directly. No API call. Claude reads the DSL and extracts:
 
-- `title:` — コネクタ表示名
-- `actions:` ブロック — アクション名（ハッシュキー）、`title`、`batch`/`bulk` フラグ
-- `triggers:` ブロック — トリガー名（ハッシュキー）、`title`、タイプ判定:
-  - `poll` + `dedup` があれば Polling
-  - `webhook_subscribe` があれば Webhook
-- `object_definitions:` — 共有フィールド定義（`fields` ラムダ内の配列）
-- `input_fields` / `output_fields` — フィールド定義を抽出:
-  - `object_definitions['name']` 参照の場合は該当定義を解決
-  - インラインの場合は直接配列を抽出
-  - 各フィールドから `name`, `type`, `label`, `optional`, `hint` を取得
+- `title:` — connector display name.
+- `actions:` block — action names (hash keys), `title`, `batch`/`bulk` flags.
+- `triggers:` block — trigger names (hash keys), `title`, and trigger type:
+  - `poll` + `dedup` → Polling
+  - `webhook_subscribe` → Webhook
+- `object_definitions:` — shared field definitions (the array inside the `fields` lambda).
+- `input_fields` / `output_fields` — field definitions:
+  - For `object_definitions['name']` references, resolve to the corresponding definition.
+  - For inline arrays, extract directly.
+  - From each field, take `name`, `type`, `label`, `optional`, `hint`.
 
-#### connector.rb が存在しない場合
+#### When `connector.rb` is missing
 
-`connectors/<name>/` にソースがない（UI 上のみのカスタムコネクタ）場合:
-- ユーザーに `workato sdk pull` の実行を提案
-- pull 後に再度 `/sync-connectors --custom` を実行
+For a custom connector that lives only in the UI (no source under `connectors/<name>/`):
+- Suggest running `workato sdk pull`.
+- After the pull, run `/sync-connectors --custom` again.
 
-### Pre-built 補足ソース
+### Supplementary source for pre-built
 
-#### 2次ソース: 公式ドキュメント（WebFetch）
+#### Secondary source: official docs (WebFetch)
 
-API で取得できない説明文や備考を補完する場合に使用。
-URL パターン: `https://docs.workato.com/en/connectors/<name>.html`
+Use this to fill in descriptions and notes that the API doesn't expose.
+URL pattern: `https://docs.workato.com/en/connectors/<name>.html`
 
-### 3次ソース: pull 済みレシピ
+### Tertiary source: pulled recipes
 
-`extended_output_schema` / `extended_input_schema` からフィールド情報を抽出。
-これは `/learn-recipe` スキルの役割。
+Extract field info from `extended_output_schema` / `extended_input_schema`.
+That's `/learn-recipe`'s job.
 
-## 実行手順
+## Procedure
 
-### カスタムコネクタの更新（--custom）
+### Updating custom connectors (`--custom`)
 
-1. `connectors/` 配下をスキャンし、`connector.rb` が存在するディレクトリを列挙:
+1. Scan under `connectors/` and list directories that have a `connector.rb`:
 ```bash
 ls connectors/*/connector.rb 2>/dev/null
 ```
 
-2. 各 `connector.rb` を Read で読み込み、Ruby DSL を解析:
-   - `title:` からコネクタ表示名を取得
-   - `actions:` ブロックから各アクションの名前（キー）、`title`、`batch`/`bulk` フラグを抽出
-   - `triggers:` ブロックから各トリガーの名前（キー）、`title`、タイプ（Polling/Webhook）を判定
-   - `object_definitions:` からフィールド定義を抽出
-   - 各 action/trigger の `input_fields` / `output_fields` を解決:
-     - `object_definitions['name']` 参照 → 該当 object_definition の fields を展開
-     - インライン配列 → 直接抽出
+2. Read each `connector.rb` and parse the Ruby DSL:
+   - Take the connector display name from `title:`.
+   - From the `actions:` block, extract each action's name (key), `title`, `batch`/`bulk` flags.
+   - From the `triggers:` block, extract each trigger's name (key), `title`, and type (Polling/Webhook).
+   - From `object_definitions:`, extract field definitions.
+   - Resolve `input_fields` / `output_fields` for each action / trigger:
+     - For `object_definitions['name']` references, expand the matching object_definition's fields.
+     - For inline arrays, extract directly.
 
-3. `connectors/docs/<name>.md` を作成または更新:
+3. Create or update `connectors/docs/<name>.md`:
 
-   **フロントマター保持のルール**: ファイル先頭に `---` で囲まれた YAML フロントマター（`connector_id:` など）がある場合は **必ずそのまま保持** する。
-   `sdk push` が書き込んだ情報（connector_id 等）を書き換えたり消したりしないこと。
+   **Frontmatter preservation rule**: if the file starts with a `---`-delimited YAML frontmatter (e.g. `connector_id:`), **always preserve it**.
+   Do not modify or remove information written by `sdk push` (such as `connector_id`).
 
 ```markdown
 ---
-connector_id: <id>   # sdk push が自動管理
+connector_id: <id>   # managed automatically by sdk push
 ---
 
-# <Title> コネクタ
+# <Title> connector
 
 Provider: `<name>`
 Source: Custom (Connector SDK)
 
 ## Triggers
 
-| 名前 | provider 内名称 | Type | 説明 |
+| Name | Internal name | Type | Description |
 |---|---|---|---|
 | <title> | `<name>` | Polling/Webhook | |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | <title> | `<name>` | Yes/- | |
 
-## フィールド詳細
+## Field details
 
 ### <action/trigger name>
 
 #### Input fields
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
 | <name> | <type> | Yes/- | <label or hint> |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | <name> | <type> | <label or hint> |
 ```
 
-4. `connectors/docs/` ディレクトリが存在しない場合は作成
+4. Create the `connectors/docs/` directory if it doesn't exist.
 
-5. `--custom <name>` の場合は指定コネクタのみ処理
+5. With `--custom <name>`, process only the specified connector.
 
-### Pre-built 単一コネクタの更新
+### Updating one pre-built connector
 
-1. CLI でコネクタ情報を取得:
+1. Fetch connector info via the CLI:
 ```bash
 python3 scripts/workato-api.py connectors list-platform --provider <name>
 ```
 
-2. JSON をパースし、triggers/actions を抽出
+2. Parse the JSON and extract triggers/actions.
 
-3. `docs/connectors/<name>.md` を作成または更新:
+3. Create or update `docs/connectors/<name>.md`:
 
 ```markdown
-# <Title> コネクタ
+# <Title> connector
 
 Provider: `<name>`
 
 ## Triggers
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | <title> | `<name>` | Yes/- | |
 
 ## Actions
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | <title> | `<name>` | Yes/- | |
 
-## フィールド詳細
+## Field details
 
-（/learn-recipe で蓄積）
+(accumulated by /learn-recipe)
 ```
 
-### 差分更新のルール
+### Diff-update rules
 
-- **新規作成**: ファイルが存在しなければ新規作成
-- **更新**: 既存ファイルがある場合:
-  - API から取得したトリガー/アクションと比較
-  - 新しいものがあれば追加
-  - **フロントマター（`---` で囲まれた YAML ブロック）は必ず保持** する。`connector_id` などは `sdk push` が自動管理しているため、絶対に書き換えない
-  - `## フィールド詳細` 以降のセクション（/learn-recipe で蓄積した情報）は保持
-  - deprecated フラグが立ったものに注記を追加
-- **provider 名の確定**: API の `name` フィールドが正式な provider 名
+- **New file**: create when the file doesn't exist.
+- **Existing file**:
+  - Compare triggers/actions retrieved from the API with what's in the file.
+  - Add anything new.
+  - **Always preserve the frontmatter (the `---`-delimited YAML block).** Items like `connector_id` are managed by `sdk push` — never rewrite them.
+  - Preserve sections after `## Field details` (info accumulated by `/learn-recipe`).
+  - Annotate triggers / actions that flipped to deprecated.
+- **Canonical provider name**: the API's `name` field is the canonical provider name.
 
-### --all の実行
+### Running `--all`
 
-#### Pre-built コネクタ
+#### Pre-built connectors
 ```bash
-# 全 Pre-built コネクタを取得
+# Fetch every pre-built connector
 python3 scripts/workato-api.py connectors list-platform
 ```
-全コネクタの JSON を取得し、各コネクタの `docs/connectors/<name>.md` を生成・更新する。
+Fetch the JSON for every connector and generate / update `docs/connectors/<name>.md` for each.
 
-#### カスタムコネクタ
-`connectors/` 配下の全 `connector.rb` をスキャンし、`connectors/docs/<name>.md` を生成・更新する（「カスタムコネクタの更新」手順に従う）。
+#### Custom connectors
+Scan every `connector.rb` under `connectors/` and generate / update `connectors/docs/<name>.md` (following the "Updating custom connectors" procedure).
 
-### --check の動作
+### `--check` behavior
 
-1. API から全コネクタのトリガー/アクションを取得
-2. `docs/connectors/` 内の既存ファイルと比較
-3. 差分を報告:
-   - ✅ 一致
-   - ⚠️ API に存在するがドキュメントにない（新しいトリガー/アクション）
-   - ❌ ドキュメントにあるが API にない（削除 or 名前変更）
-   - 📄 ドキュメントファイルが存在しないコネクタ
+1. Fetch every connector's triggers / actions from the API.
+2. Compare with existing files in `docs/connectors/`.
+3. Report the diff:
+   - ✅ Match
+   - ⚠️ API has it, docs don't (new trigger / action)
+   - ❌ Docs have it, API doesn't (removed or renamed)
+   - 📄 Connector with no docs file at all
 
-## `docs/connectors/_index.md` の更新（Pre-built のみ）
+## Updating `docs/connectors/_index.md` (pre-built only)
 
-`--all` 実行時に `_index.md` も更新:
-- Pre-built コネクタの一覧を API データで正確に更新
-- provider 名（`name` フィールド）を記載
-- カスタムコネクタは含めない（組織固有のため `connectors/docs/` で管理）
+During `--all`, also update `_index.md`:
+- Refresh the pre-built connector list precisely from the API data.
+- Use the `name` field as the provider name.
+- Do not include custom connectors here (those are managed in `connectors/docs/` because they are org-specific).
 
-## 出力
+## Output
 
-更新完了後、以下を報告:
+After update, report:
 
-### Pre-built コネクタ
-- 作成/更新したファイル一覧（`docs/connectors/`）
-- 追加されたトリガー/アクションの数
-- deprecated になったトリガー/アクション
+### Pre-built connectors
+- The list of created / updated files (`docs/connectors/`).
+- The number of triggers / actions added.
+- Triggers / actions newly flagged deprecated.
 
-### カスタムコネクタ
-- 作成/更新したファイル一覧（`connectors/docs/`）
-- 抽出されたトリガー/アクション/フィールドの数
-- connector.rb が見つからなかったディレクトリ（pull が必要）
+### Custom connectors
+- The list of created / updated files (`connectors/docs/`).
+- The number of triggers / actions / fields extracted.
+- Directories whose `connector.rb` was missing (a pull is needed).
 
-## Git 管理
+## Git management
 
-このスキルは **2 箇所** に書き込む:
+This skill writes to **two locations**:
 
-- `docs/connectors/*.md` → kit（submodule）内のナレッジベース → workato-dev-kit に PR
-- `connectors/docs/*.md` → ワークスペースリポジトリ内のカスタムコネクタナレッジ
+- `docs/connectors/*.md` → the knowledge base inside the kit (submodule) → PR back to workato-dev-kit.
+- `connectors/docs/*.md` → the workspace repository's custom-connector knowledge.
 
-実行後のコミット:
+Commit after running:
 
 ```bash
-# ワークスペース側 (カスタムコネクタ更新分)
+# Workspace side (custom connector updates)
 git add connectors/docs/
 git commit -m "docs: update custom connector info"
 
-# kit 側 (Pre-built コネクタ更新分) → workato-dev-kit に PR
+# Kit side (pre-built connector updates) → PR to workato-dev-kit
 cd kit
 git add docs/connectors/
 git commit -m "docs: update pre-built connector info"
 ```
 
-片方だけコミットして push するとナレッジが不整合になる。
+Committing and pushing only one side leaves your knowledge inconsistent.

@@ -1,10 +1,10 @@
-# Replicon コネクタ
+# Replicon connector
 
 Provider: `replicon`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New invoice | `get_invoice` | - |  [deprecated] |
 | New client | `new_client` | - |  |
@@ -16,7 +16,7 @@ Provider: `replicon`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Assign all users to project | `add_all_users_to_project` | - |  |

@@ -1,85 +1,85 @@
-# レシピ構築パターン ガイド
+# Recipe construction patterns guide
 
-Workato エキスパートが持つ構築ノウハウを「パターン」としてカタログ化し、レシピ生成時に自動参照される仕組み。
+A mechanism that catalogs the construction know-how Workato experts have as "patterns" and references them automatically during Recipe generation.
 
-## パターンとは
+## What is a pattern
 
-レシピを構築する際に繰り返し使われる定石のこと。レシピ全体の構成にも、レシピ内の一部のロジックにもなりうる。
+A pattern is a recurring playbook used when building Recipes. It can apply to an entire Recipe or to a single piece of logic within one.
 
-- **レシピ全体**: 承認ワークフロー（申請 → 承認 → 後続処理）
-- **レシピの一部**: ページネーションループ（API の全件取得）
+- **Entire Recipe**: approval workflow (request → approval → follow-up processing)
+- **Part of a Recipe**: pagination loop (fetch all records from an API)
 
-## カタログの構成
+## Catalog structure
 
-書き込み先は `org/docs/patterns/recipe-patterns/` に一本化されている。読み込み時は kit canonical とレガシーパスも併読する。
+The write target is consolidated to `org/docs/patterns/recipe-patterns/`. When reading, the kit canonical and legacy paths are also consulted.
 
-| カタログ | 場所 | 書き手 | 内容 |
+| Catalog | Location | Author | Content |
 |---|---|---|---|
-| kit canonical | `docs/patterns/recipe-patterns/` | kit メンテナ | Workato プラットフォーム共通のパターン。read-only（利用者は編集しない） |
-| 組織側 | `org/docs/patterns/recipe-patterns/` | `/learn-pattern` | 組織が記録したパターン。汎用 / 組織ドメインともにここに集約 |
-| レガシー | `projects/docs/patterns/` | （新規書き込みなし） | 旧バージョンで記録されたパターン。後方互換のため読み込みのみ |
+| kit canonical | `docs/patterns/recipe-patterns/` | kit maintainers | Patterns common across the Workato platform. Read-only (users do not edit) |
+| Org side | `org/docs/patterns/recipe-patterns/` | `/learn-pattern` | Patterns recorded by the organization. Both general and org-domain patterns are consolidated here |
+| Legacy | `projects/docs/patterns/` | (no new writes) | Patterns recorded in older versions. Read-only for backward compatibility |
 
-汎用 / 組織ドメインの区別はパターン本文の「スコープ」セクションで表現し、ファイルパスでは分けない。
+The distinction between general and org-domain is expressed in the "Scope" section of each pattern's body, not by file path.
 
-`/create-recipe` や `/plan` は 3 カタログすべてを併読し、矛盾は組織側（`org/docs/`）が優先（`@.claude/rules/org-knowledge-overlay.md` 参照）。
+`/create-recipe` and `/plan` consult all three catalogs, and conflicts are resolved in favor of the org side (`org/docs/`) (see `@.claude/rules/org-knowledge-overlay.md`).
 
-## パターンの流れ
+## Pattern flow
 
 ```
-エキスパートがノウハウを持っている
-  → /learn-pattern で対話的にパターンを記録
-  → カタログに蓄積
+An expert has know-how
+  → record the pattern interactively with /learn-pattern
+  → accumulated in the catalog
 
-別の開発者がレシピを作成する
-  → /create-recipe がカタログを自動参照
-  → パターンに基づいたステップ構成を提案
-  → /plan でも spec.md → plan.md 変換時にパターンを提案
+Another developer creates a Recipe
+  → /create-recipe automatically references the catalog
+  → proposes step composition based on the pattern
+  → /plan also proposes patterns when converting spec.md → plan.md
 ```
 
-## /learn-pattern の使い方
+## How to use /learn-pattern
 
 ```bash
-# 新しいパターンを記録
-/learn-pattern ページネーションループ
+# Record a new pattern
+/learn-pattern pagination-loop
 
-# 既存パターンに注意点を追記
-/learn-pattern 承認ワークフロー 注意点追加
+# Add caveats to an existing pattern
+/learn-pattern approval-workflow add-caveat
 
-# レシピを参考にしながらパターンを記録
+# Record a pattern while referring to a Recipe
 /learn-pattern projects/[App] IT Onboarding/Recipes/main.recipe.json
 
-# 対話で始める
+# Start from a conversation
 /learn-pattern
 ```
 
-スキルが聞くのは以下の要点:
+The skill asks about the following key points:
 
-- **どういう場面で使うか** — どんな要件のときにこの構成にするか
-- **構成の要点** — どのステップをどう組み合わせるか
-- **なぜこの構成か** — 他の方法ではなくこの構成を選ぶ理由
-- **ハマりどころ** — 知らないと踏む落とし穴
+- **In what situation it is used** — for what kind of requirements this composition applies
+- **Composition essentials** — which steps to combine and how
+- **Why this composition** — why choose this composition over alternatives
+- **Pitfalls** — gotchas you will hit if you do not know them
 
-全てを網羅する必要はなく、話した内容をベースにスキルがテンプレートに沿ってドキュメント化する。
+You do not need to cover everything; the skill documents the conversation along a template.
 
-## パターンファイルの構成
+## Pattern file structure
 
-各パターンは以下のセクションを持つ:
+Each pattern has the following sections:
 
-| セクション | 内容 |
+| Section | Content |
 |---|---|
-| いつ使うか | 適用条件のテーブル |
-| レシピ構成図 | ステップの全体像（ASCII 図） |
-| ステップ構成 | Provider / Action のテーブル |
-| 設計判断ポイント | 判断・選択肢・判断基準のテーブル |
-| 既知の注意点 | ハマりどころの箇条書き |
-| 参照 | 関連ドキュメントへのリンク |
+| When to use | Table of application conditions |
+| Recipe composition diagram | Overall view of the steps (ASCII diagram) |
+| Step composition | Table of Provider / Action |
+| Design decision points | Table of decisions, options, and decision criteria |
+| Known caveats | Bullet list of pitfalls |
+| References | Links to related documentation |
 
-## パターンの参照タイミング
+## When patterns are consulted
 
-`/create-recipe` がレシピを生成する際、ヒアリング完了後のステップ構成設計（Step 6）でパターンカタログを参照する。
+When `/create-recipe` generates a Recipe, after interview completion, the pattern catalog is consulted during step composition design (Step 6).
 
-1. 要件を分解する（例: 「API から全件取得して DB に反映」）
-2. 各部分に該当するパターンを特定する（例: ページネーションループ + データ同期）
-3. パターンのステップ構成・設計判断・注意点を取り込んで JSON を組み立てる
+1. Break down the requirements (e.g. "fetch all records from API and reflect to DB")
+2. Identify the patterns matching each part (e.g. pagination loop + data sync)
+3. Incorporate the step composition, design decisions, and caveats from the patterns to assemble the JSON
 
-パターンはレシピ全体のテンプレートではなく、**組み合わせて使うビルディングブロック** として機能する。
+Patterns function not as Recipe-wide templates but as **building blocks to be combined**.

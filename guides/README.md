@@ -1,42 +1,42 @@
-# Workato Dev Kit ガイド
+# Workato Dev Kit Guides
 
-本ツールキットは **Claude Code** / **Cursor** / **Codex CLI** / **Gemini CLI** に対応している。スキル (`/create-recipe` 等) やルールはどのエディタでも同じ形式で利用できる（Codex のみ `/foo` の代わりに `$foo` 構文）。
+This toolkit supports **Claude Code**, **Cursor**, **Codex CLI**, and **Gemini CLI**. Skills (`/create-recipe`, etc.) and rules work the same way in every editor (Codex uses `$foo` instead of `/foo` syntax).
 
-## はじめに
+## Getting started
 
-| ガイド | 内容 |
+| Guide | Contents |
 |---|---|
-| [Claude Code クイックスタート](quickstart-claude-code.md) | Claude Code でのセットアップと初回開発 |
-| [Cursor クイックスタート](quickstart-cursor.md) | Cursor でのセットアップとルール同期 |
+| [Claude Code quickstart](quickstart-claude-code.md) | Setup and first development session with Claude Code |
+| [Cursor quickstart](quickstart-cursor.md) | Setup and rule synchronization for Cursor |
 
-> **Note:** スキル・ルールの正本は kit の `framework/claude/` にあり、`framework/{cursor,codex,gemini}/` および `framework/AGENTS.md` は `python3 scripts/sync_agents.py` で kit メンテナーが事前生成している。利用者は `bash kit/setup.sh` で各エディタ用ディレクトリへの symlink が張られる（個別に sync を回す必要はない）。詳細は [設計思想・アーキテクチャ](architecture.md) を参照。
+> **Note:** The canonical source for skills and rules is `framework/claude/` inside the kit. The kit maintainer regenerates `framework/{cursor,codex,gemini}/` and `framework/AGENTS.md` ahead of time via `python3 scripts/sync_agents.py`. Running `bash kit/setup.sh` symlinks each editor's directory into your workspace (no need to run sync yourself). See [Design and architecture](architecture.md) for details.
 
-## 設計思想
+## Design
 
-| ガイド | 内容 |
+| Guide | Contents |
 |---|---|
-| [設計思想・アーキテクチャ](architecture.md) | デュアルリポジトリ、ナレッジ階層、学習サイクル、スキル/ルール体系 |
+| [Design and architecture](architecture.md) | Dual repository layout, knowledge hierarchy, learning cycle, skill / rule structure |
 
-## 開発ガイド
+## Development guides
 
-| ガイド | 内容 |
+| Guide | Contents |
 |---|---|
-| [ライフサイクルと責務マップ](lifecycle.md) | 各スキル・docs の「いつ・誰が・何のために」呼ぶ/書く/読むかの全体像 |
-| [スキルリファレンス](skills-reference.md) | 全 13 スキルの用途・オプション・使い方 |
-| [デプロイ手順](deployment.md) | レシピ、Workflow App、Genie/MCP のデプロイとトラブルシューティング |
-| [レシピパターン](recipe-patterns.md) | パターンカタログの仕組みと活用方法 |
+| [Lifecycle and responsibility map](lifecycle.md) | When / who / why for every skill and doc — what gets called, written, and read |
+| [Skill reference](skills-reference.md) | Purpose, options, and usage for all skills |
+| [Deployment](deployment.md) | Deploying recipes, Workflow Apps, and Genies / MCP servers, plus troubleshooting |
+| [Recipe patterns](recipe-patterns.md) | How the pattern catalog works and how to use it |
 
-## 機能別ガイド
+## Feature guides
 
-| ガイド | 内容 |
+| Guide | Contents |
 |---|---|
-| [Workflow App 構築](workflow-apps.md) | 承認ワークフロー等の Workflow App を JSON で構築 |
-| [Genie & MCP 構築](genie-and-mcp.md) | AI エージェント (Genie) と MCP サーバーの構築 |
-| [カスタムコネクタ開発](connector-development.md) | Connector SDK でカスタム API コネクタを開発 |
+| [Building Workflow Apps](workflow-apps.md) | Building approval workflows and other Workflow Apps via JSON |
+| [Building Genies & MCP servers](genie-and-mcp.md) | Constructing AI agents (Genies) and MCP servers |
+| [Custom connector development](connector-development.md) | Developing custom API connectors with the Connector SDK |
 
-## 運用ガイド
+## Operations guides
 
-| ガイド | 内容 |
+| Guide | Contents |
 |---|---|
-| [ナレッジ管理](knowledge-management.md) | 学習サイクル、ナレッジベースの育て方 |
-| [共有アセット管理](shared-assets.md) | ワークスペース構成、命名規則、カタログ運用 |
+| [Knowledge management](knowledge-management.md) | Learning cycle and how to grow the knowledge base |
+| [Shared-asset management](shared-assets.md) | Workspace structure, naming conventions, catalog operations |

@@ -1,17 +1,17 @@
-# Zenefits コネクタ
+# Zenefits connector
 
 Provider: `zenefits`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New or updated employee | `new_or_updated_employee` | - |  |
 | New or updated employment | `new_or_updated_employment` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Get employee by ID | `get_employee_by_id` | - |  |

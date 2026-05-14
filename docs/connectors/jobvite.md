@@ -1,13 +1,13 @@
-# Jobvite コネクタ
+# Jobvite connector
 
 Provider: `jobvite`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New hire | `new_approved_candidate` | - |  |
 
 ## Actions
 
-なし
+None

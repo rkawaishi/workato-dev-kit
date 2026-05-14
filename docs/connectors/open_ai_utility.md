@@ -1,14 +1,14 @@
-# AI by Workato コネクタ
+# AI by Workato connector
 
 Provider: `open_ai_utility`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Analyze text | `analyse_document` | - |  |
 | Analyze image | `analyse_image` | - |  |
@@ -19,17 +19,17 @@ Provider: `open_ai_utility`
 | Summarize text | `summarize_text` | - |  |
 | Translate text | `translate_text` | - |  |
 
-## フィールド詳細
+## Field details
 
 ### analyse_document (Action)
 
-レシピ: Update Contract in Salesforce
+Recipe: Update Contract in Salesforce
 Provider: `open_ai_utility`
 
 #### Input fields
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| _settings_version | string | - | 設定バージョン |
-| text | string | Yes | 分析対象のテキスト/URL（datapill でドキュメント参照可） |
-| question | string | Yes | 分析のプロンプト指示 |
+| _settings_version | string | - | Configuration version |
+| text | string | Yes | Text/URL to analyze (can reference a document via datapill) |
+| question | string | Yes | Prompt instruction for the analysis |
 

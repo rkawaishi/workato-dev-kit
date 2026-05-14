@@ -1,14 +1,14 @@
-# Lists by Workato コネクタ
+# Lists by Workato connector
 
 Provider: `workato_list`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Accumulate items to list | `accumulate_list_items` | - |  |
 | Create repeat helper list | `create_list` | - |  |

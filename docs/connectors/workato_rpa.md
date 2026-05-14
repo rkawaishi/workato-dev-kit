@@ -1,14 +1,14 @@
-# RPA by Workato コネクタ
+# RPA by Workato connector
 
 Provider: `workato_rpa`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | List departments | `get_departments` | Yes |  |
 | Get job detail | `get_job_detail` | - |  |

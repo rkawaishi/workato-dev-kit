@@ -1,25 +1,25 @@
-# Learned Patterns（kit canonical）
+# Learned Patterns (kit canonical)
 
-このファイルは **kit 標準の一時保管バッファ** で、kit メンテナが分類前に置く場所。
-**組織の利用者はこのファイルを編集してはならない**（kit submodule の変更になる）。
+This file is the **kit standard staging buffer** where kit maintainers place items before classifying them.
+**Users of the organization must not edit this file** (it would change the kit submodule).
 
-## 組織側の学習結果は `org/docs/learned-patterns.md` へ
+## Organization-side learnings go into `org/docs/learned-patterns.md`
 
-組織のレシピから学習した知見は、すべて **ワークスペースリポジトリ側の `org/docs/`** に書き込む。
-詳細な振り分けルールは `@.claude/rules/org-knowledge-overlay.md` を参照。
+All knowledge learned from an organization's Recipes is written to **`org/docs/` on the workspace repository side**.
+For detailed routing rules, see `@.claude/rules/org-knowledge-overlay.md`.
 
-組織側の分類先:
-- レシピ JSON 構造の発見 → `org/docs/learned-patterns.md`（後で適切なファイルに移動）
-- ロジック → `org/docs/logic/<topic>.md`
-- コネクタ固有のフィールド情報 → `org/docs/connectors/<provider>.md`
-- プラットフォーム機能 → `org/docs/platform/<topic>.md`
-- デプロイ関連 → `org/docs/patterns/deployment-guide.md`
+Organization-side destinations:
+- Discoveries about Recipe JSON structure -> `org/docs/learned-patterns.md` (move to the appropriate file later)
+- Logic -> `org/docs/logic/<topic>.md`
+- Connector-specific field information -> `org/docs/connectors/<provider>.md`
+- Platform features -> `org/docs/platform/<topic>.md`
+- Deployment-related -> `org/docs/patterns/deployment-guide.md`
 
-## kit 側の正規分類先（kit メンテナ向け）
+## Kit-side canonical destinations (for kit maintainers)
 
-kit に取り込みたい一般的な発見は、kit リポジトリへの PR で以下に分類する:
-- レシピ JSON 構造 → `.claude/rules/workato-recipe-format.md`
-- ロジック → `docs/logic/` の該当ファイル
-- コネクタ固有 → `docs/connectors/<name>.md`
-- プラットフォーム機能 → `docs/platform/` の該当ファイル
-- デプロイ関連 → `docs/patterns/deployment-guide.md`
+General discoveries to be folded into the kit are classified via a PR to the kit repository, as follows:
+- Recipe JSON structure -> `.claude/rules/workato-recipe-format.md`
+- Logic -> the appropriate file under `docs/logic/`
+- Connector-specific -> `docs/connectors/<name>.md`
+- Platform features -> the appropriate file under `docs/platform/`
+- Deployment-related -> `docs/patterns/deployment-guide.md`

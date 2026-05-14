@@ -1,11 +1,11 @@
-# Cyberark Conjur コネクタ
+# Cyberark Conjur connector
 
 Provider: `cyberark_conjur`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-なし
+None

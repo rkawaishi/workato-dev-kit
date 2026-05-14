@@ -1,11 +1,11 @@
-# Amazon Lex コネクタ
+# Amazon Lex connector
 
 Provider: `amazon_lex_nlu`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-なし
+None

@@ -1,16 +1,16 @@
-# docparser コネクタ
+# docparser connector
 
 Provider: `docparser`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Parsed data | `parsed_data` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Fetch document from URL | `fetch_document_from_url` | - |  |

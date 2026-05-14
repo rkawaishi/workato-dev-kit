@@ -1,10 +1,10 @@
-# OneDrive コネクタ
+# OneDrive connector
 
 Provider: `onedrive`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New line in CSV file | `new_csv_line` | - |  |
 | New event | `new_event_trigger` | - |  |
@@ -14,7 +14,7 @@ Provider: `onedrive`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create folder | `create_folder` | - |  |

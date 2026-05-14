@@ -1,94 +1,94 @@
 ---
 name: create-connector
-description: Workato カスタムコネクタ (Connector SDK) のプロジェクトをスキャフォールドし connector.rb を生成する。
+description: Scaffold a Workato custom connector (Connector SDK) project and generate its connector.rb. Japanese prompts are also supported.
 ---
 
 # /create-connector
 
-Workato Connector SDK のカスタムコネクタプロジェクトを対話的に生成するスキル。
+Interactively generate a Workato Connector SDK custom-connector project.
 
-## 使い方
+## Usage
 
-- `/create-connector <api-name>` — 指定 API 用のコネクタを作成（**推奨**、`/implement` 経由の自動起動はこのパターン）
-- `/create-connector` — 対話的に新しいカスタムコネクタを作成（フォールバック）
+- `/create-connector <api-name>` — create a connector for the given API (**preferred**; how `/implement` invokes it)
+- `/create-connector` — create a new custom connector interactively (fallback)
 
-> **注**: コネクタは `connectors/<name>/` に作られ、特定プロジェクトに紐づかない（複数プロジェクトから再利用される共有資産）。そのため `<project>/<NNN>-<slug>` 引数は取らない。`/implement` から `[connector]` タスク経由で呼ばれる場合、呼び出し元プロジェクトの `plan.md` の `## New Components` `### Connections` セクションに記載された **API ドキュメント URL や認証方式のヒント** を引数で渡すか、対話的に確認する。
+> **Note**: connectors live under `connectors/<name>/` and are not tied to a single project (they're shared assets reused across projects). That's why this skill does not take a `<project>/<NNN>-<slug>` argument. When `/implement` dispatches a `[connector]` task, pass the **API documentation URL and the auth-method hints** from the calling project's `plan.md` `## New Components` `### Connections` section as arguments, or confirm them interactively.
 
-## 手順
+## Procedure
 
-1. ユーザーに以下を確認:
-   - **接続先 API**: どのサービスに接続するか
-   - **API ドキュメント URL**: API の仕様書
-   - **認証方式**: API キー / OAuth 2.0 / Basic 認証 / カスタム
-   - **必要なアクション**: どんな操作が必要か（CRUD、検索等）
-   - **必要なトリガー**: どんなイベントを検知するか（ポーリング / Webhook）
+1. Interview the user:
+   - **Target API**: which service to connect to.
+   - **API documentation URL**: the API spec.
+   - **Auth method**: API key / OAuth 2.0 / Basic auth / custom.
+   - **Required actions**: what operations are needed (CRUD, search, ...).
+   - **Required triggers**: what events to detect (polling / webhook).
 
-2. リファレンスを読む:
-   - `docs/connector-sdk/overview.md` — SDK の概要と環境構築の落とし穴
-   - `docs/connector-sdk/connector-rb.md` — connector.rb リファレンス（HTTP メソッドの戻り値型・base_uri 規約・正規化ヘルパーのテンプレ含む）
-   - `.cursor/rules/workato-connector-sdk.mdc` — フォーマットルール
+2. Read the references:
+   - `docs/connector-sdk/overview.md` — SDK overview and setup pitfalls.
+   - `docs/connector-sdk/connector-rb.md` — connector.rb reference (HTTP method return types, `base_uri` conventions, normalization helper templates).
+   - `.cursor/rules/workato-connector-sdk.mdc` — format rules.
 
-3. API ドキュメントが提供された場合:
-   - WebFetch で API の認証方法、エンドポイント、リクエスト/レスポンスを取得
-   - OpenAPI 仕様がある場合はそれを優先参照
+3. If the API docs are provided:
+   - Use WebFetch to learn the auth method, endpoints, and request/response shapes.
+   - If an OpenAPI spec exists, prefer it.
 
-4. `connectors/<name>/` にファイルを生成:
+4. Generate files under `connectors/<name>/`:
 
-### 生成ファイル
+### Files generated
 
 ```
 connectors/
-├── .gitignore            # 共有（templates/gitignore/connectors.gitignore をコピー、初回のみ）
+├── .gitignore            # shared (copy from templates/gitignore/connectors.gitignore on first run only)
 └── <name>/
-    ├── connector.rb      # コネクタ本体
-    ├── settings.yaml     # 認証情報テンプレート
-    ├── Gemfile           # Ruby 依存関係
-    └── README.md         # 接続設定手順
+    ├── connector.rb      # the connector itself
+    ├── settings.yaml     # credentials template
+    ├── Gemfile           # Ruby dependencies
+    └── README.md         # connection setup instructions
 ```
 
-## connector.rb の生成ルール
+## Rules for generating connector.rb
 
-### connection ブロック
-- API の認証方式に合わせて `authorization.type` を設定
-- `base_uri` に API のベース URL を設定
-- `fields` にユーザーが入力する認証情報（api_key, domain 等）を定義
+### `connection` block
+- Set `authorization.type` to match the API's auth method.
+- Set `base_uri` to the API's base URL.
+- Define the credentials the user has to enter (api_key, domain, etc.) under `fields`.
 
-### test ブロック
-- API の「自分の情報を取得」エンドポイント（`/me`, `/user`, `/account` 等）を呼出し
+### `test` block
+- Call a "get my info" endpoint (`/me`, `/user`, `/account`, etc.).
 
-### actions ブロック
-- 各アクションに `execute`, `input_fields`, `output_fields` を必ず定義
-- `object_definitions` で共通フィールドを定義し、アクション間で再利用
-- API ドキュメントのリクエスト/レスポンスを正確に反映
+### `actions` block
+- Always define `execute`, `input_fields`, and `output_fields` on every action.
+- Define common fields under `object_definitions` and reuse across actions.
+- Mirror the API docs' requests / responses faithfully.
 
-### triggers ブロック
-- **ポーリング**: `poll`, `dedup`, `input_fields`, `output_fields` を定義
-  - `poll` は `{ events:, can_poll_more:, next_poll: }` を返す
-  - `dedup` はレコードの一意キーを返す
-- **Webhook**: `webhook_subscribe`, `webhook_unsubscribe`, `webhook_notification` を定義
+### `triggers` block
+- **Polling**: define `poll`, `dedup`, `input_fields`, `output_fields`.
+  - `poll` returns `{ events:, can_poll_more:, next_poll: }`.
+  - `dedup` returns the record's unique key.
+- **Webhook**: define `webhook_subscribe`, `webhook_unsubscribe`, `webhook_notification`.
 
-### object_definitions ブロック
-- API のレスポンスオブジェクトをスキーマとして定義
-- アクション/トリガー間でフィールド定義を共有
+### `object_definitions` block
+- Define the API's response objects as schemas.
+- Share the field definitions across actions / triggers.
 
-## settings.yaml テンプレート
+## settings.yaml template
 
 ```yaml
-# 認証情報（実際の値に置き換えてください）
+# Credentials (replace with real values)
 api_key: YOUR_API_KEY
 # domain: YOUR_DOMAIN
 ```
 
-## Gemfile テンプレート
+## Gemfile template
 
 ```ruby
 source 'https://rubygems.org'
 
 gem 'workato-connector-sdk'
 
-# Ruby 3.4+ で default gems から外れた stdlib。
-# `LoadError: cannot load such file -- csv` 等を避けるため明示する。
-# 詳細: docs/connector-sdk/overview.md「Ruby 4.0 では default gems が外れている」
+# Stdlib gems that were removed from default gems in Ruby 3.4+.
+# Declare them explicitly to avoid `LoadError: cannot load such file -- csv` etc.
+# See docs/connector-sdk/overview.md "Default gems removed in Ruby 4.0".
 gem 'csv'
 gem 'base64'
 gem 'bigdecimal'
@@ -104,50 +104,50 @@ group :test do
 end
 ```
 
-## .gitignore テンプレート
+## .gitignore template
 
-`templates/gitignore/connectors.gitignore` を組織の `connectors/` リポジトリ直下に `.gitignore` としてコピーする（単一ソース）。
+Copy `templates/gitignore/connectors.gitignore` directly into the org's `connectors/` repository root as `.gitignore` (single source):
 
 ```bash
 cp templates/gitignore/connectors.gitignore connectors/.gitignore
 ```
 
-個別コネクタディレクトリ（`connectors/<name>/`）固有の追加除外が必要な場合のみ、サブディレクトリに `.gitignore` を別途作成する。
+If a per-connector directory (`connectors/<name>/`) needs additional excludes, add a separate `.gitignore` in that subdirectory.
 
-## 出力
+## Output
 
-生成完了後、以下を表示:
-- 生成したファイル一覧
-- コネクタの構成サマリー（認証方式、アクション数、トリガー数）
-- 次のステップ:
-  1. `settings.yaml` に認証情報を設定（ローカルテスト用）
-  2. テスト（Ruby gem CLI, 任意）:
+After generation, display:
+- The list of generated files.
+- A summary of the connector (auth method, action count, trigger count).
+- Next steps:
+  1. Set credentials in `settings.yaml` (for local testing).
+  2. Test (Ruby gem CLI, optional):
      ```bash
      cd connectors/<name>
-     bundle install                              # 初回のみ
-     bundle exec workato exec connector.rb test  # テスト（settings.yaml に実認証情報が必要）
+     bundle install                              # first run only
+     bundle exec workato exec connector.rb test  # test (needs real credentials in settings.yaml)
      ```
-     > **Note**: `bundle exec workato` を使うのは、Platform CLI と `workato` コマンド名が競合するため
-  3. Workato へアップロード（API ヘルパー — Ruby 不要、Platform CLI のプロファイルで認証）:
+     > **Note**: use `bundle exec workato` because the Connector SDK's `workato` command collides with the Platform CLI.
+  3. Upload to Workato (API helper — no Ruby required; auths via the Platform CLI's profile):
      ```bash
-     # 初回も更新も同じコマンドで OK。
-     # 初回は新規作成し、返ってきた connector_id を
-     # connectors/docs/<name>.md の YAML フロントマターに保存する。
-     # 2 回目以降は frontmatter の connector_id を読んで自動で更新 push する。
+     # The same command works for both the first push and subsequent updates.
+     # On the first push it creates a new connector and saves the returned connector_id
+     # to the YAML frontmatter in connectors/docs/<name>.md.
+     # Subsequent pushes read the connector_id from the frontmatter and auto-update.
      python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb
      ```
-     - 明示的に新規作成したい場合は `--title "<Title>"` を付ける（frontmatter に ID が無い場合のみ）
-     - 明示的に特定 ID を更新したい場合は `--connector-id <id>` を付ける（frontmatter より優先）
-  4. docs の本体（トリガー/アクション/フィールド）を埋める:
+     - To explicitly create a new connector, add `--title "<Title>"` (only when frontmatter has no ID).
+     - To explicitly update a specific ID, add `--connector-id <id>` (overrides frontmatter).
+  4. Populate the docs (triggers / actions / fields):
      ```
      /sync-connectors --custom <name>
      ```
-     初回 push 後、`connectors/docs/<name>.md` はフロントマター + スタブだけの状態になる。
-     `/sync-connectors` が `connector.rb` をパースして本文を埋める（フロントマターは保持される）。
+     After the first push, `connectors/docs/<name>.md` is just frontmatter + a stub.
+     `/sync-connectors` parses `connector.rb` and fills in the body (the frontmatter is preserved).
 
-## Git 管理
+## Git management
 
-生成ファイル (`connector.rb`, `Gemfile`, `settings.yaml`, `README.md`) は `connectors/<name>/` に配置される。ワークスペースリポジトリでコミット:
+Generated files (`connector.rb`, `Gemfile`, `settings.yaml`, `README.md`) live under `connectors/<name>/`. Commit them in the workspace repository:
 
 ```bash
 git add connectors/<name>/
@@ -155,4 +155,4 @@ git commit -m "Add connector: <name>"
 git push origin
 ```
 
-`settings.yaml` はワークスペースリポジトリの `.gitignore` で除外済み（認証情報を含むため）。`sdk push` は Workato API へのデプロイで git とは独立。
+`settings.yaml` is already excluded in the workspace `.gitignore` (it contains credentials). `sdk push` is the deploy to the Workato API, separate from git.

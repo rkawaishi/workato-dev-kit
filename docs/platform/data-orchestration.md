@@ -1,43 +1,43 @@
 # Data Orchestration
 
-公式: https://docs.workato.com/en/data-orchestration.html
+Official: https://docs.workato.com/en/data-orchestration.html
 
-## 概要
+## Overview
 
-異なるソース、アプリケーション、システムのデータを統合・調和し、データベースやデータウェアハウスにロードする機能。データパイプラインの作成を簡素化する。
+A feature that integrates and harmonizes data from disparate sources, applications, and systems, then loads it into databases and data warehouses. Simplifies the creation of data pipelines.
 
-## 特徴
+## Features
 
-| 特徴 | 説明 |
+| Feature | Description |
 |---|---|
-| **ローコード/ノーコード** | 最小限のコーディングでワークフロー作成 |
-| **柔軟性** | レシピベースでカスタマイズ可能 |
-| **スケーラビリティ** | Bulk アクション/トリガーで大量データ処理 |
-| **再利用** | Recipe Functions でコンポーネント再利用 |
-| **可観測性** | ロギングサービスとジョブレポートで監視 |
-| **パフォーマンス** | Bulk 操作とファイルストレージで効率的実行 |
+| **Low-code / no-code** | Build workflows with minimal coding |
+| **Flexibility** | Recipe-based and customizable |
+| **Scalability** | Handle large data volumes via Bulk actions / triggers |
+| **Reuse** | Component reuse via Recipe Functions |
+| **Observability** | Monitor with logging services and job reports |
+| **Performance** | Efficient execution via Bulk operations and file storage |
 
 ## ETL vs ELT
 
 | | ETL | ELT |
 |---|---|---|
-| 流れ | Extract → Transform → Load | Extract → Load → Transform |
-| 変換タイミング | ロード前 | ロード後（ターゲットシステム内） |
-| 適用先 | データウェアハウス | データレイク、分散ストレージ |
+| Flow | Extract → Transform → Load | Extract → Load → Transform |
+| Transform timing | Before load | After load (inside the target system) |
+| Applies to | Data warehouses | Data lakes, distributed storage |
 
-Workato は ETL/ELT の効率化のため、バッチ処理よりも **Bulk 処理** を推奨。
+For efficient ETL / ELT, Workato recommends **Bulk processing** over batch processing.
 
-## モニタリングダッシュボード
+## Monitoring dashboard
 
-- 30日間のパイプラインアクティビティサマリー
-- 成功/失敗/停止のラン数
-- 日次行数ボリュームと平均実行時間
-- ステータスと結果を示すタイムライン
-- オブジェクトレベルのラン追跡
+- 30-day pipeline activity summary
+- Number of successful / failed / stopped runs
+- Daily row volume and average execution time
+- Timeline showing status and outcome
+- Object-level run tracking
 
-## 関連コネクタ
+## Related connectors
 
-大量データ転送に適したコネクタ:
-- Snowflake, Redshift, BigQuery（データウェアハウス）
-- Amazon S3, Google Cloud Storage（ファイルストレージ）
-- PostgreSQL, MySQL, Oracle（データベース）
+Connectors suited to high-volume data transfer:
+- Snowflake, Redshift, BigQuery (data warehouses)
+- Amazon S3, Google Cloud Storage (file storage)
+- PostgreSQL, MySQL, Oracle (databases)

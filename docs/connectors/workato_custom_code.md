@@ -1,13 +1,13 @@
-# Ruby snippets by Workato コネクタ
+# Ruby snippets by Workato connector
 
 Provider: `workato_custom_code`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Execute code | `invoke_custom_ruby_code` | - |  |

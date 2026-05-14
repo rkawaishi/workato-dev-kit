@@ -1,71 +1,71 @@
 # Data Tables
 
-公式: https://docs.workato.com/en/data-tables.html
-コネクタ: https://docs.workato.com/en/data-tables/data-table-connector.html
+Official: https://docs.workato.com/en/data-tables.html
+Connector: https://docs.workato.com/en/data-tables/data-table-connector.html
 
-## 概要
+## Overview
 
-Workato 内蔵のデータストア。スプレッドシートのようなインターフェースでデータを管理し、レシピから読み書きできる。外部 API やデータベースに依存せずにデータを保持する。
+Workato's built-in data store. Manages data through a spreadsheet-like interface and lets recipes read and write to it. Retains data without depending on external APIs or databases.
 
-## 主な用途
+## Primary use cases
 
-- サードパーティ API のレスポンスキャッシュ
-- 遅い API のデータストア
-- Workflow App のデータ基盤（単一または複数テーブルのリンク）
+- Caching responses from third-party APIs
+- Data store for slow APIs
+- Data foundation for Workflow Apps (single or multiple linked tables)
 
-## 非推奨の用途
+## Discouraged use cases
 
-- リレーショナルデータベースの代替
-- 大量データの単一セル格納
-- PCI 機密データ（クレジットカード番号等）の格納
+- Replacement for a relational database
+- Storing large amounts of data in a single cell
+- Storing PCI-sensitive data (credit card numbers, etc.)
 
-## 構成要素
+## Building blocks
 
-| 用語 | 説明 |
+| Term | Description |
 |---|---|
-| **Record** | テーブルの1行。自動生成の Record ID で一意に識別 |
-| **Column** | テーブルのフィールド（列）。自動生成の Column ID を持つ |
-| **Record ID** | 更新・削除操作に必要な一意識別子 |
-| **Column ID** | 列名の変更に耐性のある内部識別子 |
+| **Record** | One row in the table. Uniquely identified by an auto-generated Record ID |
+| **Column** | A table field (column). Has an auto-generated Column ID |
+| **Record ID** | Unique identifier required for update and delete operations |
+| **Column ID** | Internal identifier resilient to column-name changes |
 
-## カラム型
+## Column types
 
-- 標準的なデータ型（string, number, boolean, date 等）
-- **Long text**: 1セルあたり最大 10,000 文字
+- Standard data types (string, number, boolean, date, etc.)
+- **Long text**: up to 10,000 characters per cell
 
-## Triggers (4種)
+## Triggers (4)
 
-| 名前 | 説明 |
+| Name | Description |
 |---|---|
-| New record (real-time) | 新規レコード作成時（リアルタイム） |
-| New records (batch) | 新規レコードのバッチ検出 |
-| New/updated record (real-time) | 新規/更新レコード（リアルタイム） |
-| New/updated records (batch) | 新規/更新レコードのバッチ検出 |
+| New record (real-time) | When a new record is created (real-time) |
+| New records (batch) | Batch detection of new records |
+| New/updated record (real-time) | New or updated record (real-time) |
+| New/updated records (batch) | Batch detection of new or updated records |
 
-## Actions (10種)
+## Actions (10)
 
-| 名前 | 説明 |
+| Name | Description |
 |---|---|
-| Create record | レコード作成 |
-| Create records (batch) | 複数レコード一括作成 |
-| Update record | レコード更新 |
-| Update records (batch) | 複数レコード一括更新 |
-| Upsert record | レコードの作成または更新（マッチング条件ベース） |
-| Delete record | レコード削除 |
-| Delete records (batch) | 複数レコード一括削除 |
-| Remove values from a record | レコードの特定フィールド値をクリア |
-| Search records (batch) | 条件に合うレコードを検索 |
-| Truncate table (batch) | テーブルの全レコード削除 |
+| Create record | Create a record |
+| Create records (batch) | Bulk create multiple records |
+| Update record | Update a record |
+| Update records (batch) | Bulk update multiple records |
+| Upsert record | Create or update a record (based on matching criteria) |
+| Delete record | Delete a record |
+| Delete records (batch) | Bulk delete multiple records |
+| Remove values from a record | Clear specified field values from a record |
+| Search records (batch) | Search records matching given criteria |
+| Truncate table (batch) | Delete all records from the table |
 
-## フォーミュラでの lookup
+## Lookup in formulas
 
-レシピのフォーミュラモードから Data Table のレコードを直接参照できる。
+Records in a Data Table can be referenced directly from recipe formula mode.
 
-公式: https://docs.workato.com/en/formulas/other-formulas.html#data-table-lookup
+Official: https://docs.workato.com/en/formulas/other-formulas.html#data-table-lookup
 
-## 備考
+## Notes
 
-- スケーラブルかつセキュア、メンテナンス不要
-- UI からテーブルの作成・カラム変更が可能
-- レシピからは Data Tables コネクタ経由でアクセス
-- Column ID を使うことでカラム名変更時もレシピが壊れない
+- Scalable, secure, and maintenance-free
+- Tables can be created and columns changed from the UI
+- Recipes access them through the Data Tables connector
+- Using Column IDs prevents recipes from breaking when column names change

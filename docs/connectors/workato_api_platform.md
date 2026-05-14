@@ -1,15 +1,15 @@
-# API platform by Workato コネクタ
+# API platform by Workato connector
 
 Provider: `workato_api_platform`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New API request | `receive_request` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Respond to API request | `return_response` | - |  |

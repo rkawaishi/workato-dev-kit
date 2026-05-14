@@ -1,10 +1,10 @@
-# JDBC secondary コネクタ
+# JDBC secondary connector
 
 Provider: `jdbc_secondary`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New row | `new_row` | - |  |
 | New rows | `new_rows_batch` | Yes |  |
@@ -14,7 +14,7 @@ Provider: `jdbc_secondary`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Export query result | `export_csv` | Yes |  [deprecated] |
 | Export query result | `export_csv_v2` | - |  |

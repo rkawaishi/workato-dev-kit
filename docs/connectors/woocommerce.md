@@ -1,10 +1,10 @@
-# WooCommerce コネクタ
+# WooCommerce connector
 
 Provider: `woocommerce`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New customer | `new_customer` | - |  |
 | New order | `new_order` | - |  |
@@ -14,7 +14,7 @@ Provider: `woocommerce`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create product | `create_product` | - |  |

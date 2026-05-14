@@ -1,67 +1,67 @@
-# フォーミュラ
+# Formulas
 
-公式: https://docs.workato.com/en/formulas/formula-mode.html
+Official: https://docs.workato.com/en/formulas/formula-mode.html
 
-## フォーミュラモードとは
+## What is formula mode
 
-入力フィールドで `fx` アイコンをクリックして有効化する。データピルに対して変換・操作を適用できる。
+Enabled by clicking the `fx` icon in an input field. Lets you apply transformations and operations to a datapill.
 
-## テキストモード vs フォーミュラモード
+## Text mode vs formula mode
 
-| | テキストモード | フォーミュラモード |
+| | Text mode | Formula mode |
 |---|---|---|
-| テキストとデータピル | そのまま出力 | フォーミュラで明示的にフォーマットが必要 |
-| Ruby 補間 `#{}` | **非対応**（datapill のみ評価） | フォーミュラで処理 |
+| Text and datapills | Output as-is | Explicit formatting required via formula |
+| Ruby interpolation `#{}` | **Not supported** (datapills only evaluated) | Handled by formula |
 
-## 型別フォーミュラ
+## Formulas by type
 
-フォーミュラエディタは datapill の型に応じて使用可能なフォーミュラを表示する。
+The formula editor displays the formulas available for the datapill's type.
 
-### 文字列操作（主要）
+### String operations (main)
 
-| フォーミュラ | 説明 | 例 |
+| Formula | Description | Example |
 |---|---|---|
-| `.upcase` | 大文字変換 | `"hello".upcase` → `"HELLO"` |
-| `.downcase` | 小文字変換 | |
-| `.strip` | 前後の空白除去 | |
-| `.gsub(pattern, replacement)` | パターン置換 | |
-| `.split(delimiter)` | 分割して配列に | |
-| `.length` | 文字数 | |
-| `.present?` | 値が存在するか | |
-| `.blank?` | 空か | |
-| `.truncate(n)` | n文字に切り詰め | |
+| `.upcase` | Convert to uppercase | `"hello".upcase` → `"HELLO"` |
+| `.downcase` | Convert to lowercase | |
+| `.strip` | Remove leading/trailing whitespace | |
+| `.gsub(pattern, replacement)` | Pattern replacement | |
+| `.split(delimiter)` | Split into an array | |
+| `.length` | Character count | |
+| `.present?` | Whether a value exists | |
+| `.blank?` | Whether it is empty | |
+| `.truncate(n)` | Truncate to n characters | |
 
-### 数値操作
+### Numeric operations
 
-| フォーミュラ | 説明 |
+| Formula | Description |
 |---|---|
-| `.to_i` | 整数に変換 |
-| `.to_f` | 浮動小数点に変換 |
-| `.round(n)` | 小数点以下n桁に丸め |
-| `.abs` | 絶対値 |
+| `.to_i` | Convert to integer |
+| `.to_f` | Convert to float |
+| `.round(n)` | Round to n decimal places |
+| `.abs` | Absolute value |
 
-### 日付/日時操作
+### Date/datetime operations
 
-| フォーミュラ | 説明 |
+| Formula | Description |
 |---|---|
-| `.today` | 今日の日付 |
-| `.now` | 現在日時 |
-| `.strftime(format)` | 日時フォーマット |
-| `.in_time_zone(tz)` | タイムゾーン変換 |
-| `+ N.days` / `- N.hours` | 日時の加減算 |
+| `.today` | Today's date |
+| `.now` | Current datetime |
+| `.strftime(format)` | Datetime formatting |
+| `.in_time_zone(tz)` | Time-zone conversion |
+| `+ N.days` / `- N.hours` | Datetime arithmetic |
 
-### リスト操作
+### List operations
 
-| フォーミュラ | 説明 |
+| Formula | Description |
 |---|---|
-| `.pluck(field)` | リストから特定フィールドを抽出 |
-| `.join(delimiter)` | 配列を文字列に結合 |
-| `.first` / `.last` | 最初/最後の要素 |
-| `.where(condition)` | 条件フィルタ |
-| `.map { }` | 変換 |
-| `.size` / `.length` | 要素数 |
+| `.pluck(field)` | Extract a specific field from a list |
+| `.join(delimiter)` | Concatenate an array into a string |
+| `.first` / `.last` | First/last element |
+| `.where(condition)` | Filter by condition |
+| `.map { }` | Transform |
+| `.size` / `.length` | Element count |
 
-## レシピ JSON 内でのフォーミュラ
+## Formulas inside recipe JSON
 
 ```json
 "input": {
@@ -69,11 +69,11 @@
 }
 ```
 
-- `=` プレフィックスでフォーミュラモードを示す
-- `_('...')` で datapill をドット記法で参照
-- メソッドチェーンで複数のフォーミュラを連結可能
+- The `=` prefix marks formula mode
+- `_('...')` references a datapill via dot notation
+- Multiple formulas can be chained via method chaining
 
-## 備考
+## Notes
 
-- 未サポートの Ruby メソッドは Customer Success Manager に許可リスト追加を依頼
-- フォーミュラは datapill の型に応じてコンテキスト表示される
+- For unsupported Ruby methods, ask your Customer Success Manager to add them to the allow-list
+- Formulas are displayed contextually based on the datapill's type

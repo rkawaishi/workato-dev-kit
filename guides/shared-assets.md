@@ -1,132 +1,132 @@
-# 共有アセット管理ガイド
+# Shared asset management guide
 
-ワークスペース構成、命名規則、共有アセットの設計と運用方法。Claude Code / Cursor のどちらでも `/catalog` スキルでカタログを生成・参照できる。
+Workspace structure, naming conventions, and how to design and operate shared assets. In both Claude Code and Cursor, the `/catalog` skill generates and references the catalog.
 
-## ワークスペースの構成
+## Workspace structure
 
-### 環境分離
+### Environment separation
 
-| 環境 | 用途 |
+| Environment | Purpose |
 |---|---|
-| Dev | 開発・実験 |
-| Test | テスト・検証 |
-| Prod | 本番運用 |
+| Dev | Development and experimentation |
+| Test | Testing and validation |
+| Prod | Production operations |
 
-環境ごとにワークスペースを分離し、SSO で認証を統合する。
+Separate workspaces per environment and unify authentication with SSO.
 
-### プロジェクトの階層構造
+### Project hierarchy
 
-ワークスペース内のプロジェクトは3レベルの共有スコープで整理する:
+Projects inside a workspace are organized with three levels of sharing scope:
 
 ```
 Workspace/
-├── Globally Shared Assets/           # 全チーム共通
-│   ├── Common - Connections/         # 共通コネクション（Slack, Email 等）
-│   ├── Common - Functions/           # 共通 Recipe Function
-│   └── Error Handler/                # 共通エラーハンドリング
+├── Globally Shared Assets/           # Shared across all teams
+│   ├── Common - Connections/         # Common connections (Slack, Email, etc.)
+│   ├── Common - Functions/           # Common Recipe Functions
+│   └── Error Handler/                # Shared error handling
 │
-├── <Team> Shared Assets/             # チーム単位の共有
+├── <Team> Shared Assets/             # Shared within a team
 │   ├── <Team> - Connections/
 │   ├── <Team> - Common Functions/
-│   └── <Team> - <App Name>/         # チームのアプリ
+│   └── <Team> - <App Name>/         # The team's app
 │
-└── <Project>/                        # プロジェクト固有
+└── <Project>/                        # Project-specific
     ├── Connections/
     ├── Recipes/
     └── ...
 ```
 
-| レベル | スコープ | 含むもの |
+| Level | Scope | Contents |
 |---|---|---|
-| **Globally Shared** | 全チーム・全プロジェクト | 共通コネクション、エラーハンドラ、汎用 Function |
-| **Team Shared** | チーム内の全プロジェクト | チーム固有のコネクション、業務ロジック |
-| **Project** | 単一プロジェクト | プロジェクト固有のレシピ |
+| **Globally Shared** | All teams, all projects | Common connections, error handlers, generic Functions |
+| **Team Shared** | All projects within a team | Team-specific connections and business logic |
+| **Project** | A single project | Recipes specific to that project |
 
-## 命名規則
+## Naming conventions
 
-### プロジェクト・アセットの命名
+### Project and asset naming
 
 ```
 <Project> <AssetCode> <Sequence> | <Description>
 ```
 
-| アセットコード | 対象 |
+| Asset code | Target |
 |---|---|
-| `REC` | レシピ |
-| `CON` | コネクション |
+| `REC` | Recipe |
+| `CON` | Connection |
 | `FNC` | Recipe Function |
 | `WFA` | Workflow App |
 | `GNI` | Genie |
-| `MCP` | MCP サーバー |
+| `MCP` | MCP server |
 | `SKL` | Agentic Skill |
 
-**例:**
+**Examples:**
 - `Sales Lead Enrichment REC 001 | Enrich new Salesforce lead`
 - `Common FNC 001 | Get line manager from AD`
 
-### コネクションの命名
+### Connection naming
 
 ```
 <Environment/Context> | <Provider> [- <Purpose>]
 ```
 
-**例:**
+**Examples:**
 - `Shared | Slack`
 - `Shared | Jira - Engineering`
 - `Sales | Salesforce - Production`
 
-## 共有アセットの設計
+## Designing shared assets
 
-### いつ共有するか
+### When to share
 
-| 条件 | 判断 |
+| Condition | Decision |
 |---|---|
-| 3つ以上のプロジェクトで使う | 共有する |
-| チーム内で2つ以上のプロジェクトで使う | チーム共有する |
-| 1つのプロジェクトでしか使わない | 共有しない |
-| 認証スコープが異なる | 別コネクションにする |
+| Used by three or more projects | Share it |
+| Used by two or more projects within a team | Share within the team |
+| Used by only one project | Do not share |
+| Authentication scope differs | Use separate Connections |
 
-### Recipe Function の設計
+### Designing Recipe Functions
 
-共有 Recipe Function は `fnc_<verb>_<noun>` の命名規則に従う:
+Shared Recipe Functions follow the `fnc_<verb>_<noun>` naming convention:
 
 ```
-fnc_get_line_manager       # 上長情報を取得
-fnc_send_notification      # 通知を送信
-fnc_validate_input         # 入力を検証
+fnc_get_line_manager       # Fetch line manager info
+fnc_send_notification      # Send a notification
+fnc_validate_input         # Validate input
 ```
 
-**設計指針:**
-- 入出力スキーマを `parameter_schema_json` で明確に定義する
-- エラーハンドリングを内部で完結させる
-- 副作用を最小限にする（可能なら冪等に）
+**Design guidance:**
+- Clearly define the input/output schema in `parameter_schema_json`
+- Handle errors internally so they are fully contained
+- Minimize side effects (make it idempotent if possible)
 
-### コネクションの共有判断
+### Deciding whether to share a Connection
 
-| 観点 | 共有する | 共有しない |
+| Aspect | Share | Do not share |
 |---|---|---|
-| 認証スコープ | 全チーム共通の権限 | プロジェクト固有の権限 |
-| 環境 | 全環境で同一 | 環境ごとに異なる |
-| リスク | 障害影響が限定的 | 障害時の影響が広範 |
+| Authentication scope | Permissions common across all teams | Project-specific permissions |
+| Environment | Same across all environments | Differs by environment |
+| Risk | Outage impact is limited | Outage impact would be broad |
 
-## カタログの運用
+## Operating the catalog
 
-### /catalog でカタログを生成
+### Generating the catalog with `/catalog`
 
 ```
 /catalog
 ```
 
-`projects/CATALOG.md` に以下を出力する:
+Outputs the following into `projects/CATALOG.md`:
 
-- 全コネクション（名前、プロバイダ）
-- 全 Recipe Function（入出力スキーマ付き）
-- 全 Workflow App
-- 全 MCP サーバー
+- All Connections (name, provider)
+- All Recipe Functions (with input/output schemas)
+- All Workflow Apps
+- All MCP servers
 
-### スコープ制御
+### Scope control
 
-`projects/CATALOG_CONFIG.yaml` で各プロジェクトのスコープを設定:
+Configure each project's scope in `projects/CATALOG_CONFIG.yaml`:
 
 ```yaml
 scopes:
@@ -135,21 +135,21 @@ scopes:
   "My Private Project": private
 ```
 
-| スコープ | カタログ掲載 | 他プロジェクトから参照 |
+| Scope | Listed in catalog | Referenceable from other projects |
 |---|---|---|
-| `global` | される | 全プロジェクト |
-| `team:<name>` | される | 同チームのプロジェクト |
-| `private` | されない | 不可 |
+| `global` | Yes | All projects |
+| `team:<name>` | Yes | Projects within the same team |
+| `private` | No | Not allowed |
 
-### カタログの活用
+### Using the catalog
 
-- `/create-recipe` がステップ 2 でカタログを参照し、既存のコネクションや Recipe Function を再利用提案する
-- `/plan` がアーキテクチャ設計時にカタログから共有アセットの候補を `plan.md` の `## Reused Assets` に列挙する
-- 新しいプロジェクトを始める前に `/catalog` を実行し、最新の共有アセット一覧を把握する
+- `/create-recipe` references the catalog at step 2 and proposes reusing existing Connections and Recipe Functions
+- `/plan` lists candidate shared assets from the catalog under `## Reused Assets` in `plan.md` during architecture design
+- Before starting a new project, run `/catalog` to see the latest list of shared assets
 
-## Workato の参照メカニズム
+## Workato's reference mechanism
 
-共有アセットをプロジェクト間で参照する際、JSON 内で `zip_name` と `folder` フィールドを使う:
+When referencing shared assets across projects, the JSON uses the `zip_name` and `folder` fields:
 
 ```json
 {
@@ -160,4 +160,4 @@ scopes:
 }
 ```
 
-`/create-recipe` はカタログの情報を元にこれらの参照を自動生成する。手動で JSON を書く必要はない。
+`/create-recipe` auto-generates these references based on catalog information. There is no need to write the JSON by hand.

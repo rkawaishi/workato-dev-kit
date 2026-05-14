@@ -1,10 +1,10 @@
-# Lightspeed Commerce コネクタ
+# Lightspeed Commerce connector
 
 Provider: `vend`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New consignment | `new_consignment` | - |  |
 | New/updated customer | `new_customer` | - |  |
@@ -17,7 +17,7 @@ Provider: `vend`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Add payment to register sale | `add_payment_to_register_sale` | - |  |

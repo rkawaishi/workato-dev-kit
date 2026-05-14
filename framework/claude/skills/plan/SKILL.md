@@ -1,130 +1,130 @@
 ---
-description: spec.md を読んで Workato 構成（HOW）を plan.md に書き起こす。パターンカタログ・CATALOG.md・.resource-providers.yml を引いて技術選択を確定。
+description: Read spec.md and write the Workato configuration (HOW) to plan.md. Consults the pattern catalog, CATALOG.md, and .resource-providers.yml to lock in technical choices. Japanese prompts are also supported.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # /plan
 
-`spec.md` の要件を **Workato 構成** に落とし込み、`plan.md` を生成するスキル。
+Map the requirements in `spec.md` into **Workato configuration** and generate `plan.md`.
 
-仕様駆動ワークフローで `/spec` → `/clarify` の後に位置する。ここでは「Workato でどう組むか」だけを決め、具体的なタスク分解は `/tasks` の責務。
+In the spec-driven workflow this runs after `/spec` → `/clarify`. It only decides "how to build this in Workato". Splitting the work into executable tasks is `/tasks`'s responsibility.
 
-## 使い方
+## Usage
 
-- `/plan <project>/<NNN>-<slug>` — 指定フィーチャーの plan.md を生成
-- `/plan <project>` — プロジェクト内で plan.md が無い最新 spec を自動選択
-- `/plan` — カレントセッションの文脈から推定
+- `/plan <project>/<NNN>-<slug>` — generate plan.md for a specific feature
+- `/plan <project>` — auto-pick the latest spec in the project that has no plan.md yet
+- `/plan` — infer from the current session context
 
-## ワークフロー
+## Workflow
 
 ```
 /spec → /clarify → /plan → /tasks → /analyze → /implement
                     ↑
-                  ここ
+                 you are here
 ```
 
-`/clarify` で Open Questions を消化済みであることが前提。未消化があれば「先に /clarify を実行してください」と案内して中断する。
+Assumes `/clarify` has cleared every Open Question. If any remain unresolved, abort and ask the user to run `/clarify` first.
 
-## 手順
+## Procedure
 
-### 1. 前提チェック
+### 1. Preconditions
 
-- `projects/<project>/specs/<NNN>-<slug>/spec.md` を読む
-- `## Open Questions` の未チェック項目があれば中断:
+- Read `projects/<project>/specs/<NNN>-<slug>/spec.md`.
+- If `## Open Questions` still has unchecked items, abort:
   ```
-  Open Questions が <N> 件未解決です。先に /clarify <project>/<NNN>-<slug> を実行してください。
+  <N> Open Questions are unresolved. Run /clarify <project>/<NNN>-<slug> first.
   ```
-- `plan.md` が既に存在する場合は **更新モード**（既存内容を尊重して差分追記）
+- If `plan.md` already exists, switch to **update mode** (respect existing content; only append diffs).
 
-### 2. リソース情報の自動取得
+### 2. Auto-collect resource info
 
-`.resource-providers.yml` を読み、spec の `External Touchpoints` に出てくる外部サービスのリソース情報を事前取得する。
+Read `.resource-providers.yml` and, for the external services mentioned in the spec's `External Touchpoints`, pre-fetch their resource info.
 
-1. `.resource-providers.yml` が存在しなければスキップ（plan.md の `Open Issues` に「デプロイ後に確認」と記録）
-2. 定義済みプロバイダーに対して `@docs/platform/resource-providers.md` の手順でツールを検出・実行
-3. 取得例:
-   - Jira プロジェクトの Issue Type・カスタムフィールド → Data Table のフィールド設計に反映
-   - Slack チャンネル一覧 → 通知先の具体化
-   - Google Sheets のヘッダー行 → フィールドマッピング設計
+1. Skip if `.resource-providers.yml` doesn't exist (record "verify after deploy" in plan.md's `Open Issues`).
+2. For each defined provider, follow `@docs/platform/resource-providers.md` to detect and run the relevant tool.
+3. Examples of what to capture:
+   - Jira project issue types and custom fields → reflect in Data Table field design.
+   - Slack channel list → concretize the notification destination.
+   - Google Sheets header row → field mapping design.
 
-> **重要**: 取得失敗はサイレントにスキップ。エラーで止めない。
+> **Important**: silently skip on fetch failure. Do not abort.
 
-### 3. 共有アセットカタログを確認
+### 3. Check the shared asset catalog
 
-`projects/CATALOG.md` を読み、spec の要件で **既存の共有アセット**で対応可能な部分を特定:
+Read `projects/CATALOG.md` and identify parts of the spec that **existing shared assets** can cover:
 
-- 共有 Recipe Function（マネージャー取得、通知送信等）が使えるか
-- 共有コネクション（Slack, Jira 等）が使えるか
-- 既存の Workflow App やパターンを参考にできるか
+- Can a shared Recipe Function (manager lookup, notification sender, etc.) be used?
+- Can a shared connection (Slack, Jira, etc.) be reused?
+- Is there an existing Workflow App or pattern worth referencing?
 
-カタログがない場合は plan.md の `Notes` に「`/catalog scan` で生成可能」と書く。
+If the catalog is missing, note "Can be generated with `/catalog scan`" in plan.md's `Notes`.
 
-### 4. パターンカタログを確認
+### 4. Check the pattern catalog
 
-ユーザー体験に合致する **構築パターン** を特定:
+Identify **construction patterns** that match the user experience:
 
-- `@docs/patterns/recipe-patterns/_index.md`（kit canonical）
-- `@org/docs/patterns/recipe-patterns/_index.md`（組織側、存在すれば）
-- `@projects/docs/patterns/`（レガシー、後方互換のため読み込みのみ）
+- `@docs/patterns/recipe-patterns/_index.md` (kit canonical)
+- `@org/docs/patterns/recipe-patterns/_index.md` (org-side, if present)
+- `@projects/docs/patterns/` (legacy, read-only for backwards compatibility)
 
-矛盾は組織側が優先。合致パターンの構成図・ステップ構成・既知の注意点を取り込む。
+The org version wins on conflicts. Bring the matching pattern's diagram, step composition, and known caveats into the plan.
 
-### 5. Workato 構成への変換
+### 5. Map to Workato configuration
 
-`spec.md` の各 User Story を Workato 構成要素にマッピングする。
+Map each User Story in `spec.md` into Workato building blocks.
 
-**判断ポイント:**
+**Decision points:**
 
-| ユーザー体験 | Workato 構成要素 |
+| User experience | Workato building blocks |
 |---|---|
-| フォームで申請 | Workflow App + Data Table + 送信ページ |
-| 承認フロー | `human_review_on_existing_record` + ステージ |
-| Slack 通知（ボタン付き） | `slack_bot/post_bot_message` + `attachment_buttons` + `bot_command_v2` ハンドラ |
-| Slack 通知（情報のみ） | `slack_bot/post_bot_message` |
-| メール通知 | `gmail/send_email` or `human_review` の email notification |
-| 外部チケット起票 | `jira/create_issue`, ServiceNow 等 |
-| データ検索（マネージャー等） | Recipe Function (Google Sheets, HRMS, etc.) |
-| API からの申請 | MCP サーバー + スキルレシピ |
-| 複数段階の承認 | 複数 `human_review` + ステージ |
-| 条件分岐 | if/elsif/else |
-| データの更新 | `update_request` / `workato_db_table` |
+| Submit a form | Workflow App + Data Table + submission page |
+| Approval flow | `human_review_on_existing_record` + stages |
+| Slack notification with buttons | `slack_bot/post_bot_message` + `attachment_buttons` + `bot_command_v2` handler |
+| Slack notification (informational only) | `slack_bot/post_bot_message` |
+| Email notification | `gmail/send_email` or `human_review` email notification |
+| Create an external ticket | `jira/create_issue`, ServiceNow, etc. |
+| Look up data (e.g. manager) | Recipe Function (Google Sheets, HRMS, etc.) |
+| API-driven submission | MCP server + skill recipe |
+| Multi-stage approval | Multiple `human_review` + stages |
+| Conditional branching | if/elsif/else |
+| Update data | `update_request` / `workato_db_table` |
 
-**レシピの分割判断:**
+**How to split recipes:**
 
-- 独立して再利用できるロジック → Recipe Function に切り出す
-- ブロッキングアクション（`human_review`）→ 呼び出し元レシピに配置（Recipe Function に入れない）
-- 外部トリガー（Slack ボタン等）→ 別レシピ（`complete_task` で連携）
-- MCP 対応 → スキルレシピ（`add_record` + ワークフロー起動）
+- Independently reusable logic → extract into a Recipe Function.
+- Blocking actions (`human_review`) → keep in the calling recipe (do not put inside a Recipe Function).
+- External triggers (Slack buttons, etc.) → separate recipe (link via `complete_task`).
+- MCP-facing → skill recipe (`add_record` + workflow start).
 
-### 6. Workato API 設計の判断
+### 6. Design decisions for the Workato API
 
-Workato API を扱う設計（CLI/MCP、API Platform、OEM 連携等）が含まれる場合、`@docs/platform/workato-api-systems.md` の比較表と判断フローを必ず読む（4 系統の混同で設計やり直しを防ぐため）。
+If the design includes anything that talks to the Workato API (CLI/MCP, API Platform, OEM integration, etc.), always read the comparison table and decision flow in `@docs/platform/workato-api-systems.md` (to avoid confusing the four "API Client" systems and having to redesign).
 
-### 7. plan.md を生成
+### 7. Write plan.md
 
-下記テンプレートに従いファイルに書き出す。
+Use the template below.
 
-### 8. 未学習アクションの抽出
+### 8. Extract Unlearned Actions
 
-Workato 公式ドキュメントや `docs/connectors/`・`connectors/docs/` に **情報が無いアクション/トリガー** を使う場合は `Unlearned Actions` を埋める。これは `/tasks` で `[learn]` タグ付きタスクに展開される。
+Whenever you use a trigger or action that **lacks documentation** in Workato official docs or in `docs/connectors/` / `connectors/docs/`, populate `Unlearned Actions`. These get expanded into `[learn]`-tagged tasks by `/tasks`.
 
-### 9. 次ステップの案内
+### 9. Next-step guidance
 
 ```
-✓ plan.md を作成しました: projects/<project>/specs/<NNN>-<slug>/plan.md
+✓ Created plan.md: projects/<project>/specs/<NNN>-<slug>/plan.md
 
-主要な構成:
-- <Architecture サマリ 3-5 件>
+Architecture highlights:
+- <3–5 entries summarizing the architecture>
 
-未学習アクション: <N> 件（/learn-recipe で実装後に学習が必要）
+Unlearned actions: <N> (need /learn-recipe after implementation)
 
-次は /tasks <project>/<NNN>-<slug> で実行可能タスクへの分解に進めます。
+Next, run /tasks <project>/<NNN>-<slug> to break this down into executable tasks.
 ```
 
-## plan.md テンプレート
+## plan.md template
 
 ```markdown
-# <フィーチャー名> — Plan
+# <Feature name> — Plan
 
 ## Metadata
 - Status: Draft
@@ -134,89 +134,89 @@ Workato 公式ドキュメントや `docs/connectors/`・`connectors/docs/` に 
 - Project: <project-name>
 
 ## Architecture Overview
-<!-- 全体構成の 1 段落要約 + 必要なら ASCII 図 -->
-<図示や箇条書きで全体像>
+<!-- One-paragraph summary of the overall design + optional ASCII diagram. -->
+<diagram or bullets describing the big picture>
 
 ## Applied Patterns
-<!-- パターンカタログから該当パターンを記載 -->
-- **<パターン名>** (`docs/patterns/recipe-patterns/<file>.md`): <適用箇所と理由>
-- **<パターン名>** (`org/docs/patterns/recipe-patterns/<file>.md`): <適用箇所と理由>
+<!-- Patterns from the catalog that apply here. -->
+- **<pattern>** (`docs/patterns/recipe-patterns/<file>.md`): <where it applies and why>
+- **<pattern>** (`org/docs/patterns/recipe-patterns/<file>.md`): <where it applies and why>
 
 ## Reused Assets
-<!-- CATALOG.md から該当する共有アセットを記載。なければ "None" -->
-- **<共有 Function 名>** (`projects/<path>`): <用途>
-- **<共有コネクション名>**: <用途>
+<!-- Shared assets from CATALOG.md that we can reuse. "None" if there are none. -->
+- **<shared function>** (`projects/<path>`): <purpose>
+- **<shared connection>**: <purpose>
 
 ## New Components
 
 ### Data Tables
-- **<テーブル名>** (`<project>/Data Tables/<file>.data_table.json`):
-  - フィールド: `<field1>` (string), `<field2>` (datetime), ...
-  - 主キー / インデックス: <定義>
+- **<table>** (`<project>/Data Tables/<file>.data_table.json`):
+  - Fields: `<field1>` (string), `<field2>` (datetime), ...
+  - Primary key / indexes: <definition>
 
 ### Pages
-- **<ページ名>** (`<project>/Pages/<file>.lcap_page.json`):
-  - 役割: <送信/レビュー/承認/却下>
-  - 主要コンポーネント: <フォーム、テーブル、ボタン>
+- **<page>** (`<project>/Pages/<file>.lcap_page.json`):
+  - Role: <submission / review / approval / rejection>
+  - Main components: <forms, tables, buttons>
 
 ### Recipes
-- **<メインレシピ名>** (`<project>/Recipes/<file>.recipe.json`):
-  - トリガー: <provider/event>
-  - フロー: <ステップ概要>
-- **<Recipe Function 名>**:
-  - 用途: <再利用ロジック>
-  - 入力 / 出力: <スキーマ概要>
-- **<ハンドラレシピ名>**（Slack ボタン等）:
-  - トリガー: `slack_bot/bot_command_v2`
-  - フロー: `complete_task` で連携
+- **<main recipe>** (`<project>/Recipes/<file>.recipe.json`):
+  - Trigger: <provider/event>
+  - Flow: <step summary>
+- **<Recipe Function>**:
+  - Purpose: <reusable logic>
+  - Input / output: <schema summary>
+- **<handler recipe>** (Slack buttons, etc.):
+  - Trigger: `slack_bot/bot_command_v2`
+  - Flow: link via `complete_task`
 
 ### Connections
-- **<コネクション名>** (`<project>/Connections/<file>.connection.json`):
+- **<connection>** (`<project>/Connections/<file>.connection.json`):
   - Provider: <provider>
-  - 認証方式: <oauth2 / api_key / etc>
-  - 既存 / 新規: <既存 or 新規作成>
+  - Auth: <oauth2 / api_key / etc.>
+  - Existing / new: <reuse or create>
 
-### MCP / Genie（必要な場合のみ）
-- **<MCP サーバー名>**:
-  - スキル: <skill 一覧>
-  - 用途: <API 経由での申請受付等>
+### MCP / Genie (only if applicable)
+- **<MCP server>**:
+  - Skills: <list>
+  - Purpose: <API-driven submission, etc.>
 
-## Stage Transitions（承認フロー等がある場合）
-<!-- ステージ遷移図 -->
+## Stage Transitions (when there is an approval flow, etc.)
+<!-- Stage transition diagram. -->
 ```
 draft → submitted → approved → completed
                  → rejected → (end)
 ```
 
 ## Resource Inventory
-<!-- Step 2 で取得できたリソース情報。デプロイ後 UI で設定する項目を明示。 -->
-- **Jira**: プロジェクト `DEV`, Issue Type `Task`
-- **Slack**: チャンネル `#it-onboarding` (`C0123456`)
-- **Google Sheets**: シート `employees`, ヘッダー [employee_id, manager_email, ...]
+<!-- Resource info captured in Step 2. Flag anything that still has to be configured in the UI post-deploy. -->
+- **Jira**: project `DEV`, issue type `Task`
+- **Slack**: channel `#it-onboarding` (`C0123456`)
+- **Google Sheets**: sheet `employees`, headers `[employee_id, manager_email, ...]`
 
 ## Unlearned Actions
-<!-- docs にフィールド情報が無く、ベストエフォートで実装するアクション/トリガー。/tasks で [learn] タスクに展開される。 -->
-| provider | action/trigger | 備考 |
+<!-- Actions/triggers whose field info is not in docs and that you implemented best-effort. /tasks expands these into [learn] tasks. -->
+| provider | action/trigger | notes |
 |---|---|---|
 | | | |
 
 ## Open Issues
-<!-- リソース取得失敗、デプロイ後に確認が必要な項目など -->
-- <項目>
+<!-- Resource-fetch failures, items needing post-deploy verification, etc. -->
+- <item>
 
 ## Decisions
-<!-- 技術設計の判断と理由 -->
-- <YYYY-MM-DD>: <決定> — <理由>
+<!-- Technical decisions and their reasons. -->
+- <YYYY-MM-DD>: <decision> — <reason>
 ```
 
-## 守るべきルール
+## Rules to follow
 
-- **spec の Open Questions が残っていたら作業しない**: 必ず先に `/clarify`
-- **CATALOG / パターン引きを省略しない**: 既存資産の再利用機会を逃さないため
-- **Unlearned Actions を必ず明示**: docs に無いものはここで顕在化させ、後工程の `[learn]` タスクで必ず学習する
-- **spec.md の本文は書き換えない**: 技術用語を spec に逆流させない。修正が必要なら `/clarify` で要件側を直す
+- **Do not work while spec Open Questions remain**: always finish `/clarify` first.
+- **Do not skip the CATALOG / pattern lookup**: otherwise you miss reuse opportunities.
+- **Always declare Unlearned Actions**: surface gaps now so the downstream `[learn]` task closes them.
+- **Do not rewrite spec.md's body**: do not let technical terms leak back into spec. If the requirement needs changing, fix it on the requirements side via `/clarify`.
 
-## Git 管理
+## Git management
 
 ```bash
 git add projects/<project-name>/specs/<NNN>-<slug>/plan.md

@@ -1,17 +1,17 @@
-# SFTP secondary コネクタ
+# SFTP secondary connector
 
 Provider: `sftp_secondary`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New/updated CSV file in directory | `new_csv_file` | Yes |  |
 | New/updated file in directory | `new_file_in_dir` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Copy file | `copy` | - |  [deprecated] |
 | List folder | `dir` | Yes |  |

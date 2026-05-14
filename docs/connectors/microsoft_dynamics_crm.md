@@ -1,10 +1,10 @@
-# Microsoft Dynamics 365 コネクタ
+# Microsoft Dynamics 365 connector
 
 Provider: `microsoft_dynamics_crm`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Export new records | `created_bulk_object` | - |  |
 | Export new/updated records | `created_or_updated_bulk_object` | - |  |
@@ -22,7 +22,7 @@ Provider: `microsoft_dynamics_crm`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Close case | `close_case` | - |  |

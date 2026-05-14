@@ -1,11 +1,11 @@
-# Google Dialogflow コネクタ
+# Google Dialogflow connector
 
 Provider: `api_ai_nlu`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-なし
+None

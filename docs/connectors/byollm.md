@@ -1,11 +1,11 @@
-# Custom LLM For Workato Genie コネクタ
+# Custom LLM For Workato Genie connector
 
 Provider: `byollm`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-なし
+None

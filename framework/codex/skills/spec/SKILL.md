@@ -1,121 +1,121 @@
 ---
 name: spec
-description: フィーチャーの要件（UX・WHAT/WHY）を spec.md に書き起こす。技術詳細は扱わない。プロジェクト開始時やフィーチャー追加時に使う。
+description: Capture a feature's requirements (UX, WHAT/WHY) in spec.md. No technical detail — that lives in `$plan`. Use at the start of a project or when adding a new feature. Japanese prompts are also supported.
 ---
 
 # $spec
 
-フィーチャーの **要件（WHAT/WHY）** を `projects/<project>/specs/<NNN>-<slug>/spec.md` に書き起こすスキル。
+Write a feature's **requirements (WHAT/WHY)** to `projects/<project>/specs/<NNN>-<slug>/spec.md`.
 
-仕様駆動ワークフローの最初のステップ。技術スタック（Workato 構成）には踏み込まず、ユーザー体験と業務要件だけを固める。技術への落とし込みは `$plan` の責務。
+This is the first step of the spec-driven workflow. Do not touch the technology stack (Workato configuration); only fix the user experience and business requirements. Mapping to technology is `$plan`'s responsibility.
 
-## 使い方
+## Usage
 
-- `$spec <project-name>` — 新規フィーチャーの spec.md を作成
-- `$spec <project-name> <feature-slug>` — slug を指定して作成
-- `$spec <project-name>/<NNN>-<slug>` — 既存 spec.md を更新
+- `$spec <project-name>` — create a spec.md for a new feature
+- `$spec <project-name> <feature-slug>` — create it with a specific slug
+- `$spec <project-name>/<NNN>-<slug>` — update an existing spec.md
 
-## ワークフロー
+## Workflow
 
 ```
 $spec → $clarify → $plan → $tasks → $analyze → $implement
   ↑
-ここ
+you are here
 ```
 
-`$spec` 完了後、`Open Questions` が残っていれば `$clarify` を案内する。残っていなければ `$plan` に進める。
+After `$spec` completes, if any `Open Questions` remain, point the user at `$clarify`. If none remain, point at `$plan`.
 
-## 手順
+## Procedure
 
-### 1. フィーチャーの特定
+### 1. Identify the feature
 
-- `<project-name>` がなければプロジェクト名を聞く
-- `projects/<project-name>/specs/` を `ls` し、既存のフィーチャー番号から **次の連番** を決める（`001`, `002`, ...）
-- フィーチャーのスラグ（短い英語キーワード、kebab-case）をユーザーに確認
-  - 例: `it-onboarding`, `expense-approval`, `slack-digest`
-- 最終パス: `projects/<project-name>/specs/<NNN>-<slug>/spec.md`
+- If `<project-name>` is missing, ask for the project name.
+- `ls projects/<project-name>/specs/` and pick the **next sequence number** based on existing features (`001`, `002`, ...).
+- Confirm a short kebab-case slug with the user.
+  - Examples: `it-onboarding`, `expense-approval`, `slack-digest`.
+- Final path: `projects/<project-name>/specs/<NNN>-<slug>/spec.md`.
 
-### 2. UX ヒアリング
+### 2. UX interview
 
-**技術用語を避け、業務の言葉**で聞く。一度に全て聞かず、回答に応じて深掘りする。
-
-```
-このフィーチャーについて教えてください:
-
-1. **誰が・何をしたいですか？**
-   例: 新入社員の IT セットアップを申請したい、経費を申請して承認を得たい
-
-2. **どんな流れをイメージしていますか？**
-   例: フォームで申請 → マネージャーが承認 → IT チームに通知
-
-3. **関わる人は誰ですか？**
-   例: 申請者、マネージャー（承認者）、IT チーム（実行者）
-
-4. **最終的に何が起きれば成功ですか？**
-   例: Jira チケットが作られて IT チームが作業を開始できる
-
-5. **既存のツールやデータソースはありますか？**
-   例: マネージャー情報は Google Sheets にある、通知は Slack で行いたい
-```
-
-### 3. ユーザー体験の整理と確認
-
-ヒアリング結果を **ユーザーストーリー** にまとめ、ユーザーに確認する。
+**Use business language, not technical jargon.** Don't ask everything at once; follow up based on the answers.
 
 ```
-## ユーザー体験（案）
+Tell me about this feature:
 
-### 申請者の体験
-1. フォームを開く
-2. 必要情報を入力して送信
-3. ステータスが「承認待ち」に変わる
-4. 承認されると通知を受け取る
+1. **Who wants to do what?**
+   e.g. submit IT onboarding for a new hire; file an expense for approval
 
-### 承認者の体験
-1. 承認依頼が届く（ボタン付き通知）
-2. 内容を確認して承認 or 却下
-3. 別経路（タスク画面等）からも操作可能
+2. **What flow do you have in mind?**
+   e.g. fill a form → manager approves → IT team is notified
 
-### 後続処理
-- 承認時: 外部チケット起票 → 通知
-- 却下時: 申請者に却下通知
+3. **Who is involved?**
+   e.g. requester, manager (approver), IT team (executor)
 
-この体験で合っていますか？追加や変更はありますか？
+4. **What does success look like in the end?**
+   e.g. a Jira ticket is created and the IT team can start work
+
+5. **Are there existing tools or data sources?**
+   e.g. manager info lives in Google Sheets; notifications go to Slack
 ```
 
-### 4. Open Questions の抽出（中断耐性のため必須）
+### 3. Summarize and confirm the user experience
 
-ヒアリング中に**確定できなかった点**を洗い出して `Open Questions` に必ず書き出す。これは `$clarify` で消化する。
-
-典型的な未確定事項:
-- 承認者は単一か複数か？階層承認は必要か？
-- 却下時の再申請は可能か？
-- 通知の経路は Slack か Email か両方か？
-- 申請データの保管期間は？
-- 既存アカウントとの重複チェックは必要か？
-
-**重要**: 「現時点で答えがあるが要確認」も Open Questions に入れる（その旨を注釈で書く）。完全に確定したものだけが本文に入る。
-
-### 5. spec.md を生成
-
-下記テンプレートに従いファイルに書き出す。**Workato 用語は使わない**（Recipe, Datapill, Connection 等は禁止）。
-
-### 6. 次ステップの案内
+Turn the interview into **user stories** and confirm with the user.
 
 ```
-✓ spec.md を作成しました: projects/<project>/specs/<NNN>-<slug>/spec.md
+## User experience (draft)
 
-Open Questions が <N> 件残っています。
-次は $clarify <project>/<NNN>-<slug> で消化してください。
+### Requester
+1. Open the form
+2. Fill in the details and submit
+3. Status changes to "awaiting approval"
+4. Receive a notification when approved
 
-（Open Questions が無い場合のみ）
-このまま $plan <project>/<NNN>-<slug> に進めます。
+### Approver
+1. Receive an approval request (notification with buttons)
+2. Review and approve or reject
+3. Can also act from another channel (e.g. a task page)
+
+### Downstream
+- On approval: create an external ticket → notify
+- On rejection: notify the requester
+
+Does this match what you have in mind? Anything to add or change?
 ```
 
-## spec.md テンプレート
+### 4. Extract Open Questions (mandatory for resumability)
+
+Whatever **could not be confirmed** during the interview must be written into `Open Questions`. `$clarify` resolves these.
+
+Typical unresolved items:
+- One approver or many? Is hierarchical approval needed?
+- Can a rejected request be resubmitted?
+- Notifications via Slack, email, or both?
+- How long is request data retained?
+- Do we need to dedupe against existing accounts?
+
+**Important**: items where there is a tentative answer but it still needs confirmation also go in Open Questions (with a note saying so). Only fully settled items go into the main body.
+
+### 5. Write spec.md
+
+Use the template below. **Do not use Workato terminology** (no Recipe, Datapill, Connection, etc.).
+
+### 6. Next-step guidance
+
+```
+✓ Created spec.md: projects/<project>/specs/<NNN>-<slug>/spec.md
+
+<N> Open Questions remain.
+Next, run $clarify <project>/<NNN>-<slug> to resolve them.
+
+(Only if no Open Questions remain)
+You can proceed directly to $plan <project>/<NNN>-<slug>.
+```
+
+## spec.md template
 
 ```markdown
-# <フィーチャー名>
+# <Feature name>
 
 ## Metadata
 - Status: Draft
@@ -124,69 +124,69 @@ Open Questions が <N> 件残っています。
 - Project: <project-name>
 - Feature ID: <NNN>-<slug>
 
-## Why（なぜやるか）
-<業務上の課題、解決したい問題、得たい価値。1-3 段落。>
+## Why
+<The business problem, what you want to solve, what value you want. 1–3 paragraphs.>
 
 ## User Stories
 
-### <ロール1>（例: 申請者）
-1. <ステップ>
-2. <ステップ>
-3. <ステップ>
+### <Role 1> (e.g. Requester)
+1. <step>
+2. <step>
+3. <step>
 
-### <ロール2>（例: 承認者）
-1. <ステップ>
-2. <ステップ>
+### <Role 2> (e.g. Approver)
+1. <step>
+2. <step>
 
-### <ロール3>（例: 実行者）
-1. <ステップ>
+### <Role 3> (e.g. Executor)
+1. <step>
 
 ## Success Criteria
-<!-- 何が起きれば成功か。観測可能な条件で書く。 -->
-- [ ] <条件1>
-- [ ] <条件2>
+<!-- What constitutes success, written as observable conditions. -->
+- [ ] <condition 1>
+- [ ] <condition 2>
 
 ## External Touchpoints
-<!-- 連携する外部サービス・データソース。業務名で書く（"チケット管理システム" 等）。技術選定は $plan で行う。 -->
-- <サービス名>: <用途>
-- <サービス名>: <用途>
+<!-- External services or data sources we integrate with. Use business names ("ticketing system"), not vendor names; technology choices come in `$plan`. -->
+- <service>: <purpose>
+- <service>: <purpose>
 
 ## Constraints / Non-functional
-<!-- 性能・セキュリティ・運用要件など。ある場合のみ。 -->
-- <制約>
+<!-- Performance, security, operational requirements. Only when applicable. -->
+- <constraint>
 
 ## Out of Scope
-<!-- 今回やらないこと。後続フィーチャーに回すものを明記。 -->
-- <項目>
+<!-- Explicit non-goals for this feature; what is deferred to a later one. -->
+- <item>
 
 ## Open Questions
-<!-- $clarify で消化する未確定事項。中断後の再開はこのチェックリストが起点。 -->
-- [ ] <質問1>
-- [ ] <質問2>
+<!-- Unresolved items to be addressed by `$clarify`. This checklist is the resumption point. -->
+- [ ] <question 1>
+- [ ] <question 2>
 
 ## Decisions
-<!-- ヒアリング中に確定した重要な判断と理由。後から振り返る用。 -->
-- <YYYY-MM-DD>: <決定> — <理由>
+<!-- Important decisions made during the interview, with the reasoning. For future reference. -->
+- <YYYY-MM-DD>: <decision> — <reason>
 ```
 
-## 守るべきルール
+## Rules to follow
 
-- **Workato 用語禁止**: spec.md は技術中立。Recipe, Connection, Datapill, Workflow App などの単語を使わない（業務語に変換する）
-- **Open Questions の永続化必須**: 曖昧な点はコンテキストに置かずファイルに書き出す。`$clarify` で再開できることが中断耐性の要
-- **DESIGN.md は触らない**: 既存プロジェクトに DESIGN.md があっても spec.md は新規ファイルとして作る。移行は `$design migrate` の責務（Phase C で実装予定）
+- **No Workato terminology**: spec.md is technology-agnostic. Don't use words like Recipe, Connection, Datapill, Workflow App — translate them into business terms.
+- **Persist Open Questions**: never leave unresolved points only in conversational context — write them to the file. The ability to resume via `$clarify` after an interruption depends on this.
+- **Do not touch DESIGN.md**: if the project still has a legacy DESIGN.md, create spec.md as a new file anyway. Migrating from DESIGN.md is `$design migrate`'s job.
 
-## `.workatoignore` の管理
+## `.workatoignore` management
 
-新規プロジェクトで spec.md を作成する際、`.workatoignore` がなければ作成する:
+When you create spec.md for a new project, create `.workatoignore` if it does not exist:
 
 ```
 DESIGN.md
 specs/
 ```
 
-既存の `.workatoignore` に `specs/` がなければ追記する。
+If `.workatoignore` exists but does not include `specs/`, append it.
 
-## Git 管理
+## Git management
 
 ```bash
 git add projects/<project-name>/specs/<NNN>-<slug>/spec.md projects/<project-name>/.workatoignore
@@ -194,4 +194,4 @@ git commit -m "spec(<project>/<slug>): initial spec"
 git push origin
 ```
 
-`workato push` は spec.md を Workato にデプロイしない（`.workatoignore` で除外）。
+`workato push` will not deploy spec.md to Workato (it's excluded by `.workatoignore`).

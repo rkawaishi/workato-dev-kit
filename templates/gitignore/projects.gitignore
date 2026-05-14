@@ -1,10 +1,10 @@
-# Workato Platform CLI — API トークンを含む
+# Workato Platform CLI — contains API tokens
 .workatoenv
 
-# 環境別のリソースプロバイダ設定
+# Per-environment resource provider configuration
 .resource-providers.yml
 
-# 一般的な秘密情報
+# General secrets
 .env
 .env.*
 *.key
@@ -12,13 +12,14 @@
 *.secret
 *.credential*
 
-# OS / エディタ生成物
+# OS / editor artifacts
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
 
-# 注: 以下は必ずコミットする
-# - DESIGN.md（.workatoignore に含めて workato pull で消えないようにする）
+# Note: always commit the following
+# - specs/ (the spec-driven workflow artifacts; add it to .workatoignore so workato pull does not wipe it)
+# - DESIGN.md (legacy; add it to .workatoignore too if your project still uses it)
 # - .workatoignore
 # - Recipes/ Pages/ Connections/ Data Tables/ Agents/ docs/

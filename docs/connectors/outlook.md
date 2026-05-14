@@ -1,10 +1,10 @@
-# Outlook コネクタ
+# Outlook connector
 
 Provider: `outlook`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Deleted event | `delete_deleted_event` | - |  |
 | New contact | `new_contact` | - |  |
@@ -17,7 +17,7 @@ Provider: `outlook`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create calendar | `create_calendar` | - |  |

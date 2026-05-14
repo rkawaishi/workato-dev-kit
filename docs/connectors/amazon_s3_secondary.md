@@ -1,10 +1,10 @@
-# Amazon S3 secondary コネクタ
+# Amazon S3 secondary connector
 
 Provider: `amazon_s3_secondary`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New CSV file | `new_CSV_file` | - |  |
 | New file | `new_file` | - |  |
@@ -13,7 +13,7 @@ Provider: `amazon_s3_secondary`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Copy file | `copy_object` | - |  |

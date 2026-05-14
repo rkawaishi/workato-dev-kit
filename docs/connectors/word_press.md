@@ -1,17 +1,17 @@
-# WordPress.com コネクタ
+# WordPress.com connector
 
 Provider: `word_press`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New comment | `new_comment` | - |  |
 | New post created | `new_post` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create post | `create_post` | - |  |

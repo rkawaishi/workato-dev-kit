@@ -1,15 +1,15 @@
-# Pingdom コネクタ
+# Pingdom connector
 
 Provider: `pingdom`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New alert | `new_alert` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Get detailed check information | `get_detailed_check_information` | - |  |

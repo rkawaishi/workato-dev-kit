@@ -1,13 +1,13 @@
-# AMcards コネクタ
+# AMcards connector
 
 Provider: `amcards`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Create card | `create_card` | - |  |

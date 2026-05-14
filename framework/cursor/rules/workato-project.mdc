@@ -1,82 +1,91 @@
 ---
-description: Workato Dev Kit プロジェクト全体のコンテキスト。Workato 関連ファイルを編集する際に適用。
+description: Project-wide context for the Workato Dev Kit. Applies whenever Workato-related files are being edited.
 globs:
 alwaysApply: true
 ---
 
 # Workato Dev Kit
 
-Workato (エンタープライズ iPaaS) の自動化開発を AI エディタで行うためのツールキット。
-レシピ開発、Workflow App 構築、AI エージェント (Genie / MCP)、カスタムコネクタ開発をカバー。
+A toolkit for AI-editor-driven automation development on Workato (enterprise iPaaS).
+Covers recipe development, Workflow App construction, AI agents (Genie / MCP), and custom-connector development.
 
-## リポジトリ構造（デュアルリポジトリ）
+## Repository structure (dual-repo)
 
-このリポジトリは **フレームワーク** であり、組織固有のレシピプロジェクトは含まない。
+This repository is the **framework**; it does not contain any organization-specific recipe projects.
 
-- `projects/<project-name>/` — Workato レシピプロジェクト（Platform CLI 管理）
-  - `Recipes/` — レシピ、Recipe Function
-  - `Pages/` — Workflow App ページ
-  - `Connections/` — コネクション
-  - `Data Tables/` — Data Table スキーマ
-  - `Agents/` — Genie / MCP / Skills
-  - `Insights/` — Insights クエリ
-- `connectors/` — カスタムコネクタ（Connector SDK）
-- `docs/logic/` — レシピのロジック（if, loop, error handling, formulas, triggers 等）
-- `docs/connectors/` — Pre-built コネクタナレッジ（139+件）
-- `docs/platform/` — プラットフォーム機能（Workflow Apps, MCP, Agent Studio 等）
-- `docs/patterns/` — 設計パターン（共有アセット等）
-- `docs/connector-sdk/` — Connector SDK リファレンス
-- `org/docs/` — 組織ナレッジ層。`docs/` の上書き・補正・組織独自情報。kit が touch しない（詳細は `org-knowledge-overlay` ルール）
+- `projects/<project-name>/` — Workato recipe projects (managed via Platform CLI)
+  - `Recipes/` — recipes and Recipe Functions
+  - `Pages/` — Workflow App pages
+  - `Connections/` — connections
+  - `Data Tables/` — Data Table schemas
+  - `Agents/` — Genies / MCP servers / skills
+  - `Insights/` — Insights queries
+  - `specs/<NNN>-<slug>/` — spec-driven artifacts (`spec.md` / `plan.md` / `tasks.md`)
+- `connectors/` — custom connectors (Connector SDK)
+- `docs/logic/` — recipe logic (if, loop, error handling, formulas, triggers, etc.)
+- `docs/connectors/` — pre-built connector knowledge base (139+ entries)
+- `docs/platform/` — platform features (Workflow Apps, MCP, Agent Studio, etc.)
+- `docs/patterns/` — design patterns (shared assets, etc.)
+- `docs/connector-sdk/` — Connector SDK reference
+- `org/docs/` — organization knowledge layer. Overrides / corrections / org-specific info on top of `docs/`. The kit never touches it (see the `org-knowledge-overlay` rule).
 
-| | kit/（submodule） | projects/ / connectors/ |
+| | kit/ (submodule) | projects/ / connectors/ |
 |---|---|---|
-| **内容** | スキル、ルール、ドキュメント | レシピ、ページ、コネクタ |
-| **性質** | フレームワーク（汎用） | 組織固有 |
-| **git 管理** | workato-dev-kit リポジトリ | ワークスペースリポジトリ |
+| **Contents** | skills, rules, docs | recipes, pages, connectors |
+| **Nature** | framework (generic) | organization-specific |
+| **Git management** | workato-dev-kit repository | workspace repository |
 
-### 設計書 (DESIGN.md)
+### Spec-driven artifacts (spec.md / plan.md / tasks.md)
 
-各プロジェクトに `DESIGN.md` を配置。セッション開始時に読み、実装後に更新する。
-作成・更新は `/design` スキルを使用。
+Each feature lives under `projects/<project-name>/specs/<NNN>-<slug>/` as three files:
+- `spec.md` — user experience and business requirements (WHAT/WHY; no Workato terminology)
+- `plan.md` — Workato configuration (HOW; Data Table / Recipe / Connection, etc.)
+- `tasks.md` — executable tasks (`[P]` parallel markers + kind tags)
 
-## ナレッジの参照優先順位
+Read these at session start and progress in order: `/spec` → `/clarify` → `/plan` → `/tasks` → `/analyze` → `/implement`. See `guides/lifecycle.md` for the full flow.
 
-`docs/<path>` を参照する際は、対応する `org/docs/<path>` も必ず確認する（存在すれば併読、矛盾は org 版が優先）。詳細は `org-knowledge-overlay` ルール参照。
+Include `specs/` in `.workatoignore` so it isn't wiped by `workato pull`.
 
-### レシピ開発
-1. `docs/connectors/` (+ `org/docs/connectors/`) — Pre-built コネクタのトリガー/アクション/フィールド一覧
-2. `connectors/docs/` — カスタムコネクタのトリガー/アクション/フィールド一覧
-3. `docs/logic/` (+ `org/docs/logic/`) — ロジックステップの組み方（datapill 記法含む）
-4. `docs/platform/` (+ `org/docs/platform/`) — プラットフォーム機能の理解
-5. `.cursor/rules/` — JSON フォーマット、プロジェクト構造
-6. `docs/patterns/recipe-patterns/` (+ `org/docs/patterns/recipe-patterns/`) — レシピ構築パターン
-7. `projects/docs/patterns/` — レガシーパターン（後方互換のため読み込みのみ。新規記録は `org/docs/patterns/recipe-patterns/` へ）
-8. `docs/patterns/` (+ `org/docs/patterns/`) — デプロイガイド、共有アセットパターン
+> **Migrating from legacy DESIGN.md**: existing projects should run `/design migrate <project>` to convert into specs/. Do not use `/design` for new projects (`/design new` is retired; `/design` and `/design update` keep working only as warning-decorated compatibility shims).
 
-### カスタムコネクタ開発
-1. `docs/connector-sdk/connector-rb.md` — connector.rb リファレンス
-2. `docs/connector-sdk/overview.md` — SDK 概要・CLI コマンド
+## Knowledge lookup order
 
-### Workato API を扱う設計（CLI/MCP、API Platform、OEM 連携など）
-Workato には「API Client」という名前の似て非なる 4 系統（Developer API / API Platform v1 / v2 / OEM）があり、混同すると設計自体をやり直すことになる。設計に着手する前に必ず `docs/platform/workato-api-systems.md` の比較表と判断フローを読む。
+When you reference `docs/<path>`, always check the matching `org/docs/<path>` too (read both when present; the org version wins on conflicts). See the `org-knowledge-overlay` rule for details.
 
-## レシピ実装ライフサイクル（必須遵守）
+### Recipe development
+1. `docs/connectors/` (+ `org/docs/connectors/`) — triggers, actions, and fields for pre-built connectors
+2. `connectors/docs/` — triggers, actions, and fields for custom connectors
+3. `docs/logic/` (+ `org/docs/logic/`) — composing logic steps (including datapill notation)
+4. `docs/platform/` (+ `org/docs/platform/`) — understanding platform features
+5. `.cursor/rules/` — JSON format and project structure
+6. `docs/patterns/recipe-patterns/` (+ `org/docs/patterns/recipe-patterns/`) — recipe construction patterns
+7. `projects/docs/patterns/` — legacy patterns (read-only for backwards compatibility; record new patterns under `org/docs/patterns/recipe-patterns/`)
+8. `docs/patterns/` (+ `org/docs/patterns/`) — deployment guide, shared-asset patterns
 
-ナレッジベースを育て続けるため、ドキュメント参照 → 実装 → 学習の順に進め、個別プロジェクトのコピペで済ませない。全体像（フロー図、スキル×docs 責務マップ、典型シナリオ）は **`guides/lifecycle.md`** を参照（grep に逃げる前に、本来通るべきスキルを思い出すための地図）。
+### Custom connector development
+1. `docs/connector-sdk/connector-rb.md` — connector.rb reference
+2. `docs/connector-sdk/overview.md` — SDK overview and CLI commands
 
-ここでは不可侵の 3 原則のみ記す:
+### Designing against the Workato API (CLI/MCP, API Platform, OEM integrations, etc.)
+Workato has four superficially similar systems all called "API Client" (Developer API / API Platform v1 / v2 / OEM). Confusing them forces a complete redesign later. Always read the comparison table and decision flow in `docs/platform/workato-api-systems.md` before designing.
 
-1. **docs-first**: アクション/トリガーを使う前に `docs/connectors/<provider>.md`（Pre-built、kit canonical）と `org/docs/connectors/<provider>.md`（組織側の補正・追記、存在すれば）を必ず参照する。カスタムは `connectors/docs/<provider>.md`。公式ドキュメントに無ければ WebFetch で補完
-2. **既存プロジェクトの grep 禁止**: input/output スキーマを得る目的で `projects/<other-project>/Recipes/` を漁るのは禁止。個別プロジェクト固有のロジック・命名・datapill 参照が混入し、ナレッジの欠落も可視化されなくなる（例外: `docs/patterns/recipe-patterns/`、`org/docs/patterns/recipe-patterns/`、`projects/docs/patterns/`（レガシー）でのパターン学習目的の参照は可）
-3. **未学習は記録＋`/learn-recipe` 必須**: ドキュメントに無いアクションをベストエフォート実装した場合は `DESIGN.md` の「Unlearned Actions」または GitHub Issue に記録し、push/pull 後に `/learn-recipe <project-name>` を回して `org/docs/` に追記。学習後はエントリから外す
+## Recipe implementation lifecycle (mandatory)
 
-## コネクタの分類
+To keep the knowledge base growing, work in the order: read docs → implement → learn. Do not shortcut by copying from other projects. The full picture (flow diagram, skill × docs responsibility map, typical scenarios) lives in **`guides/lifecycle.md`** — use it as a map for remembering which skill should run, instead of escaping into grep.
 
-- **Pre-built**: Workato 公式（1,000+）
+The three inviolable principles:
+
+1. **docs-first**: before using a trigger or action, always read `docs/connectors/<provider>.md` (pre-built, kit canonical) and `org/docs/connectors/<provider>.md` (organization-side corrections/additions, when present). For custom connectors, read `connectors/docs/<provider>.md`. When the official docs are missing, fall back to WebFetch.
+2. **Do not grep other projects**: do not rummage through `projects/<other-project>/Recipes/` to obtain input/output schemas. Doing so leaks project-specific logic, naming, and datapill references — and obscures gaps in your knowledge base. (Exception: pattern learning that reads `docs/patterns/recipe-patterns/`, `org/docs/patterns/recipe-patterns/`, or `projects/docs/patterns/` (legacy) is allowed.)
+3. **Record unknowns and run `/learn-recipe`**: if you have to implement an action that is not documented, record it both as an entry in the project's `specs/<NNN>-<slug>/plan.md` "Unlearned Actions" table and as a `[learn]` task in the same directory's `tasks.md` (or in a GitHub issue). After push/pull, running `/learn-recipe <project-name>` extends `org/docs/` and automatically reconciles the matching plan.md / tasks.md entries.
+
+## Connector classification
+
+- **Pre-built**: Workato official (1,000+)
 - **Universal**: HTTP, OpenAPI, GraphQL, SOAP
-- **Community**: ユーザー共有
-- **Custom**: Connector SDK で自作 → `connectors/` ディレクトリ
-- **Custom Action** (`__adhoc_http_action`): コネクタ認証で API 直接呼出し
+- **Community**: user-shared
+- **Custom**: built with the Connector SDK → `connectors/` directory
+- **Custom Action** (`__adhoc_http_action`): direct API call through a connector auth
 
 ## Platform CLI
 
@@ -87,39 +96,47 @@ workato push
 workato init --non-interactive --profile default --project-id <id> --folder-name "projects/<name>"
 ```
 
-**自律性ルール**: ユーザーに「UI で〜してください」と依頼する前に、必ず `workato <command> --help` / `python3 scripts/workato-api.py --help` で CLI/API で完結できないか確認する。詳細は `workato-cli-autonomy` ルール参照。
+**Autonomy rule**: before asking the user to "do this in the UI", always check whether `workato <command> --help` / `python3 scripts/workato-api.py --help` can complete the task via CLI/API. See the `workato-cli-autonomy` rule.
 
-## 開発ルール
+## Development rules
 
-- 組織ナレッジの上書きレイヤー: `org-knowledge-overlay` ルール参照
-- コネクタ詳細: `docs/connectors/` (+ `org/docs/connectors/`) を参照
-- ロジック: `docs/logic/` (+ `org/docs/logic/`) を参照
-- プラットフォーム機能: `docs/platform/` (+ `org/docs/platform/`) を参照
-- 独自知見: `org/docs/<相対パス>` に追記（kit の `docs/` は直接編集しない）
-- `*.connection.json` に認証情報は含まれない
-- `.workatoenv` / `master.key` はコミットしない
+- Organization knowledge overlay: see the `org-knowledge-overlay` rule.
+- Connector details: `docs/connectors/` (+ `org/docs/connectors/`).
+- Logic: `docs/logic/` (+ `org/docs/logic/`).
+- Platform features: `docs/platform/` (+ `org/docs/platform/`).
+- Record new findings under `org/docs/<relative-path>` (do not edit the kit's `docs/` directly).
+- `*.connection.json` never contains credentials.
+- Do not commit `.workatoenv` or `master.key`.
 
-## ツールキット開発ルール
+## Toolkit development rules
 
-このリポジトリ自体（スキル、ルール、ドキュメント）を変更する際のルール。
+Rules for changing this repository itself (skills, rules, docs).
 
-- **エディタ間同期**: スキルやルールの正（canonical source）は `.claude/` 側。変更は `.claude/rules/` や `.claude/skills/` に対して行い、`bash scripts/sync-cursor-rules.sh` で `.cursor/` に反映する（一方向: .claude/ → .cursor/）。`.cursor/` 側を直接編集しない
+- **Editor synchronization**: the canonical source is `framework/claude/`. Make changes under `framework/claude/rules/` or `framework/claude/skills/`, then run `python3 scripts/sync_agents.py` to regenerate `framework/cursor/`, `framework/codex/`, `framework/gemini/`, and `framework/AGENTS.md` (one-way: claude → others). Do not edit the generated trees directly.
+- Hand-written exceptions in `framework/cursor/` (not regenerated): `framework/cursor/rules/workato-project.mdc` (this file) and `framework/cursor/hooks.json`.
 
-## スキル一覧
+## Skills
 
-チャットで `/skill-name` を入力してスキルを呼び出せます。各スキルが「いつ呼ばれ、何を読み、何を書くか」の責務マップは `guides/lifecycle.md` を参照。
+Invoke a skill by typing `/skill-name` in chat. For when each skill is invoked, what it reads, and what it writes, see `guides/lifecycle.md`.
 
-| スキル | 用途 |
+| Skill | Purpose |
 |---|---|
-| `/create-recipe` | レシピ JSON を対話的に生成 |
-| `/create-workflow-app` | Workflow App を構築 |
-| `/create-genie` | Genie / MCP サーバーを生成 |
-| `/create-connector` | カスタムコネクタをスキャフォールド |
-| `/catalog` | 共有アセットのスキャン・カタログ化 |
-| `/validate-recipe` | JSON 構造を検証 |
-| `/pull-project` | Workato からプロジェクトを pull |
-| `/push-project` | プロジェクトを push（バリデーション付き） |
-| `/learn-recipe` | レシピからフィールド情報を学習しドキュメントに反映 |
-| `/learn-pattern` | レシピ構築パターンをカタログに記録・更新 |
-| `/sync-connectors` | コネクタ情報を収集・更新 |
-| `/design` | プロジェクト設計書の作成・更新・参照 |
+| `/spec` | Create feature requirements (spec.md), technology-agnostic |
+| `/clarify` | Resolve Open Questions in spec.md |
+| `/plan` | spec.md → plan.md (Workato configuration) |
+| `/tasks` | plan.md → tasks.md (tagged tasks) |
+| `/analyze` | Verify spec ↔ plan ↔ tasks consistency (read-only) |
+| `/implement` | Read tasks.md and dispatch to existing skills (thin orchestrator) |
+| `/create-recipe` | Generate recipe JSON (reads plan.md) |
+| `/create-workflow-app` | Build a Workflow App (reads plan.md) |
+| `/create-genie` | Generate a Genie / MCP server |
+| `/create-connector` | Scaffold a custom connector |
+| `/catalog` | Scan and catalog shared assets |
+| `/validate-recipe` | Validate JSON structure |
+| `/pull-project` | Pull a project from Workato |
+| `/push-project` | Push a project (with validation) |
+| `/learn-recipe` | Learn field info from a recipe; reconcile plan.md / tasks.md Unlearned / [learn] entries |
+| `/learn-pattern` | Extract construction patterns from recipes and accumulate them in the catalog |
+| `/sync-connectors` | Collect and update connector info (pre-built: API; custom: parse connector.rb) |
+| `/auto-learn` | Autonomously collect every operation for one connector via Claude in Chrome (Claude Code only) |
+| `/design` | **Deprecated**: only `/design migrate` is used in normal operation. `/design` (view) and `/design update` keep working with a warning. `/design new` is retired. |

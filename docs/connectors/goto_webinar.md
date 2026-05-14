@@ -1,16 +1,16 @@
-# GotoWebinar コネクタ
+# GotoWebinar connector
 
 Provider: `goto_webinar`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New webinar session | `new_webinar_session` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Get attendees from session | `get_attendees_from_session` | Yes |  |

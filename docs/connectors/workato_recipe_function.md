@@ -1,16 +1,16 @@
-# Recipe function by Workato コネクタ
+# Recipe function by Workato connector
 
 Provider: `workato_recipe_function`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New call for function | `execute` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Call a recipe function (synchronous) | `call_recipe` | - |  |
 | Call a recipe function (asynchronous) | `call_recipe_async` | - |  |

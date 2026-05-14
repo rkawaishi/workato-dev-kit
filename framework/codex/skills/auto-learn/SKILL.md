@@ -1,314 +1,314 @@
 ---
 name: auto-learn
-description: Workato UI を Claude in Chrome で操作し、1 コネクタ単位で全オペレーションのフィールド情報を自律的に収集して docs/connectors/<provider>.md に追記する。完全性より自律性を優先し、不確実なものは記録してスキップする（途中でユーザーに質問しない）。Claude in Chrome 拡張が必須で Claude Code 限定。
+description: Drive the Workato UI through Claude in Chrome and autonomously collect every operation's field info for one connector, appending the results to `docs/connectors/<provider>.md`. Prefer autonomy over completeness — record uncertain cases and skip them rather than asking the user mid-run. Requires the Claude in Chrome extension and runs only in Claude Code. Japanese prompts are also supported.
 ---
 
 # $auto-learn
 
-Workato UI を Claude in Chrome で操作し、対象コネクタの全オペレーション（trigger / action）の input / output フィールドを能動収集して `docs/connectors/<provider>.md` に追記するスキル。
+Drive the Workato UI through Claude in Chrome and actively collect input / output fields for every operation (trigger / action) of the target connector, then append the results to `docs/connectors/<provider>.md`.
 
-## 前提
+## Prerequisites
 
-- **エディタ**: Claude Code 限定（Cursor / Codex CLI / Gemini CLI には Chrome MCP が無いため動作しない）
-- **拡張機能**: [Claude in Chrome](https://chrome.google.com/webstore) がインストール・接続されていること。未接続だと `tabs_context_mcp` や `navigate` などの呼び出しがエラーになる（接続状態は `mcp__Claude_in_Chrome__list_connected_browsers` で確認）
-- **Workato ログイン**: 対象ワークスペースに UI でログイン済みのタブがあること（自動ログインはしない）
+- **Editor**: Claude Code only (Cursor / Codex CLI / Gemini CLI cannot run this — they have no Chrome MCP).
+- **Extension**: [Claude in Chrome](https://chrome.google.com/webstore) must be installed and connected. Without a connection, calls like `tabs_context_mcp` or `navigate` will fail (check connection state with `mcp__Claude_in_Chrome__list_connected_browsers`).
+- **Workato login**: a tab signed in to the target workspace UI must exist (the skill does not log in for you).
 
-## 設計原則（重要）
+## Design principles (important)
 
-このスキルは「**自律性優先・網羅性重視**」で設計する。完全な型・nest 構造の正確性より、**多くのコネクタにある程度のフィールド情報を行き渡らせる**ことを目的とする。細かな修正はマニュアルレシピや `$learn-recipe` で後追いする。
+This skill is designed for **autonomy first, breadth second**. The goal is to **spread some level of field coverage across many connectors**, not to nail every type or nesting structure perfectly. Fine-grained corrections come later from manual recipes or `$learn-recipe`.
 
-1. **対話禁止**: 1 回の呼び出しで対象コネクタの全 op を試す。途中でユーザーに質問しない。判断材料が無い場合は **defaults → skip + log**。
-2. **フェイルソフト**: 各 op を try / catch で囲み、失敗しても次に進む。1 op の失敗で run 全体を止めない。
-3. **記録駆動**: 取れたものは追記、取れなかったものは「学習失敗 / 部分学習」で残す。最後にレポートを出す。
-4. **UI のみ**: 内部 API への新規 fetch / XHR は禁止（リバースエンジニアリング厳禁）。UI 操作で発生したレスポンスの**受動観察**のみ可。詳細は `docs/patterns/auto-learn-ui-operations.md` 参照。
+1. **No interaction**: a single invocation tries every op of the target connector. Do not ask the user mid-run. With no basis for a decision, **defaults → skip + log**.
+2. **Fail-soft**: wrap each op in try / catch and keep going on failure. One op's failure does not abort the run.
+3. **Record-driven**: append what you got, mark what you didn't as "learning failure / partial learning". Report at the end.
+4. **UI only**: no new fetch / XHR against internal APIs (reverse engineering is strictly forbidden). Only **passive observation** of responses triggered by UI actions is allowed. See `docs/patterns/auto-learn-ui-operations.md`.
 
-## 使い方
+## Usage
 
 ```
 $auto-learn <provider>
 ```
 
-オプション:
-- `--recipe-id <id>` — 検証用レシピ ID（既定: 規約レシピ名から推定 / 直前タブの URL から）
-- `--workspace-url <url>` — ワークスペース base URL（既定: 直前タブから）
-- `--force` — 既に docs にフィールド詳細があっても上書き学習
-- `--triggers-only` / `--actions-only` — 範囲を絞る
-- `--sandbox <json>` — 動的スキーマ用テストデータ（後述）
-- `--followups` — **UI 操作なしモード**。既存 `docs/connectors/*.md` の `## 学習サマリ` を集約して標準出力に出すだけ。`<provider>` 指定があれば単一コネクタ、なければ全 7+ コネクタ集約。実行フロー（Phase 1-5）は走らない。詳細は本ファイル末尾「Followups mode」参照
+Options:
+- `--recipe-id <id>` — recipe ID used for verification (default: inferred from the conventional recipe name or from the previous tab's URL).
+- `--workspace-url <url>` — workspace base URL (default: previous tab).
+- `--force` — relearn even if field details already exist in docs.
+- `--triggers-only` / `--actions-only` — narrow the scope.
+- `--sandbox <json>` — test data for dynamic schemas (see below).
+- `--followups` — **no-UI mode**. Aggregate the `## Learning summary` sections of existing `docs/connectors/*.md` and print to stdout. A `<provider>` argument restricts to one connector; otherwise aggregates across all 7+ connectors. The execution flow (Phases 1–5) does not run. See "Followups mode" at the end of this file.
 
-事前準備が無い場合（規約レシピ未作成・コネクション未認証など）は、**ユーザーに質問せず失敗ログだけ残して終了**する。
+When prerequisites are missing (no conventional recipe, connection not authenticated, etc.), **exit with only a failure log — do not ask the user**.
 
-## 事前準備（ユーザーが 1 回だけ）
+## One-time setup (done by the user)
 
-検証用ワークスペースに以下を用意:
+Set up the following in your verification workspace:
 
-### 1. 規約レシピ（コネクタごと、または共有 1 本）
+### 1. Conventional recipe (per connector, or one shared)
 
-推奨: プロジェクト名 `auto-learn-sandbox`、レシピ名 `<provider>` または共有 `auto-learn-scratch`。**4 ステップ構成で固定**:
+Recommended: project name `auto-learn-sandbox`, recipe name `<provider>` or shared `auto-learn-scratch`. **Fixed 4-step structure**:
 
-| Step | 役割 | 既定で置く中身 |
+| Step | Role | Default contents |
 |---|---|---|
-| 1 | **Trigger 学習スロット** | 任意（スキルが上書きする） |
-| 2 | 中継ステップ | 任意のシンプルなアクション（例: Google Sheets `Search rows`、列の少ない sandbox sheet 指定）。学習対象の前ステップとして固定し、出力 datapill を提供する |
-| 3 | **Action 学習スロット** | 任意（スキルが順次上書きする） |
-| 4 | **Action output 観察スロット** | 任意のシンプルなアクション（例: Workbot for Slack `Get user info`）。Step 3 output を Recipe data から覗くための踏み台 |
+| 1 | **Trigger learning slot** | Anything (the skill overwrites it) |
+| 2 | Bridging step | Any simple action (e.g. Google Sheets `Search rows` pointing at a low-column sandbox sheet). Anchors the predecessor step for the learning target and supplies output datapills |
+| 3 | **Action learning slot** | Anything (the skill overwrites sequentially) |
+| 4 | **Action output observation slot** | Any simple action (e.g. Workbot for Slack `Get user info`). A perch from which to peek at Step 3 output via Recipe data |
 
-引数 `--recipe-id` 未指定時、スキルは:
-- 直前タブの URL に `/recipes/<id>/edit` があれば、その ID を使う
-- なければ **失敗ログだけ残して終了**
+When `--recipe-id` is omitted, the skill:
+- Uses the ID from the previous tab's URL if it matches `/recipes/<id>/edit`.
+- Otherwise, **exits with only a failure log**.
 
-### 2. 認証済みコネクション（対象コネクタ）
+### 2. Authenticated connection (target connector)
 
-複数あっても可。スキルは規約に従って 1 つ選ぶ:
+You can have several; the skill picks one per convention:
 
-1. 引数 `--connection <name>` 指定があればそれを使う
-2. なければ「**最初の active コネクション**」（`w-connection-card` の DOM 順）を選ぶ
-3. それも無ければ skip + log
+1. If `--connection <name>` is given, use it.
+2. Otherwise pick "the **first active connection**" (DOM order of `w-connection-card`).
+3. If neither exists, skip + log.
 
-### 3. 動的スキーマ用サンドボックスデータ（必要なコネクタのみ）
+### 3. Sandbox data for dynamic schemas (only some connectors)
 
-`extends_*_schema=true` 系のオペレーション（Google Sheets `search_rows`、Salesforce 各種等）を学習する場合のみ必要。
+Required only when learning `extends_*_schema=true` style operations (Google Sheets `search_rows`, Salesforce variants, etc.).
 
-- 引数 `--sandbox '{"spreadsheet":"auto-learn-sample","sheet":"Memo"}'` で渡す
-- なければ `scripts/sandbox-data/<provider>.json` を読む（任意のリポジトリ規約）
-- どちらもなければ動的 probe を **静かにスキップ**して静的フィールドだけ記録
+- Pass via `--sandbox '{"spreadsheet":"auto-learn-sample","sheet":"Memo"}'`.
+- Or read `scripts/sandbox-data/<provider>.json` (an optional repository convention).
+- If neither exists, **silently skip** the dynamic probe and record only the static fields.
 
-サンドボックスデータは **シンプル**であること（ヘッダー重複なし、3 列程度）。複雑なデータでは `"duplicated headers"` 等のエラーで動的 input が消える挙動が起きる。
+Keep the sandbox data **simple** (no duplicated headers, ~3 columns). Complex data triggers errors like `"duplicated headers"` and makes the dynamic input disappear.
 
-## 実行フロー
+## Execution flow
 
-### Phase 1: ブートストラップ
+### Phase 1: Bootstrap
 
-1. `docs/connectors/<provider>.md` を Read
-2. Triggers / Actions テーブルから op 名・kind を列挙
-3. 除外: `__adhoc_http_action`、deprecated（`[deprecated]` 等の注記がある行）
-4. `--force` がない限り、既に `### <op>` で始まるセクションがあるものはスキップ。検出は **op 名のみで照合**（行頭の `### ` 直後のトークン）。括弧内の補足（display title など）は無視する。例: `### delete_message (Delete message)` も `### delete_message (Action)` も同じ op としてスキップ対象になる
-5. 残った op リストを処理キューに
+1. Read `docs/connectors/<provider>.md`.
+2. Enumerate op name and kind from the Triggers / Actions tables.
+3. Exclude: `__adhoc_http_action`, deprecated entries (rows annotated `[deprecated]` etc.).
+4. Unless `--force` is set, skip ops that already have a section starting with `### <op>`. Match **by op name only** (the token right after `### ` at the start of the line); ignore parenthesised suffixes such as display titles. For example, both `### delete_message (Delete message)` and `### delete_message (Action)` count as the same op and are skipped.
+5. Put the remaining ops into the processing queue.
 
-### Phase 2: タブ準備
+### Phase 2: Tab preparation
 
-1. `tabs_context_mcp` で既存タブを確認、なければ新規作成
-2. `--recipe-id` または直前 URL から `/recipes/<id>/edit` に navigate
-3. レシピが 4 ステップ構成（trigger + 3 action）になっているか DOM で確認。なければ失敗ログを残して終了
+1. Check existing tabs with `tabs_context_mcp`; create a new one if necessary.
+2. Navigate to `/recipes/<id>/edit` from `--recipe-id` or the previous URL.
+3. Confirm via DOM that the recipe has the 4-step structure (trigger + 3 actions). If not, log failure and exit.
 
-### Phase 3: 各 op を `processOperation` で順次処理
+### Phase 3: Run each op through `processOperation`
 
 ```
 for op in queue:
-    result = processOperation(op)        # try/catch で囲む
+    result = processOperation(op)        # wrapped in try/catch
     results.append(result)
     if result.errors:
-        log warning，continue（停止しない）
+        log warning, continue (do not stop)
 ```
 
-`processOperation` の中身:
+Inside `processOperation`:
 
 ```
 1. switchStepToOp(op)
-   - kind=trigger → Step 1 を上書き（App タブ → コネクタ → Trigger picker → 当該 op）
-   - kind=action  → Step 3 を上書き（App タブ → コネクタ → Action picker → 当該 op）
-   - 失敗（picker に op が見えない、auto-skip 異常 等）→ result.status='failed_to_open' を返して**早期終了**（後続の step 2-6 はスキップ）
+   - kind=trigger → overwrite Step 1 (App tab → connector → Trigger picker → this op)
+   - kind=action  → overwrite Step 3 (App tab → connector → Action picker → this op)
+   - On failure (op invisible in the picker, auto-skip anomaly, etc.) → return result.status='failed_to_open' and **exit early** (skip steps 2–6 below)
 
 2. waitForSetupTab()
-   - 完了判定: button.tabs__label.tabs__label_active のテキスト === 'Setup'
-   - timeout 8 秒。タイムアウトしたら result.status='failed_to_open' で**早期終了**
+   - Completion: button.tabs__label.tabs__label_active text === 'Setup'
+   - Timeout 8 s. On timeout, **exit early** with result.status='failed_to_open'
 
 3. result.input = captureInputFields()
-   - "Show optional fields" ボタンがあれば開いてモーダルから {label, type, visibleByDefault} 取得 → Cancel
-   - フォームの top-level w-form-field を列挙 → {label, required, hint, controlComponent, hasToggleField}
-   - 両者を label でマージ
-   - ボタンが無ければモーダル抽出を skip（form のみ）
+   - If a "Show optional fields" button is present, open the modal and read {label, type, visibleByDefault} → Cancel
+   - Enumerate top-level w-form-field in the form → {label, required, hint, controlComponent, hasToggleField}
+   - Merge the two by label
+   - If the button is absent, skip modal extraction (read only the form)
 
 4. result.output = captureOutputFields(op.kind)
-   - **観察用ステップに切替えてから読む**（target step は触らない）:
-     - kind=trigger:  Step 2 を開く → Recipe data の "Step 1 output" グループから覗く
-     - kind=action:   Step 4 を開く → Recipe data の "Step 3 output" グループから覗く
-   - データツリー minimize なら展開、対象グループの内側 .data-tree-group__header を click
-   - グループが現れなければ "no_output_schema"（fire-and-forget アクション）として null
-   - 現れれば .data-tree-item を全列挙 → {label, type}
-   - ⚠ 完了後の在りどころは**観察用ステップ**（Step 2 / Step 4）。次に target step を触る前に必ず navigation し直すこと
+   - **Switch to the observation step before reading** (do not touch the target step):
+     - kind=trigger:  open Step 2 → peek into the "Step 1 output" group of Recipe data
+     - kind=action:   open Step 4 → peek into the "Step 3 output" group of Recipe data
+   - If the data tree is minimised, expand it; click `.data-tree-group__header` of the target group
+   - If the group never appears → record `null` ("no_output_schema" / fire-and-forget action)
+   - If it appears → enumerate every `.data-tree-item` → {label, type}
+   - ⚠ At the end you are still on the **observation step** (Step 2 / Step 4). Re-navigate before touching the target step again.
 
-5. もし result.input に dynamic picklist 候補（w-toggle-field を持つ select 等）があり、
-   かつ --sandbox が用意されていれば:
-     // ⚠ step 4 で観察用ステップに切替えているので、まず target step に戻る
-     // - kind=trigger: Step 1 (target) のヘッダーをクリックして Setup タブへ復帰
-     // - kind=action:  Step 3 (target) のヘッダーをクリックして Setup タブへ復帰
-     // active tab が再び Setup になったことを button.tabs__label_active で確認してから進める
+5. If result.input has dynamic picklist candidates (e.g. a select with w-toggle-field) and
+   --sandbox is provided:
+     // ⚠ Step 4 left you on the observation step — go back to the target step first
+     // - kind=trigger: click the Step 1 (target) header to return to the Setup tab
+     // - kind=action:  click the Step 3 (target) header to return to the Setup tab
+     // Confirm the active tab is once again Setup via button.tabs__label_active before proceeding
      try {
-       navigateBackToTargetStep(op.kind)         // Step 1 / Step 3 を再度開く
-       waitForSetupTab()                         // タブが Setup に戻るのを待つ
-       applySandboxValues()                      // target step の picklist を埋める
-       const dynInput = captureInputFields()     // target step のフォームを読む
-       const dynOutput = captureOutputFields(op.kind)  // 内部で観察用ステップへ自動遷移して読む
+       navigateBackToTargetStep(op.kind)         // re-open Step 1 / Step 3
+       waitForSetupTab()                         // wait for the tab to return to Setup
+       applySandboxValues()                      // fill the picklist on the target step
+       const dynInput = captureInputFields()     // read the form on the target step
+       const dynOutput = captureOutputFields(op.kind)  // internally switches to the observation step
        result.dynamic = { input: dynInput, output: dynOutput }
      } catch (e) {
        result.errors.push("dynamic_probe_failed: " + e.message)
      }
 
-6. ステータス確定:
-   - ここまで result.status が未設定（=step 1〜2 で早期終了していない）なら、result.status = 'ok' を設定
-   - errors 配列の有無は status に影響させない（部分学習は status='ok' + errors=[...] で表す）
-   - ⚠ step 1 / 2 で 'failed_to_open' を設定して早期 return したケースは、ここに到達しないため status は上書きされない
+6. Finalise status:
+   - If result.status is still unset (i.e. no early return in steps 1–2), set result.status = 'ok'
+   - Errors[] presence does not affect status (partial learning is expressed as status='ok' + errors=[...])
+   - ⚠ Cases that set 'failed_to_open' and early-returned in steps 1 / 2 never reach this point, so their status is not overwritten
 ```
 
-### Phase 4: docs に追記
+### Phase 4: Append to docs
 
-`docs/connectors/<provider>.md` の `## アクション詳細` / `## トリガー詳細` セクションに、各 op の結果を追記:
+In `docs/connectors/<provider>.md`, append each op's result to the `## Action details` / `## Trigger details` sections:
 
 ```markdown
 ### <op_name> (<Display Title>)
 
-種別: Trigger | Action
-学習元: $auto-learn (UI 観察) — <YYYY-MM-DD>[, output <YYYY-MM-DD>]
+Kind: Trigger | Action
+Learned from: $auto-learn (UI observation) — <YYYY-MM-DD>[, output <YYYY-MM-DD>]
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | ... |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | ... |
 
-#### 動的フィールド（あれば）
-- 決定条件: <picklist 名>
-- 観測例: ... （PII を残さない範囲で）
+#### Dynamic fields (if any)
+- Decided by: <picklist name>
+- Observed example: ... (avoid retaining PII)
 ```
 
-ステータスは以下の 3 値のいずれか:
+Status is one of three values:
 
-| status | 意味 | 設定箇所 |
+| status | Meaning | Set in |
 |---|---|---|
-| `ok` | processOperation が最後まで通った。step 3〜5 で個別の不具合（modal 不在、output グループ不在、dynamic probe 失敗 等）があれば `errors[]` に文字列で蓄積するが status 自体は `ok` のまま — 部分学習として扱う | step 6 |
-| `failed_to_open` | step 1 / 2 で対象 op を開けず早期 return | step 1 / 2 |
-| `unexpected_error` | processOperation 内で想定外例外が外側まで伝播し、上位の catch で受けた | 上位ループの catch |
+| `ok` | processOperation completed end-to-end. Any individual issues in steps 3–5 (missing modal, missing output group, dynamic probe failure, etc.) are accumulated as strings in `errors[]`, but the status itself remains `ok` — treated as partial learning | step 6 |
+| `failed_to_open` | Could not open the target op in step 1 / 2 and returned early | step 1 / 2 |
+| `unexpected_error` | An unexpected exception escaped processOperation's internal try/catch and was caught at the outer loop | outer-loop catch |
 
-⚠ step 3〜5 内で起きる軽微な失敗は **例外を投げず** に `errors[]` への push で扱う方針（部分学習扱い）。例外まで投げる必要があるのはステップ 1 / 2（その op を開く前提が崩れた）か、もしくは想定外（バグ）のときだけ。
+⚠ Minor failures inside steps 3–5 use the **error-push approach instead of throwing** (treated as partial learning). Exceptions are only appropriate in steps 1 / 2 (the precondition to open the op broke) or for unexpected (bug) situations.
 
-追記ルーティング（`'ok'` 以外はすべて学習失敗ログ扱い）:
+Append-routing rules (anything other than `'ok'` is treated as a learning-failure log):
 
-- `status === 'ok'` & errors=[] → セクション本体に完全に追記
-- `status === 'ok'` & errors!=[] → 注記行（`> ⚠ 部分学習: <errors>`）を加えてセクション本体に追記
-- `status !== 'ok'`（=`failed_to_open` / `unexpected_error` / 将来追加される非 ok ステータス）→ セクション本体は作らず、ファイル末尾「## 学習失敗ログ」セクションに 1 行追記（`- <op>: status=<status>, reason=<reason> — <date>`）
+- `status === 'ok'` & errors=[] → append the full section body.
+- `status === 'ok'` & errors!=[] → add an annotation line (`> ⚠ Partial learning: <errors>`) and still append the section body.
+- `status !== 'ok'` (=`failed_to_open` / `unexpected_error` / any future non-ok status) → do not create the section body; append one line to the `## Learning failures` section at the end of the file (`- <op>: status=<status>, reason=<reason> — <date>`).
 
-### Phase 4 末尾: `## 学習サマリ` セクションの更新（必須）
+### End of Phase 4: update the `## Learning summary` section (required)
 
-各 op の追記が終わったら、`docs/connectors/<provider>.md` の **末尾**（最終 `## ...` セクションのさらに下）に `## 学習サマリ` セクションを追加する。**既にあれば差し替え**（このセクションは run の最新スナップショットだけ保持し、過去の run は git 履歴で追う）。
+After appending each op's result, add a `## Learning summary` section to the **end** of `docs/connectors/<provider>.md` (below the final `## ...` section). **Replace if it already exists** — this section holds only the latest run's snapshot, and historical runs are tracked via git history.
 
-フォーマット（記入欄は run 結果から組み立てる。各リストは ` — ` 区切りで op 名を示す。空集合の場合は当該行を残して `0` と書く）:
+Format (assemble the fields from the run's results; lists separate op names with ` — `; if a set is empty, leave the line in place with `0`):
 
 ```markdown
-## 学習サマリ
+## Learning summary
 
-最終実行: <YYYY-MM-DD> by $auto-learn
-- 試行: <N> op
-- 完全成功: <M>
-- 部分学習: <K>
-- 学習失敗: <L>
-- スキップ:
+Last run: <YYYY-MM-DD> by $auto-learn
+- Attempted: <N> op
+- Fully learned: <M>
+- Partially learned: <K>
+- Failed: <L>
+- Skipped:
   - Deprecated: <D> — `<op1>`, `<op2>`, ...
   - adhoc: <A> — `__adhoc_http_action`
-  - 既学習: <S> — `<op1>`, `<op2>`, ...
+  - Already learned: <S> — `<op1>`, `<op2>`, ...
 
-### 要 follow-up
+### Needs follow-up
 
-カテゴリ別。errors[] の prefix と理由文を見てルーティングする:
+By category. Route entries using the prefix and reason in `errors[]`:
 
-- **Dynamic schema (要 $learn-recipe)** — `dynamic schema unresolved`, `output_group_missing` (project not selected) 等
-  - `<op>` — <短い説明>
-- **Fire-and-forget (UI 仕様・追加学習不要)** — `output_group_not_found`, `no_output_schema`
-  - `<op>` — <短い説明>
-- **Internal key 不明 (要 $learn-recipe)** — `webhook_suffix` 等の内部キーマッピング不明
-  - `<op>` — <短い説明>
-- **Other** — 上記に当てはまらない部分学習
+- **Dynamic schema (needs $learn-recipe)** — `dynamic schema unresolved`, `output_group_missing` (project not selected), etc.
+  - `<op>` — <short note>
+- **Fire-and-forget (UI spec — no further learning needed)** — `output_group_not_found`, `no_output_schema`
+  - `<op>` — <short note>
+- **Unknown internal key (needs $learn-recipe)** — internal key mapping unknown (e.g. `webhook_suffix`)
+  - `<op>` — <short note>
+- **Other** — partial-learning cases that fit none of the above
   - `<op>` — <reason>
 
-該当カテゴリが空の場合は、そのカテゴリ見出しごと削除して構わない。
+Empty categories may be removed entirely (drop the heading too).
 
-### 構造的注記（参考）
+### Structural notes (for reference)
 
-各 op section 内の `> ⚠` インライン注記（`> ⚠ 部分学習:` 以外）を 1 行ずつコピー集約:
+Copy each `> ⚠` inline note within an op section (other than `> ⚠ Partial learning:`) here, one per line:
 
-- 重複ラベル: `<label>` (op: `<op_name>`)
-- paddingLeft=0 によるネスト不可視: ...
-- 動的入力（input picklist 依存）: ...
+- Duplicate label: `<label>` (op: `<op_name>`)
+- Nesting hidden by paddingLeft=0: ...
+- Dynamic input (depends on the input picklist): ...
 
-該当なしなら本見出しごと削除。
+Drop the heading entirely if there is nothing to record.
 ```
 
-このセクションが**「follow-up 出して」依頼に対する単一の参照点**となる。`grep "^## 学習サマリ" docs/connectors/*.md -A 200` で全コネクタの follow-up を一覧できる。
+This section becomes **the single reference point for "give me follow-ups" requests**. `grep "^## Learning summary" docs/connectors/*.md -A 200` produces follow-ups for every connector.
 
-`--followups` モードはこのセクションのみを読んで集約する（Phase 1-3 を走らせない）。詳細は本ファイル末尾「Followups mode」参照。
+`--followups` mode reads only this section to aggregate (does not run Phases 1–3). See "Followups mode" at the end of this file.
 
-### Phase 5: レポート出力
+### Phase 5: Report
 
-標準出力に短く（Phase 4 で書いた `## 学習サマリ` の中身と整合させる。出力にズレがあるのは禁止。テキストはそのまま貼る運用で OK）:
+A short stdout report (must align with the `## Learning summary` written in Phase 4 — no drift allowed; copy-paste is fine):
 
 ```
-$auto-learn <provider> 完了
-- 試行: N op
-- 完全成功: M op
-- 部分学習: K op  (主因: <theme>)
-- 学習失敗: L op  (理由: <reason>)
-- 永続化: docs/connectors/<provider>.md の `## 学習サマリ` を更新
-- マニュアルでフィードバックすべき項目:
-  - 重複ラベル: ...
-  - ネスト深さ未確定: ...
-  - その他観察された irregularity: ...
+$auto-learn <provider> complete
+- Attempted: N op
+- Fully learned: M op
+- Partially learned: K op  (main theme: <theme>)
+- Failed: L op  (reason: <reason>)
+- Persisted: updated `## Learning summary` in docs/connectors/<provider>.md
+- Items to feed back manually:
+  - Duplicate labels: ...
+  - Unresolved nesting depth: ...
+  - Other observed irregularities: ...
 ```
 
-最後に追記したセクション一覧と git diff 概要を提示し、コミット可否はユーザー判断に任せる（**コミットは自動実行しない**）。
+End with the list of appended sections and a git-diff summary; let the user decide whether to commit (**do not auto-commit**).
 
-将来「follow-up を出して」と依頼されたら、`docs/connectors/*.md` の `## 学習サマリ` を読むだけで答えられる。新規セッションでも決定的に再現できる。
+When asked later to "produce follow-ups", you can answer just by reading the `## Learning summary` blocks in `docs/connectors/*.md`. The result is deterministically reproducible in a new session.
 
-## 「止まらない」ための具体ルール
+## Concrete rules for "don't stop"
 
-| 場面 | 対応 |
+| Situation | Response |
 |---|---|
-| `Show optional fields` ボタンが無い | モーダル抽出を skip、form 直接読みのみ |
-| Trigger 1 個コネクタで Trigger picker auto-skip | `tabs__label_active` を監視。Connection に飛んでいれば Trigger 段階を skip して既定トリガーを採用 |
-| Step output グループが Recipe data に無い | `output: null`（fire-and-forget アクション）として記録、続行 |
-| Picker のタイトル誤表示（同名 op が複数） | canvas step text や badge 構成で区別。それでも区別不能なら DOM 順位 + 失敗時の input 内容で逆推測。最後の手段は skip + log |
-| 動的 picklist で API エラー（duplicated headers 等） | 1 回だけリトライ（別の sandbox 値があれば）。再失敗で諦め、静的部分のみ記録 |
-| Picker の仮想スクロール | 各 op 検索時、見つからなければスクロール → 再列挙を最大 3 回 |
-| DOM 安定待ち | `wait` ではなく**特定セレクタの mutation 監視**を優先（spinner 消失、tabs_label_active 変化、modal の DOM 出現/消失） |
-| クリックが効かない | 1 段親要素クリック → `dispatchEvent(MouseEvent)` → 物理座標クリック の順でリトライ |
-| `unsaved changes` で navigate がブロック | 単に skip して在りもの recipe で続行（reload を試行しない） |
-| コネクション複数 | 引数 → DOM 最初 → skip の順。動的に新規認証は試みない |
+| No `Show optional fields` button | Skip modal extraction; read only the form |
+| Trigger picker auto-skipped on single-trigger connector | Watch `tabs__label_active`. If you've jumped to Connection, skip the Trigger stage and use the default trigger |
+| Step output group missing in Recipe data | Record `output: null` (fire-and-forget action) and continue |
+| Picker title misprint (multiple ops with the same name) | Disambiguate by canvas step text or badge composition. Otherwise infer from DOM order + input contents on failure; last resort is skip + log |
+| Dynamic picklist API error (duplicated headers etc.) | Retry once (with a different sandbox value if available). On second failure, give up and record only the static portion |
+| Picker virtual scroll | When searching for an op, scroll → re-enumerate up to 3 times if not found |
+| DOM stability wait | Prefer **mutation observation on specific selectors** (spinner disappear, tabs_label_active change, modal DOM appear/disappear) over `wait` |
+| Click does nothing | Retry in order: parent-element click → `dispatchEvent(MouseEvent)` → physical coordinate click |
+| Navigate blocked by `unsaved changes` | Just skip and continue with the recipe as-is (do not attempt reload) |
+| Multiple connections | Argument → first in DOM → skip, in order. Do not attempt new auth dynamically |
 
-## 完了判定セレクタ集
+## Completion selector catalogue
 
-- Setup タブ到達: `button.tabs__label.tabs__label_active` のテキスト === `Setup`
-- パネル切替完了: `w-recipe-step-details w-panel-content` のクラスが `recipe-step-config` または `recipe-step-details-adapter` に変化
-- Show optional fields モーダル出現: `w-dialog label.multi-select-list__item` 1 個以上
-- Show optional fields モーダル消失: `w-dialog` が DOM から消失
-- Recipe data tree 展開: `w-datatree:not(.recipe-editor-datatree_minimize)`
-- Step output グループ開いた状態: `.data-tree-group_opened`
+- Setup tab reached: `button.tabs__label.tabs__label_active` text === `Setup`
+- Panel switch complete: `w-recipe-step-details w-panel-content` class becomes `recipe-step-config` or `recipe-step-details-adapter`
+- Show optional fields modal open: `w-dialog label.multi-select-list__item` count ≥ 1
+- Show optional fields modal closed: `w-dialog` removed from DOM
+- Recipe data tree expanded: `w-datatree:not(.recipe-editor-datatree_minimize)`
+- Step output group opened: `.data-tree-group_opened`
 
-## docs 更新ルール
+## Doc-update rules
 
-- 既存セクションがある場合（`--force` で再学習時）:
-  - 学習元行を最新に更新
-  - フィールド表は **ユニオンで追記**（同名は新情報で置換）
-  - 重複ラベルは **末尾に注記**を残す（例: `> ⚠ 同一 label "User" が 2 箇所に出現。内部パスは要マニュアル確認`）
-- 新規セクションは [$learn-recipe](../learn-recipe/SKILL.md) と同じフォーマット
+- When a section already exists (relearning with `--force`):
+  - Update the "Learned from" line to the latest date.
+  - **Union-merge** the field table (replace same-name entries with the new info).
+  - Leave a **trailing annotation** for duplicate labels (e.g. `> ⚠ The same label "User" appears twice. Internal path needs manual confirmation.`).
+- New sections use the same format as [$learn-recipe](../learn-recipe/SKILL.md).
 
-## 残課題（マニュアルフィードバック前提）
+## Outstanding items (manual feedback required)
 
-このスキルはあくまで「広く浅く」を目指す。次のものは UI 観察だけでは取りきれず、マニュアルで埋めることを前提とする:
+This skill targets "broad and shallow". The following cannot be captured by UI observation alone and are expected to be filled in manually:
 
-- 重複ラベル（Slack `User` 等、同名フィールドの内部パス区別）
-- データツリーのネスト深さ（`paddingLeft: 0px` 問題）
-- 動的 picklist の連鎖（spreadsheet → sheet → 列）の自動探索
-- 内部 `name`（JSON キー）と表示 label のマッピング（UI には label しか出ない）
-- フィールドの `parse_output` / 細かい制約（最大文字数等）
+- Duplicate labels (e.g. Slack `User`) — disambiguating internal paths for same-name fields.
+- Data tree nesting depth (`paddingLeft: 0px` issue).
+- Auto-exploration of chained dynamic picklists (spreadsheet → sheet → column).
+- Mapping between internal `name` (JSON key) and display label (the UI shows only the label).
+- Field-level `parse_output` / fine constraints (e.g. maximum character length).
 
-これらに気づくたびに `$learn-recipe` で個別レシピから埋めるか、ユーザーが直接 `docs/connectors/<provider>.md` を編集する。
+When you notice any of these, either run `$learn-recipe` on a specific recipe or edit `docs/connectors/<provider>.md` directly.
 
-## エラーハンドリングの設計指針
+## Error-handling design
 
-すべての例外は **1 op 単位の失敗** に閉じ込める:
+All exceptions are **scoped to a single op's failure**:
 
 ```javascript
 for (const op of queue) {
@@ -316,69 +316,69 @@ for (const op of queue) {
     const result = await processOperation(op);
     results.push(result);
   } catch (e) {
-    // processOperation 内 try/catch を通り抜けた想定外例外も次の op に進める
-    // status='unexpected_error' は Phase 4 ルーティング表で 'ok 以外' = 学習失敗ログ扱い
+    // Even unexpected exceptions that pass through processOperation's try/catch advance to the next op
+    // status='unexpected_error' is routed as a learning-failure log per the Phase 4 table
     results.push({ name: op.name, kind: op.kind, status: 'unexpected_error', errors: [e.message] });
     continue;
   }
 }
 ```
 
-タブが死んだ・ネットワークが切れた・ログアウトされた等、recoverable でない事態だけは早期 abort してレポートを返す。判定基準: 連続 3 op 以上失敗 → abort。
+Non-recoverable situations — tab died, network dropped, logged out, etc. — are the only cases that warrant early abort and an immediate report. Criterion: 3+ consecutive op failures → abort.
 
 ## Followups mode (`--followups`)
 
-通常の `$auto-learn` 実行（UI 操作あり）と独立した、**読み取り専用集約モード**。Phase 1〜5 を一切走らせず、`docs/connectors/*.md` の `## 学習サマリ` セクションを読んで follow-up を一覧化するだけ。
+A **read-only aggregation mode** independent of the normal `$auto-learn` execution (no UI operations). It does not run Phases 1–5 at all — just reads the `## Learning summary` sections of `docs/connectors/*.md` and lists follow-ups.
 
-### 起動
-
-```
-$auto-learn --followups            # 全コネクタ集約
-$auto-learn <provider> --followups # 単一コネクタのみ
-```
-
-### 動作仕様
-
-1. ターゲット連携:
-   - `<provider>` 指定あり → `docs/connectors/<provider>.md` のみ
-   - 指定なし → `docs/connectors/*.md` 全体（`_index.md` 等の非コネクタファイルは内容を見て除外）
-2. 各ファイルを Read し、`## 学習サマリ` セクションを抽出（次の `## ` または EOF まで）
-3. セクションが無い連携は「未集計」として `unknown` カテゴリにまとめる（過去 run の遺物）
-4. 標準出力に集計表とカテゴリ別 follow-up を出力:
+### Invocation
 
 ```
-$auto-learn --followups (集約: 8 コネクタ / 学習サマリあり: 7)
+$auto-learn --followups            # aggregate across all connectors
+$auto-learn <provider> --followups # only the specified connector
+```
 
-| Connector | 試行 | 完全 | 部分 | 失敗 | 最終実行 |
+### Behaviour
+
+1. Targets:
+   - With `<provider>` → `docs/connectors/<provider>.md` only.
+   - Without → all of `docs/connectors/*.md` (exclude non-connector files like `_index.md` after content inspection).
+2. Read each file and extract the `## Learning summary` section (up to the next `## ` or EOF).
+3. Connectors without a section go into the `unknown` category as "uncollected" (left over from a past run).
+4. Print a summary table and per-category follow-ups to stdout:
+
+```
+$auto-learn --followups (aggregated: 8 connectors / with learning summary: 7)
+
+| Connector | Attempted | Full | Partial | Failed | Last run |
 |---|---|---|---|---|---|
 | gmail | 1 | 1 | 0 | 0 | 2026-04-27 |
 | ...
 
-要 follow-up（カテゴリ別合計）:
-- Dynamic schema (要 $learn-recipe): 19 件
+Needs follow-up (per-category totals):
+- Dynamic schema (needs $learn-recipe): 19
   - google_big_query: insert_row, search_rows_sync, ...
   - google_sheets: ...
-- Fire-and-forget (UI 仕様・追加学習不要): 9 件
-- Internal key 不明 (要 $learn-recipe): 1 件
+- Fire-and-forget (UI spec — no further learning needed): 9
+- Unknown internal key (needs $learn-recipe): 1
 
-未集計（## 学習サマリ なし、過去 run 遺物の可能性）:
+Uncollected (no `## Learning summary`; possibly a leftover from a past run):
 - xxxx.md
 ```
 
-### 設計上の不変条件
+### Design invariants
 
-- このモードは **UI に触らない**。Chrome MCP も呼ばない。`Read` / `Grep` / `Bash` (grep) のみ
-- `## 学習サマリ` は run の **最新スナップショット**。複数 run の累積は git 履歴で追う（このモードでは追わない）
-- `unknown` カテゴリは「セクション未生成のコネクタ」を可視化することで再 run を促す効果を持つ
-- 出力に書き込みはしない（**docs ファイルを変更しない**）
+- This mode **does not touch the UI**. It does not invoke Chrome MCP. Only `Read` / `Grep` / `Bash` (grep) are used.
+- `## Learning summary` is a **snapshot of the latest run**. Cumulative history is tracked via git (this mode does not).
+- The `unknown` category surfaces "connectors with no section", encouraging a re-run.
+- The mode produces no writes (**does not modify any doc files**).
 
-### 既存セッションでの判断ルール
+### Judgement rule for existing sessions
 
-ユーザーから「follow-up を出して」「skip した op を一覧して」「マニュアルでフィードバックすべき項目を出して」等の依頼を受けた場合、Claude は **`$auto-learn --followups` を呼ぶか、内容を直接実装する** のどちらでも構わない。重要なのは **`## 学習サマリ` のみを唯一の参照点にする**こと（テーブル本文や `> ⚠` インライン注記から再構築しない — 既に集計済みのものを読むだけ）。
+When the user asks for "give me follow-ups" / "list the skipped ops" / "tell me what to feed back manually", Claude may either invoke `$auto-learn --followups` or implement the contents inline. What matters is using **`## Learning summary` as the sole reference point** (do not reconstruct from the table body or `> ⚠` inline notes — just read what was already aggregated).
 
-## Git 管理
+## Git management
 
-書き込み先は kit（submodule）内の `docs/connectors/<provider>.md` のみ。スキル自身はコミットしない（最後にユーザー判断）。コミットは kit 内で行い、workato-dev-kit に PR:
+The write target is `docs/connectors/<provider>.md` inside the kit (submodule) only. The skill itself does not commit (the user decides at the end). Commit inside the kit and PR back to workato-dev-kit:
 
 ```bash
 cd kit
@@ -386,9 +386,9 @@ git add docs/connectors/<provider>.md
 git commit -m "auto-learn: <provider> N op (M ok / K failed)"
 ```
 
-## 関連スキル / ドキュメント
+## Related skills / docs
 
-- [$sync-connectors](../sync-connectors/SKILL.md) — Triggers/Actions 一覧の収集（このスキルの上流）
-- [$learn-recipe](../learn-recipe/SKILL.md) — 既存レシピからのフィールド学習（マニュアルフィードバック手段）
-- [docs/patterns/auto-learn-ui-operations.md](../../../docs/patterns/auto-learn-ui-operations.md) — UI 操作の DOM セレクタ完全リファレンス
-- [Issue #27](https://github.com/rkawaishi/workato-dev-kit/issues/27) — 設計動機
+- [$sync-connectors](../sync-connectors/SKILL.md) — collect Triggers/Actions lists (the upstream of this skill).
+- [$learn-recipe](../learn-recipe/SKILL.md) — learn fields from an existing recipe (manual feedback path).
+- [docs/patterns/auto-learn-ui-operations.md](../../../docs/patterns/auto-learn-ui-operations.md) — full DOM-selector reference for UI operations.
+- [Issue #27](https://github.com/rkawaishi/workato-dev-kit/issues/27) — design motivation.

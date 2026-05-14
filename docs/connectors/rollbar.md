@@ -1,17 +1,17 @@
-# Rollbar コネクタ
+# Rollbar connector
 
 Provider: `rollbar`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New item | `new_item` | - |  |
 | New occurrence | `new_occurrence` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Invite user | `invite_user` | - |  |
 | Search item | `search_item` | - |  |

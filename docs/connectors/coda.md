@@ -1,14 +1,14 @@
-# Coda コネクタ
+# Coda connector
 
 Provider: `coda`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Begin page content export | `create_export` | - |  |

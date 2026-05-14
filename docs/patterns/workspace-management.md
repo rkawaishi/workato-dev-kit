@@ -1,29 +1,29 @@
-# ワークスペース管理のベストプラクティス
+# Workspace management best practices
 
-ワークスペース構成、命名規則、コネクション管理のガイドライン。
+Guidelines for workspace layout, naming conventions, and connection management.
 
-## ワークスペースの構成
+## Workspace layout
 
-### 環境の分離
+### Environment separation
 
-| 環境 | 用途 |
+| Environment | Purpose |
 |---|---|
-| Dev | 開発・実験 |
-| Test | テスト・検証 |
-| Prod | 本番運用 |
+| Dev | Development and experimentation |
+| Test | Testing and verification |
+| Prod | Production operations |
 
-SSO で認証を統合し、環境ごとにワークスペースを分離する。
+Unify authentication via SSO and split workspaces per environment.
 
-### プロジェクトの階層構造
+### Project hierarchy
 
 ```
 Workspace/
-├── Globally Shared Assets/           # 全チーム共通
-│   ├── Common - Connections/         # 共通コネクション（Slack, Email 等）
-│   ├── Common - Functions/           # 共通 Recipe Function
-│   └── Error Handler/                # 共通エラーハンドリング
+├── Globally Shared Assets/           # Common across all teams
+│   ├── Common - Connections/         # Shared connections (Slack, Email, etc.)
+│   ├── Common - Functions/           # Shared Recipe Functions
+│   └── Error Handler/                # Shared error handling
 │
-├── Team Shared Assets/               # チーム単位の共有
+├── Team Shared Assets/               # Shared within a team
 │   ├── Sales - Connections/
 │   ├── Sales - Common Functions/
 │   ├── Sales - Lead Enrichment/
@@ -34,70 +34,70 @@ Workspace/
 │   ├── Finance - Month End/
 │   └── Finance - Cost Center Sync/
 │
-└── Project Shared Assets/            # プロジェクト固有
+└── Project Shared Assets/            # Project-specific
     ├── Connections/
     ├── Recipes/
     └── Workbot/
 ```
 
-### 共有の3レベル
+### Three levels of sharing
 
-| レベル | スコープ | 例 |
+| Level | Scope | Examples |
 |---|---|---|
-| **Globally Shared** | 全チーム・全プロジェクト | 共通コネクション、エラーハンドラ、汎用 Function |
-| **Team Shared** | チーム内の全プロジェクト | チーム固有のコネクション、業務ロジック |
-| **Project** | 単一プロジェクト | プロジェクト固有のレシピ・コネクション |
+| **Globally Shared** | All teams, all projects | Shared connections, error handler, general-purpose Functions |
+| **Team Shared** | All projects within a team | Team-specific connections, business logic |
+| **Project** | A single project | Project-specific Recipes and connections |
 
-### LLM 開発でのスコープ管理
+### Scope management for LLM development
 
-`/catalog` スキルと連携して、LLM がアクセスできるプロジェクトの範囲を制御する。
-`projects/CATALOG_CONFIG.yaml` で各プロジェクトのスコープを定義:
+In coordination with the `/catalog` skill, control the set of projects an LLM can access.
+Define each project's scope in `projects/CATALOG_CONFIG.yaml`:
 
 ```yaml
 projects:
   Shared:
-    scope: global          # 全チーム公開、カタログに掲載
+    scope: global          # Open to all teams, listed in catalog
   "Finance - Common":
-    scope: team:finance    # チーム内共有、カタログに掲載
+    scope: team:finance    # Shared within team, listed in catalog
   "[App] IT Onboarding":
-    scope: private         # カタログ対象外
+    scope: private         # Excluded from the catalog
 ```
 
-| スコープ | カタログ掲載 | LLM からの参照 |
+| Scope | Catalog listing | LLM references |
 |---|---|---|
-| `global` | 全アセット | `/create-recipe` や `/design` が共有アセットとして提案 |
-| `team:<name>` | 全アセット（チーム名付き） | 同上（チーム情報付きで提案） |
-| `private` | **掲載しない** | LLM はカタログ経由ではアクセスしない |
+| `global` | All assets | `/create-recipe` and `/design` suggest as shared assets |
+| `team:<name>` | All assets (with team name) | Same as above (suggested with team info) |
+| `private` | **Not listed** | LLM does not access via the catalog |
 
-未記載のプロジェクトは `private` として扱う。
-private プロジェクト間でコードの重複が検出された場合は、共通化の **提案** のみ行い、具体的なコード内容はカタログに露出しない。
+Projects not listed are treated as `private`.
+When code duplication is detected between private projects, only **suggest** consolidation; do not expose the concrete code through the catalog.
 
-## アセット命名規則
+## Asset naming conventions
 
-### 共通ボキャブラリーを使う理由
+### Why use a shared vocabulary
 
-- アセット数が増えると検索・識別が困難になる
-- 統一された命名で管理・監査が容易になる
-- チーム間で一貫性を保てる
+- As the number of assets grows, searching and identifying them becomes difficult
+- Uniform naming makes management and auditing easier
+- Consistency is preserved across teams
 
-### 命名の構造
+### Naming structure
 
 ```
 <Project> <Asset Code> <Sequence> | <Description>
 ```
 
-| 要素 | 説明 | 例 |
+| Element | Description | Example |
 |---|---|---|
-| **Project** | プロジェクト略称 | `CBI`, `FIN`, `HR` |
-| **Asset Code** | アセット種別コード | `REC` (Recipe), `CON` (Connection), `FNC` (Function) |
-| **Sequence** | 連番 | `D01`, `D02` |
-| **Description** | 説明（自然言語） | `Customer 360 Data Hub` |
+| **Project** | Project abbreviation | `CBI`, `FIN`, `HR` |
+| **Asset Code** | Asset type code | `REC` (Recipe), `CON` (Connection), `FNC` (Function) |
+| **Sequence** | Sequential number | `D01`, `D02` |
+| **Description** | Description (natural language) | `Customer 360 Data Hub` |
 
-**例**: `CBI REC D01 | Customer 360 Data Hub`
+**Example**: `CBI REC D01 | Customer 360 Data Hub`
 
-### アセット種別コード
+### Asset type codes
 
-| コード | 種別 |
+| Code | Type |
 |---|---|
 | `REC` | Recipe |
 | `CON` | Connection |
@@ -107,56 +107,56 @@ private プロジェクト間でコードの重複が検出された場合は、
 | `MCP` | MCP Server |
 | `SKL` | Agentic Skill |
 
-### 本ツールキットでの適用
+### Application in this toolkit
 
-workato-dev-kit では以下の命名規則を使用している:
+workato-dev-kit uses the following naming conventions:
 
-| アセット | 命名パターン | 例 |
+| Asset | Naming pattern | Example |
 |---|---|---|
-| レシピ | `<説明的な名前>` | `IT onboarding: manager approval, Jira ticket, Slack notification` |
-| Recipe Function | `fnc: <説明>` / `fnc_<snake_case>` | `fnc: Get manager from Google Sheets` |
-| コネクション | `<Project> \| <Provider>` | `IT Onboarding \| Jira` |
-| Workflow App | `<App名>` | `IT Onboarding` |
-| スキルレシピ | `Skill: <説明>` | `Skill: Submit IT onboarding request` |
+| Recipe | `<descriptive name>` | `IT onboarding: manager approval, Jira ticket, Slack notification` |
+| Recipe Function | `fnc: <description>` / `fnc_<snake_case>` | `fnc: Get manager from Google Sheets` |
+| Connection | `<Project> \| <Provider>` | `IT Onboarding \| Jira` |
+| Workflow App | `<App name>` | `IT Onboarding` |
+| Skill Recipe | `Skill: <description>` | `Skill: Submit IT onboarding request` |
 
-公式の `<Project> <Code> <Seq> | <Description>` 形式を採用する場合は、プロジェクト内で統一すること。
+When adopting the official `<Project> <Code> <Seq> | <Description>` format, keep it consistent within a project.
 
-## コネクションの管理
+## Connection management
 
-### 命名規則
+### Naming convention
 
 ```
-<環境/コンテキスト> | <Provider> [- <用途>]
+<Environment/Context> | <Provider> [- <Usage>]
 ```
 
-**例**:
-- `Shared | Slack` — 全社共通
-- `IT Onboarding | Jira` — プロジェクト固有
-- `Finance | Salesforce - Sandbox` — チーム固有 + 環境指定
+**Examples**:
+- `Shared | Slack` - company-wide shared
+- `IT Onboarding | Jira` - project-specific
+- `Finance | Salesforce - Sandbox` - team-specific + environment
 
-### コネクション共有の判断
+### Deciding whether to share a connection
 
-| 判断基準 | 共有 | 個別 |
+| Criterion | Shared | Individual |
 |---|---|---|
-| 認証スコープ | 全社共通の権限で十分 | プロジェクト固有の権限が必要 |
-| 環境 | 同じ本番環境を参照 | Sandbox / テスト環境を使用 |
-| リスク | 変更の影響範囲を許容 | 他プロジェクトへの影響を避けたい |
+| Authentication scope | Company-wide permissions are sufficient | Project-specific permissions required |
+| Environment | References the same production environment | Uses Sandbox / test environment |
+| Risk | Change impact is acceptable | Want to avoid impact on other projects |
 
-### 環境とコネクション
+### Environments and connections
 
-Workato はワークスペース単位で Dev / Test / Prod 環境が分離されている。コネクション名に環境名を付ける必要はなく、各ワークスペースで同じ名前のコネクションを異なる認証情報で設定する。
+Workato separates Dev / Test / Prod environments per workspace. You do not need to include the environment name in the connection name; in each workspace, configure the same connection name with different credentials.
 
-接続先サービス側に Sandbox 環境がある場合（例: Salesforce Sandbox）は、用途を名前で区別する:
+When the target service itself has a Sandbox environment (e.g. Salesforce Sandbox), distinguish usage in the name:
 
 ```
-IT Onboarding | Salesforce           ← 本番
-IT Onboarding | Salesforce - Sandbox ← テスト用
+IT Onboarding | Salesforce           <- production
+IT Onboarding | Salesforce - Sandbox <- for testing
 ```
 
-## エラーハンドリング
+## Error handling
 
-Globally Shared に共通のエラーハンドラを配置し、全プロジェクトから参照する:
+Place a shared error handler in Globally Shared and reference it from every project:
 
-- **Error Handler** プロジェクト内に共通エラー通知レシピを配置
-- 各レシピの Monitor/Error ブロックからエラーハンドラを呼び出す
-- エラー通知先（Slack チャンネル、メール）を一元管理
+- Place a shared error notification Recipe inside the **Error Handler** project
+- Call the error handler from each Recipe's Monitor / Error block
+- Centrally manage the error notification target (Slack channel, email)

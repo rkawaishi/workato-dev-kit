@@ -1,16 +1,16 @@
-# Workato EDI コネクタ
+# Workato EDI connector
 
 Provider: `workato_edi`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New transactions in bucket | `new_transactions_in_polling_bucket` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Approve delivery | `approve_delivery` | - |  [deprecated] |

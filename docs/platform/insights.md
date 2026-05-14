@@ -1,48 +1,48 @@
 # Insights
 
-公式: https://docs.workato.com/en/insights.html
+Official: https://docs.workato.com/en/insights.html
 
-## 概要
+## Overview
 
-Workato 内蔵のデータ可視化・分析エンジン。ノーコードで自動化データの分析レポートを作成できる。ETL/ELT インフラ不要。
+Workato's built-in data visualization and analytics engine. Build analytical reports of automation data without code. No ETL / ELT infrastructure required.
 
-## コアコンポーネント
+## Core components
 
-| コンポーネント | 説明 |
+| Component | Description |
 |---|---|
-| **Data sources** | データの取得元 |
-| **Query components** | データの変換・準備ツール |
-| **Chart components** | データを可視化する要素 |
-| **Dashboards** | レポートと可視化のコレクション |
+| **Data sources** | Where data is retrieved from |
+| **Query components** | Tools to transform and prepare data |
+| **Chart components** | Elements that visualize data |
+| **Dashboards** | Collections of reports and visualizations |
 
-## データソース
+## Data sources
 
-### 標準ソース
-- プロジェクト、レシピ、ジョブ履歴、Workflow Apps メタデータ
-- 詳細なジョブ実行データ（365日間保持）
+### Standard sources
+- Project, recipe, job history, and Workflow Apps metadata
+- Detailed job execution data (retained for 365 days)
 
-### カスタムソース
-- ジョブレポート内の計算カラム
-- Data Tables の補足情報
+### Custom sources
+- Calculated columns inside job reports
+- Supplementary information from Data Tables
 
-## チャート種別（6種）
+## Chart types (6)
 
-| 種別 | 説明 |
+| Type | Description |
 |---|---|
-| Table | テーブル形式（デフォルト） |
-| Line | 折れ線グラフ |
-| Bar | 棒グラフ |
-| Area | エリアグラフ |
-| Pie | 円グラフ |
-| Number | 数値表示 |
+| Table | Tabular format (default) |
+| Line | Line chart |
+| Bar | Bar chart |
+| Area | Area chart |
+| Pie | Pie chart |
+| Number | Numeric display |
 
-## 主な用途
+## Primary use cases
 
-- **利用状況分析**: タスク消費量、エラー率、実行時間
-- **自動化の効果測定**: ROI 計算、時間/コスト削減の追跡
-- **アプリ分析**: ユーザー処理時間、承認ワークフロー
-- **パフォーマンス分析**: プロセス指標、スループット
+- **Usage analysis**: Task consumption, error rate, execution time
+- **Automation impact measurement**: ROI calculation, time / cost savings tracking
+- **App analytics**: User processing time, approval workflows
+- **Performance analysis**: Process metrics, throughput
 
-## レシピとの関連
+## Relationship to recipes
 
-レシピの `job_report_schema` / `job_report_config` で定義したカスタムカラムが Insights のデータソースとして利用可能。
+Custom columns defined in a recipe's `job_report_schema` / `job_report_config` are available as Insights data sources.

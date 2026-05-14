@@ -1,10 +1,10 @@
-# Basecamp 2 コネクタ
+# Basecamp 2 connector
 
 Provider: `basecamp`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Access granted to calendar | `calendar_access_granted` | - |  |
 | New calendar event | `new_calendar_event` | - |  |
@@ -18,7 +18,7 @@ Provider: `basecamp`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create calendar event | `create_calendar_event` | - |  |

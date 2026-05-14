@@ -1,11 +1,11 @@
-# MCP (Model Context Protocol) コネクタ
+# MCP (Model Context Protocol) connector
 
 Provider: `mcp`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-なし
+None

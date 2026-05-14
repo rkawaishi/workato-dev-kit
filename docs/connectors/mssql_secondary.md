@@ -1,10 +1,10 @@
-# SQL Server secondary コネクタ
+# SQL Server secondary connector
 
 Provider: `mssql_secondary`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New row | `new_row_v2` | - |  |
 | New rows | `new_rows_batch` | Yes |  |
@@ -16,7 +16,7 @@ Provider: `mssql_secondary`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Bulk load from an on-prem file | `bulk_load` | - |  |
 | Delete rows | `delete_rows` | Yes |  |

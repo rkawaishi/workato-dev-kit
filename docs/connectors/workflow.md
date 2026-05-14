@@ -1,13 +1,13 @@
-# People Task by Workato コネクタ
+# People Task by Workato connector
 
 Provider: `workflow`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Request task approval | `GetApproval` | - |  |

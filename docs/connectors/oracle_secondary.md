@@ -1,10 +1,10 @@
-# Oracle secondary コネクタ
+# Oracle secondary connector
 
 Provider: `oracle_secondary`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New row | `new_row` | - |  |
 | New rows | `new_rows_batch` | Yes |  |
@@ -13,7 +13,7 @@ Provider: `oracle_secondary`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Delete rows | `delete_rows` | Yes |  |
 | Execute stored procedure | `execute_procedure` | - |  |

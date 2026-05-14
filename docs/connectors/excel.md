@@ -1,14 +1,14 @@
-# Excel コネクタ
+# Excel connector
 
 Provider: `excel`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Add rows in batch | `add_rows_batch` | Yes |  |

@@ -1,10 +1,10 @@
-# Wrike secondary コネクタ
+# Wrike secondary connector
 
 Provider: `wrike_secondary`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New comment | `new_comment` | - |  [deprecated] |
 | New comment | `new_comment_v2` | - |  |
@@ -21,7 +21,7 @@ Provider: `wrike_secondary`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Cancel approval | `cancel_approval` | - |  |

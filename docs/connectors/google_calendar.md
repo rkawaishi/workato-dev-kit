@@ -1,10 +1,10 @@
-# Google Calendar コネクタ
+# Google Calendar connector
 
 Provider: `google_calendar`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Event end | `event_end` | - |  |
 | Event start | `event_start` | - |  |
@@ -13,7 +13,7 @@ Provider: `google_calendar`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Add attendees to an event | `add_attendee_to_an_event` | Yes |  |
@@ -30,21 +30,21 @@ Provider: `google_calendar`
 | Update event | `update_event` | - |  |
 | Update task | `update_task` | - |  |
 
-## フィールド詳細
+## Field details
 
 ### event_end (Event end)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Calendar |  | Yes | Yes | Select a calendar to monitor for event end. |
 | Search term | text | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Calendar ID | text | — |
 | Kind | text | — |
@@ -125,11 +125,11 @@ Provider: `google_calendar`
 
 ### event_start (Event start)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Calendar |  | Yes | Yes | Select a calendar to monitor for event start. |
 | Time before unit |  | Yes | Yes | Select a time unit for Time before event start. |
@@ -137,7 +137,7 @@ Provider: `google_calendar`
 | Search term | text | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Calendar ID | text | — |
 | Kind | text | — |
@@ -218,17 +218,17 @@ Provider: `google_calendar`
 
 ### new_event (New event)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Calendar |  | Yes | Yes | Select a calendar to monitor for events |
 | Include deleted events? | text | - | Yes | When set to true, job will be triggered for deleted events also. Defaults to false |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Calendar ID | text | — |
 | Kind | text | — |
@@ -289,17 +289,17 @@ Provider: `google_calendar`
 
 ### updated_event (New/updated event)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Calendar |  | Yes | Yes | Select a calendar to monitor for events |
 | Include deleted events? | text | - | Yes | When set to true, job will be triggered for deleted events also. Defaults to false |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Calendar ID | text | — |
 | Kind | text | — |
@@ -360,11 +360,11 @@ Provider: `google_calendar`
 
 ### add_attendee_to_an_event (Add attendees to an event)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Calendar |  | Yes | Yes | Select calendar that event belongs to |
 | Event ID | text | Yes | Yes | Obtain event ID from the Search events action. You can also obtain the event ID from your event URL. |
@@ -375,7 +375,7 @@ Provider: `google_calendar`
 | Response status | text | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Kind | text | — |
 | Etag | text | — |
@@ -432,11 +432,11 @@ Provider: `google_calendar`
 
 ### create_allday_event (Create all day event)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Calendar |  | Yes | Yes | Select the calendar to create event in |
 | Start date | date | Yes | Yes | Enter event start date |
@@ -455,7 +455,7 @@ Provider: `google_calendar`
 | Show me as | text | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Kind | text | — |
 | Etag | text | — |
@@ -507,18 +507,18 @@ Provider: `google_calendar`
 
 ### create_calendar (Create calendar)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Calendar name | text | Yes | Yes | — |
 | Description | text | - | No | — |
 | Time zone | text | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Kind | text | — |
 | Etag | text | — |
@@ -533,11 +533,11 @@ Provider: `google_calendar`
 
 ### create_event (Create event)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Calendar |  | Yes | Yes | Select the calendar to create event in |
 | Start date time | date-time | Yes | Yes | Event start date and time |
@@ -556,7 +556,7 @@ Provider: `google_calendar`
 | Show me as | text | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Kind | text | — |
 | Etag | text | — |
@@ -608,11 +608,11 @@ Provider: `google_calendar`
 
 ### create_task (Create task)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Tasklist |  | Yes | Yes | — |
 | Task name | text | Yes | Yes | — |
@@ -623,7 +623,7 @@ Provider: `google_calendar`
 | Hidden | text | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | ID | text | — |
 | Etag | text | — |
@@ -647,11 +647,11 @@ Provider: `google_calendar`
 
 ### delete_attendees_from_an_event (Delete attendees from an event)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Calendar |  | Yes | Yes | Select calendar that event belongs to |
 | Event ID | text | Yes | Yes | Obtain event ID from the Search events action. You can also obtain the event ID from your event URL. |
@@ -659,7 +659,7 @@ Provider: `google_calendar`
 | Send notifications? | text | - | Yes | If true, will notify all attendees about changed event |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Kind | text | — |
 | Etag | text | — |
@@ -719,13 +719,13 @@ Provider: `google_calendar`
 
 ### delete_event (Delete event)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: 出力スキーマなし (fire-and-forget action)
+> ⚠ Partial learning: no output schema (fire-and-forget action)
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Calendar |  | Yes | Yes | Select calendar that event belongs to |
 | Event ID | text | Yes | Yes | Obtain event ID from the Search events action. You can also obtain the event ID from your event URL. |
@@ -733,16 +733,16 @@ Provider: `google_calendar`
 
 ### get_calendar_by_id (Get calendar by ID)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Calendar ID | text | Yes | Yes | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Kind | text | — |
 | Etag | text | — |
@@ -757,17 +757,17 @@ Provider: `google_calendar`
 
 ### get_event_by_id (Get event by ID)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Calendar ID | text | Yes | Yes | ID of calendar that event belongs to. Click calendar settings in the drop down menu next to the specific calendar. Get calendar ID from calendar address field. |
 | Event ID | text | Yes | Yes | Obtain event ID from the Search events action. You can also obtain the event ID from your event URL. |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Kind | text | — |
 | Etag | text | — |
@@ -827,18 +827,18 @@ Provider: `google_calendar`
 
 ### list_calendars_public (List calendars)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Minimum access role | text | - | No | — |
 | Show deleted | text | - | No | — |
 | Show hidden | text | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Items | array | — |
 | Kind | text | — |
@@ -861,11 +861,11 @@ Provider: `google_calendar`
 
 ### search_events (Search events)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Calendar ID | text | Yes | Yes | The calendar to search for events in. Click calendar settings in the drop down menu next to the specific calendar. Get calendar ID from calendar address field. |
 | Search terms | text | - | Yes | Input terms in the event name or description. Partial matches are returned. |
@@ -874,7 +874,7 @@ Provider: `google_calendar`
 | Date to | date-time | - | Yes | Fetch events ending on or before this datetime |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Events | array | — |
 | Kind | text | — |
@@ -910,11 +910,11 @@ Provider: `google_calendar`
 
 ### update_event (Update event)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Event ID | text | Yes | Yes | Obtain event ID from the Search events action. You can also obtain the event ID from your event URL. |
 | Start date time | date-time | - | Yes | Event start date and time |
@@ -933,7 +933,7 @@ Provider: `google_calendar`
 | Visibility | text | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Kind | text | — |
 | Etag | text | — |
@@ -993,11 +993,11 @@ Provider: `google_calendar`
 
 ### update_task (Update task)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Tasklist |  | Yes | Yes | — |
 | Task ID | text | Yes | Yes | — |
@@ -1008,7 +1008,7 @@ Provider: `google_calendar`
 | Hidden | text | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | ID | text | — |
 | Etag | text | — |
@@ -1032,25 +1032,25 @@ Provider: `google_calendar`
 
 ---
 
-## 学習サマリ
+## Learning summary
 
-最終実行: 2026-04-27 by /auto-learn
-- 試行: 17 op
-- 完全成功: 16
-- 部分学習: 1
-- 学習失敗: 0
-- スキップ:
+Last run: 2026-04-27 by `/auto-learn`
+- Attempted: 17 op
+- Fully learned: 16
+- Partially learned: 1
+- Failed: 0
+- Skipped:
   - Deprecated: 0
   - adhoc: 1 — `__adhoc_http_action`
-  - 既学習: 0
+  - Already learned: 0
 
-### 要 follow-up
+### Needs follow-up
 
-- **Fire-and-forget (UI 仕様・追加学習不要)**
-  - `delete_event` — 削除アクション。output_group_not_found
+- **Fire-and-forget (UI spec, no additional learning required)**
+  - `delete_event` — delete action. output_group_not_found
 
-### 構造的注記（参考）
+### Structural notes (for reference)
 
-- 重複ラベル `Email`: `Creator` / `Organizer` / `Attendees[]` 配下で出現。データツリー paddingLeft=0 でフラット表示
-- `event_start` / `event_end` トリガー: `Conference data` / `Focus time properties` / `Out of office properties` / `Working location properties` を含む 76 フィールドが output に出る（`new_event` / `updated_event` の 56 フィールドより多い）
-- 内部 JSON キーと UI label のマッピングは UI 観察では取れない（`/learn-recipe` で補完）
+- Duplicate label `Email`: appears under `Creator` / `Organizer` / `Attendees[]`. The data tree renders flat with paddingLeft=0.
+- `event_start` / `event_end` triggers: 76 fields appear in the output, including `Conference data` / `Focus time properties` / `Out of office properties` / `Working location properties` (more than the 56 fields of `new_event` / `updated_event`).
+- The mapping between internal JSON keys and UI labels cannot be obtained via UI observation (supplement via `/learn-recipe`).
