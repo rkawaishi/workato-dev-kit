@@ -699,7 +699,7 @@ Learned from: `/auto-learn` (UI observation) — 2026-04-27
 | changelog.histories | array | Histories |
 | fields | object | Fields |
 
-> The structure of the issue body fields (`fields.*`) matches `new_issue` / `updated_issue_webhook`. On a Japanese tenant the labels surface in Japanese (Summary, Assignee, Due date, etc.).
+> The structure of the issue body fields (`fields.*`) matches `new_issue` / `updated_issue_webhook`. On a Japanese tenant the labels surface in Japanese (e.g. `要約` for Summary, `担当者` for Assignee, `期限` for Due date).
 
 ### updated_issue_batch (Updated issue — Batch)
 
@@ -937,7 +937,7 @@ Learned from: `/auto-learn` (UI observation) — 2026-04-27
 | Output fields | toggle-field | - | Yes | Select the fields you wish to use in your recipe. All fields will be returned if left blank. |
 
 #### Output fields
-The structure matches the output of the `new_issue` trigger (including `fields.*`); no significant differences. On a Japanese tenant the labels surface in Japanese (Summary, Assignee, etc.).
+The structure matches the output of the `new_issue` trigger (including `fields.*`); no significant differences. On a Japanese tenant the labels surface in Japanese (e.g. `要約` for Summary, `担当者` for Assignee).
 
 | Field | Type | Description |
 |---|---|---|
@@ -1217,7 +1217,7 @@ Learned from: `/auto-learn` (UI observation) — 2026-04-27
 ## Notes
 - Real-time triggers require webhook registration on the Jira side
 - `search_issues` takes search fields via the UI (use `Search issues by JQL` to enter JQL directly)
-- On a Japanese tenant the data tree labels appear in Japanese (Summary, Assignee, Due date, etc.). Recipe datapill references must use the JSON keys (`fields.summary`, `fields.assignee`, etc.), so consult the English key reference table in the `new_issue` section.
+- On a Japanese tenant the data tree labels appear in Japanese (e.g. `要約`, `担当者`, `期限`). Recipe datapill references must use the JSON keys (`fields.summary`, `fields.assignee`, etc.), so consult the English key reference table in the `new_issue` section.
 - Custom field inputs for `update_issue` / `create_issue` are added dynamically when `Sample project issue type` is selected. Because they vary per project, supplement them from specific recipes via `/learn-recipe`.
 
 ---
