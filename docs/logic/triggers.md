@@ -1,67 +1,67 @@
-# トリガー
+# Triggers
 
-公式: https://docs.workato.com/en/recipes/triggers.html
+Official: https://docs.workato.com/en/recipes/triggers.html
 
-## トリガーとは
+## What is a trigger
 
-レシピの実行を開始するイベント定義。全レシピに1つ必要。
+The event definition that starts recipe execution. Every recipe requires exactly one.
 
-## トリガーの分類
+## Trigger classification
 
-### メカニズム（検出方法）
+### Mechanism (detection method)
 
-| 種別 | 動作 | 特徴 |
+| Kind | Behaviour | Characteristics |
 |---|---|---|
-| **Polling** | 定期的にデータをチェック（最小5分間隔） | 最も一般的。停止後も最終位置から再開 |
-| **Real-time** | Webhook で即時通知 | 多くはバックアップポーリング（1時間ごと）付き |
-| **Scheduled** | 指定日時・間隔で実行 | cron 式対応（最小5分間隔）。再処理の可能性あり |
-| **CDC** | データベースの変更をリアルタイム監視 | INSERT/UPDATE/DELETE を検出 |
+| **Polling** | Checks data on a schedule (minimum 5-minute interval) | Most common. Resumes from the last position after a stop |
+| **Real-time** | Immediate notification via webhook | Many include a backup poll (hourly) |
+| **Scheduled** | Runs on a specified date/time or interval | Supports cron expressions (minimum 5-minute interval). May reprocess |
+| **CDC** | Real-time monitoring of database changes | Detects INSERT/UPDATE/DELETE |
 
-### ディスパッチ（イベント配信方法）
+### Dispatch (how events are delivered)
 
-| 種別 | 動作 | 用途 |
+| Kind | Behaviour | Use |
 |---|---|---|
-| **Single** | 各イベントを個別ジョブとして処理 | リアルタイム同期。最も一般的 |
-| **Batch** | 複数イベントを一括取得（バッチサイズ設定可） | 大量データの効率的処理 |
-| **Bulk** | CSV ストリーミングで大量転送（上限なし） | エクスポート、日次大量同期。テストモード不可 |
+| **Single** | Each event is processed as an individual job | Real-time sync. Most common |
+| **Batch** | Fetches multiple events together (configurable batch size) | Efficient processing of large data volumes |
+| **Bulk** | Bulk transfer via CSV streaming (no upper limit) | Exports, daily large-scale sync. Test mode not supported |
 
-## 主要な動作保証
+## Key guarantees
 
-- **順序保証**: イベントは時系列順に配信（最古から処理）
-- **耐久カーソル**: 停止後も最終処理位置から再開
-- **重複防止**: 同一イベントの二重処理を防止
-- **配信保証**: ポーリングトリガーはダウンタイム中のイベントも確実に回復
+- **Order preservation**: events are delivered in chronological order (oldest first)
+- **Durable cursor**: resumes from the last processed position after a stop
+- **Deduplication**: prevents the same event from being processed twice
+- **Delivery guarantee**: polling triggers reliably recover events that occurred during downtime
 
-## Since/From パラメータ
+## Since/From parameter
 
-「レシピ開始時にいつからのイベントを取得するか」を指定するフィールド。
+Field that specifies "from when to fetch events when the recipe starts."
 
-- レシピ開始前のイベントをキャプチャ可能
-- **一度設定すると変更不可**（レシピ実行後）
-- デフォルト: レシピ開始時刻、1時間前、または1日前（トリガーにより異なる）
-- ユーザーのタイムゾーンが適用
+- Can capture events from before the recipe started
+- **Cannot be changed once set** (after the recipe has run)
+- Default: recipe start time, 1 hour ago, or 1 day ago (depends on the trigger)
+- The user's time zone applies
 
-## トリガー条件
+## Trigger conditions
 
-イベント取得後に追加フィルタリングを適用する。
+Apply additional filtering after events are fetched.
 
-### 重要な動作
+### Important behaviour
 
-- イベント取得**後**に評価（取得前ではない）
-- フィールドの変更ではなく、取得時点の現在値をチェック
-- **大文字小文字区別**
-- **Batch/Bulk トリガーでは非推奨**（最初のレコードのみ評価）
-  - 代わりにアプリ側のフィルタリング（SOQL WHERE 句等）を使用
+- Evaluated **after** events are fetched (not before)
+- Checks the current value at fetch time, not a field change
+- **Case-sensitive**
+- **Not recommended for Batch/Bulk triggers** (only the first record is evaluated)
+  - Use app-side filtering (SOQL WHERE clauses, etc.) instead
 
-### 設定方法
+### How to configure
 
-1. "Set trigger condition" をトグル
-2. Recipe data メニューから datapill をマッピング
-3. ドロップダウンから条件タイプを選択
-4. Value フィールドに値を入力
-5. AND/OR で複数条件を結合
+1. Toggle "Set trigger condition"
+2. Map a datapill from the Recipe data menu
+3. Pick a condition type from the dropdown
+4. Enter the value in the Value field
+5. Combine multiple conditions with AND/OR
 
-### JSON 構造（レシピ内）
+### JSON structure (inside the recipe)
 
 ```json
 "filter": {
@@ -69,7 +69,7 @@
     {
       "operand": "contains",
       "lhs": "#{_dp('...')}",
-      "rhs": "値",
+      "rhs": "value",
       "uuid": "..."
     }
   ],
@@ -78,4 +78,4 @@
 }
 ```
 
-条件演算子の全一覧は `@docs/logic/if-conditions.md` を参照。
+See `@docs/logic/if-conditions.md` for the full list of condition operators.

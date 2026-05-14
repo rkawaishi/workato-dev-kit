@@ -1,75 +1,75 @@
-# エラーハンドリング
+# Error handling
 
-公式: https://docs.workato.com/en/recipes/steps.html
+Official: https://docs.workato.com/en/recipes/steps.html
 
-## Handle Errors ステップ
+## Handle Errors step
 
-2つのブロックで構成:
+Consists of two blocks:
 
 ```
 Handle errors
-  ├── Monitor block — 監視対象のアクション群
+  ├── Monitor block — actions to monitor
   │     ├── action 1
   │     ├── action 2
   │     └── ...
-  └── Error block — エラー時の処理
-        ├── retry 設定（回数 + 間隔）
-        └── リカバリアクション
+  └── Error block — actions on error
+        ├── retry settings (count + interval)
+        └── recovery actions
 ```
 
-### 動作
+### Behaviour
 
-1. **Monitor block** 内の全アクションが成功 → Error block はスキップ
-2. Monitor block 内でエラー発生 → Error block を実行
-3. リトライ設定がある場合 → 指定回数・間隔でリトライ
-4. 全リトライ失敗 → Error block 内の残りステップを実行
+1. All actions in the **Monitor block** succeed → Error block is skipped
+2. An error occurs inside the Monitor block → Error block executes
+3. If retry is configured → retry the specified number of times at the specified interval
+4. All retries fail → remaining steps in the Error block execute
 
-### リトライ設定
+### Retry settings
 
-- リトライ回数
-- リトライ間隔
-- 条件付きリトライ（条件に基づいてリトライするかどうかを判定）
+- Retry count
+- Retry interval
+- Conditional retry (decide whether to retry based on a condition)
 
-## Stop Job ステップ
+## Stop Job step
 
-レシピの実行を途中で停止する。
+Stops recipe execution partway through.
 
-- **Failed** としてマーク: エラーメッセージ付きで失敗終了
-- **Successful** としてマーク: 正常終了扱い
+- Mark as **Failed**: ends as a failure with an error message
+- Mark as **Successful**: ends as a successful run
 
-### 用途
+### Use cases
 
-- ビジネスロジック上の検証失敗時に早期終了
-- 必要なデータが欠損している場合の防御的終了
+- Early termination when business-logic validation fails
+- Defensive termination when required data is missing
 
-## Recipe Functions（レシピ関数）
+## Recipe Functions
 
-別のレシピを呼び出してロジックを再利用する。
+Call another recipe to reuse logic.
 
-公式: https://docs.workato.com/en/connectors/recipe-functions.html
+Official: https://docs.workato.com/en/connectors/recipe-functions.html
 
-- レシピ間でロジックを共有
-- 入力パラメータを渡し、結果を受け取る
-- メンテナンスの一元化
+- Share logic across recipes
+- Pass input parameters and receive a result
+- Centralise maintenance
 
-### 作成手順
+### How to create
 
-1. 新規レシピを作成し、トリガーに「Recipe function」を選択
-2. Input Schema（JSON）を定義 — 呼出し元から受け取るパラメータ
-3. Response Schema（JSON）を定義 — 呼出し元に返すデータ
-4. レシピ内にロジックを構築
+1. Create a new recipe and choose "Recipe function" as the trigger
+2. Define the Input Schema (JSON) — parameters received from the caller
+3. Define the Response Schema (JSON) — data returned to the caller
+4. Build the logic inside the recipe
 
-### 呼び出し方
+### How to call
 
-1. 呼出し元レシピで「Call recipe」アクションを追加
-2. 対象の Recipe function を選択
-3. Input Schema のフィールドに datapill をマッピング
-4. Response のデータピルが後続ステップで利用可能に
+1. Add a "Call recipe" action in the caller recipe
+2. Select the target Recipe function
+3. Map datapills to the Input Schema fields
+4. Response datapills become available to subsequent steps
 
-> **注意**: 旧 Callable recipes コネクタは非推奨。新規作成は Recipe functions コネクタを使用。
+> **Note**: the legacy Callable recipes connector is deprecated. Use the Recipe functions connector for new work.
 
-## `try` キーワード（JSON 表現）
+## `try` keyword (JSON representation)
 
-レシピ JSON では `keyword: "try"` がエラーハンドリングブロック（try/catch パターン）を示す。UI の Monitor/Error ブロックに対応する JSON 表現。
+In recipe JSON, `keyword: "try"` denotes an error handling block (try/catch pattern). It is the JSON representation of the UI's Monitor/Error blocks.
 
-- try ブロック内のステップでエラーが発生した場合、catch ブロック（エラーハンドラー）に制御が移る
+- When a step inside the try block raises an error, control transfers to the catch block (error handler)

@@ -1,40 +1,40 @@
 # Environment Properties
 
-公式: https://docs.workato.com/en/features/account-properties.html
+Official: https://docs.workato.com/en/features/account-properties.html
 
-## 概要
+## Overview
 
-ワークスペース全体で使えるレシピの設定パラメータ（名前-値ペア）。環境変数や設定変数とも呼ばれる。複数レシピで共通の設定値を一元管理できる。
+Recipe configuration parameters (name-value pairs) usable across the entire workspace. Also called environment variables or configuration variables. Centralizes shared configuration values across multiple recipes.
 
-## 制限
+## Limits
 
-| 項目 | 上限 |
+| Item | Limit |
 |---|---|
-| プロパティ数/環境 | 1,000 |
-| プロパティ名 | 100 文字 |
-| プロパティ値 | 1,024 文字 |
+| Properties per environment | 1,000 |
+| Property name | 100 characters |
+| Property value | 1,024 characters |
 
-## 設定方法
+## Configuration
 
-Tools > Environment properties から名前-値ペアを作成。
+Create name-value pairs from Tools > Environment properties.
 
-## レシピでの使用
+## Use in recipes
 
-全レシピの **Properties** データツリーに自動表示される。レシピ実行時に動的に値を取得。
+Automatically appears in every recipe's **Properties** data tree. Values are retrieved dynamically at recipe runtime.
 
-## 重要な動作
+## Important behavior
 
-> **ジョブ実行中にプロパティ値の変更は反映されない。**
-> 値はジョブ開始時にフリーズされる。動的な値の検出が必要な場合は Lookup Tables を使用。
+> **Property value changes during a running job are not reflected.**
+> Values are frozen at job start. Use Lookup Tables when dynamic value detection is required.
 
-## 用途例
+## Example use cases
 
-- 通知先メールアドレスの一元管理
-- 環境ごとの API エンドポイント URL
-- フラグによる機能の有効/無効切り替え
-- 外部サービスのテナント ID
+- Centralized management of notification email addresses
+- API endpoint URLs per environment
+- Flag-based feature enable / disable
+- Tenant IDs for external services
 
-## Platform CLI での管理
+## Management via the Platform CLI
 
 ```bash
 workato properties list

@@ -1,157 +1,157 @@
-# デプロイメントガイド
+# Deployment guide
 
-レシピや Workflow App を作成してから Workato 上で動作させるまでの手順。
-JSON 生成後にユーザーが UI で行うべき操作を段階的にガイドする。
+Procedures for taking a Recipe or Workflow App from creation to running on Workato.
+This guides the user step by step through the UI actions they need to perform after JSON generation.
 
-## レシピのデプロイフロー
+## Recipe deployment flow
 
-### Step 1: コネクション先行 push（新規コネクションがある場合のみ）
+### Step 1: Push connections first (only when there are new connections)
 
-新しい `.connection.json` を作成した場合は、コネクションだけを先に push して認証を済ませる。
+When you create a new `.connection.json`, push the connection alone first and complete authentication.
 
 ```
-ユーザーへの案内:
+Message to user:
 ---
-新しいコネクションを作成しました:
+A new connection has been created:
 - <connection_name> (<provider>)
 
-Workato にコネクションを push します。push 後に UI で認証を設定してください:
-1. Workato UI でプロジェクトを開く
-2. コネクション <connection_name> を開く
-3. 認証情報を入力して「Connect」をクリック
-4. 接続成功を確認
+Pushing the connection to Workato. After the push, configure authentication in the UI:
+1. Open the project in the Workato UI
+2. Open the connection <connection_name>
+3. Enter the credentials and click "Connect"
+4. Confirm a successful connection
 
-認証が完了したら教えてください。レシピを push します。
+Let me know once authentication is complete. I will then push the Recipe.
 ---
 ```
 
-**なぜ先にコネクション認証が必要か:**
-- 未認証コネクションでレシピを push すると、UI でフィールド候補が表示されない
-- `extended_output_schema` が展開されない
-- テスト実行でエラーになる
+**Why connection authentication must come first:**
+- If you push a Recipe with an unauthenticated connection, field suggestions do not appear in the UI
+- `extended_output_schema` is not expanded
+- Test runs fail with errors
 
-### Step 2: レシピを push
+### Step 2: Push the Recipe
 
-コネクション認証が完了した後（または既存コネクションを使う場合）、レシピを push する。
+After connection authentication is complete (or when using an existing connection), push the Recipe.
 
 ```bash
 workato push
 ```
 
-### Step 3: UI でのレシピ確認・調整
+### Step 3: Verify and adjust the Recipe in the UI
 
-push 後、Workato UI でレシピを開いて以下を確認するようユーザーに案内する。
+After the push, instruct the user to open the Recipe in the Workato UI and verify the following.
 
 ```
-ユーザーへの案内:
+Message to user:
 ---
-レシピを push しました。Workato UI で以下を確認してください:
+The Recipe has been pushed. Please verify the following in the Workato UI:
 
-1. **レシピ構造**: 各ステップが正しく表示されるか
-2. **コネクション選択**: 各ステップで正しいコネクションが選ばれているか
-3. **フィールドマッピング**: input フィールドの datapill 参照が正しいか
-   - ⚠️ フィールドが空になっている場合は UI で再設定してください
-4. **トリガー設定**: トリガー固有の設定（テーブル選択、イベントタイプ等）
+1. **Recipe structure**: Each step is displayed correctly
+2. **Connection selection**: The correct connection is selected for each step
+3. **Field mapping**: datapill references in input fields are correct
+   - Warning: if a field is empty, reconfigure it in the UI
+4. **Trigger configuration**: trigger-specific settings (table selection, event type, etc.)
 
-調整が必要な場合は、UI で編集後に教えてください。pull して学習します。
+If adjustments are needed, edit in the UI and let me know. I will pull and learn from it.
 ---
 ```
 
-### Step 4: pull → 学習
+### Step 4: Pull and learn
 
-UI で調整を行った場合:
+When the user has made adjustments in the UI:
 ```bash
 echo "y" | workato pull
 ```
 
-pull 後に `/learn-recipe` でフィールド情報を抽出・蓄積する。
+After the pull, run `/learn-recipe` to extract and accumulate field information.
 
-### Step 5: テスト実行
+### Step 5: Test run
 
 ```
-ユーザーへの案内:
+Message to user:
 ---
-レシピをテスト実行してください:
-1. Workato UI でレシピの「Test」ボタンをクリック
-2. テストデータを入力して実行
-3. ジョブの結果を確認
+Please test-run the Recipe:
+1. Click the "Test" button on the Recipe in the Workato UI
+2. Enter test data and execute
+3. Review the job results
 
-エラーが出た場合は教えてください。エラー内容を分析して修正します。
+If errors occur, let me know. I will analyze and fix them.
 ---
 ```
 
-CLI でテスト結果を確認する場合:
+To check test results from the CLI:
 ```bash
 workato recipes start --id <recipe-id>
 python3 scripts/workato-api.py jobs list --recipe-id <recipe-id> --status failed
 python3 scripts/workato-api.py jobs get --recipe-id <recipe-id> --job-id <job-id>
 ```
 
-## Workflow App のデプロイフロー
+## Workflow App deployment flow
 
-### Step 1: Workflow App の有効化（UI、1回のみ）
-
-```
-ユーザーへの案内:
----
-Workato UI で以下を実行してください:
-1. プロジェクト内で Workflow App を有効化
-
-完了したら教えてください。Data Table、ステージ、ページ、レシピを push します。
----
-```
-
-### Step 2: 全アセットを push
-
-Data Table、lcap_app、ページ、レシピを一括 push。
-新規コネクションがある場合はレシピのデプロイフロー Step 1 と同様にコネクション先行 push。
-
-### Step 3: UI 確認
+### Step 1: Enable the Workflow App (UI, one-time)
 
 ```
-ユーザーへの案内:
+Message to user:
 ---
-push 完了。Workato UI で以下を確認してください:
-1. Workflow App にステージ・ページが反映されているか
-2. 送信フォームのフィールドが正しく表示されるか
-3. レビューページで承認/却下ができるか
-4. コネクション認証（外部サービスを使う場合）
-5. レシピの各ステップのフィールドマッピング
+Please perform the following in the Workato UI:
+1. Enable the Workflow App inside the project
 
-テスト: 送信フォームからリクエストを送信して、承認フロー全体を通してテストしてください。
+Let me know once complete. I will then push the Data Table, stages, pages, and Recipes.
 ---
 ```
 
-## MCP サーバーのデプロイフロー
+### Step 2: Push all assets
 
-### Step 1: push
+Push the Data Table, lcap_app, pages, and Recipes together.
+If there are new connections, push the connection first as in Step 1 of the Recipe deployment flow.
 
-MCP サーバー + スキル + スキルレシピを push。
-
-### Step 2: MCP サーバーの有効化
+### Step 3: UI verification
 
 ```
-ユーザーへの案内:
+Message to user:
 ---
-push 完了。Workato UI で MCP サーバーを確認してください:
-1. MCP サーバーの設定画面を開く
-2. ツール一覧にスキルが表示されているか確認
-3. 各ツールの説明が適切か確認
-4. MCP サーバーの URL をコピーして AI クライアント（Claude Desktop 等）に設定
+Push complete. Please verify the following in the Workato UI:
+1. Stages and pages are reflected in the Workflow App
+2. The submission form fields are displayed correctly
+3. The review page allows approve/reject
+4. Connection authentication (if using external services)
+5. Field mapping for each step of the Recipe
 
-テスト: AI クライアントからツールを呼び出してテストしてください。
+Test: submit a request from the submission form and run through the full approval flow.
 ---
 ```
 
-## よくあるエラーと対処
+## MCP server deployment flow
 
-| エラー | 原因 | 対処 |
+### Step 1: Push
+
+Push the MCP server, skills, and skill Recipes.
+
+### Step 2: Enable the MCP server
+
+```
+Message to user:
+---
+Push complete. Please verify the MCP server in the Workato UI:
+1. Open the MCP server settings screen
+2. Confirm skills appear in the tool list
+3. Confirm each tool's description is appropriate
+4. Copy the MCP server URL and configure it in an AI client (Claude Desktop, etc.)
+
+Test: invoke the tools from the AI client.
+---
+```
+
+## Common errors and remedies
+
+| Error | Cause | Remedy |
 |---|---|---|
-| `expired_access_token` | コネクション未認証 | UI でコネクション認証を設定 |
-| フィールドが空 | コネクション未認証のため UI がスキーマを取得できない | コネクション認証後に UI でフィールドを再設定 |
-| `Unresolved reference` | 参照先ファイルが存在しない | 参照先を先に push するか、参照を null にする |
-| ページエディタが無限ロード | コンポーネント type の誤り（date 型に input を使った等） | `type: "date"` に修正 |
-| `parameters` が空にリセット | push 時にコネクション未設定のフィールドがリセットされた | コネクション認証 → UI で再設定 → pull |
-| datapill がリロードまで認識されない | `return_result` に `extended_output_schema` / `extended_input_schema` がない | `result_schema_json` と同じフィールド定義を extended スキーマに展開する |
-| トリガーのフィールドがリフレッシュまで認識されない | トリガーに `extended_output_schema` がない | トリガー出力のフィールド定義を `extended_output_schema` に展開する。特に Workflow App の `new_requests_realtime` は Data Table のフィールドをスキーマに含める |
-| `PG::UniqueViolation` (agentic_skill) | スキルが既に存在する状態で再 push | CLI の `--delete` では MCP サーバー・スキルは削除できない（`Skipped` になる）。UI で手動削除してから再 push |
+| `expired_access_token` | Connection not authenticated | Configure connection authentication in the UI |
+| Empty field | UI cannot fetch schema because connection is not authenticated | After authenticating the connection, reconfigure the field in the UI |
+| `Unresolved reference` | Referenced file does not exist | Push the referenced file first, or set the reference to null |
+| Page editor stuck loading | Wrong component type (e.g. using input for a date type) | Fix to `type: "date"` |
+| `parameters` reset to empty | Push reset fields where the connection was not configured | Authenticate connection, reconfigure in UI, then pull |
+| datapill not recognized until reload | `return_result` lacks `extended_output_schema` / `extended_input_schema` | Expand the same field definitions as `result_schema_json` into the extended schemas |
+| Trigger fields not recognized until refresh | Trigger lacks `extended_output_schema` | Expand the trigger output field definitions into `extended_output_schema`. In particular, include the Data Table fields in the schema of the Workflow App `new_requests_realtime` trigger |
+| `PG::UniqueViolation` (agentic_skill) | Re-push while the skill already exists | The CLI `--delete` cannot remove MCP servers or skills (they show `Skipped`). Delete them manually in the UI, then re-push |

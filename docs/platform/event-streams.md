@@ -1,44 +1,44 @@
 # Event Streams
 
-公式: https://docs.workato.com/en/event-streams.html
+Official: https://docs.workato.com/en/event-streams.html
 
-## 概要
+## Overview
 
-イベント駆動・メッセージ指向アーキテクチャを実現する機能。パブリッシャーとコンシューマーを分離し、レシピ間の非同期連携を可能にする。
+A feature that enables event-driven, message-oriented architecture. Decouples publishers and consumers, enabling asynchronous coordination between recipes.
 
-## 主な特徴
+## Key features
 
-- **配信保証**: メッセージの永続化により信頼性を確保
-- **順次チェーン**: レシピ間の順序付き実行
-- **ゼロダウンタイム更新**: コンシューマーの追加・変更がパブリッシャーに影響しない
-- **管理の簡素化**: レシピの作成・テスト・メンテナンスの複雑性を低減
+- **Delivery guarantees**: Reliable delivery via message persistence
+- **Sequential chaining**: Ordered execution across recipes
+- **Zero-downtime updates**: Adding or changing consumers does not affect the publisher
+- **Simpler management**: Reduces the complexity of creating, testing, and maintaining recipes
 
-## アーキテクチャ
+## Architecture
 
 ```
-Publisher レシピ → Topic → Consumer レシピ 1
-                        → Consumer レシピ 2
-                        → Consumer レシピ 3
+Publisher recipe → Topic → Consumer recipe 1
+                        → Consumer recipe 2
+                        → Consumer recipe 3
 ```
 
-| コンポーネント | 説明 |
+| Component | Description |
 |---|---|
-| **Publisher** | メッセージを発行するレシピ |
-| **Consumer** | メッセージを受信・処理するレシピ（複数可） |
-| **Topic** | メッセージを保持する名前付きチャネル（一意の ID またはタイムスタンプで識別） |
+| **Publisher** | A recipe that publishes messages |
+| **Consumer** | A recipe that receives and processes messages (multiple allowed) |
+| **Topic** | A named channel that holds messages (identified by a unique ID or timestamp) |
 
-## 利用方法
+## How to use
 
-1. **Workato Event Streams コネクタ**: レシピ内でメッセージの発行・消費
-2. **Public API**: プログラムからメッセージ発行・トピックデータ取得
+1. **Workato Event Streams connector**: Publish and consume messages from within recipes
+2. **Public API**: Programmatically publish messages and retrieve topic data
 
-## アクセス
+## Access
 
-Platform > Event streams からトピックを管理。
+Manage topics from Platform > Event streams.
 
-## 用途例
+## Example use cases
 
-- マイクロサービス間の非同期通信
-- 複数レシピへのイベントブロードキャスト
-- 処理パイプラインの段階的実行
-- システム間のリアルタイムデータ同期
+- Asynchronous communication between microservices
+- Broadcasting events to multiple recipes
+- Staged execution of processing pipelines
+- Real-time data synchronization across systems
