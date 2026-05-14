@@ -1,10 +1,10 @@
-# RecipeOps by Workato コネクタ
+# RecipeOps by Workato connector
 
 Provider: `workato_app`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Usage threshold reached | `customer_usage_threshold_reached` | - |  |
 | Deployment failed | `deployment_failed` | - |  |
@@ -30,7 +30,7 @@ Provider: `workato_app`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Get recipe details | `get_recipe` | - |  |
 | Search job history | `list_jobs` | Yes |  |

@@ -1,13 +1,13 @@
-# PDF tools by Workato コネクタ
+# PDF tools by Workato connector
 
 Provider: `pdf_tools`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Stamp PDF | `stamp_pdf` | - |  |

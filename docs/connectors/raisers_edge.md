@@ -1,10 +1,10 @@
-# Raiser's Edge NXT コネクタ
+# Raiser's Edge NXT connector
 
 Provider: `raisers_edge`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New address | `new_address` | - |  |
 | New appeal | `new_appeal` | - |  |
@@ -24,7 +24,7 @@ Provider: `raisers_edge`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Add custom field to constituent | `add_custom_field_to_constituent` | - |  |

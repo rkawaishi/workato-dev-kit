@@ -1,14 +1,14 @@
-# Variables by Workato コネクタ
+# Variables by Workato connector
 
 Provider: `workato_variable`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Clear all items from list | `clear_list` | Yes |  |
 |  Create list | `declare_list` | Yes |  |

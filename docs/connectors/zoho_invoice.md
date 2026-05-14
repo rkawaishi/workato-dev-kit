@@ -1,17 +1,17 @@
-# Zoho Invoice コネクタ
+# Zoho Invoice connector
 
 Provider: `zoho_invoice`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New estimate | `new_estimate` | - |  |
 | New invoice | `new_invoice` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create estimate | `create_estimate` | - |  |

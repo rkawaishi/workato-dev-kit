@@ -1,17 +1,17 @@
-# Pagerduty コネクタ
+# Pagerduty connector
 
 Provider: `pagerduty`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New incident | `new_incident` | - |  |
 | New notification | `new_notification` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Add note to incident | `add_note_to_incident` | - |  |

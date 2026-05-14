@@ -1,14 +1,14 @@
-# Utilities コネクタ
+# Utilities connector
 
 Provider: `utility`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Generate column chart | `column_chart` | - |  [deprecated] |
 | Compose CSV | `create_csv_lines` | - |  [deprecated] |

@@ -1,13 +1,13 @@
-# Unbounce コネクタ
+# Unbounce connector
 
 Provider: `unbounce`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New lead | `new_lead` | - |  |
 
 ## Actions
 
-なし
+None

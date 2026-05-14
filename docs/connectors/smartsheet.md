@@ -1,10 +1,10 @@
-# Smartsheet コネクタ
+# Smartsheet connector
 
 Provider: `smartsheet`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New or updated row in a sheet | `new_or_updated_row` | - |  |
 | New or updated row in report | `new_or_updated_row_in_report` | - |  |
@@ -12,7 +12,7 @@ Provider: `smartsheet`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create row | `create_row` | - |  |

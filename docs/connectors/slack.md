@@ -1,17 +1,17 @@
-# Slack コネクタ
+# Slack connector
 
 Provider: `slack`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Button click | `button_action` | - |  |
 | New event | `new_event` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Archive channel | `archive_channel` | - |  [deprecated] |
@@ -32,34 +32,34 @@ Provider: `slack`
 | Unarchive conversation | `unarchive_conversation` | - |  |
 
 ### Triggers
-| 名前 | 説明 |
+| Name | Description |
 |---|---|
-| New button click | ボタンクリックイベント |
+| New button click | Button click event |
 
 ### Actions
-| 名前 | 説明 |
+| Name | Description |
 |---|---|
-| Post message | チャンネル/DM にメッセージ投稿 |
-| Respond to button | ボタンクリックへの応答メッセージ |
+| Post message | Post message to channel/DM |
+| Respond to button | Response message to button click |
 
-### 備考
-- Slack Web API v1 使用
-- Slack for teams / Enterprise Grid 両対応
-- CN データセンターでは利用不可
+### Notes
+- Uses Slack Web API v1
+- Supports both Slack for teams and Enterprise Grid
+- Not available in CN data center
 
-## フィールド詳細
+## Field details
 
 ### button_action (Button click)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Action name | text | — |
 | Action ID | text | — |
@@ -74,20 +74,20 @@ Provider: `slack`
 | Attachment ID | text | — |
 | Response URL | text | — |
 
-> ⚠ 重複ラベル "ID" / "Name" / "User" は `Channel` と `Team` グループ配下の入れ子フィールド。データツリーの paddingLeft が一律 0 のためフラットに見える点に注意。
+> ⚠ Duplicate labels "ID" / "Name" / "User" are nested fields under the `Channel` and `Team` groups. Note that the data tree's paddingLeft is uniformly 0, so they appear flat.
 
 ### new_event (New event)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Event name | text | Yes | Yes | Allows to run separate triggers for separate connections. E.g. your Team name could be the value. Must be one word, lowercase and contain no special characters. Hyphens and underscores allowed. |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Team ID | text | — |
 | Api app ID | text | — |
@@ -112,39 +112,39 @@ Provider: `slack`
 | Event context | text | — |
 | Original event json | text | — |
 
-> ⚠ Type/User/Text/Ts/Channel/Event ts は `Event` オブジェクト配下のサブフィールド。Authorizations 配下に Enterprise ID/User ID/Is bot/Is enterprise install がネスト。データツリーの paddingLeft が一律 0 のためフラットに見える点に注意。
-> ⚠ 部分学習: `webhook_suffix` (event 種別フィールド) は input にあるはずだが UI 上の "Event name" フィールドと内部キーのマッピングは UI 観察では取りきれない（`/learn-recipe` で補完）。
+> ⚠ Type/User/Text/Ts/Channel/Event ts are subfields under the `Event` object. Under Authorizations, Enterprise ID/User ID/Is bot/Is enterprise install are nested. Note that the data tree's paddingLeft is uniformly 0, so they appear flat.
+> ⚠ Partial learning: `webhook_suffix` (event type field) should exist in input, but the mapping between the UI's "Event name" field and the internal key cannot be fully captured via UI observation (complete with `/learn-recipe`).
 
 ### archive_conversation (Archive conversation)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: 出力スキーマなし (no_output_schema, fire-and-forget アクション)
+> ⚠ Partial learning: no output schema (no_output_schema, fire-and-forget action)
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Conversation |  | Yes | Yes | Select from available conversations. If not found, you may toggle to 'Enter conversation ID/name'. |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 
 ### create_conversation (Create conversation (channels and groups))
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Conversation name | text | Yes | Yes | Enter conversation name without '#' prefix. Conversation names may only contain lowercase letters, numbers, hyphens, and underscores, and must be 80 characters or less. |
 | Private conversation? | boolean | - | Yes | Creates a private group. |
 | Return conversation details if already exists? | boolean | - | No | (optional field) |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | ID | text | — |
 | Name | text | — |
@@ -174,23 +174,23 @@ Provider: `slack`
 | Is pending ext shared | boolean | — |
 | Priority | integer | — |
 
-> ⚠ Topic / Purpose オブジェクト配下に Value / Last set がネスト。Latest オブジェクト配下に User / Inviter / Type / Subtype / Text 等がネスト。
+> ⚠ Under Topic / Purpose objects, Value / Last set are nested. Under the Latest object, User / Inviter / Type / Subtype / Text etc. are nested.
 
 ### get_user_by_email (Get user info)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Email | text | - | Yes | Provide the user email address |
 | User ID | text | - | Yes | Provide the user ID |
 
-> Email と User ID はどちらかを指定（両方とも optional に出るが、実質 OR で必須）。
+> Specify either Email or User ID (both appear as optional but are effectively required as an OR).
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | ID | text | — |
 | Name | text | — |
@@ -216,21 +216,21 @@ Provider: `slack`
 | Is bot | boolean | — |
 | Is app user | boolean | — |
 
-> ⚠ Title / Phone / Skype / Real name (normalized) / Display name / Display name (normalized) / Email / Team / Image 512 は `Profile` オブジェクト配下のネスト。
+> ⚠ Title / Phone / Skype / Real name (normalized) / Display name / Display name (normalized) / Email / Team / Image 512 are nested under the `Profile` object.
 
 ### invite_user_to_conversation (Invite users to conversation)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | User |  | Yes | Yes | Select from available users. For dynamic user names, toggle to 'Enter user ID/name'. |
 | Conversation |  | Yes | Yes | Select from available conversations. If not found, you may toggle to 'Enter conversation ID/name'. |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | ID | text | — |
 | Name | text | — |
@@ -260,17 +260,17 @@ Provider: `slack`
 | Is pending ext shared | boolean | — |
 | Priority | integer | — |
 
-> ⚠ create_conversation と同じスキーマ構造。Topic / Purpose オブジェクト配下に Value / Last set がネスト。
+> ⚠ Same schema structure as create_conversation. Under Topic / Purpose objects, Value / Last set are nested.
 
 ### post_button_action_reply (Respond to button click)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: 出力スキーマなし (no_output_schema, fire-and-forget アクション)
+> ⚠ Partial learning: no output schema (no_output_schema, fire-and-forget action)
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Button response URL | text | Yes | Yes | Identifies button to respond to. Response URL datapill can be found in New button click trigger output. Learn more. |
 | Response type | text | Yes | Yes | In channel posts a normal chat message; ephemeral posts message only visible to user. |
@@ -287,16 +287,16 @@ Provider: `slack`
 | Allow Slack formatting |  | - | No | (optional field) |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 
 ### post_message_to_channel (Post message)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Channel |  | Yes | Yes | Select from available channels. If not found, you may toggle to 'Enter channel ID/name'. |
 | Basic text | text | Yes | Yes | Slack message to send. |
@@ -314,7 +314,7 @@ Provider: `slack`
 | Icon image URL | text | - | No | (optional field) |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Text | text | — |
 | Username | text | — |
@@ -326,74 +326,74 @@ Provider: `slack`
 
 ### set_conversation_purpose (Set conversation purpose)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: 出力スキーマなし (no_output_schema, fire-and-forget アクション)
+> ⚠ Partial learning: no output schema (no_output_schema, fire-and-forget action)
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Conversation |  | Yes | Yes | Select from available conversations. To set dynamic conversation names, toggle to 'Enter conversation ID/name'. |
 | Conversation purpose | text | Yes | Yes | Set conversation purpose. Slack formatting useable here, including user tagging. Learn more. |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 
 ### set_conversation_topic (Set conversation topic)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: 出力スキーマなし (no_output_schema, fire-and-forget アクション)
+> ⚠ Partial learning: no output schema (no_output_schema, fire-and-forget action)
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Conversation |  | Yes | Yes | Select from available conversations. To set dynamic conversation names, toggle to 'Enter conversation ID/name'. |
 | Conversation topic | text | Yes | Yes | Set conversation topic. Slack formatting useable here, including user tagging. Learn more. |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 
 ### unarchive_conversation (Unarchive conversation)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: 出力スキーマなし (no_output_schema, fire-and-forget アクション)
+> ⚠ Partial learning: no output schema (no_output_schema, fire-and-forget action)
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Conversation |  | Yes | Yes | Select from available conversations. If not found, you may toggle to 'Enter conversation ID/name'. |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 
 ## Workbot for Slack (`slack_bot`)
 
 ### Triggers
-| 名前 | provider 内名称 | 説明 |
+| Name | Provider internal name | Description |
 |---|---|---|
-| New event | `new_event` | Slack イベント購読（`event_name` でイベント種別指定） |
+| New event | `new_event` | Subscribe to Slack events (specify event type with `event_name`) |
 
 ### Actions
-| 名前 | provider 内名称 | 説明 |
+| Name | Provider internal name | Description |
 |---|---|---|
-| Post bot message | `post_bot_message` | Bot としてメッセージ投稿。Block Kit 対応 |
-| Custom action | `__adhoc_http_action` | Slack API を直接呼出し |
+| Post bot message | `post_bot_message` | Post message as Bot. Block Kit supported |
+| Custom action | `__adhoc_http_action` | Call Slack API directly |
 
-### event_name 一覧（確認済み）
-- `reaction_added` — リアクション追加
+### event_name list (confirmed)
+- `reaction_added` — Reaction added
 
 ### new_event (reaction_added)
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | reaction_added.type | string | Type |
 | reaction_added.user | string | User |
@@ -407,7 +407,7 @@ Provider: `slack`
 ### Custom action: conversations.history (GET)
 
 #### Input fields
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
 | path | string | Yes | Path (API endpoint) |
 | response_type | string | - | Response type (json, raw, xml2, text) |
@@ -418,7 +418,7 @@ Provider: `slack`
 | input.data.limit | integer | - | limit |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | ok | boolean | Ok |
 | messages[].type | string | Type |
@@ -429,48 +429,48 @@ Provider: `slack`
 | pin_count | number | Pin count |
 | response_metadata.next_cursor | string | Next cursor (nested) |
 
-### `slack` vs `slack_bot` のイベント指定フィールド
+### Event specification field: `slack` vs `slack_bot`
 
-| | `slack`（標準） | `slack_bot`（Workbot） |
+| | `slack` (standard) | `slack_bot` (Workbot) |
 |---|---|---|
-| イベント種別フィールド | `input.webhook_suffix` | `input.event_name` |
-| dynamicPickListSelection | なし | あり |
+| Event type field | `input.webhook_suffix` | `input.event_name` |
+| dynamicPickListSelection | None | Present |
 
-- 標準コネクタ: `"webhook_suffix": "reaction_added"` のように直接値を指定
-- Workbot: `"event_name": "reaction_added"` + `dynamicPickListSelection` が付与される
+- Standard connector: specify value directly, e.g. `"webhook_suffix": "reaction_added"`
+- Workbot: `"event_name": "reaction_added"` + `dynamicPickListSelection` is attached
 
-### post_bot_message の主要フィールド
-- `channel` — 投稿先チャンネル
-- `text` — メッセージテキスト
-- `advanced.thread_ts` — スレッド返信先のタイムスタンプ
-- `blocks` — Block Kit ブロック定義
+### Key fields of post_bot_message
+- `channel` — destination channel
+- `text` — message text
+- `advanced.thread_ts` — timestamp of the thread reply target
+- `blocks` — Block Kit block definitions
 
 ---
 
-## 学習サマリ
+## Learning summary
 
-最終実行: 2026-04-27 by /auto-learn
-- 試行: 11 op (2 triggers + 9 actions)
-- 完全成功: 5 — `button_action`, `create_conversation`, `get_user_by_email`, `invite_user_to_conversation`, `post_message_to_channel`
-- 部分学習: 6 — `new_event` (internal key), `archive_conversation` / `unarchive_conversation` / `set_conversation_purpose` / `set_conversation_topic` / `post_button_action_reply` (fire-and-forget)
-- 学習失敗: 0
-- スキップ:
+Last run: 2026-04-27 by `/auto-learn`
+- Attempted: 11 op (2 triggers + 9 actions)
+- Fully learned: 5 — `button_action`, `create_conversation`, `get_user_by_email`, `invite_user_to_conversation`, `post_message_to_channel`
+- Partially learned: 6 — `new_event` (internal key), `archive_conversation` / `unarchive_conversation` / `set_conversation_purpose` / `set_conversation_topic` / `post_button_action_reply` (fire-and-forget)
+- Failed: 0
+- Skipped:
   - Deprecated: 7
   - adhoc: 1 — `__adhoc_http_action`
-  - 既学習: 0
+  - Already learned: 0
 
-### 要 follow-up
+### Needs follow-up
 
-- **Fire-and-forget (UI 仕様・追加学習不要)**
-  - `archive_conversation` — チャンネルアーカイブ
-  - `unarchive_conversation` — チャンネル復元
-  - `set_conversation_purpose` — チャンネル目的設定
-  - `set_conversation_topic` — チャンネルトピック設定
-  - `post_button_action_reply` — Block Kit ボタン応答
-- **Internal key 不明 (要 /learn-recipe)**
-  - `new_event` — `Event name` フィールドが内部 `webhook_suffix` キーに対応。UI 観察では label しか取れない
+- **Fire-and-forget (UI spec, no additional learning needed)**
+  - `archive_conversation` — Archive channel
+  - `unarchive_conversation` — Unarchive channel
+  - `set_conversation_purpose` — Set channel purpose
+  - `set_conversation_topic` — Set channel topic
+  - `post_button_action_reply` — Block Kit button response
+- **Internal key unknown (needs `/learn-recipe`)**
+  - `new_event` — `Event name` field maps to internal `webhook_suffix` key. UI observation can only capture the label
 
-### 構造的注記（参考）
+### Structural notes (for reference)
 
-- 重複ラベル `ID` / `Name` / `User`: `Channel` と `Team` グループ配下の入れ子フィールド。データツリー paddingLeft=0 でフラット表示（`button_action`, `new_event` 等）
-- 動的 `Channel` picklist: 多くのアクションで Channel 選択が必要（sandbox 値なし。static のみ捕捉）
+- Duplicate labels `ID` / `Name` / `User`: nested fields under the `Channel` and `Team` groups. Displayed flat with data tree paddingLeft=0 (`button_action`, `new_event`, etc.)
+- Dynamic `Channel` picklist: Channel selection is required in many actions (no sandbox value; only static captured)

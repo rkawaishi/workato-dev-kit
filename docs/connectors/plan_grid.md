@@ -1,17 +1,17 @@
-# PlanGrid コネクタ
+# PlanGrid connector
 
 Provider: `plan_grid`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New object in PlanGrid | `new_object` | - |  |
 | New or updated object in PlanGrid | `new_updated_object` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create object | `create_object` | - |  |

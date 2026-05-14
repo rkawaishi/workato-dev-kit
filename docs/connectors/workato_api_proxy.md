@@ -1,16 +1,16 @@
-# API proxy by Workato コネクタ
+# API proxy by Workato connector
 
 Provider: `workato_api_proxy`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New API proxy request | `receive_request` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Forward request to target | `forward_request` | - |  |
 | Return response | `return_response` | - |  |

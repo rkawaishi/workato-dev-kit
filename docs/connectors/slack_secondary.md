@@ -1,17 +1,17 @@
-# Slack secondary コネクタ
+# Slack secondary connector
 
 Provider: `slack_secondary`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Button click | `button_action` | - |  |
 | New event | `new_event` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Archive channel | `archive_channel` | - |  [deprecated] |

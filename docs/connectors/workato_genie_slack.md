@@ -1,11 +1,11 @@
-# Workato Genie Slack コネクタ
+# Workato Genie Slack connector
 
 Provider: `workato_genie_slack`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-なし
+None

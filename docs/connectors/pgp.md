@@ -1,14 +1,14 @@
-# PGP tools by Workato コネクタ
+# PGP tools by Workato connector
 
 Provider: `pgp`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Decrypt data | `decrypt` | - |  |
 | Encrypt file with PGP | `encrypt` | - |  [deprecated] |

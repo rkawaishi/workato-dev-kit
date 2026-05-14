@@ -1,17 +1,17 @@
-# Zuora コネクタ
+# Zuora connector
 
 Provider: `zuora`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New/updated order | `new_updated_order` | - |  |
 | New/updated record | `new_updated_record` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create custom record | `create_custom_object` | Yes |  |

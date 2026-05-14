@@ -1,10 +1,10 @@
-# Salesforce コネクタ
+# Salesforce connector
 
 Provider: `salesforce`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Monitor changes in a record | `change_data_capture` | - |  |
 | Case is closed | `closed_case` | - |  [deprecated] |
@@ -45,7 +45,7 @@ Provider: `salesforce`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Approve record in approval process | `approve_process` | - |  |
@@ -108,49 +108,49 @@ Provider: `salesforce`
 | Upsert records in batches | `upsert_composite_sobject` | Yes |  |
 | Upsert record | `upsert_sobject` | - |  |
 
-## フィールド詳細
+## Field details
 
 ### search_sobjects (Action)
 
-レシピ: Search Contracts in Salesforce
+Recipe: Search Contracts in Salesforce
 
-入力・出力スキーマは未設定（コネクション後に動的に決定される）。
+Input and output schemas are not configured (dynamically determined after Connection).
 
-> **Note:** このステップは `input: {}` で空のため、Salesforce コネクション設定後にオブジェクト種別とフィールドが動的に生成されます。
+> **Note:** This step has `input: {}` (empty), so the object type and fields are dynamically generated after the Salesforce Connection is configured.
 
 ---
 
 ### update_sobject (Action)
 
-レシピ: Update Contract in Salesforce
+Recipe: Update Contract in Salesforce
 
-入力・出力スキーマは未設定（コネクション後に動的に決定される）。
+Input and output schemas are not configured (dynamically determined after Connection).
 
-> **Note:** このステップは `input: {}` で空のため、Salesforce コネクション設定後にオブジェクト種別とフィールドが動的に生成されます。
+> **Note:** This step has `input: {}` (empty), so the object type and fields are dynamically generated after the Salesforce Connection is configured.
 
-#### 関連する Genie パラメータ（start_workflow トリガー）
+#### Related Genie parameters (start_workflow trigger)
 
-Search Contracts レシピ:
+Search Contracts Recipe:
 
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
 | contract_name | string | Yes | the name of the contract which user is referencing |
 | contract_content | string | Yes | contents of the contract which user is referencing |
 
-Update Contract レシピ:
+Update Contract Recipe:
 
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
 | contract_name | string | Yes | Contract name |
 | contract_content | string | - | Contract content |
 
 #### Genie Result Schema
 
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
 | response | string | Yes | Response |
 
-## 備考
-- Salesforce の全エディション対応
-- ユーザーの権限に基づいてアクセス可能なオブジェクト/フィールドが決まる
-- provider 名: `salesforce`
+## Notes
+- Supported on all Salesforce editions
+- Accessible objects/fields are determined by the user's permissions
+- provider name: `salesforce`

@@ -1,11 +1,11 @@
-# Workato Genie MS Teams コネクタ
+# Workato Genie MS Teams connector
 
 Provider: `workato_genie_ms_teams`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-なし
+None

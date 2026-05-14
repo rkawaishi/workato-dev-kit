@@ -1,16 +1,16 @@
-# Callable recipes by Workato コネクタ
+# Callable recipes by Workato connector
 
 Provider: `workato_service`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New call for recipe | `receive_request` | - |  [deprecated] |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Call recipe (synchronous) | `call_service` | - |  |
 | Call recipe (asynchronous) | `call_service_async` | - |  |

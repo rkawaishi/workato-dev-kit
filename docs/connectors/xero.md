@@ -1,10 +1,10 @@
-# Xero コネクタ
+# Xero connector
 
 Provider: `xero`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New/updated credit note | `new_or_updated_credit_note` | - |  |
 | New/updated item | `new_or_updated_item` | - |  |
@@ -19,7 +19,7 @@ Provider: `xero`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Upsert line item to bill or invoice | `add_invoice_line_item` | - |  |

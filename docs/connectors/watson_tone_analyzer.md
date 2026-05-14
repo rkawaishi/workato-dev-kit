@@ -1,13 +1,13 @@
-# Watson Tone Analyzer コネクタ
+# Watson Tone Analyzer connector
 
 Provider: `watson_tone_analyzer`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Analyze content | `analyze_content` | - |  |

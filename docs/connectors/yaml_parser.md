@@ -1,13 +1,13 @@
-# YAML tools by Workato コネクタ
+# YAML tools by Workato connector
 
 Provider: `yaml_parser`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Parse YAML document | `parse_yaml` | - |  |

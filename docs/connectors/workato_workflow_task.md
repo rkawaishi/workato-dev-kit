@@ -1,10 +1,10 @@
-# Workflow apps by Workato コネクタ
+# Workflow apps by Workato connector
 
 Provider: `workato_workflow_task`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New component event | `app_function_generic_request` | - |  |
 | New component event (Dropdown) | `app_function_load_dropdown_request` | - |  |
@@ -14,7 +14,7 @@ Provider: `workato_workflow_task`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Create request | `add_request` | - |  |
 | Return data to component | `app_function_load_dropdown_return` | - |  [deprecated] |

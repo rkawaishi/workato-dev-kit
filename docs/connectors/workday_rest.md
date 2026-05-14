@@ -1,16 +1,16 @@
-# Workday REST コネクタ
+# Workday REST connector
 
 Provider: `workday_rest`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New worker | `new_worker` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Cancel business process event | `cancel_business_process_event` | - |  |

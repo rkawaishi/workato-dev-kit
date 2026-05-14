@@ -1,11 +1,11 @@
-# Postman コネクタ
+# Postman connector
 
 Provider: `postman`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-なし
+None

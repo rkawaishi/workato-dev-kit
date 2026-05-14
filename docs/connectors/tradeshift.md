@@ -1,17 +1,17 @@
-# Tradeshift コネクタ
+# Tradeshift connector
 
 Provider: `tradeshift`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Credit note ready | `credit_note_ready` | - |  |
 | Invoice ready | `invoice_ready` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create chart of accounts | `create_code` | - |  |

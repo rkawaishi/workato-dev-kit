@@ -1,14 +1,14 @@
-# SOAP tools by Workato コネクタ
+# SOAP tools by Workato connector
 
 Provider: `soap`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Create SOAP message | `create_message` | - |  |
 | Parse SOAP message | `parse_soap` | - |  |

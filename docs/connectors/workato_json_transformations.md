@@ -1,13 +1,13 @@
-# JSON Transformations by Workato コネクタ
+# JSON Transformations by Workato connector
 
 Provider: `workato_json_transformations`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | JSON transformation | `jq_transform` | - |  |

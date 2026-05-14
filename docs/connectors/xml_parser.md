@@ -1,14 +1,14 @@
-# XML tools by Workato コネクタ
+# XML tools by Workato connector
 
 Provider: `xml_parser`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Generate XML document from XSD | `generate_xml_xsd` | - |  |
 | Parse XML document | `parse_xml` | - |  |

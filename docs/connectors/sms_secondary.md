@@ -1,13 +1,13 @@
-# SMS by Workato コネクタ
+# SMS by Workato connector
 
 Provider: `sms_secondary`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Send SMS | `send_sms` | - |  |

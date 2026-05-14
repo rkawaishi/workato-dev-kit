@@ -1,10 +1,10 @@
-# PostgreSQL secondary コネクタ
+# PostgreSQL secondary connector
 
 Provider: `postgresql_secondary`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New row | `new_row_v2` | - |  |
 | New rows | `new_rows_batch` | Yes |  |
@@ -13,7 +13,7 @@ Provider: `postgresql_secondary`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Delete rows | `delete_rows` | Yes |  |
 | Export query result | `export_csv` | Yes |  [deprecated] |

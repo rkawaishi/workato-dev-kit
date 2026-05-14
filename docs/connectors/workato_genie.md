@@ -1,16 +1,16 @@
-# Workato Genie コネクタ
+# Workato Genie connector
 
 Provider: `workato_genie`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Start workflow | `start_workflow` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Assign task to genie | `assign_task_to_genie` | - |  |
 | Create approval request | `create_request` | - |  |

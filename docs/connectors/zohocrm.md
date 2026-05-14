@@ -1,10 +1,10 @@
-# Zoho CRM コネクタ
+# Zoho CRM connector
 
 Provider: `zohocrm`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New account | `new_account` | - |  |
 | New call | `new_call` | - |  |
@@ -28,7 +28,7 @@ Provider: `zohocrm`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Relate a member to campaign | `add_member_to_campaign` | - |  |

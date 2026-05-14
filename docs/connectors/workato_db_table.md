@@ -1,10 +1,10 @@
-# Workato Data Tables コネクタ
+# Workato Data Tables connector
 
 Provider: `workato_db_table`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New records | `new_records_polling` | Yes |  |
 | New record | `new_records_realtime` | - |  |
@@ -13,7 +13,7 @@ Provider: `workato_db_table`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Create record | `add_record` | - |  |
 | Create records | `create_records_batch` | Yes |  |
