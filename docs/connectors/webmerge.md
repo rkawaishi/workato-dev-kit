@@ -1,14 +1,14 @@
-# Formstack Documents コネクタ
+# Formstack Documents connector
 
 Provider: `webmerge`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Merge document | `merge_document` | - |  |
 | Merge route | `merge_route` | - |  |

@@ -1,16 +1,16 @@
-# Workbot for Microsoft Teams Old コネクタ
+# Workbot for Microsoft Teams Old connector
 
 Provider: `skype_bot`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New command | `bot_command` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Post notification | `post_bot_notification` | - |  |
 | Post command reply | `post_bot_reply` | - |  |

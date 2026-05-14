@@ -1,13 +1,13 @@
-# Message template by Workato コネクタ
+# Message template by Workato connector
 
 Provider: `workato_template`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Create message | `create_document` | - |  |

@@ -1,13 +1,13 @@
-# Chatter コネクタ
+# Chatter connector
 
 Provider: `salesforce_chatter`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Post feed item | `post_feed_item` | - |  |

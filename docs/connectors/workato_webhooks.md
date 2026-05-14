@@ -1,13 +1,13 @@
-# Webhooks コネクタ
+# Webhooks connector
 
 Provider: `workato_webhooks`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New event via webhook | `new_event` | - |  |
 
 ## Actions
 
-なし
+None

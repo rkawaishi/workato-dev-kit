@@ -1,10 +1,10 @@
-# Workato FileStorage コネクタ
+# Workato FileStorage connector
 
 Provider: `workato_files`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New CSV file | `new_csv_file` | Yes |  |
 | New File | `new_file` | - |  |
@@ -12,7 +12,7 @@ Provider: `workato_files`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Append to file | `append_to_file` | - |  |
 | Generate shareable file link | `create_shareable_link` | - |  |

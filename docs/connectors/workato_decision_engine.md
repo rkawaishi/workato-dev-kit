@@ -1,13 +1,13 @@
-# Decision Models by Workato コネクタ
+# Decision Models by Workato connector
 
 Provider: `workato_decision_engine`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Make a decision | `execute_model` | - |  |

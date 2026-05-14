@@ -1,10 +1,10 @@
-# Snowflake コネクタ
+# Snowflake connector
 
 Provider: `snowflake`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New row | `new_row` | - |  |
 | New rows | `new_rows_batch` | Yes |  |
@@ -14,7 +14,7 @@ Provider: `snowflake`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Bulk load data to table from stage | `bulk_load_s3` | Yes |  |
 | Delete rows | `delete_rows` | Yes |  |

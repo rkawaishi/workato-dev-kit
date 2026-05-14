@@ -1,10 +1,10 @@
-# TrackVia コネクタ
+# TrackVia connector
 
 Provider: `trackvia`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Deleted record | `deleted_record` | - |  |
 | New record | `new_record` | - |  |
@@ -12,7 +12,7 @@ Provider: `trackvia`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create record | `create_record` | - |  |

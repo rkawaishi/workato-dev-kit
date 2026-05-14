@@ -1,10 +1,10 @@
-# Workbot for Microsoft Teams コネクタ
+# Workbot for Microsoft Teams connector
 
 Provider: `teams_bot`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New command | `bot_command` | - |  |
 | New help message trigger | `help_event` | - |  |
@@ -14,7 +14,7 @@ Provider: `teams_bot`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Delete message | `delete_message` | - |  |

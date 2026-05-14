@@ -1,16 +1,16 @@
-# Workbot for Workplace コネクタ
+# Workbot for Workplace connector
 
 Provider: `workplace_bot`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New command | `bot_command` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Post attachment | `post_bot_attachment` | - |  |

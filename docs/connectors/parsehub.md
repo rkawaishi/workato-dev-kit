@@ -1,14 +1,14 @@
-# ParseHub コネクタ
+# ParseHub connector
 
 Provider: `parsehub`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Cancel a run | `cancel_a_run` | - |  |
 | Get data for a run | `get_data_for_a_run` | - |  |

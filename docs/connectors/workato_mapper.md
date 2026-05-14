@@ -1,13 +1,13 @@
-# Mapper by Workato コネクタ
+# Mapper by Workato connector
 
 Provider: `workato_mapper`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Map to object | `map` | - |  |

@@ -1,14 +1,14 @@
-# IDP by Workato コネクタ
+# IDP by Workato connector
 
 Provider: `workato_idp`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Classify a document using IDP by Workato | `classify_document` | - |  |
 | Process a document using IDP by Workato | `process_document` | - |  |

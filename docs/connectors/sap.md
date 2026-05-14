@@ -1,17 +1,17 @@
-# SAP RFC コネクタ
+# SAP RFC connector
 
 Provider: `sap`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New IDocs | `new_idocs_batch` | Yes |  |
 | New IDoc | `new_updated_idoc` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Call BAPI | `call_bapi` | - |  |
 | Check IDoc status | `idoc_status` | - |  |

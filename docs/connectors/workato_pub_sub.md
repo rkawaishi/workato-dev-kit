@@ -1,17 +1,17 @@
-# Workato Event Streams コネクタ
+# Workato Event Streams connector
 
 Provider: `workato_pub_sub`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New batch of messages | `batch_subscribe_to_topic` | Yes |  |
 | New message | `subscribe_to_topic` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Publish message | `publish_to_topic` | - |  |
 | Publish messages (batch) | `publish_to_topic_batch` | Yes |  |

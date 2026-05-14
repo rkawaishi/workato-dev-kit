@@ -1,10 +1,10 @@
-# Sage Live コネクタ
+# Sage Live connector
 
 Provider: `sagelive`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Object created | `object_created` | - |  |
 | Daily object review | `object_review` | - |  |
@@ -12,7 +12,7 @@ Provider: `sagelive`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create object | `create_object` | - |  |

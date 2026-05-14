@@ -1,10 +1,10 @@
-# Salesforce secondary コネクタ
+# Salesforce secondary connector
 
 Provider: `salesforce_secondary`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Monitor changes in a record | `change_data_capture` | - |  |
 | Case is closed | `closed_case` | - |  [deprecated] |
@@ -45,7 +45,7 @@ Provider: `salesforce_secondary`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Approve record in approval process | `approve_process` | - |  |

@@ -1,13 +1,13 @@
-# Wufoo コネクタ
+# Wufoo connector
 
 Provider: `wufoo`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New entry | `new_entry` | - |  |
 
 ## Actions
 
-なし
+None

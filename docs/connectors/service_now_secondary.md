@@ -1,10 +1,10 @@
-# ServiceNow secondary コネクタ
+# ServiceNow secondary connector
 
 Provider: `service_now_secondary`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Closed incident | `closed_incident` | - |  [deprecated] |
 | New incident | `new_incident` | - |  [deprecated] |
@@ -23,7 +23,7 @@ Provider: `service_now_secondary`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Assign user to incident | `assign_user_to_incident` | - |  [deprecated] |

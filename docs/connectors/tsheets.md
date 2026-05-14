@@ -1,10 +1,10 @@
-# TSheets コネクタ
+# TSheets connector
 
 Provider: `tsheets`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New job | `new_jobcode` | - |  |
 | New timesheet | `new_timesheet` | - |  |
@@ -13,7 +13,7 @@ Provider: `tsheets`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create timesheet | `add_timesheet` | - |  |

@@ -1,10 +1,10 @@
-# ServiceM8 コネクタ
+# ServiceM8 connector
 
 Provider: `servicem8`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Contact created | `created_companycontact` | - |  |
 | Job activity created | `created_jobactivity` | - |  |
@@ -16,7 +16,7 @@ Provider: `servicem8`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Add job | `add_job` | - |  |
 | Add job material | `add_job_material` | - |  |

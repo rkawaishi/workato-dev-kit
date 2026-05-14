@@ -1,17 +1,17 @@
-# Workday Web Services コネクタ
+# Workday Web Services connector
 
 Provider: `workday_oauth`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New/updated business object | `new_updated_object` | - |  |
 | New/updated business object | `new_updated_object_batch` | Yes |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Get business object details | `Get_business_object_details` | Yes |  |
 | Search business object | `Search_business_object` | Yes |  |
