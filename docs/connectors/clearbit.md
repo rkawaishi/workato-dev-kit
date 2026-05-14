@@ -1,14 +1,14 @@
-# Clearbit コネクタ
+# Clearbit connector
 
 Provider: `clearbit`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Company lookup | `company_lookup` | Yes |  |
 | Email lookup | `email_lookup` | - |  |

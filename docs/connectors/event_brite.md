@@ -1,10 +1,10 @@
-# Eventbrite コネクタ
+# Eventbrite connector
 
 Provider: `event_brite`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New contact created | `new_contact` | - |  |
 | New event created | `new_user_event` | - |  |
@@ -16,7 +16,7 @@ Provider: `event_brite`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create/update contact | `create_contact` | - |  |

@@ -1,14 +1,14 @@
-# everydayhero コネクタ
+# everydayhero connector
 
 Provider: `everydayhero`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New page | `new_page` | - |  |
 | New team | `new_team` | - |  |
 
 ## Actions
 
-なし
+None

@@ -1,10 +1,10 @@
-# RegOnline® by Lanyon コネクタ
+# RegOnline® by Lanyon connector
 
 Provider: `active_reg_online`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New event | `on_new_event` | - |  |
 | New registration | `on_new_registration` | - |  |
@@ -12,7 +12,7 @@ Provider: `active_reg_online`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Get event details by ID | `lookup_event` | - |  |
 | Get registration details by ID | `lookup_registration` | - |  |

@@ -1,10 +1,10 @@
-# Scheduler by Workato コネクタ
+# Scheduler by Workato connector
 
 Provider: `clock`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New scheduled event (advanced) | `daily_task` | - |  [deprecated] |
 | New recurring event | `scheduled_event` | - |  |
@@ -12,7 +12,7 @@ Provider: `clock`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Get current time | `get_time` | - |  |
 | Wait | `pause` | - |  [deprecated] |

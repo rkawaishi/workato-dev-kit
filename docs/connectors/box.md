@@ -1,10 +1,10 @@
-# Box コネクタ
+# Box connector
 
 Provider: `box`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New upload/download event (beta) | `event_notification` | - |  [deprecated] |
 | Monitor sign requests | `monitor_sign_request` | - |  [deprecated] |
@@ -19,7 +19,7 @@ Provider: `box`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Add comment to file | `add_comment_to_file` | - |  |

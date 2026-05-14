@@ -1,17 +1,17 @@
-# Amazon SQS コネクタ
+# Amazon SQS connector
 
 Provider: `aws_sqs`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New message | `new_message` | - |  |
 | New messages | `new_messages_batch` | Yes |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Delete message | `delete_message` | - |  |
 | Delete messages | `delete_messages_batch` | Yes |  |

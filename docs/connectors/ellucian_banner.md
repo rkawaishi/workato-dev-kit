@@ -1,11 +1,11 @@
-# Ellucian Banner コネクタ
+# Ellucian Banner connector
 
 Provider: `ellucian_banner`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-なし
+None

@@ -1,11 +1,11 @@
-# Google Secret Manager コネクタ
+# Google Secret Manager connector
 
 Provider: `google_secret_manager`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-なし
+None

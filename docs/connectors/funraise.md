@@ -1,13 +1,13 @@
-# Funraise コネクタ
+# Funraise connector
 
 Provider: `funraise`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New transaction | `new_event` | - |  |
 
 ## Actions
 
-なし
+None

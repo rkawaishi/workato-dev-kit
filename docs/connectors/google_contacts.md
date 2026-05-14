@@ -1,17 +1,17 @@
-# Google Contacts コネクタ
+# Google Contacts connector
 
 Provider: `google_contacts`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New contact added | `new_contact` | - |  [deprecated] |
 | Updated contact | `updated_contact` | - |  [deprecated] |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Create contact | `create_contact` | - |  [deprecated] |
 | Search contacts | `search_contact` | - |  [deprecated] |

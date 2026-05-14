@@ -1,10 +1,10 @@
-# DocuSign secondary コネクタ
+# DocuSign secondary connector
 
 Provider: `docusign_secondary`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New document received | `new_document_received` | - |  |
 | New document event | `new_event` | - |  |
@@ -13,7 +13,7 @@ Provider: `docusign_secondary`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create/send document | `create_envelope` | - |  |

@@ -1,17 +1,17 @@
-# Eloqua コネクタ
+# Eloqua connector
 
 Provider: `eloqua`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New record | `new_objects` | - |  |
 | New or updated record | `new_or_updated_objects` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create record | `create_object` | - |  |

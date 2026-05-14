@@ -1,10 +1,10 @@
-# Greenhouse コネクタ
+# Greenhouse connector
 
 Provider: `greenhouse`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New event | `new_event` | - |  |
 | New object | `new_object` | - |  [deprecated] |
@@ -14,7 +14,7 @@ Provider: `greenhouse`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Advance application | `advance_application` | - |  [deprecated] |

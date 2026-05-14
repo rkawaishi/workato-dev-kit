@@ -1,10 +1,10 @@
-# Dropbox コネクタ
+# Dropbox connector
 
 Provider: `dropbox`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New file revision | `file_revision` | - |  |
 | New lines in CSV file | `new_batch_csv_file_lines` | Yes |  |
@@ -15,7 +15,7 @@ Provider: `dropbox`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Copy file or folder | `copy_file` | - |  |

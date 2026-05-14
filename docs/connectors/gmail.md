@@ -1,74 +1,74 @@
-# Gmail コネクタ
+# Gmail connector
 
 Provider: `gmail`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New email | `new_email` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Download attachment | `download_attachment` | - |  |
 | Send email | `send_mail` | - |  |
 
-## フィールド詳細
+## Field details
 
 ### new_email (Trigger)
 
-レシピ: Upload Gmail attachments to Google Drive
+Recipe: Upload Gmail attachments to Google Drive
 
 #### Input fields
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| label_ids | string | Yes | Gmail ラベル（例: INBOX） |
+| label_ids | string | Yes | Gmail label (e.g. INBOX) |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
-| id | string | メール ID |
-| subject | string | メール件名 |
-| attachments | array | 添付ファイル一覧 |
-| attachments[].filename | string | 添付ファイル名 |
-| attachments[].attachmentId | string | 添付ファイル ID |
+| id | string | Email ID |
+| subject | string | Email subject |
+| attachments | array | List of attachments |
+| attachments[].filename | string | Attachment filename |
+| attachments[].attachmentId | string | Attachment ID |
 
-#### Job Report カラム
-| カラム | ラベル | マッピング |
+#### Job Report columns
+| Column | Label | Mapping |
 |---|---|---|
 | custom_column_3 | Email subject | `data.gmail.new_email.subject` |
-| custom_column_1 | Number of files | `data.gmail.new_email.attachments` (リストサイズ) |
-| custom_column_2 | File names | `data.gmail.new_email.attachments` の `filename` を結合 |
+| custom_column_1 | Number of files | `data.gmail.new_email.attachments` (list size) |
+| custom_column_2 | File names | Concatenated `filename` values from `data.gmail.new_email.attachments` |
 
 ---
 
 ### download_attachment (Action)
 
-レシピ: Upload Gmail attachments to Google Drive
+Recipe: Upload Gmail attachments to Google Drive
 
 #### Input fields
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| id | string | Yes | メール ID（datapill: new_email.id） |
-| attachmentId | string | Yes | 添付ファイル ID（datapill: foreach.attachmentId） |
+| id | string | Yes | Email ID (datapill: new_email.id) |
+| attachmentId | string | Yes | Attachment ID (datapill: foreach.attachmentId) |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
-| content_bytes | string | 添付ファイルのバイナリコンテンツ |
+| content_bytes | string | Binary content of the attachment |
 
 ---
 
 ### send_mail (Action)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | To | string | Yes | Yes | Provide the recipient email address(es) separated by comma. |
 | Subject | string | Yes | Yes | — |
@@ -78,41 +78,41 @@ Provider: `gmail`
 | Bcc | string | - | No | — |
 | Cc | string | - | No | — |
 | Reply to | string | - | No | — |
-| Attachments[].File binary content | string | - | No | リスト型のグループフィールド |
-| Attachments[].File name | string | - | No | リスト型のグループフィールド |
+| Attachments[].File binary content | string | - | No | List-type group field |
+| Attachments[].File name | string | - | No | List-type group field |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
-| id | string | 送信メールの ID |
-| thread_id | string | スレッド ID |
-| label_ids | string | 適用ラベル（例: `UNREAD`） |
+| id | string | ID of the sent email |
+| thread_id | string | Thread ID |
+| label_ids | string | Applied labels (e.g. `UNREAD`) |
 
-## Custom Action パターン
+## Custom Action pattern
 
-Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gmail API を直接呼び出せる。
-- パス例: `me/messages/{messageId}?format=full`
+For Gmail, the `gmail` provider lets you call the Gmail API directly via `__adhoc_http_action`.
+- Example path: `me/messages/{messageId}?format=full`
 - base URI: `https://gmail.googleapis.com/gmail/v1/users/`
 
-## 備考
-- OAuth 2.0 認証
-- provider 名: `gmail`
-- スコープ: メールの読み取り、作成、送信
+## Notes
+- OAuth 2.0 authentication
+- provider name: `gmail`
+- Scopes: read, compose, and send email
 
 ---
 
 ## MCP Skills (Gmail MCP Server)
 
-プロジェクト `MCP | Gmail` で定義された Genie スキル群。各スキルは `workato_genie` / `start_workflow` トリガーで実装。
+Genie skills defined in the project `MCP | Gmail`. Each skill is implemented with the `workato_genie` / `start_workflow` trigger.
 
 ---
 
 ### search_messages
 
-メッセージを検索する。構造化パラメータ優先、`raw_query` は Gmail 検索構文を直接使う場合のみ。
+Search messages. Prefer structured parameters; use `raw_query` only when you need native Gmail search syntax directly.
 
 #### Parameters
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
 | keywords | string | - | Free-text keywords to search for across subject and message content. |
 | from | string | - | Filter messages sent by this email address. |
@@ -128,7 +128,7 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 | includeSpamTrash | boolean | - | Include threads from SPAM and TRASH in the results. Default false. |
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | messages[].bcc | string | Bcc |
@@ -146,10 +146,10 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 
 ### search_threads
 
-スレッドを検索する。パラメータは search_messages と同一。
+Search threads. Parameters are identical to search_messages.
 
 #### Parameters
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
 | keywords | string | - | Free-text keywords to search for across subject and message content. |
 | from | string | - | Filter messages sent by this email address. |
@@ -165,7 +165,7 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 | includeSpamTrash | boolean | - | Include threads from SPAM and TRASH in the results. Default false. |
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | threads[].bcc | string | Bcc |
@@ -183,15 +183,15 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 
 ### get_message
 
-メッセージ ID を指定して単一メッセージの全内容を取得する。
+Fetch the full content of a single message by message ID.
 
 #### Parameters
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
 | messageId | string | Yes | ID of the message to retrieve. |
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | id | string | Message ID |
@@ -219,15 +219,15 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 
 ### get_thread
 
-スレッド ID を指定してスレッド全体を取得する。
+Fetch an entire thread by thread ID.
 
 #### Parameters
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
 | threadId | string | Yes | ID of the thread to retrieve. |
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | id | string | Thread ID |
@@ -244,15 +244,15 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 
 ### get_draft
 
-下書き ID を指定して下書きの詳細を取得する。
+Fetch draft details by draft ID.
 
 #### Parameters
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
 | draftId | string | Yes | ID of the draft to fetch |
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | id | string | Draft ID |
@@ -276,17 +276,17 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 
 ### list_drafts
 
-下書き一覧を取得する。
+List drafts.
 
 #### Parameters
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| query | string | - | Gmail search box と同じクエリ形式でフィルタ |
+| query | string | - | Filter using the same query format as the Gmail search box |
 | pageToken | string | - | Page token to retrieve a specific page of results in the list. |
 | maxResults | integer | - | Maximum number of drafts to return. Default 30, max 50. |
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | drafts[].id | string | Draft ID |
@@ -296,7 +296,7 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 | drafts[].message.historyId | number | History ID |
 | drafts[].message.internalDate | number | Internal date |
 | drafts[].message.sizeEstimate | number | Size estimate |
-| drafts[].message.payload | object | Payload (body, headers, parts -- 再帰構造) |
+| drafts[].message.payload | object | Payload (body, headers, parts — recursive structure) |
 | nextPageToken | string | Next page token |
 | has_more | boolean | Has more |
 
@@ -304,14 +304,14 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 
 ### list_labels
 
-認証ユーザーが利用可能なシステム/ユーザー定義ラベル一覧を取得する。
+List system and user-defined labels available to the authenticated user.
 
 #### Parameters
 
-パラメータなし。
+No parameters.
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | labels[].type | string | Label type (system / user) |
@@ -322,15 +322,15 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 
 ### list_attachments
 
-メッセージ ID を指定して添付ファイル一覧を取得する。
+List attachments by message ID.
 
 #### Parameters
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
 | messageId | string | Yes | ID of the message to retrieve. |
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | id | string | Message ID |
@@ -341,23 +341,23 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 
 ### create_draft
 
-新規下書きを作成する。返信の場合は threadId / inReplyTo / references が必須。
+Create a new draft. For replies, threadId / inReplyTo / references are required.
 
 #### Parameters
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| to | array of string | - | 宛先。新規 or reply-to 時に指定。スレッド返信では省略可。 |
-| cc | array of string | - | CC recipients。ユーザーが明示した場合のみ。 |
-| bcc | array of string | - | BCC recipients。ユーザーが明示した場合のみ。 |
-| subject | string | - | 件名。返信時は元メールと同一必須。 |
-| body | string | Yes | メール本文。署名・免責・引用は明示指示がない限り不要。 |
-| bodyFormat | string | - | plain_text (default) or html。 |
-| threadId | string | - | 返信時のみ設定。スレッドとの関連付け。 |
-| inReplyTo | string | - | 返信時必須。元メッセージの Message-ID ヘッダ値。 |
-| references | string | - | 返信時必須。元の References ヘッダ + Message-ID。 |
+| to | array of string | - | Recipients. Specify when creating a new email or a reply-to. Can be omitted for thread replies. |
+| cc | array of string | - | CC recipients. Only when explicitly specified by the user. |
+| bcc | array of string | - | BCC recipients. Only when explicitly specified by the user. |
+| subject | string | - | Subject. Must match the original email when replying. |
+| body | string | Yes | Email body. Signature, disclaimers, and quoted content are not added unless explicitly requested. |
+| bodyFormat | string | - | plain_text (default) or html. |
+| threadId | string | - | Set only when replying. Associates the draft with the thread. |
+| inReplyTo | string | - | Required when replying. The Message-ID header value of the original message. |
+| references | string | - | Required when replying. The original References header plus Message-ID. |
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | id | string | Draft ID |
@@ -367,27 +367,27 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 | message.historyId | number | History ID |
 | message.internalDate | number | Internal date |
 | message.sizeEstimate | number | Size estimate |
-| message.payload | object | Payload (body, headers, parts -- 再帰構造) |
+| message.payload | object | Payload (body, headers, parts — recursive structure) |
 
 ---
 
 ### update_draft
 
-既存の下書きを編集する。添付の追加/削除は別スキルを使用。
+Edit an existing draft. Use a separate skill to add or remove attachments.
 
 #### Parameters
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
 | draftId | string | Yes | Draft ID |
-| to | array of string | - | 宛先 |
+| to | array of string | - | Recipients |
 | cc | array of string | - | CC recipients |
 | bcc | array of string | - | BCC recipients |
-| subject | string | - | 件名 |
-| body | string | - | メール本文 |
+| subject | string | - | Subject |
+| body | string | - | Email body |
 | bodyFormat | string | - | plain_text (default) or html |
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | id | string | Draft ID |
@@ -397,21 +397,21 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 | message.historyId | number | History ID |
 | message.internalDate | number | Internal date |
 | message.sizeEstimate | number | Size estimate |
-| message.payload | object | Payload (body, headers, parts -- 再帰構造) |
+| message.payload | object | Payload (body, headers, parts — recursive structure) |
 
 ---
 
 ### send_draft
 
-下書きを送信する。事前に作成/参照済みの下書きが必要。
+Send a draft. Requires an existing draft that has been created or referenced beforehand.
 
 #### Parameters
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
 | draftId | string | Yes | ID of the draft to send |
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | id | string | Message ID |
@@ -432,17 +432,17 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 
 ### add_labels
 
-メッセージまたはスレッドにラベルを追加する。事前に list_labels でラベル ID を確認すること。
+Add labels to messages or threads. Look up label IDs with list_labels beforehand.
 
 #### Parameters
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| messages | array of string | - | Gmail message ID のリスト。最大 10 件。messages か threads のどちらか必須。 |
-| threads | array of string | - | Gmail thread ID のリスト。最大 10 件。 |
-| labels | array of string | Yes | 適用するラベル ID のリスト (例: INBOX, UNREAD, STARRED)。表示名ではなく ID を使用。 |
+| messages | array of string | - | List of Gmail message IDs. Max 10 entries. Either messages or threads is required. |
+| threads | array of string | - | List of Gmail thread IDs. Max 10 entries. |
+| labels | array of string | Yes | List of label IDs to apply (e.g. INBOX, UNREAD, STARRED). Use the ID, not the display name. |
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | threads[].labelIds | array of string | Label IDs |
@@ -456,17 +456,17 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 
 ### remove_labels
 
-メッセージまたはスレッドからラベルを削除する。事前に list_labels でラベル ID を確認すること。
+Remove labels from messages or threads. Look up label IDs with list_labels beforehand.
 
 #### Parameters
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| messages | array of string | - | Gmail message ID のリスト。最大 10 件。messages か threads のどちらか必須。 |
-| threads | array of string | - | Gmail thread ID のリスト。最大 10 件。 |
-| labels | array of string | Yes | 削除するラベル ID のリスト。表示名ではなく ID を使用。 |
+| messages | array of string | - | List of Gmail message IDs. Max 10 entries. Either messages or threads is required. |
+| threads | array of string | - | List of Gmail thread IDs. Max 10 entries. |
+| labels | array of string | Yes | List of label IDs to remove. Use the ID, not the display name. |
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | threads[].labelIds | array of string | Label IDs |
@@ -480,66 +480,66 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 
 ### add_attachments
 
-既存の下書きに添付ファイルを追加する。Gmail 既存添付 or Google Drive ファイルをソースにできる。
+Add attachments to an existing draft. The source can be an existing Gmail attachment or a Google Drive file.
 
 #### Parameters
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
 | draftId | string | Yes | Draft ID |
-| attachments | array of object | Yes | 添付ファイル配列。最低 1 件必須。 |
+| attachments | array of object | Yes | Array of attachments. At least 1 entry is required. |
 | attachments[].source | string | Yes | "gmail" or "gdrive" |
-| attachments[].filename | string | Yes | ファイル名 (拡張子込み、例: report.csv) |
-| attachments[].mimeType | string | Yes | MIME type。Google ネイティブファイルはエクスポート形式を指定。 |
-| attachments[].fileId | string | - | source が "gdrive" の場合必須。Google Drive file ID。 |
-| attachments[].attachmentId | string | - | source が "gmail" の場合必須。Gmail attachment ID。 |
-| attachments[].messageId | string | - | source が "gmail" の場合必須。添付元の message ID。 |
+| attachments[].filename | string | Yes | Filename (with extension, e.g. report.csv) |
+| attachments[].mimeType | string | Yes | MIME type. For Google-native files, specify the export format. |
+| attachments[].fileId | string | - | Required when source is "gdrive". Google Drive file ID. |
+| attachments[].attachmentId | string | - | Required when source is "gmail". Gmail attachment ID. |
+| attachments[].messageId | string | - | Required when source is "gmail". Message ID of the source attachment. |
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | id | string | Draft ID |
 | message.id | string | Message ID |
 | message.threadId | string | Thread ID |
 | message.snippet | string | Snippet |
-| message.payload | object | Payload (body, headers, parts -- 再帰構造) |
+| message.payload | object | Payload (body, headers, parts — recursive structure) |
 
 ---
 
 ### remove_attachments
 
-既存の下書きから添付ファイルを削除する。
+Remove attachments from an existing draft.
 
 #### Parameters
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
 | draftId | string | Yes | Draft ID |
-| fileNames | array of string | Yes | 削除する添付ファイル名のリスト。下書きに存在するファイル名を指定。 |
+| fileNames | array of string | Yes | List of attachment filenames to remove. Specify filenames that exist on the draft. |
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | id | string | Draft ID |
 | message.id | string | Message ID |
 | message.threadId | string | Thread ID |
 | message.snippet | string | Snippet |
-| message.payload | object | Payload (body, headers, parts -- 再帰構造) |
+| message.payload | object | Payload (body, headers, parts — recursive structure) |
 
 ---
 
 ### star_messages
 
-メッセージにスターを付ける。
+Star messages.
 
 #### Parameters
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| starMessages | array of object | - | スター対象メッセージの配列。最大 10 件。 |
+| starMessages | array of object | - | Array of messages to star. Max 10 entries. |
 | starMessages[].messageId | string | Yes | Id of the message to be starred |
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | starMarkedMessages[].labelIds | string | Label IDs |
@@ -550,16 +550,16 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 
 ### unstar_messages
 
-メッセージのスターを外す。
+Remove stars from messages.
 
 #### Parameters
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| unStarMessages | array of object | - | スター解除対象メッセージの配列。最大 10 件。 |
+| unStarMessages | array of object | - | Array of messages to unstar. Max 10 entries. |
 | unStarMessages[].messageId | string | Yes | Id of the message to be unstarred |
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | unStarMarkedMessages[].labelIds | string | Label IDs |
@@ -570,16 +570,16 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 
 ### archive_threads
 
-スレッドをアーカイブする (INBOX ラベルを除去)。
+Archive threads (removes the INBOX label).
 
 #### Parameters
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| archiveThreads | array of object | Yes | アーカイブ対象スレッドの配列。最大 10 件。 |
+| archiveThreads | array of object | Yes | Array of threads to archive. Max 10 entries. |
 | archiveThreads[].threadId | string | Yes | Id of the thread to be archived |
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | archivedThreads[].labelIds | string | Label IDs |
@@ -590,16 +590,16 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 
 ### unarchive_threads
 
-アーカイブ済みスレッドを受信トレイに戻す。
+Move archived threads back to the inbox.
 
 #### Parameters
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| unArchiveThreads | array of object | Yes | アーカイブ解除対象スレッドの配列。最大 10 件。 |
+| unArchiveThreads | array of object | Yes | Array of threads to unarchive. Max 10 entries. |
 | unArchiveThreads[].threadId | string | Yes | Id of the thread to be unarchived |
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | unArchivedThreads[].labelIds | string | Label IDs |
@@ -610,18 +610,18 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 
 ### mark_message_read_state
 
-メッセージを既読/未読に変更する。
+Mark messages as read or unread.
 
 #### Parameters
-| フィールド | 型 | 必須 | 説明 |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| readMessageIds | array of object | - | 既読にするメッセージの配列。最大 10 件。 |
+| readMessageIds | array of object | - | Array of messages to mark as read. Max 10 entries. |
 | readMessageIds[].messageId | string | Yes | ID of the Gmail message to be marked as read. |
-| unreadMessageIds | array of object | - | 未読にするメッセージの配列。最大 10 件。 |
+| unreadMessageIds | array of object | - | Array of messages to mark as unread. Max 10 entries. |
 | unreadMessageIds[].messageId | string | Yes | ID of the Gmail message to be marked as unread. |
 
 #### Result
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | error | string | Error message (transient error) |
 | markedMessagesRead[].labelIds | string | Label IDs |
@@ -633,16 +633,16 @@ Gmail は `gmail` プロバイダーで `__adhoc_http_action` を使用して Gm
 
 ---
 
-## 学習サマリ
+## Learning summary
 
-最終実行: 2026-04-27 by /auto-learn
-- 試行: 1 op
-- 完全成功: 1
-- 部分学習: 0
-- 学習失敗: 0
-- スキップ:
+Last run: 2026-04-27 by `/auto-learn`
+- Attempted: 1 op
+- Fully learned: 1
+- Partially learned: 0
+- Failed: 0
+- Skipped:
   - Deprecated: 0
   - adhoc: 1 — `__adhoc_http_action`
-  - 既学習: 2 — `new_email`, `download_attachment`
+  - Already learned: 2 — `new_email`, `download_attachment`
 
-要 follow-up なし。
+No follow-up needed.

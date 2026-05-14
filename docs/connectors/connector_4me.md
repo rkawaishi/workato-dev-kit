@@ -1,16 +1,16 @@
-# 4me コネクタ
+# 4me connector
 
 Provider: `connector_4me`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Webhook event | `new_event` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `custom_operation` | - |  |
 | Mutate records | `mutation` | - |  |

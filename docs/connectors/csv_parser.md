@@ -1,14 +1,14 @@
-# CSV tools by Workato コネクタ
+# CSV tools by Workato connector
 
 Provider: `csv_parser`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Compose CSV | `create_csv_lines` | Yes |  |
 | Parse CSV | `parse_csv` | Yes |  |

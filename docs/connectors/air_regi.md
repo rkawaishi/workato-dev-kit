@@ -1,14 +1,14 @@
-# AirREGI コネクタ
+# AirREGI connector
 
 Provider: `air_regi`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New refund | `new_refund` | - |  |
 | New sale | `new_sale` | - |  |
 
 ## Actions
 
-なし
+None

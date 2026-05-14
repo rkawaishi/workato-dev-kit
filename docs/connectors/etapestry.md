@@ -1,17 +1,17 @@
-# eTapestry コネクタ
+# eTapestry connector
 
 Provider: `etapestry`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Account created | `account_created` | - |  |
 | Account updated | `account_updated` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Add account | `add_account` | - |  |
 | Add contact | `add_contact` | - |  |
