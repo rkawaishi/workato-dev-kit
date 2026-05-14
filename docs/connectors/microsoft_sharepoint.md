@@ -1,10 +1,10 @@
-# Microsoft Sharepoint コネクタ
+# Microsoft Sharepoint connector
 
 Provider: `microsoft_sharepoint`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Deleted File or Folder | `deleted_file_folder` | - |  |
 | New row in Sharepoint list | `new_row_in_sharepoint_list` | - |  |
@@ -15,7 +15,7 @@ Provider: `microsoft_sharepoint`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Add row in Sharepoint list | `add_row_in_sharepoint_list` | - |  |

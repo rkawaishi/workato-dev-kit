@@ -1,16 +1,16 @@
-# Oracle E-Business Suite コネクタ
+# Oracle E-Business Suite connector
 
 Provider: `oracle_ebs`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New Business Event | `new_business_event` | - |  |
 | New Custom Business Event | `new_custom_business_event` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Execute PL/SQL operation | `execute_operation` | - |  |

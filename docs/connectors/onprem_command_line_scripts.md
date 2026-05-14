@@ -1,13 +1,13 @@
-# On-prem command-line scripts コネクタ
+# On-prem command-line scripts connector
 
 Provider: `onprem_command_line_scripts`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Execute command-line script | `execute_script` | - |  |

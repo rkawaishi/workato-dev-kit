@@ -1,10 +1,10 @@
-# On-prem files secondary コネクタ
+# On-prem files secondary connector
 
 Provider: `onprem_files_secondary`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New CSV file in folder | `csv_file_batch` | Yes |  |
 | New lines in CSV file | `new_csv_file_batch` | Yes |  |
@@ -14,7 +14,7 @@ Provider: `onprem_files_secondary`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Append line to CSV file | `add_csv_line` | - |  |
 | Append content to file | `append_file_content` | - |  [deprecated] |

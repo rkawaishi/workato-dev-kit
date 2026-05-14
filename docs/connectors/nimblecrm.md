@@ -1,15 +1,15 @@
-# Nimble CRM コネクタ
+# Nimble CRM connector
 
 Provider: `nimblecrm`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New contact | `new_contact` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Create contact | `create_contact` | - |  |

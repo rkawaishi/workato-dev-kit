@@ -1,11 +1,11 @@
-# HashiCorp Vault コネクタ
+# HashiCorp Vault connector
 
 Provider: `hashi_corp_vault`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-なし
+None

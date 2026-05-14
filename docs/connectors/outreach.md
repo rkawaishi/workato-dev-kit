@@ -1,10 +1,10 @@
-# Outreach コネクタ
+# Outreach connector
 
 Provider: `outreach`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Completed sequence task | `completed_sequence_task` | - |  |
 | New or updated record | `new_or_updated_record` | - |  |
@@ -12,7 +12,7 @@ Provider: `outreach`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Add a prospect to sequence | `add_prospect_to_sequence` | - |  |

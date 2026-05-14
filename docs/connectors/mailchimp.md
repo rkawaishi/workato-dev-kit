@@ -1,10 +1,10 @@
-# MailChimp コネクタ
+# MailChimp connector
 
 Provider: `mailchimp`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Campaign created | `campaign_created` | - |  |
 | Campaign opened | `campaign_opened` | - |  |
@@ -15,7 +15,7 @@ Provider: `mailchimp`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Add subscriber | `add_subscriber` | - |  [deprecated] |

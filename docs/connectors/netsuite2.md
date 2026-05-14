@@ -1,11 +1,11 @@
-# NetSuite2 コネクタ
+# NetSuite2 connector
 
 Provider: `netsuite2`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-なし
+None

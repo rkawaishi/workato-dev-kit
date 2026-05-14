@@ -1,10 +1,10 @@
-# Intercom コネクタ
+# Intercom connector
 
 Provider: `intercom`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New company | `new_company` | - |  |
 | New contact | `new_contact` | - |  |
@@ -16,7 +16,7 @@ Provider: `intercom`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Add conversation note | `add_conversation_note` | - |  |

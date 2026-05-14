@@ -1,14 +1,14 @@
-# JWT tools by Workato コネクタ
+# JWT tools by Workato connector
 
 Provider: `jwt`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Decode JWT | `decode` | - |  |
 | Generate JWT | `encode` | - |  |

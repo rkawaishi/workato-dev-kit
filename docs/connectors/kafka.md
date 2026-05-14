@@ -1,10 +1,10 @@
-# Apache Kafka コネクタ
+# Apache Kafka connector
 
 Provider: `kafka`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New message in topic (Deprecated) | `new_message` | - |  |
 | New messages in topic (Deprecated) | `new_message_batch` | Yes |  |
@@ -13,7 +13,7 @@ Provider: `kafka`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Publish message | `publish_to_topic` | - |  |
 | Publish messages | `publish_to_topic_batch` | Yes |  |

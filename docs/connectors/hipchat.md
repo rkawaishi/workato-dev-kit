@@ -1,14 +1,14 @@
-# HipChat コネクタ
+# HipChat connector
 
 Provider: `hipchat`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Add member to private room | `add_member_to_private_room` | - |  |

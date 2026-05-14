@@ -1,10 +1,10 @@
-# Okta secondary コネクタ
+# Okta secondary connector
 
 Provider: `okta_secondary`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New events | `new_events` | - |  |
 | New events | `new_events_hook` | - |  |
@@ -12,7 +12,7 @@ Provider: `okta_secondary`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Activate user | `activate_people` | - |  |

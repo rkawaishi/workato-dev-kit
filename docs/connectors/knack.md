@@ -1,16 +1,16 @@
-# Knack コネクタ
+# Knack connector
 
 Provider: `knack`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New record | `new_record` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Create record | `create_record` | - |  |
 | Get record by ID | `get_record_by_id` | - |  |
