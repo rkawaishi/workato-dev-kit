@@ -1,10 +1,10 @@
-# Oracle Fusion Cloud コネクタ
+# Oracle Fusion Cloud connector
 
 Provider: `oracle_fusion_cloud`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New record | `new_batch_object` | Yes |  |
 | New business event | `new_business_event` | - |  |
@@ -16,7 +16,7 @@ Provider: `oracle_fusion_cloud`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Search records using advanced query | `advanced_search_object` | Yes |  |

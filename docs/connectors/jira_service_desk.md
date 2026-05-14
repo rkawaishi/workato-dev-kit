@@ -1,16 +1,16 @@
-# JIRA Service Desk コネクタ
+# JIRA Service Desk connector
 
 Provider: `jira_service_desk`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New customer request | `new_customer_request` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create comment | `create_comment` | - |  |

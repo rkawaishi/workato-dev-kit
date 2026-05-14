@@ -1,16 +1,16 @@
-# Librato コネクタ
+# Librato connector
 
 Provider: `librato`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Triggered alerts | `triggered_alerts` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Get alert by ID | `get_alert_by_id` | - |  |
 | Search alerts | `search_alerts` | Yes |  |

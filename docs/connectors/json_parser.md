@@ -1,14 +1,14 @@
-# JSON tools by Workato コネクタ
+# JSON tools by Workato connector
 
 Provider: `json_parser`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Parse JSON document | `parse_json` | - |  [deprecated] |
 | Parse JSON document | `parse_json_v2` | - |  |

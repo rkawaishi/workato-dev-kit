@@ -1,10 +1,10 @@
-# OutSystems コネクタ
+# OutSystems connector
 
 Provider: `out_systems`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New record | `new_record` | - |  |
 | New record | `new_record_batch` | Yes |  |
@@ -13,7 +13,7 @@ Provider: `out_systems`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Create records | `create_batch_record` | Yes |  |
 | Create record | `create_record` | - |  |

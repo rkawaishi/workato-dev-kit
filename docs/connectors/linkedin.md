@@ -1,16 +1,16 @@
-# LinkedIn コネクタ
+# LinkedIn connector
 
 Provider: `linkedin`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New lead gen form submitted | `new_lead_gen_form_response` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Get campaign details by ID | `get_campaign_by_id` | - |  |

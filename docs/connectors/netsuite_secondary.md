@@ -1,10 +1,10 @@
-# NetSuite SOAP secondary コネクタ
+# NetSuite SOAP secondary connector
 
 Provider: `netsuite_secondary`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Export new standard records | `created_object_bulk` | Yes |  |
 | Export new custom records | `custom_created_object_bulk` | Yes |  |
@@ -33,7 +33,7 @@ Provider: `netsuite_secondary`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create custom records in batch | `add_custom_batch_job` | Yes |  |

@@ -1,10 +1,10 @@
-# Magento 2 コネクタ
+# Magento 2 connector
 
 Provider: `magento`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New customer | `new_customer` | - |  |
 | New invoice | `new_invoice` | - |  |
@@ -15,7 +15,7 @@ Provider: `magento`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create customer | `create_customer` | - |  |

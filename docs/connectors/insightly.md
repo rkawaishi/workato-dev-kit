@@ -1,10 +1,10 @@
-# Insightly コネクタ
+# Insightly connector
 
 Provider: `insightly`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New contact | `new_contact` | - |  |
 | New organisation | `new_organisation` | - |  |
@@ -14,7 +14,7 @@ Provider: `insightly`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Add note to opportunity | `add_note_to_opportunity` | - |  |

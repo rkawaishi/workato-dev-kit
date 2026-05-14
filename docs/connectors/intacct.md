@@ -1,10 +1,10 @@
-# Sage Intacct コネクタ
+# Sage Intacct connector
 
 Provider: `intacct`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New/updated AP bill | `ap_bill_updated` | - |  |
 | New/updated AP payment | `ap_payment_updated` | - |  |
@@ -28,7 +28,7 @@ Provider: `intacct`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create expense | `create_EEXPENSES` | - |  |

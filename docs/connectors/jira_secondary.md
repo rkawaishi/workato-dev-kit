@@ -1,10 +1,10 @@
-# Jira secondary コネクタ
+# Jira secondary connector
 
 Provider: `jira_secondary`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Deleted object | `deleted_object` | - |  |
 | Export new issues in Jira | `issue_created_bulk` | - |  |
@@ -23,7 +23,7 @@ Provider: `jira_secondary`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Assign user to issue | `assign_issue` | - |  |
