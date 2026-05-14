@@ -1,67 +1,67 @@
 # Quick Start Guide (Claude Code)
 
-Claude Code で Workato Dev Kit をセットアップして最初のレシピを作るまでの手順を説明します。
+This guide walks through setting up Workato Dev Kit with Claude Code and creating your first Recipe.
 
-## 1. 前提条件を確認
+## 1. Check prerequisites
 
-以下が必要です:
+You will need:
 
-- **Workato アカウント** — [workato.com](https://www.workato.com/) で作成
-- **Workato API トークン** — Workato UI > Settings > API Tokens で発行
-- **Claude Code** — [claude.com/claude-code](https://claude.com/claude-code) からインストール
-- **Python 3** — `python3 --version` で確認（Platform CLI に必要）
+- **Workato account** — create one at [workato.com](https://www.workato.com/)
+- **Workato API token** — issue one from Workato UI > Settings > API Tokens
+- **Claude Code** — install from [claude.com/claude-code](https://claude.com/claude-code)
+- **Python 3** — verify with `python3 --version` (required for the Platform CLI)
 
-## 2. ワークスペースをセットアップ
+## 2. Set up the workspace
 
 ```bash
-# 組織のワークスペースリポジトリを作成
+# Create your organization's workspace repository
 mkdir my-org-workato && cd my-org-workato
 git init
 
-# workato-dev-kit を submodule として追加
+# Add workato-dev-kit as a submodule
 git submodule add https://github.com/rkawaishi/workato-dev-kit.git kit
 
-# セットアップスクリプトを実行
+# Run the setup script
 bash kit/setup.sh
 
-# 初回コミット
+# Initial commit
 git add -A && git commit -m "Initial setup with workato-dev-kit"
 ```
 
-セットアップ後の構造:
+Structure after setup:
 
 ```
-my-org-workato/                 ← 作業ルート
-├── .claude/                    ← kit から symlink（+ 組織独自ルール/スキルを追加可）
+my-org-workato/                 ← working root
+├── .claude/                    ← symlinked from kit (you can add your own rules/skills)
 ├── docs/ → kit/docs/           ← symlink
 ├── guides/ → kit/guides/       ← symlink
-├── kit/                        ← git submodule（読み取り専用）
-├── projects/                   ← 組織のレシピ
-└── connectors/                 ← 組織のカスタムコネクタ
+├── kit/                        ← git submodule (read-only)
+├── projects/                   ← your organization's Recipes
+└── connectors/                 ← your organization's custom connectors
 ```
 
-## 3. Workato Platform CLI をインストール
+## 3. Install the Workato Platform CLI
 
 ```bash
 pipx install workato-platform-cli
 ```
 
-> `pipx` がない場合: `brew install pipx && pipx ensurepath`
+> If you do not have `pipx`: `brew install pipx && pipx ensurepath`
 
-> **Note**: 公式 CLI でプロジェクトの pull/push を行います。ジョブ管理やコネクタ情報取得など CLI にない機能は、付属の API ヘルパー (`python3 scripts/workato-api.py`) で補完します。詳細は `.claude/rules/workato-cli.md` を参照。
+> **Note**: Use the official CLI to pull/push projects. Features not covered by the CLI (job management, connector info retrieval, etc.) are filled in by the bundled API helper (`python3 scripts/workato-api.py`). See `.claude/rules/workato-cli.md` for details.
 
-## 4. CLI の初期認証
+## 4. Initial CLI authentication
 
 ```bash
 workato init
 ```
 
-対話形式で以下を入力:
-- **Profile name**: `default`（複数環境がある場合は `dev`, `prod` など）
-- **Data Center**: お使いのデータセンター（`us`, `eu`, `jp`, `sg`）
-- **API Token**: 手順1で発行したトークン
+Enter the following interactively:
+- **Profile name**: `default` (use `dev`, `prod`, etc. if you have multiple environments)
+- **Data Center**: your data center (`us`, `eu`, `jp`, `sg`)
+- **API Token**: the token issued in step 1
 
-## 5. フレームワークの更新（Submodule 利用時）
+## 5. Updating the framework (when using submodule)
 
 ```bash
 git submodule update --remote kit
@@ -69,140 +69,140 @@ bash kit/setup.sh
 git add kit && git commit -m "Update workato-dev-kit"
 ```
 
-新しいスキルやルールが追加された場合、`setup.sh` が自動で symlink を作成します。
-組織独自に追加したファイル（symlink でないもの）は上書きされません。
+When new skills or rules are added, `setup.sh` automatically creates the symlinks.
+Files you added yourself (those that are not symlinks) are not overwritten.
 
-## 6. Workato プロジェクトを取得
+## 6. Pull a Workato project
 
 ```bash
-# 利用可能なプロジェクトを確認
+# List available projects
 workato projects list --source remote
 
-# プロジェクトを取得
-workato projects use "<プロジェクト名>"
+# Pull a project
+workato projects use "<project name>"
 workato pull
 ```
 
-> まだプロジェクトがない場合は、次のステップでゼロから作れます。
+> If you do not yet have a project, you can create one from scratch in the next step.
 
-## 7. Claude Code を起動
+## 7. Launch Claude Code
 
 ```bash
 cd my-org-workato
 claude
 ```
 
-Claude Code が起動すると、`.claude/` フォルダのスキルとルールが自動的にロードされます。
+When Claude Code starts, the skills and rules under `.claude/` are loaded automatically.
 
-## 8. 最初のプロジェクトを作る
+## 8. Create your first project
 
-### 方法 A: 仕様駆動ワークフローで始める（推奨）
-
-```
-あなた: /spec "[App] 経費申請"
-```
-
-Claude が以下をヒアリングします:
-1. 誰が・何をしたいか（業務の言葉で）
-2. どんな流れをイメージしているか
-3. 関わる人は誰か
-4. 最終的に何が起きれば成功か
-5. 既存のツールやデータソースはあるか
-
-ヒアリング結果から `projects/<project>/specs/001-<slug>/spec.md`（要件・WHAT/WHY）が生成され、未確定な点は `## Open Questions` に記録されます。続けて:
+### Option A: Start with the spec-driven workflow (recommended)
 
 ```
-あなた: /clarify <project>/001-<slug>   # Open Questions を消化
-あなた: /plan <project>/001-<slug>      # Workato 構成 (plan.md)
-あなた: /tasks <project>/001-<slug>     # 実行タスク (tasks.md)
-あなた: /analyze <project>/001-<slug>   # spec ↔ plan ↔ tasks の整合性チェック
-あなた: /implement <project>/001-<slug> # /create-recipe 等に振り分けて実装
+You: /spec "[App] Expense request"
 ```
 
-### 方法 B: すぐに作り始める
+Claude will interview you on:
+1. Who wants to do what (in business terms)
+2. What flow you have in mind
+3. Who is involved
+4. What outcome counts as success
+5. What existing tools or data sources are available
+
+From the interview, `projects/<project>/specs/001-<slug>/spec.md` (requirements, WHAT/WHY) is generated, and any open points are recorded under `## Open Questions`. Then:
 
 ```
-あなた: /create-recipe
+You: /clarify <project>/001-<slug>   # Resolve Open Questions
+You: /plan <project>/001-<slug>      # Workato design (plan.md)
+You: /tasks <project>/001-<slug>     # Execution tasks (tasks.md)
+You: /analyze <project>/001-<slug>   # Consistency check across spec ↔ plan ↔ tasks
+You: /implement <project>/001-<slug> # Dispatch to /create-recipe etc. for implementation
 ```
 
-または Workflow App が必要なら:
+### Option B: Jump straight to building
 
 ```
-あなた: /create-workflow-app
+You: /create-recipe
 ```
 
-## 9. デプロイ
+Or, if you need a Workflow App:
 
 ```
-あなた: /push-project --start
+You: /create-workflow-app
 ```
 
-Claude が以下を実行します:
-1. JSON バリデーション
-2. `workato push`
-3. 新規コネクションがあれば認証手順を案内
-4. レシピを起動
-
-## 10. 学習サイクル
-
-### なぜ学習サイクルが必要か
-
-Workato のレシピ JSON には公式ドキュメントに記載されていない構造が多くあります。たとえば:
-
-- コネクタごとのフィールド名やスキーマ（`extended_output_schema` の中身）
-- UI で設定した際に自動生成される `dynamicPickListSelection` や `toggleCfg`
-- コネクション依存のフィールド（push しただけでは空になり、UI で設定→pull して初めて判明する）
-
-これらは **実際にレシピを作って Workato UI でフィードバックし、pull して初めてわかる情報** です。`/learn-recipe` はこれらの情報を分析し、ツールキットのナレッジベース（`docs/`）やルール（`.claude/rules/`）に反映します。学習が蓄積されるほど、次回の `/create-recipe` や `/create-workflow-app` の生成精度が上がります。
-
-### やり方
-
-Workato UI でレシピを調整したら、その変更を取り込んでナレッジを育てます。
+## 9. Deploy
 
 ```
-あなた: /pull-project
-あなた: /learn-recipe
+You: /push-project --start
 ```
 
-### ツールキットへの還元
+Claude will:
+1. Validate JSON
+2. Run `workato push`
+3. Guide you through authentication for any new connections
+4. Start the Recipes
 
-学んだパターンがツールキットの改善になる場合は、workato-dev-kit に PR を出してください:
+## 10. Learning cycle
+
+### Why the learning cycle matters
+
+Workato Recipe JSON contains many structures that are not documented officially. For example:
+
+- Connector-specific field names and schemas (the contents of `extended_output_schema`)
+- Auto-generated `dynamicPickListSelection` and `toggleCfg` produced by UI configuration
+- Connection-dependent fields (empty after push alone, only revealed once configured in the UI and pulled back)
+
+These are **information you only discover by actually building a Recipe, iterating in the Workato UI, and then pulling**. `/learn-recipe` analyzes this information and feeds it back into the toolkit's knowledge base (`docs/`) and rules (`.claude/rules/`). The more learning accumulates, the more accurately the next `/create-recipe` or `/create-workflow-app` will generate.
+
+### How to do it
+
+After adjusting a Recipe in the Workato UI, pull those changes back and grow the knowledge.
+
+```
+You: /pull-project
+You: /learn-recipe
+```
+
+### Contributing back to the toolkit
+
+If the patterns you learned would improve the toolkit, submit a PR to workato-dev-kit:
 
 ```bash
-# kit/ ディレクトリで
+# In the kit/ directory
 cd kit
 git checkout -b feature/learn-jira-fields
-# docs/ や .claude/rules/ への変更をコミット
+# Commit changes to docs/ or .claude/rules/
 git push origin feature/learn-jira-fields
-# GitHub で PR を作成
+# Open a PR on GitHub
 ```
 
-## よくある質問
+## FAQ
 
-### Q: Workato のプロジェクトとは？
+### Q: What is a Workato project?
 
-Workato UI 上でレシピやコネクションをまとめる単位です。`workato pull` でローカルに JSON ファイルとしてダウンロードし、`workato push` でアップロードします。
+It is the unit that groups Recipes and Connections in the Workato UI. `workato pull` downloads them as local JSON files, and `workato push` uploads them.
 
-### Q: projects/ フォルダはどう git 管理するの？
+### Q: How do I git-manage the projects/ folder?
 
-ワークスペースリポジトリに直接含まれます。`git add projects/<name> && git commit` で通常通り管理してください。
+It lives directly inside the workspace repository. Manage it normally with `git add projects/<name> && git commit`.
 
-### Q: spec.md / plan.md / tasks.md は workato pull で消える？
+### Q: Do spec.md / plan.md / tasks.md get wiped by workato pull?
 
-各プロジェクトの `.workatoignore` に `specs/` を記載しておけば消えません。`/spec` コマンドが初回に自動で設定します。
+No, as long as each project's `.workatoignore` lists `specs/`. The `/spec` command sets this up automatically on first run.
 
-> 旧 `DESIGN.md` を使っているプロジェクトは `/design migrate <project>` で `specs/` に変換できます。`/design new` は廃止されました。
+> Projects still using the legacy `DESIGN.md` can be converted to `specs/` via `/design migrate <project>`. `/design new` has been retired.
 
-### Q: Cursor でも使える？
+### Q: Can I use this with Cursor?
 
-はい。`.cursor/rules/` にも同等のルールとスキル相当のルールが配置されています。詳しくは [QUICKSTART-CURSOR.md](quickstart-cursor.md) を参照してください。
+Yes. The same rules and skill-equivalent rules are placed under `.cursor/rules/` as well. See [QUICKSTART-CURSOR.md](quickstart-cursor.md) for details.
 
-### Q: オフラインでも使える？
+### Q: Can I use it offline?
 
-ドキュメント参照とレシピ JSON の生成はオフラインで可能です。`workato push/pull` には Workato API への接続が必要です。
+Reading documentation and generating Recipe JSON works offline. `workato push/pull` requires a connection to the Workato API.
 
-## 次のステップ
+## Next steps
 
-- [README.md](../README.md) — 全スキル一覧、ディレクトリ構成、CLI リファレンス
-- [デプロイガイド](../docs/patterns/deployment-guide.md) — push 後の UI 操作手順、よくあるエラー
-- [コネクタ一覧](../docs/connectors/_index.md) — 対応コネクタの確認
+- [README.md](../README.md) — full skill list, directory layout, CLI reference
+- [Deployment guide](../docs/patterns/deployment-guide.md) — UI steps after push, common errors
+- [Connector list](../docs/connectors/_index.md) — check supported connectors
