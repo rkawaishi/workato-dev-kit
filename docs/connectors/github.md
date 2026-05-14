@@ -1,10 +1,10 @@
-# GitHub コネクタ
+# GitHub connector
 
 Provider: `github`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Closed issue | `new_closed_issue` | - |  |
 | New issue | `new_issue` | - |  |
@@ -16,7 +16,7 @@ Provider: `github`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create comment in an issue | `create_comment_in_an_issue` | - |  |

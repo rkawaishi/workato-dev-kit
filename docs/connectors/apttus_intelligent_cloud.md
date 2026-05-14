@@ -1,17 +1,17 @@
-# Apttus Intelligent Cloud コネクタ
+# Apttus Intelligent Cloud connector
 
 Provider: `apttus_intelligent_cloud`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New object | `new_object` | - |  |
 | New or updated object | `new_or_updated_object` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Create object | `create_object` | - |  |
 | Search object | `search_object` | Yes |  |

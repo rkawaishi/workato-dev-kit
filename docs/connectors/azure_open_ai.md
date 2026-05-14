@@ -1,14 +1,14 @@
-# Azure OpenAI コネクタ
+# Azure OpenAI connector
 
 Provider: `azure_open_ai`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Analyse text | `analyse_document` | - |  |

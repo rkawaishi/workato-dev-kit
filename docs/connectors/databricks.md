@@ -1,10 +1,10 @@
-# Databricks コネクタ
+# Databricks connector
 
 Provider: `databricks`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New rows | `new_rows_batch` | Yes |  |
 | New rows via custom SQL | `new_rows_sql_batch` | Yes |  |
@@ -12,7 +12,7 @@ Provider: `databricks`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Delete rows | `delete_rows` | Yes |  |
 | Export query result | `export_csv_v2` | - |  |

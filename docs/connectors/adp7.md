@@ -1,17 +1,17 @@
-# ADP Workforce Now コネクタ
+# ADP Workforce Now connector
 
 Provider: `adp7`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Scheduled worker search | `scheduled_worker` | - |  [deprecated] |
 | Scheduled worker search | `scheduled_worker_v2` | Yes |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Onboard applicant | `applicant_onboard` | - |  |

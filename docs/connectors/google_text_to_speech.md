@@ -1,14 +1,14 @@
-# Google Text to Speech コネクタ
+# Google Text to Speech connector
 
 Provider: `google_text_to_speech`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Convert text to speech | `text_to_speech` | - |  |

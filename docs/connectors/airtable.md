@@ -1,17 +1,17 @@
-# Airtable コネクタ
+# Airtable connector
 
 Provider: `airtable`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New/updated record | `new_or_updated_record` | - |  |
 | New record | `new_record` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create record | `create_record` | - |  |

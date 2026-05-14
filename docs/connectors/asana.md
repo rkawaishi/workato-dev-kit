@@ -1,10 +1,10 @@
-# Asana コネクタ
+# Asana connector
 
 Provider: `asana`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New  event | `new_event` | - |  |
 | New or updated task | `new_or_updated_task` | - |  [deprecated] |
@@ -12,7 +12,7 @@ Provider: `asana`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Add task to section | `add_task_to_section` | - |  |

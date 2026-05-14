@@ -1,17 +1,17 @@
-# Bigtincan コネクタ
+# Bigtincan connector
 
 Provider: `bigtincan`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New form submission | `new_form_submission` | - |  |
 | New story | `new_story` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create story | `create_story` | - |  |

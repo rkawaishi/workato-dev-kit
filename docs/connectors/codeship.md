@@ -1,14 +1,14 @@
-# Codeship コネクタ
+# Codeship connector
 
 Provider: `codeship`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | List builds | `list_builds` | Yes |  |
 | Restart build | `restart_build` | - |  |

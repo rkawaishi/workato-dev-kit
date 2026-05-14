@@ -1,14 +1,14 @@
-# EDI tools by Workato コネクタ
+# EDI tools by Workato connector
 
 Provider: `edi_parser`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Generate EDI | `generate_edi` | - |  [deprecated] |
 | Generate EDI message | `generate_edi_v2` | - |  |

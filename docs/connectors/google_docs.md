@@ -1,14 +1,14 @@
-# Google Docs コネクタ
+# Google Docs connector
 
 Provider: `google_docs`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Create document | `create_document` | - |  |

@@ -1,17 +1,17 @@
-# Cisco Webex Teams コネクタ
+# Cisco Webex Teams connector
 
 Provider: `cisco_spark`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New button submission | `new_attachment` | - |  |
 | New message | `new_message` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Add person to room | `add_person_to_room` | - |  |

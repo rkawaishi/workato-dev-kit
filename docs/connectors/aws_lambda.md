@@ -1,16 +1,16 @@
-# AWS Lambda コネクタ
+# AWS Lambda connector
 
 Provider: `aws_lambda`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New function created | `new_function` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Get function details | `get_function_by_name` | - |  |

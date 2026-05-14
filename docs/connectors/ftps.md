@@ -1,17 +1,17 @@
-# FTP/FTPS コネクタ
+# FTP/FTPS connector
 
 Provider: `ftps`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New CSV file | `new_csv_file` | Yes |  |
 | New/updated file in directory | `new_file_in_dir` | - |  |
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Download file | `get_file_content` | - |  |
 | List files and directories | `list_directories_files` | Yes |  |

@@ -1,10 +1,10 @@
-# SAP Concur コネクタ
+# SAP Concur connector
 
 Provider: `concur`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New expense report | `new_expense_report` | - |  [deprecated] |
 | New expense report submission | `new_expense_report_submission` | - |  [deprecated] |
@@ -18,7 +18,7 @@ Provider: `concur`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Upload receipt image | `add_receipt_image` | - |  [deprecated] |

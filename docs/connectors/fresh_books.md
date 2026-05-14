@@ -1,10 +1,10 @@
-# FreshBooks コネクタ
+# FreshBooks connector
 
 Provider: `fresh_books`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New/updated client | `new_or_updated_client` | - |  |
 | New/updated estimate | `new_or_updated_estimate` | - |  |
@@ -13,7 +13,7 @@ Provider: `fresh_books`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Add line item to invoice | `add_line_item_to_invoice` | - |  |
 | Create client | `create_client` | - |  |

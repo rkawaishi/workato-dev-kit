@@ -1,14 +1,14 @@
-# Azure Monitor コネクタ
+# Azure Monitor connector
 
 Provider: `azure_monitor`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Send custom log | `send_custom_log` | - |  |
 | Inject custom logs | `send_log_injection` | - |  |

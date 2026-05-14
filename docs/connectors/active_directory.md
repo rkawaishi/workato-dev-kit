@@ -1,10 +1,10 @@
-# Active Directory コネクタ
+# Active Directory connector
 
 Provider: `active_directory`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New entry | `new_entry` | - |  |
 | Scheduled entry search using search filter | `paged_search_entries` | Yes |  |
@@ -12,7 +12,7 @@ Provider: `active_directory`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Add entry | `add_entry` | - |  |
 | Add group | `add_group` | - |  |

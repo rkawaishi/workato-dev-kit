@@ -1,10 +1,10 @@
-# Google Workspace コネクタ
+# Google Workspace connector
 
 Provider: `google_workspace`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New admin activity event | `new_admin_activity_event` | - |  |
 | New application activity event | `new_application_activity_event` | - |  |
@@ -12,7 +12,7 @@ Provider: `google_workspace`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Add record | `add_object` | - |  |

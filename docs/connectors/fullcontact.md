@@ -1,14 +1,14 @@
-# FullContact コネクタ
+# FullContact connector
 
 Provider: `fullcontact`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Get contact details | `get_contact_info` | - |  |
 | Verify email | `verify_email` | - |  |

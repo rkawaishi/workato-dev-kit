@@ -1,14 +1,14 @@
-# IBM Db2 コネクタ
+# IBM Db2 connector
 
 Provider: `db2`
 
 ## Triggers
 
-なし
+None
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Delete rows | `delete_rows` | Yes |  |
 | Export query result | `export_csv_v2` | - |  |

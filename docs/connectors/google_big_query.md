@@ -1,10 +1,10 @@
-# Google BigQuery コネクタ
+# Google BigQuery connector
 
 Provider: `google_big_query`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New job completed | `new_job_completed` | - |  |
 | New row | `new_row` | - |  |
@@ -13,7 +13,7 @@ Provider: `google_big_query`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Custom action | `__adhoc_http_action` | - |  |
 | Get batch of rows by Job ID | `get_query_job_output` | Yes |  |
@@ -30,15 +30,15 @@ Provider: `google_big_query`
 | Select rows using custom SQL | `search_rows_using_custom_sql_sync` | Yes |  |
 | Select rows using custom SQL and insert into table | `search_rows_using_custom_sql_sync_insert_table` | Yes |  |
 
-## フィールド詳細
+## Field details
 
 ### new_job_completed (New job completed)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Project |  | Yes | Yes | The project to be billed for the query. |
 | When first started, this recipe should pick up events from | date-time | - | Yes | When you start recipe for the first time, it picks up trigger events from this specified date and time. Defaults to fetching records created an hour ago if left blank. Once recipe has been run or tested, value cannot be changed. |
@@ -49,7 +49,7 @@ Provider: `google_big_query`
 | Job type | text | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | ID | text | — |
 | Kind | text | — |
@@ -78,17 +78,17 @@ Provider: `google_big_query`
 | Errors | array | — |
 | User email | text | — |
 
-> ⚠ `Load` / `Extract` / `Query` / `State` は Statistics と Configuration の各 object 配下に重複登場する。データツリーの paddingLeft が一律 0 のためフラットに見える点に注意。
+> ⚠ `Load` / `Extract` / `Query` / `State` appear duplicated under both the `Statistics` and `Configuration` objects. Note that they look flat because the data tree's paddingLeft is uniformly 0.
 
 ### new_row (New row)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: output_group_missing, dynamic schema unresolved (project not selected)
+> ⚠ Partial learning: output_group_missing, dynamic schema unresolved (project not selected)
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Project |  | Yes | Yes | The project to be billed for the query. |
 | Dataset |  | Yes | Yes | The dataset which contains the table to load the data to. |
@@ -100,17 +100,17 @@ Provider: `google_big_query`
 | Output columns | text | - | No | — |
 
 #### Output fields
-（未学習: 動的スキーマのため Project/Dataset/Table を選択しないと output が表示されない）
+(Unlearned: dynamic schema — output is not displayed unless Project/Dataset/Table are selected)
 
 ### new_rows_batch (New rows)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: output_group_missing, dynamic schema unresolved (project not selected)
+> ⚠ Partial learning: output_group_missing, dynamic schema unresolved (project not selected)
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Project |  | Yes | Yes | The project to be billed for the query. |
 | Dataset |  | Yes | Yes | The dataset which contains the table to load the data to. |
@@ -123,17 +123,17 @@ Provider: `google_big_query`
 | Output columns | text | - | No | — |
 
 #### Output fields
-（未学習: 動的スキーマのため Project/Dataset/Table を選択しないと output が表示されない）
+(Unlearned: dynamic schema — output is not displayed unless Project/Dataset/Table are selected)
 
 ### scheduled_query (Scheduled query)
 
-種別: Trigger
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Trigger
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: output_group_missing, dynamic schema unresolved (project not selected)
+> ⚠ Partial learning: output_group_missing, dynamic schema unresolved (project not selected)
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Project |  | Yes | Yes | The project to be billed for the query. |
 | Query | string (code editor) | Yes | Yes | Provide a valid SQL string to be executed. Toggle the 'use legacy SQL' field if you want to use legacy SQL in the input above. It will support only select query. |
@@ -145,17 +145,17 @@ Provider: `google_big_query`
 | Use legacy SQL | text | - | No | — |
 
 #### Output fields
-（未学習: 動的スキーマのため Query の結果カラムが output になる。`Automatic schema introspection=Yes` か `Output fields` 手動定義時のみ確定）
+(Unlearned: dynamic schema — the Query result columns become the output. Only resolved when `Automatic schema introspection=Yes` or `Output fields` is defined manually)
 
 ### get_query_job_output (Get batch of rows by Job ID)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: output_group_missing, dynamic schema unresolved (project not selected)
+> ⚠ Partial learning: output_group_missing, dynamic schema unresolved (project not selected)
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Project |  | Yes | Yes | The project to be billed for the query. |
 | Job ID | text | Yes | Yes | ID of the job. This can be found from the 'Job completed in BigQuery Trigger'. |
@@ -166,15 +166,15 @@ Provider: `google_big_query`
 | Location | text | - | No | — |
 
 #### Output fields
-（未学習: 動的スキーマ。`Output fields` の手動定義に依存して結果カラムが生成される）
+(Unlearned: dynamic schema — result columns are generated based on the manual definition in `Output fields`)
 
 ### insert_row (Insert row)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Project |  | Yes | Yes | The project to be billed for the query. |
 | Dataset |  | Yes | Yes | The dataset which contains the table to load the data to. |
@@ -182,10 +182,10 @@ Provider: `google_big_query`
 | Ignore schema mismatch | text | - | No | — |
 | Skip invalid rows | text | - | No | — |
 
-> ⚠ 動的入力: Project/Dataset/Table 選択後に対象テーブルのカラムが入力フィールドとして展開される（UI 観察時は static のみキャプチャ）
+> ⚠ Dynamic input: after Project/Dataset/Table are selected, the target table's columns expand as input fields (UI observation captures only the static fields).
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Errors | array | — |
 | Reason | text | — |
@@ -197,13 +197,13 @@ Provider: `google_big_query`
 
 ### insert_rows_stream (Insert rows)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: output_group_missing, dynamic schema unresolved (project not selected)
+> ⚠ Partial learning: output_group_missing, dynamic schema unresolved (project not selected)
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Project |  | Yes | Yes | The project to be billed for the query. |
 | Dataset |  | Yes | Yes | The dataset which contains the table to load the data to. |
@@ -211,20 +211,20 @@ Provider: `google_big_query`
 | Ignore schema mismatch | text | - | No | — |
 | Skip invalid rows | text | - | No | — |
 
-> ⚠ 動的入力: Project/Dataset/Table 選択後に対象テーブルのカラムが入力配列内 schema として展開される
+> ⚠ Dynamic input: after Project/Dataset/Table are selected, the target table's columns expand as the schema inside the input array.
 
 #### Output fields
-（未学習: 動的スキーマ。Batch アクションのため、insert_row と同様 `Errors[]` ベースの output が想定される）
+(Unlearned: dynamic schema. As a batch action, an `Errors[]`-based output similar to insert_row is expected.)
 
 ### load_data_from_file (Load data into BigQuery)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: output_group_missing（ファイルロードは fire-and-forget 寄りのアクションで output が空になる場合あり）
+> ⚠ Partial learning: output_group_missing (file loads are fire-and-forget-ish actions and the output can be empty).
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Project |  | Yes | Yes | The project to be billed for the query. |
 | Dataset |  | Yes | Yes | The dataset which contains the table to load the data to. |
@@ -246,17 +246,17 @@ Provider: `google_big_query`
 | Description | text | - | No | — |
 
 #### Output fields
-（未学習: ロードジョブ系アクションは output schema を持たない可能性が高い）
+(Unlearned: load-job actions likely do not have an output schema.)
 
 ### load_data_from_google_table (Load data from Google Cloud Storage into BigQuery)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: output_group_missing（ロードジョブ系のため output schema が空の可能性）
+> ⚠ Partial learning: output_group_missing (load-job action; output schema may be empty).
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Project |  | Yes | Yes | The project to be billed for the query. |
 | Dataset |  | Yes | Yes | The dataset which contains the table to load the data to. |
@@ -277,17 +277,17 @@ Provider: `google_big_query`
 | Description | text | - | No | — |
 
 #### Output fields
-（未学習: ロードジョブ系のため output schema が空の可能性）
+(Unlearned: load-job action; output schema may be empty.)
 
 ### run_custom_sql_sync (Run custom SQL in BigQuery)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: output_group_missing
+> ⚠ Partial learning: output_group_missing
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Project |  | Yes | Yes | The project ID of the project that contains the destination table. |
 | Query | string (code editor) | Yes | Yes | Provide a valid SQL string to be executed. Toggle the 'use legacy SQL' field if you want to use legacy SQL in the input above. |
@@ -295,17 +295,17 @@ Provider: `google_big_query`
 | Location | text | - | No | — |
 
 #### Output fields
-（未学習: 同期実行 SQL の output 構造は UI 観察時に group が出現せず。実行時に取得すべき）
+(Unlearned: the output structure of the synchronous SQL run did not surface a group during UI observation. Capture it at runtime.)
 
 ### search_rows_sync (Select rows)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: output_group_missing, dynamic schema unresolved (project not selected)
+> ⚠ Partial learning: output_group_missing, dynamic schema unresolved (project not selected)
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Project |  | Yes | Yes | The project to be billed for the query. |
 | Dataset |  | Yes | Yes | The dataset which contains the table to load the data to. |
@@ -320,17 +320,17 @@ Provider: `google_big_query`
 | Offset | integer | - | No | — |
 
 #### Output fields
-（未学習: 動的スキーマ。Project/Dataset/Table 選択時に Rows[] 配下にテーブルのカラムが展開される）
+(Unlearned: dynamic schema. When Project/Dataset/Table are selected, the table's columns expand under Rows[].)
 
 ### search_rows (Select rows (Old))
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: output_group_missing, dynamic schema unresolved (project not selected)。Legacy バージョン（新規実装は `search_rows_sync` を推奨）
+> ⚠ Partial learning: output_group_missing, dynamic schema unresolved (project not selected). Legacy version (prefer `search_rows_sync` for new implementations).
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Project |  | Yes | Yes | The project to be billed for the query. |
 | Dataset |  | Yes | Yes | The dataset which contains the table to load the data to. |
@@ -343,15 +343,15 @@ Provider: `google_big_query`
 | Offset | text | - | No | — |
 
 #### Output fields
-（未学習: 動的スキーマ）
+(Unlearned: dynamic schema.)
 
 ### search_rows_using_custom_sql_sync (Select rows using custom SQL)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Project |  | Yes | Yes | The project which contains the table. |
 | Query | string (code editor) | Yes | Yes | Provide a valid SQL string to be executed. Use bind variables, e.g. id = @id, and the parameter field below to parameters inputs. |
@@ -361,7 +361,7 @@ Provider: `google_big_query`
 | Location | text | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Output contains rows? | boolean | — |
 | Rows | array | — |
@@ -381,17 +381,17 @@ Provider: `google_big_query`
 | Job complete | boolean | — |
 | Cache hit | boolean | — |
 
-> ⚠ `Rows[]` 配下の各カラムは `Output fields` で定義した内容に応じて動的展開される（UI 観察時は static のみ）
+> ⚠ Each column under `Rows[]` expands dynamically based on the contents defined in `Output fields` (UI observation captures only the static fields).
 
 ### search_rows_using_custom_sql (Select rows using custom SQL (Old))
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
-> ⚠ 部分学習: output_group_missing, dynamic schema unresolved (project not selected)。Legacy バージョン（新規実装は `search_rows_using_custom_sql_sync` を推奨）
+> ⚠ Partial learning: output_group_missing, dynamic schema unresolved (project not selected). Legacy version (prefer `search_rows_using_custom_sql_sync` for new implementations).
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Project |  | Yes | Yes | The project to be billed for the query. |
 | Query | string (code editor) | Yes | Yes | Provide a valid SQL string to be executed. Toggle the 'use legacy SQL' field if you want to use legacy SQL in the input above. |
@@ -405,15 +405,15 @@ Provider: `google_big_query`
 | Offset | text | - | No | — |
 
 #### Output fields
-（未学習: 動的スキーマ）
+(Unlearned: dynamic schema.)
 
 ### search_rows_using_custom_sql_sync_insert_table (Select rows using custom SQL and insert into table)
 
-種別: Action
-学習元: /auto-learn (UI 観察) — 2026-04-27
+Kind: Action
+Learned from: `/auto-learn` (UI observation) — 2026-04-27
 
 #### Input fields
-| フィールド | 型 | 必須 | デフォルト表示 | 説明 |
+| Field | Type | Required | Visible by default | Description |
 |---|---|---|---|---|
 | Project |  | Yes | Yes | The project which contains the table. |
 | Query | string (code editor) | Yes | Yes | Provide a valid SQL string to be executed. Use bind variables, e.g. id = @id, and the parameter field below to parameters inputs. |
@@ -425,7 +425,7 @@ Provider: `google_big_query`
 | Write disposition | text | - | No | — |
 
 #### Output fields
-| フィールド | 型 | 説明 |
+| Field | Type | Description |
 |---|---|---|
 | Rows | array | — |
 | List size | integer | — |
@@ -444,47 +444,47 @@ Provider: `google_big_query`
 | Job complete | boolean | — |
 | Cache hit | boolean | — |
 
-> ⚠ `Rows[]` 配下のカラム構造は `Output fields` で定義した内容に応じて動的展開される
+> ⚠ The column structure under `Rows[]` expands dynamically based on the contents defined in `Output fields`.
 
-## 備考
+## Notes
 
-- BigQuery のオペレーションは多くが「Project → Dataset → Table」picklist の選択で動的に input/output schema が生成される。`/auto-learn` の自動収集では project picklist を選ばないため、テーブル列に対応する動的フィールドは未取得（`> ⚠ 動的入力` 注記）。詳細列スキーマは `/learn-recipe` で個別レシピから補完する。
-- 共通入力フィールド: `Project`、`Dataset`、`Table` は ほぼ全アクションで必須。`Location` は地域指定（オプション）。
-- Legacy ops（`Select rows (Old)` / `Select rows using custom SQL (Old)`）は picker に表示されるが、新規実装では同期版（`search_rows_sync` / `search_rows_using_custom_sql_sync`）を推奨。
-- Skip 済み: `__adhoc_http_action`（カスタム HTTP）、`insert_rows`（deprecated → `insert_rows_stream`）、`run_custom_sql`（deprecated → `run_custom_sql_sync`）。
+- Most BigQuery operations generate input/output schemas dynamically based on the "Project → Dataset → Table" picklist selection. The automated `/auto-learn` collection does not select a project picklist, so the dynamic fields corresponding to table columns are not fetched (see the `> ⚠ Dynamic input` notes). Fill in the detailed column schema from individual recipes using `/learn-recipe`.
+- Common input fields: `Project`, `Dataset`, and `Table` are required in nearly all actions. `Location` is an optional region specifier.
+- Legacy ops (`Select rows (Old)` / `Select rows using custom SQL (Old)`) are shown in the picker, but for new implementations prefer the synchronous versions (`search_rows_sync` / `search_rows_using_custom_sql_sync`).
+- Already skipped: `__adhoc_http_action` (custom HTTP), `insert_rows` (deprecated → `insert_rows_stream`), `run_custom_sql` (deprecated → `run_custom_sql_sync`).
 
-## 学習失敗ログ
+## Learning failures
 
-（なし — 全 op が `status=ok` で完了。一部は dynamic schema 由来の partial learning）
+(None — all ops completed with `status=ok`. Some are partial learning due to dynamic schema.)
 
 ---
 
-## 学習サマリ
+## Learning summary
 
-最終実行: 2026-04-27 by /auto-learn
-- 試行: 15 op
-- 完全成功: 4
-- 部分学習: 11
-- 学習失敗: 0
-- スキップ:
-  - Deprecated: 2 — `insert_rows`（→ `insert_rows_stream`）, `run_custom_sql`（→ `run_custom_sql_sync`）
+Last run: 2026-04-27 by `/auto-learn`
+- Attempted: 15 op
+- Fully learned: 4
+- Partially learned: 11
+- Failed: 0
+- Skipped:
+  - Deprecated: 2 — `insert_rows` (→ `insert_rows_stream`), `run_custom_sql` (→ `run_custom_sql_sync`)
   - adhoc: 1 — `__adhoc_http_action`
-  - 既学習: 0
+  - Already learned: 0
 
-### 要 follow-up
+### Needs follow-up
 
-- **Dynamic schema (要 /learn-recipe)** — Project/Dataset/Table picklist 未選択により output schema が UI 観察では取れない
-  - `new_row` / `new_rows_batch` / `scheduled_query` — 行系トリガー
-  - `get_query_job_output` — Job ID から行を取得
-  - `insert_row` / `insert_rows_stream` — Insert 系（output schema 動的）
-  - `run_custom_sql_sync` — 同期 SQL 実行（output 出現せず要再調査）
-  - `search_rows` / `search_rows_sync` — 検索 (Legacy + 現行)
-  - `search_rows_using_custom_sql` / `search_rows_using_custom_sql_sync` — SQL 検索 (Legacy + 現行)
-- **Fire-and-forget 寄り (要再確認)**
-  - `load_data_from_file` / `load_data_from_google_table` — ファイル/GCS ロードジョブ
+- **Dynamic schema (needs `/learn-recipe`)** — Because the Project/Dataset/Table picklist is not selected, the output schema cannot be captured via UI observation
+  - `new_row` / `new_rows_batch` / `scheduled_query` — Row-based triggers
+  - `get_query_job_output` — Fetch rows by Job ID
+  - `insert_row` / `insert_rows_stream` — Insert ops (dynamic output schema)
+  - `run_custom_sql_sync` — Synchronous SQL execution (output did not appear; needs re-investigation)
+  - `search_rows` / `search_rows_sync` — Search (Legacy + current)
+  - `search_rows_using_custom_sql` / `search_rows_using_custom_sql_sync` — SQL search (Legacy + current)
+- **Fire-and-forget-ish (needs re-confirmation)**
+  - `load_data_from_file` / `load_data_from_google_table` — File/GCS load jobs
 
-### 構造的注記（参考）
+### Structural notes (for reference)
 
-- `new_job_completed` の output で `Load` / `Extract` / `Query` / `State` が `Statistics` と `Configuration` の object 配下に重複登場（`paddingLeft: 0` 起因）
-- `Insert rows` ピッカーは新 UI では `insert_rows_stream` のみ表示（`insert_rows` は picker から非表示）
-- `Run custom SQL in BigQuery` ピッカーは `run_custom_sql_sync` のみ表示
+- In the output of `new_job_completed`, `Load` / `Extract` / `Query` / `State` appear duplicated under both the `Statistics` and `Configuration` objects (caused by `paddingLeft: 0`)
+- In the new UI, the `Insert rows` picker shows only `insert_rows_stream` (`insert_rows` is hidden from the picker)
+- The `Run custom SQL in BigQuery` picker shows only `run_custom_sql_sync`

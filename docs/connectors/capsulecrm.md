@@ -1,10 +1,10 @@
-# Capsule CRM コネクタ
+# Capsule CRM connector
 
 Provider: `capsulecrm`
 
 ## Triggers
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | New opportunity | `new_opportunity` | - |  |
 | New organization | `new_organisation` | - |  |
@@ -13,7 +13,7 @@ Provider: `capsulecrm`
 
 ## Actions
 
-| 名前 | provider 内名称 | Batch | 説明 |
+| Name | Internal name | Batch | Description |
 |---|---|---|---|
 | Add opportunity | `add_opportunity` | - |  |
 | Add organization | `add_organisation` | - |  |
