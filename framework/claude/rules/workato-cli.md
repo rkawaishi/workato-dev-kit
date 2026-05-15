@@ -37,6 +37,7 @@ python3 scripts/workato-api.py <command>
 | `connectors list-custom` | List custom connectors |
 | `recipes list [--folder-id <id>]` | List recipes (JSON) |
 | `sdk push --connector <path> [--connector-id <id>]` | Push a custom connector (**recommended**) |
+| `sdk pull (--connector-id <id> \| --name <name>)` | Pull a custom connector's source into `connectors/<name>/` |
 | `profile show` | Show the resolved profile |
 
 ## 3. Connector SDK CLI (custom connector development & local testing)
@@ -63,6 +64,19 @@ python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.
 ```
 
 > `bundle exec workato push` and `workato sdk push` also work, but the API helper is preferred for its profile auto-resolution and release automation.
+
+### Pulling a custom connector
+
+Mirror of `sdk push`: download a connector that already exists in the Workato workspace into the local repo.
+
+```bash
+# By connector ID
+python3 scripts/workato-api.py sdk pull --connector-id <id>
+# Or by connector name / title (resolved through list-custom)
+python3 scripts/workato-api.py sdk pull --name <name>
+```
+
+Writes to `connectors/<name>/connector.rb` (use `--output-dir` to override) and stores `connector_id` in `connectors/docs/<name>.md` frontmatter so subsequent `sdk push` runs auto-update in place. Use `--force` to overwrite an existing `connector.rb`.
 
 ## Connector taxonomy
 
