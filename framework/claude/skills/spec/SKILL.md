@@ -177,14 +177,15 @@ You can proceed directly to /plan <project>/<NNN>-<slug>.
 
 ## `.workatoignore` management
 
-When you create spec.md for a new project, create `.workatoignore` if it does not exist:
+Every project needs a `.workatoignore` so `workato pull` does not wipe local-only artifacts and `workato push` does not deploy them. The kit ships a base template at `templates/workatoignore.template` (it already covers `specs/`).
 
-```
-DESIGN.md
-specs/
+When you create spec.md, ensure `projects/<project-name>/.workatoignore` exists by running the kit helper:
+
+```bash
+bash scripts/ensure-workatoignore.sh "projects/<project-name>"
 ```
 
-If `.workatoignore` exists but does not include `specs/`, append it.
+It creates `.workatoignore` from the base template when absent, or appends only the missing entries otherwise (idempotent, never removes lines). Because the template already lists `specs/`, no spec-specific entry is needed.
 
 ## Git management
 

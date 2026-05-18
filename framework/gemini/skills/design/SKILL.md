@@ -55,7 +55,7 @@ The old hearing / design flow for `/design new` is fully removed from this skill
 
 `projects/<project-name>/DESIGN.md`
 
-Include `DESIGN.md` and `DESIGN.md.legacy.*` in `.workatoignore` so they aren't wiped by `workato pull`.
+`DESIGN.md` and `DESIGN.md.legacy.*` must be in the project's `.workatoignore` so they aren't wiped by `workato pull`. Both are part of the kit's base template (`templates/workatoignore.template`).
 
 ## Operations
 
@@ -167,8 +167,13 @@ Write any items you cannot mechanically determine into one of:
 #### Post-migration processing
 
 1. **Rename DESIGN.md to `DESIGN.md.legacy.<YYYY-MM-DD>`** (do not delete; keep for later reference).
-2. Add `DESIGN.md.legacy.*` to `.workatoignore` (so workato pull does not wipe it).
-3. If `specs/` is not in the existing `.workatoignore`, append it.
+2. Ensure `projects/<project-name>/.workatoignore` exists by running the kit helper (creates it from the base template, or appends only missing entries — idempotent, never removes lines):
+
+   ```bash
+   bash scripts/ensure-workatoignore.sh "projects/<project-name>"
+   ```
+
+   The template already covers `DESIGN.md`, `DESIGN.md.legacy.*` and `specs/`.
 
 #### Result message
 

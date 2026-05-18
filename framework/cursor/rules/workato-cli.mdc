@@ -107,7 +107,7 @@ Writes to `connectors/<name>/connector.rb` and stores `connector_id` in `connect
 - [ ] Check for uncommitted changes with `git status`.
   - Pull overwrites (silently) and deletes (with a y/N prompt) local files.
   - Commit or stash any uncommitted edits before pulling.
-- [ ] Add files you want excluded from pull to `.workatoignore` — e.g. `specs/` (spec-driven artifacts), `DESIGN.md` (legacy), `DESIGN.md.legacy.*` (preserved after migration).
+- [ ] Ensure the project has a `.workatoignore`. The kit ships a base template at `templates/workatoignore.template` (covers `specs/`, `DESIGN.md`, `DESIGN.md.legacy.*`, catalog files, and `*.custom_adapter.{rb,json}`); `/pull-project` places it automatically. Add any further project-specific exclusions to that file.
 
 ### Running `workato init` against an existing directory
 
