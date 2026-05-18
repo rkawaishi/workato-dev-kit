@@ -17,14 +17,16 @@ DESIGN.md.legacy.*
 CATALOG.md
 CATALOG_CONFIG.yaml
 
-# Custom connector source files.
-# `workato pull` can pull a connector's source into the project. Left here, a
-# later `workato push` re-pushes it and may roll the connector back to an
-# older version than what is live on Workato. Ignored by default.
-# If this project intentionally manages a connector AS CODE, remove the two
-# lines below so the connector is pushed deliberately.
-*.custom_adapter.rb
-*.custom_adapter.json
-
 # The ignore file itself (never deploy it to Workato)
 .workatoignore
+
+# >>> opt-out: custom connector source >>>
+# `workato pull` can pull a connector's source into the project. Left here, a
+# later `workato push` re-pushes it and may roll the connector back to an
+# older version than what is live on Workato — so it is ignored by default.
+# If this project intentionally manages a connector AS CODE, delete the two
+# entries below. The kit's top-up step never re-adds anything in this block,
+# so your opt-out sticks.
+*.custom_adapter.rb
+*.custom_adapter.json
+# <<< opt-out <<<

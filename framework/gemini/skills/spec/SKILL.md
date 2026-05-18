@@ -186,8 +186,15 @@ PROJ="projects/<project-name>"
 if [ ! -f "$PROJ/.workatoignore" ]; then
   cp templates/workatoignore.template "$PROJ/.workatoignore"
 else
-  # Append any base-template entries that are missing — never remove lines.
+  # Top up missing entries. Lines inside the ">>> opt-out <<<" block are NOT
+  # re-added — the user may have removed them on purpose. Never remove lines.
+  skip=0
   while IFS= read -r line; do
+    case "$line" in
+      *'>>> opt-out'*) skip=1; continue ;;
+      *'<<< opt-out'*) skip=0; continue ;;
+    esac
+    if [ "$skip" = "1" ]; then continue; fi
     case "$line" in ''|\#*) continue ;; esac
     grep -qxF "$line" "$PROJ/.workatoignore" || echo "$line" >> "$PROJ/.workatoignore"
   done < templates/workatoignore.template
