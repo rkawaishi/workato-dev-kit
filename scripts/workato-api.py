@@ -878,8 +878,21 @@ def cmd_sdk_pull(api: WorkatoAPI, args: argparse.Namespace):
         file=sys.stderr,
     )
 
-    # Persist connector_id to docs frontmatter (mirrors sdk push behavior)
-    if not args.skip_save_id:
+    # Persist connector_id to docs frontmatter (mirrors sdk push behavior).
+    # The docs-frontmatter convention is tied to the canonical
+    # connectors/<slug>/ layout, where docs live in a sibling connectors/docs/.
+    # With --output-dir we cannot assume that layout, so skip the save rather
+    # than writing an unexpected docs/ directory next to an arbitrary path.
+    if args.skip_save_id:
+        pass
+    elif args.output_dir:
+        print(
+            "Note: connector_id not saved to docs frontmatter "
+            "(--output-dir bypasses the canonical connectors/ layout). "
+            f"Pass --connector-id {connector_id} when running sdk push.",
+            file=sys.stderr,
+        )
+    else:
         docs_path = _connector_docs_path(target_file)
         fm, _ = _read_frontmatter(docs_path)
         existing = fm.get("connector_id")
@@ -1168,7 +1181,8 @@ def main():
     )
     sdk_pull_p.add_argument(
         "--output-dir", default=None,
-        help="Override the output directory (default: connectors/<name>/)",
+        help="Override the output directory (default: connectors/<name>/). "
+             "When set, connector_id is not saved to docs frontmatter.",
     )
     sdk_pull_p.add_argument(
         "--force", action="store_true",

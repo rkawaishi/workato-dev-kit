@@ -376,6 +376,39 @@ def test_sdk_pull_output_dir_override():
             os.chdir(prev)
 
 
+def test_sdk_pull_output_dir_skips_id_save():
+    """With --output-dir the connector_id is not written to docs frontmatter,
+    and no unexpected docs/ directory is created."""
+    with tempfile.TemporaryDirectory() as d:
+        prev = _chdir(Path(d))
+        try:
+            api = _FakeAPI(get_response={
+                "id": 7, "name": "abc", "code": "OK\n",
+            })
+            args = SimpleNamespace(
+                connector_id=7, name=None,
+                output_dir=str(Path(d) / "custom_loc"),
+                force=False, skip_save_id=False,
+            )
+            saved = sys.stderr
+            sys.stderr = io.StringIO()
+            try:
+                wa.cmd_sdk_pull(api, args)
+                err = sys.stderr.getvalue()
+            finally:
+                sys.stderr = saved
+
+            assert (Path(d) / "custom_loc" / "connector.rb").read_text() == "OK\n"
+            # The docs path _connector_docs_path() would derive for an
+            # arbitrary --output-dir must NOT be written.
+            assert not (Path(d) / "docs" / "custom_loc.md").exists()
+            assert not (Path(d) / "connectors" / "docs").exists()
+            assert "connector_id not saved" in err
+        finally:
+            import os
+            os.chdir(prev)
+
+
 def main() -> int:
     tests = [(name, obj) for name, obj in sorted(globals().items())
              if name.startswith("test_") and callable(obj)]

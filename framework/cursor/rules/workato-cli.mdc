@@ -75,7 +75,9 @@ python3 scripts/workato-api.py sdk pull --connector-id <id>
 python3 scripts/workato-api.py sdk pull --name <name>
 ```
 
-Writes to `connectors/<name>/connector.rb` (use `--output-dir` to override) and stores `connector_id` in `connectors/docs/<name>.md` frontmatter so subsequent `sdk push` runs auto-update in place. Use `--force` to overwrite an existing `connector.rb`.
+Writes to `connectors/<name>/connector.rb` and stores `connector_id` in `connectors/docs/<name>.md` frontmatter so subsequent `sdk push` runs auto-update in place. Use `--force` to overwrite an existing `connector.rb`.
+
+`--output-dir` overrides the destination, but it bypasses the canonical `connectors/` layout, so `connector_id` is **not** saved to docs frontmatter in that case — pass `--connector-id <id>` explicitly on the matching `sdk push`.
 
 ## Connector taxonomy
 
