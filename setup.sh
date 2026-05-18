@@ -179,6 +179,19 @@ link_files_in_dir \
   "$WORKSPACE_ROOT/.claude/hooks" \
   "../../$KIT_REL/framework/claude/hooks"
 
+# ── 3b. .claude/agents/ (per-file symlinks; Claude Code subagents) ──
+# Subagents are a Claude Code feature; other editors have no equivalent, so
+# this directory is Claude-only and is not part of sync_agents.py output.
+if [ -d "$KIT_DIR/framework/claude/agents" ]; then
+  echo ""
+  echo "--- Setting up .claude/agents/ ---"
+  prune_stale_links "$WORKSPACE_ROOT/.claude/agents" "framework/claude/agents/"
+  link_files_in_dir \
+    "$KIT_DIR/framework/claude/agents" \
+    "$WORKSPACE_ROOT/.claude/agents" \
+    "../../$KIT_REL/framework/claude/agents"
+fi
+
 # ── 4. docs/ guides/ scripts/ templates/ (directory symlinks) ──
 echo ""
 echo "--- Setting up top-level directories ---"
