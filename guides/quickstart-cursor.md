@@ -125,6 +125,7 @@ In Cursor's Agent mode, type `/` and select a skill by name to invoke it. The sa
 | `/push-project` | Push a project (with validation) |
 | `/learn-recipe` | Learn patterns from a Recipe |
 | `/sync-connectors` | Collect and update connector info |
+| `/onboard` | First-time onboarding: pull existing projects/connectors and bootstrap the knowledge base |
 | `/design` | **Deprecated**: only `/design migrate` is for routine use (migrate legacy DESIGN.md to specs/). `/design` and `/design update` still work with a warning; `/design new` has been retired |
 
 > **Tip**: Use this in Agent mode. Based on each skill's `description`, the agent may also pick a relevant skill for your task automatically.
