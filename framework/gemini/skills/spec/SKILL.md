@@ -179,29 +179,13 @@ You can proceed directly to /plan <project>/<NNN>-<slug>.
 
 Every project needs a `.workatoignore` so `workato pull` does not wipe local-only artifacts and `workato push` does not deploy them. The kit ships a base template at `templates/workatoignore.template` (it already covers `specs/`).
 
-When you create spec.md, ensure `projects/<project-name>/.workatoignore` exists:
+When you create spec.md, ensure `projects/<project-name>/.workatoignore` exists by running the kit helper:
 
 ```bash
-PROJ="projects/<project-name>"
-if [ ! -f "$PROJ/.workatoignore" ]; then
-  cp templates/workatoignore.template "$PROJ/.workatoignore"
-else
-  # Top up missing entries. Lines inside the ">>> opt-out <<<" block are NOT
-  # re-added — the user may have removed them on purpose. Never remove lines.
-  skip=0
-  while IFS= read -r line; do
-    case "$line" in
-      *'>>> opt-out'*) skip=1; continue ;;
-      *'<<< opt-out'*) skip=0; continue ;;
-    esac
-    if [ "$skip" = "1" ]; then continue; fi
-    case "$line" in ''|\#*) continue ;; esac
-    grep -qxF "$line" "$PROJ/.workatoignore" || echo "$line" >> "$PROJ/.workatoignore"
-  done < templates/workatoignore.template
-fi
+bash scripts/ensure-workatoignore.sh "projects/<project-name>"
 ```
 
-Because the template already lists `specs/`, no spec-specific entry is needed.
+It creates `.workatoignore` from the base template when absent, or appends only the missing entries otherwise (idempotent, never removes lines). Because the template already lists `specs/`, no spec-specific entry is needed.
 
 ## Git management
 

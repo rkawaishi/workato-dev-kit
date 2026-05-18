@@ -25,7 +25,8 @@ CATALOG_CONFIG.yaml
 # later `workato push` re-pushes it and may roll the connector back to an
 # older version than what is live on Workato — so it is ignored by default.
 # If this project intentionally manages a connector AS CODE, delete the two
-# entries below. The kit's top-up step never re-adds anything in this block,
+# *.custom_adapter.* entries below but KEEP these >>> / <<< marker comments.
+# The kit's top-up step never re-adds entries while the markers are present,
 # so your opt-out sticks.
 *.custom_adapter.rb
 *.custom_adapter.json

@@ -167,26 +167,10 @@ Write any items you cannot mechanically determine into one of:
 #### Post-migration processing
 
 1. **Rename DESIGN.md to `DESIGN.md.legacy.<YYYY-MM-DD>`** (do not delete; keep for later reference).
-2. Ensure `projects/<project-name>/.workatoignore` exists from the base template — copy `templates/workatoignore.template` if missing, otherwise append any missing entries (never remove lines):
+2. Ensure `projects/<project-name>/.workatoignore` exists by running the kit helper (creates it from the base template, or appends only missing entries — idempotent, never removes lines):
 
    ```bash
-   PROJ="projects/<project-name>"
-   if [ ! -f "$PROJ/.workatoignore" ]; then
-     cp templates/workatoignore.template "$PROJ/.workatoignore"
-   else
-     # Top up missing entries. Lines inside the ">>> opt-out <<<" block are
-     # NOT re-added — the user may have removed them on purpose.
-     skip=0
-     while IFS= read -r line; do
-       case "$line" in
-         *'>>> opt-out'*) skip=1; continue ;;
-         *'<<< opt-out'*) skip=0; continue ;;
-       esac
-       if [ "$skip" = "1" ]; then continue; fi
-       case "$line" in ''|\#*) continue ;; esac
-       grep -qxF "$line" "$PROJ/.workatoignore" || echo "$line" >> "$PROJ/.workatoignore"
-     done < templates/workatoignore.template
-   fi
+   bash scripts/ensure-workatoignore.sh "projects/<project-name>"
    ```
 
    The template already covers `DESIGN.md`, `DESIGN.md.legacy.*` and `specs/`.

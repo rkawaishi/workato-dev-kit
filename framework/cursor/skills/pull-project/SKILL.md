@@ -29,30 +29,15 @@ If there are uncommitted changes, suggest the user commits or stashes them befor
 
 ### 0.5. Ensure `.workatoignore` (mandatory, before every pull)
 
-`workato pull` silently overwrites and deletes local files. Before pulling a project, make sure its `.workatoignore` exists so local-only artifacts (`specs/`, `DESIGN.md`, custom connector source, …) survive. Run this once the project directory exists — for a brand-new project, after `workato init`:
+`workato pull` silently overwrites and deletes local files. Before pulling a project, make sure its `.workatoignore` exists so local-only artifacts (`specs/`, `DESIGN.md`, custom connector source, …) survive. Run the kit helper once the project directory exists — for a brand-new project, after `workato init`:
 
 ```bash
-PROJ="projects/<project-name>"
-if [ ! -f "$PROJ/.workatoignore" ]; then
-  cp templates/workatoignore.template "$PROJ/.workatoignore"
-  echo "Created $PROJ/.workatoignore from the base template"
-else
-  # Top up missing entries. Lines inside the ">>> opt-out <<<" block are NOT
-  # re-added — the user may have removed them on purpose. Never remove lines.
-  skip=0
-  while IFS= read -r line; do
-    case "$line" in
-      *'>>> opt-out'*) skip=1; continue ;;
-      *'<<< opt-out'*) skip=0; continue ;;
-    esac
-    if [ "$skip" = "1" ]; then continue; fi
-    case "$line" in ''|\#*) continue ;; esac
-    grep -qxF "$line" "$PROJ/.workatoignore" || echo "$line" >> "$PROJ/.workatoignore"
-  done < templates/workatoignore.template
-fi
+bash scripts/ensure-workatoignore.sh "projects/<project-name>"
 ```
 
-The base template ignores `*.custom_adapter.{rb,json}` by default: a connector pulled into the project would otherwise be re-pushed by a later `workato push` and could roll the connector back to an older version. If this project intentionally manages a connector as code, tell the user to delete those two lines from `.workatoignore` — they are inside the `opt-out` block, so the top-up step above will not re-add them.
+The helper creates `.workatoignore` from the base template (`templates/workatoignore.template`) when absent, or appends only the missing entries otherwise. It is idempotent and never removes or reorders existing lines.
+
+The template ignores `*.custom_adapter.{rb,json}` by default: a connector pulled into the project would otherwise be re-pushed by a later `workato push` and could roll the connector back to an older version. If this project intentionally manages a connector as code, tell the user to delete those two lines from `.workatoignore` (keeping the `>>> opt-out <<<` marker comments) — the helper will then leave the opt-out alone.
 
 ### No argument / project name supplied
 ```bash
