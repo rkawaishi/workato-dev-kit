@@ -83,7 +83,7 @@ Create `org/onboarding-report.md` (or load it for `--resume`). Mark steps `[ ]`.
 
 ### 4. Step — Pull projects
 
-Invoke **`/pull-project --all`** (or `/pull-project --projects ...` for a subset). This also places each project's `.workatoignore` (see `/pull-project`). Update the report: `Pull projects (<done>/<total>)`.
+Invoke **`/pull-project --all`** — or **`/pull-project --projects "<a>","<b>"`** with the in-scope names for a `--projects` run. `/pull-project` handles both not-present (`workato init`) and present projects, and places each project's `.workatoignore`. Update the report: `Pull projects (<done>/<total>)`.
 
 ### 5. Step — Sync connectors
 
