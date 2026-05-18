@@ -235,18 +235,31 @@ bash kit/setup.sh    # Copy new skills/rules, prune old ones
 
 ## Using git worktree
 
-`git worktree add` does **not** populate submodules in the new worktree, so the
-`kit/` submodule starts out empty there. The `docs/` and `guides/` symlinks then
-point at nothing — and although `.cursor/` holds real file copies, its rules
-reference `@docs/...`, so the framework is effectively broken in that worktree.
+`git worktree add` does **not** populate submodules in a new worktree on its own —
+left unhandled, the `kit/` submodule would start out empty there. The `docs/` and
+`guides/` symlinks would point at nothing, and although `.cursor/` holds real file
+copies, its rules reference `@docs/...`, so the framework would be effectively
+broken in that worktree.
 
-After creating a worktree, initialize the submodule and re-run setup **inside it**:
+To prevent this, `bash kit/setup.sh` installs a git `post-checkout` hook that runs
+`git submodule update --init --recursive` automatically. So creating a worktree
+fills in `kit/` for you — just re-run setup to refresh the symlinks and re-copy
+`.cursor/`:
 
 ```bash
-git worktree add ../my-org-workato-feature feature-branch
+git worktree add ../my-org-workato-feature feature-branch   # hook populates kit/
 cd ../my-org-workato-feature
-git submodule update --init --recursive   # populate kit/ in this worktree
-bash kit/setup.sh                          # refresh symlinks + re-copy .cursor/
+bash kit/setup.sh                                            # refresh symlinks + re-copy .cursor/
+```
+
+If the hook is not active — you had a pre-existing `post-checkout` hook, or
+`core.hooksPath` is set (husky etc.) — `setup.sh` prints a `SKIP` notice. In that
+case populate the submodule manually first:
+
+```bash
+cd ../my-org-workato-feature
+git submodule update --init --recursive
+bash kit/setup.sh
 ```
 
 `bash kit/setup.sh` re-copies `.cursor/` from the now-populated kit and verifies

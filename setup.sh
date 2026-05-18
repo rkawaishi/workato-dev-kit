@@ -514,7 +514,59 @@ if [ -f "$KIT_DIR/framework/AGENTS.md" ]; then
   done
 fi
 
-# ── 12. Verify kit symlinks resolve ──────────────────────────
+# ── 12. Install git post-checkout hook ───────────────────────
+# `git worktree add` does not populate submodules, so a new worktree
+# starts with an empty kit/. A post-checkout hook — shared across every
+# worktree via the common .git — initialises submodules automatically
+# whenever a worktree or branch is checked out.
+echo ""
+echo "--- Setting up git post-checkout hook ---"
+if ! git -C "$WORKSPACE_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "  SKIP (workspace is not a git repository yet)"
+else
+  _hooks_path_cfg="$(git -C "$WORKSPACE_ROOT" config --get core.hooksPath 2>/dev/null || true)"
+  if [ -n "$_hooks_path_cfg" ]; then
+    echo "  SKIP (core.hooksPath is set — hooks are managed elsewhere, e.g. husky)"
+    echo "        To auto-init submodules in new worktrees, add to your post-checkout hook:"
+    echo "          [ \"\$3\" = \"1\" ] && git submodule update --init --recursive"
+  else
+    # Submodule git data and hooks both live in the *common* git dir, so
+    # the hook is installed once and every worktree shares it.
+    _common_dir="$(git -C "$WORKSPACE_ROOT" rev-parse --git-common-dir 2>/dev/null || echo .git)"
+    case "$_common_dir" in
+      /*) ;;
+      *) _common_dir="$WORKSPACE_ROOT/$_common_dir" ;;
+    esac
+    HOOK="$_common_dir/hooks/post-checkout"
+    if [ -e "$HOOK" ] && ! grep -q 'workato-dev-kit:post-checkout' "$HOOK" 2>/dev/null; then
+      echo "  SKIP post-checkout (a non-kit hook exists — preserving it)"
+      echo "        To auto-init submodules in new worktrees, add to $HOOK:"
+      echo "          [ \"\$3\" = \"1\" ] && git submodule update --init --recursive"
+    else
+      _had_hook=0
+      [ -e "$HOOK" ] && _had_hook=1
+      mkdir -p "$_common_dir/hooks"
+      cat > "$HOOK" <<'HOOK_EOF'
+#!/bin/sh
+# workato-dev-kit:post-checkout — managed by kit/setup.sh (safe to delete).
+# `git worktree add` does not check out submodules; without this the kit/
+# submodule stays empty in new worktrees and every setup.sh symlink dangles.
+# $3 == 1 marks a branch / worktree checkout (vs. a file checkout).
+if [ "$3" = "1" ]; then
+  git submodule update --init --recursive
+fi
+HOOK_EOF
+      chmod +x "$HOOK"
+      if [ "$_had_hook" -eq 1 ]; then
+        echo "  ✓ post-checkout hook refreshed ($HOOK)"
+      else
+        echo "  ✓ Installed post-checkout hook — 'git worktree add' now auto-inits the kit/ submodule"
+      fi
+    fi
+  fi
+fi
+
+# ── 13. Verify kit symlinks resolve ──────────────────────────
 # A linked worktree with an un-initialised kit submodule leaves the
 # symlinks above pointing at nothing. Surface that instead of letting
 # Claude Code / Cursor silently fail to load rules and skills.
@@ -564,8 +616,8 @@ echo "  git submodule update --remote kit && bash kit/setup.sh"
 
 if [ "$IS_WORKTREE" -eq 1 ]; then
   echo ""
-  echo "Note: this is a linked git worktree. Submodules are not populated"
-  echo "automatically by 'git worktree add' — in every new worktree run"
-  echo "'git submodule update --init --recursive' before 'bash $KIT_NAME/setup.sh'."
-  echo "See guides/quickstart-claude-code.md ('Using git worktree')."
+  echo "Note: this is a linked git worktree. The installed post-checkout hook"
+  echo "auto-populates the kit/ submodule whenever you run 'git worktree add'."
+  echo "If kit/ is ever empty, run 'git submodule update --init --recursive'"
+  echo "then 'bash $KIT_NAME/setup.sh'. See guides/quickstart-claude-code.md."
 fi

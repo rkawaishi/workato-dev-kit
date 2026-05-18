@@ -179,22 +179,33 @@ git push origin feature/learn-jira-fields
 
 ## Using git worktree
 
-`git worktree add` does **not** populate submodules in the new worktree, so the
-`kit/` submodule starts out empty there. Every `.claude/` symlink (and `docs/`,
-`guides/`, …) then points at nothing, and Claude Code cannot load the framework's
-rules or skills.
+`git worktree add` does **not** populate submodules in a new worktree on its own —
+left unhandled, the `kit/` submodule would start out empty there, every `.claude/`
+symlink (and `docs/`, `guides/`, …) would point at nothing, and Claude Code could
+not load the framework's rules or skills.
 
-After creating a worktree, initialize the submodule and re-run setup **inside it**:
+To prevent this, `bash kit/setup.sh` installs a git `post-checkout` hook that runs
+`git submodule update --init --recursive` automatically. So creating a worktree
+fills in `kit/` for you — just re-run setup to refresh the symlinks:
 
 ```bash
-git worktree add ../my-org-workato-feature feature-branch
+git worktree add ../my-org-workato-feature feature-branch   # hook populates kit/
 cd ../my-org-workato-feature
-git submodule update --init --recursive   # populate kit/ in this worktree
-bash kit/setup.sh                          # refresh the symlinks
+bash kit/setup.sh                                            # refresh the symlinks
+```
+
+If the hook is not active — you had a pre-existing `post-checkout` hook, or
+`core.hooksPath` is set (husky etc.) — `setup.sh` prints a `SKIP` notice. In that
+case populate the submodule manually first:
+
+```bash
+cd ../my-org-workato-feature
+git submodule update --init --recursive
+bash kit/setup.sh
 ```
 
 `bash kit/setup.sh` verifies the symlinks at the end and prints a `DANGLING`
-warning if the submodule is still missing.
+warning if the kit submodule is still missing.
 
 > **Note on shared submodule state**: all worktrees share one `.git/modules/kit`,
 > and its `core.worktree` can only point at one worktree at a time. `git status` /
