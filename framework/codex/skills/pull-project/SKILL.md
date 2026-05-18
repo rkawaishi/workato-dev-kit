@@ -12,6 +12,7 @@ Pull a project from the remote via the Workato Platform CLI.
 - `$pull-project` — pull the current project
 - `$pull-project <project-name>` — switch to the specified project and pull
 - `$pull-project --all` — pull every remote project
+- `$pull-project --projects "<a>","<b>"` — pull a specific subset of remote projects
 - `$pull-project --list` — show the list of remote projects
 
 ## Procedure
@@ -48,9 +49,12 @@ Then run **Step 0.5** for the project, and pull:
 workato pull
 ```
 
-### `--all`
+### `--all` / `--projects`
 1. Get the remote list: `workato projects list --source remote --output-mode json`
-2. For each project:
+2. Pick the target set:
+   - `--all`: every project in the remote list.
+   - `--projects "<a>","<b>"`: only the listed names (report any name not found in the remote list and skip it).
+3. For each target project:
    - Not present locally: `workato init --non-interactive --profile default --project-id <id> --folder-name "projects/<name>"`, then **run Step 0.5** for it.
    - Present locally: **run the git status check from Step 0**, then **Step 0.5** → `workato projects use "<name>" && workato pull`
 

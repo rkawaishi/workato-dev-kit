@@ -122,6 +122,7 @@ For when each skill should be invoked, what it reads, and what it writes, see `@
 | `/learn-recipe` | Learn field info from a recipe; reconcile plan.md / tasks.md Unlearned / [learn] entries |
 | `/learn-pattern` | Extract construction patterns from recipes and accumulate them in the catalog |
 | `/sync-connectors` | Collect and update connector info (pre-built: API; custom: parse connector.rb) |
+| `/onboard` | First-time onboarding: pull all existing projects/connectors and run the learn / sync / catalog skills to bootstrap the org knowledge base (thin orchestrator) |
 | `/auto-learn` | Autonomously collect every operation for one connector via Claude in Chrome (no prompts, skip + log uncertain cases). Prefer breadth over completeness. |
 | `/design` | **Deprecated**: only `/design migrate` is used in normal operation. `/design` (view) and `/design update` keep working with a warning. `/design new` is retired. |
 
