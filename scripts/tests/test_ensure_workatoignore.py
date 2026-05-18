@@ -81,6 +81,22 @@ def test_tops_up_old_file_without_optout_block():
         assert body.count("specs/") == 1      # no duplication
 
 
+def test_topup_handles_missing_trailing_newline():
+    """An existing file with no trailing newline must not get the first
+    appended entry concatenated onto its last line."""
+    with tempfile.TemporaryDirectory() as d:
+        proj = Path(d) / "p"
+        proj.mkdir()
+        (proj / ".workatoignore").write_text("specs/")  # no trailing \n
+        r = run(str(proj))
+        assert r.returncode == 0, r.stderr
+        body = lines(proj / ".workatoignore")
+        assert "specs/" in body            # intact, not "specs/DESIGN.md"
+        assert "DESIGN.md" in body          # appended on its own line
+        assert not any(ln.startswith("specs/") and ln != "specs/"
+                       for ln in body)
+
+
 def test_preserves_user_lines():
     with tempfile.TemporaryDirectory() as d:
         proj = Path(d) / "p"
