@@ -18,6 +18,9 @@ Usage:
   python3 scripts/workato-api.py sdk push --connector <path> [--title <t>]
     (auto-detects new vs. update by reading connector_id from
      connectors/docs/<name>.md frontmatter; saves ID back after initial create)
+  python3 scripts/workato-api.py sdk pull (--connector-id <id> | --name <name>)
+    (downloads connector source to connectors/<name>/connector.rb and saves
+     connector_id back to connectors/docs/<name>.md frontmatter)
   python3 scripts/workato-api.py sdk edit <file> [--key <master.key>]
   python3 scripts/workato-api.py sdk decrypt <file> [--key <master.key>]
   python3 scripts/workato-api.py profile show
@@ -331,6 +334,19 @@ class WorkatoAPI:
     def connectors_list_custom(self) -> list:
         result = self._request("/api/custom_connectors")
         return result if isinstance(result, list) else result.get("result", [])
+
+    def connectors_get_custom(self, connector_id: int) -> dict:
+        """Fetch a single custom connector record (id, name, title, code, ...).
+
+        The Platform API has historically returned the source under several
+        shapes — `code`, `result.code`, `latest_released_version.code`, or
+        within `released_versions[]`. The caller is expected to use
+        `_extract_connector_source` to handle whichever shape comes back.
+        """
+        result = self._request(f"/api/custom_connectors/{connector_id}")
+        if isinstance(result, dict):
+            return result.get("data", result.get("result", result))
+        return result  # type: ignore[return-value]
 
     # -- SDK (Custom Connectors) --
 
@@ -720,6 +736,186 @@ def _resolve_connector_id(
         return None, docs_path
 
 
+def _extract_connector_source(record: dict) -> str | None:
+    """Best-effort extraction of the Ruby source from a custom-connector record.
+
+    The Platform API has used several shapes over time; check in order:
+      1. `code` (current).
+      2. `source_code` (some older deployments).
+      3. `latest_released_version.code` (when released-version is nested).
+      4. The newest entry in `released_versions[]` by version number.
+    """
+    if not isinstance(record, dict):
+        return None
+
+    for key in ("code", "source_code"):
+        value = record.get(key)
+        if isinstance(value, str) and value:
+            return value
+
+    latest = record.get("latest_released_version")
+    if isinstance(latest, dict):
+        for key in ("code", "source_code"):
+            value = latest.get(key)
+            if isinstance(value, str) and value:
+                return value
+
+    versions = record.get("released_versions")
+    if isinstance(versions, list) and versions:
+        def _ver_key(v: dict) -> int:
+            try:
+                return int(v.get("version", 0))
+            except (TypeError, ValueError):
+                return 0
+        candidates = [v for v in versions if isinstance(v, dict)]
+        for v in sorted(candidates, key=_ver_key, reverse=True):
+            for key in ("code", "source_code"):
+                value = v.get(key)
+                if isinstance(value, str) and value:
+                    return value
+
+    return None
+
+
+def _connector_slug(record: dict, fallback: str | None = None) -> str:
+    """Pick the directory-name slug for a fetched custom connector.
+
+    Prefers `name` (which is typically a slug), then `title` lowered with
+    non-alnum chars replaced. Falls back to `fallback` (usually the CLI arg)
+    or the connector ID stringified.
+    """
+    import re
+
+    raw = record.get("name") if isinstance(record, dict) else None
+    if not raw:
+        raw = record.get("title") if isinstance(record, dict) else None
+    if not raw:
+        raw = fallback or ""
+    raw = str(raw).strip()
+    slug = re.sub(r"[^a-z0-9]+", "_", raw.lower()).strip("_")
+    return slug or (str(record.get("id")) if isinstance(record, dict) else "connector")
+
+
+def cmd_sdk_pull(api: WorkatoAPI, args: argparse.Namespace):
+    """Pull a custom connector's source from Workato to the local filesystem."""
+    if args.connector_id is None and not args.name:
+        print(
+            "Error: provide --connector-id <id> or --name <connector-name>.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    connector_id = args.connector_id
+    record: dict | None = None
+
+    if connector_id is None:
+        # Resolve name -> id via the list endpoint
+        listed = api.connectors_list_custom()
+        target = args.name.lower()
+        matches = [
+            c for c in listed
+            if isinstance(c, dict) and (
+                str(c.get("name", "")).lower() == target
+                or str(c.get("title", "")).lower() == target
+            )
+        ]
+        if not matches:
+            print(
+                f"Error: no custom connector with name/title '{args.name}'. "
+                f"Run 'connectors list-custom' to see available connectors.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        if len(matches) > 1:
+            ids = ", ".join(str(c.get("id")) for c in matches)
+            print(
+                f"Error: name '{args.name}' is ambiguous (matches ids: {ids}). "
+                f"Re-run with --connector-id.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        record = matches[0]
+        connector_id = int(record["id"])
+        # The list response sometimes already contains the code; only re-fetch
+        # if it doesn't.
+        if _extract_connector_source(record) is None:
+            record = api.connectors_get_custom(connector_id)
+    else:
+        record = api.connectors_get_custom(connector_id)
+
+    source = _extract_connector_source(record or {})
+    if source is None:
+        print(
+            f"Error: connector id={connector_id} has no source code in the "
+            f"API response. (It may have no released version yet.)",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    slug = _connector_slug(record or {}, fallback=args.name)
+    target_dir = Path(args.output_dir) if args.output_dir else Path("connectors") / slug
+    target_file = target_dir / "connector.rb"
+
+    if target_file.exists() and not args.force:
+        print(
+            f"Error: {target_file} already exists. Re-run with --force to overwrite.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    target_dir.mkdir(parents=True, exist_ok=True)
+    target_file.write_text(source)
+
+    try:
+        display_target = target_file.relative_to(Path.cwd())
+    except ValueError:
+        display_target = target_file
+
+    title = record.get("title") if isinstance(record, dict) else None
+    print(
+        f"Pulled connector id={connector_id} "
+        f"({title or slug}) -> {display_target}",
+        file=sys.stderr,
+    )
+
+    # Persist connector_id to docs frontmatter (mirrors sdk push behavior).
+    # The docs-frontmatter convention is tied to the canonical
+    # connectors/<slug>/ layout, where docs live in a sibling connectors/docs/.
+    # With --output-dir we cannot assume that layout, so skip the save rather
+    # than writing an unexpected docs/ directory next to an arbitrary path.
+    if args.skip_save_id:
+        pass
+    elif args.output_dir:
+        print(
+            "Note: connector_id not saved to docs frontmatter "
+            "(--output-dir bypasses the canonical connectors/ layout). "
+            f"Pass --connector-id {connector_id} when running sdk push.",
+            file=sys.stderr,
+        )
+    else:
+        docs_path = _connector_docs_path(target_file)
+        fm, _ = _read_frontmatter(docs_path)
+        existing = fm.get("connector_id")
+        if existing != str(connector_id):
+            fm["connector_id"] = str(connector_id)
+            _write_frontmatter(docs_path, fm, connector_name=slug)
+            try:
+                display_docs = docs_path.relative_to(Path.cwd())
+            except ValueError:
+                display_docs = docs_path
+            if existing is None:
+                print(
+                    f"Saved connector_id={connector_id} to {display_docs}",
+                    file=sys.stderr,
+                )
+            else:
+                print(
+                    f"Updated connector_id in {display_docs} "
+                    f"({existing} -> {connector_id})",
+                    file=sys.stderr,
+                )
+
+
 def cmd_sdk_push(api: WorkatoAPI, args: argparse.Namespace):
     connector_path = Path(args.connector)
     if not connector_path.exists():
@@ -972,6 +1168,31 @@ def main():
              "connectors/docs/<name>.md frontmatter",
     )
 
+    sdk_pull_p = sdk_sub.add_parser(
+        "pull", help="Pull a custom connector's source from Workato"
+    )
+    sdk_pull_p.add_argument(
+        "--connector-id", type=int, default=None,
+        help="Workato custom connector ID to pull",
+    )
+    sdk_pull_p.add_argument(
+        "--name", default=None,
+        help="Connector name or title (resolved via list-custom)",
+    )
+    sdk_pull_p.add_argument(
+        "--output-dir", default=None,
+        help="Override the output directory (default: connectors/<name>/). "
+             "When set, connector_id is not saved to docs frontmatter.",
+    )
+    sdk_pull_p.add_argument(
+        "--force", action="store_true",
+        help="Overwrite connector.rb if it already exists",
+    )
+    sdk_pull_p.add_argument(
+        "--skip-save-id", action="store_true",
+        help="Don't persist connector_id to connectors/docs/<name>.md frontmatter",
+    )
+
     sdk_decrypt_p = sdk_sub.add_parser(
         "decrypt", help="Decrypt a .enc file and print to stdout"
     )
@@ -1068,6 +1289,7 @@ def main():
         ("connectors", "list-custom"): cmd_connectors_list_custom,
         ("recipes", "list"): cmd_recipes_list,
         ("sdk", "push"): cmd_sdk_push,
+        ("sdk", "pull"): cmd_sdk_pull,
         ("sdk", "generate-schema"): cmd_sdk_generate_schema,
         ("oauth-profiles", "list"): cmd_oauth_profiles_list,
         ("oauth-profiles", "get"): cmd_oauth_profiles_get,

@@ -63,7 +63,15 @@ Read the Ruby DSL in `connectors/<name>/connector.rb` directly. No API call. Cla
 #### When `connector.rb` is missing
 
 For a custom connector that lives only in the UI (no source under `connectors/<name>/`):
-- Suggest running `workato sdk pull`.
+- Pull it via the API helper (preferred — no Ruby needed, auths via the Platform CLI profile):
+  ```bash
+  # Either by ID...
+  python3 scripts/workato-api.py sdk pull --connector-id <id>
+  # ...or by connector name / title
+  python3 scripts/workato-api.py sdk pull --name <name>
+  ```
+  This writes the source to `connectors/<name>/connector.rb` and saves `connector_id` to `connectors/docs/<name>.md` frontmatter so subsequent `sdk push` calls auto-update.
+- `bundle exec workato sdk pull` (the Ruby gem) also works, but it requires a separate API Client token.
 - After the pull, run `/sync-connectors --custom` again.
 
 ### Supplementary source for pre-built

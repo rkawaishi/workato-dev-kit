@@ -32,19 +32,24 @@ Used for local testing and development. Because the `workato` command name colli
 | `bundle exec workato edit <PATH>` | Edit an encrypted file |
 | `bundle exec workato generate <SUBCOMMAND>` | Generate code from templates |
 
-### Uploading to Workato (API helper recommended)
+### Uploading to / downloading from Workato (API helper recommended)
 
-Use the API helper to push connectors. It authenticates via the Platform CLI profile, so gem-side authentication (API Client token) is not required.
+Use the API helper for push and pull. It authenticates via the Platform CLI profile, so gem-side authentication (API Client token) is not required.
 
 ```bash
-# Create new
+# Push: create new
 python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb --title "<Title>"
 
-# Update an existing connector
+# Push: update an existing connector
 python3 scripts/workato-api.py sdk push --connector connectors/<name>/connector.rb --connector-id <id>
+
+# Pull: download a connector that exists in the workspace
+python3 scripts/workato-api.py sdk pull --connector-id <id>
+# (or by name)
+python3 scripts/workato-api.py sdk pull --name <name>
 ```
 
-> **Note**: `bundle exec workato push` is still usable, but it requires a separate API Client token.
+> **Note**: `bundle exec workato push` / `workato sdk pull` are still usable, but they require a separate API Client token.
 
 ## Project structure
 
