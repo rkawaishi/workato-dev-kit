@@ -34,6 +34,34 @@ echo ""
 
 cd "$WORKSPACE_ROOT"
 
+# ── Detect git worktree context ──────────────────────────────
+# `git worktree add` does NOT check out submodules into the new worktree,
+# so in a linked worktree the kit submodule can be empty and every symlink
+# created below would dangle. Detect a linked worktree (its --git-dir
+# differs from the shared --git-common-dir) so we can warn precisely.
+IS_WORKTREE=0
+if git -C "$WORKSPACE_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  _git_dir="$(git -C "$WORKSPACE_ROOT" rev-parse --git-dir 2>/dev/null || true)"
+  _common_dir="$(git -C "$WORKSPACE_ROOT" rev-parse --git-common-dir 2>/dev/null || true)"
+  if [ -n "$_common_dir" ] && [ "$_git_dir" != "$_common_dir" ]; then
+    IS_WORKTREE=1
+  fi
+fi
+
+# ── Verify the kit submodule is checked out ──────────────────
+# setup.sh running implies kit/setup.sh exists, but a partial checkout
+# could still lack framework/. Fail fast with a precise remedy rather
+# than building a tree of dangling symlinks.
+if [ ! -d "$KIT_DIR/framework/claude/rules" ]; then
+  echo "ERROR: the kit submodule is not fully checked out." >&2
+  echo "  Missing: $KIT_DIR/framework/claude/rules" >&2
+  echo "" >&2
+  echo "  Submodules are not auto-populated in a new 'git worktree'." >&2
+  echo "  Run this in the current working tree, then re-run setup.sh:" >&2
+  echo "    git submodule update --init --recursive" >&2
+  exit 1
+fi
+
 # ── Helpers ──────────────────────────────────────────────────
 
 # Symlink each file inside src_dir into dst_dir so the user can add
@@ -486,6 +514,42 @@ if [ -f "$KIT_DIR/framework/AGENTS.md" ]; then
   done
 fi
 
+# ── 12. Verify kit symlinks resolve ──────────────────────────
+# A linked worktree with an un-initialised kit submodule leaves the
+# symlinks above pointing at nothing. Surface that instead of letting
+# Claude Code / Cursor silently fail to load rules and skills.
+echo ""
+echo "--- Verifying kit symlinks ---"
+DANGLING=0
+while IFS= read -r -d '' link; do
+  target="$(readlink "$link")"
+  case "$target" in
+    *"$KIT_REL/"*) ;;
+    *) continue ;;
+  esac
+  if [ -e "$link" ]; then
+    continue
+  fi
+  echo "  ⚠️  DANGLING: ${link#$WORKSPACE_ROOT/} → $target" >&2
+  DANGLING=$((DANGLING + 1))
+done < <(
+  find "$WORKSPACE_ROOT/.claude" "$WORKSPACE_ROOT/.agents" "$WORKSPACE_ROOT/.gemini" \
+       -type l -print0 2>/dev/null
+  for top in docs guides scripts templates AGENTS.md GEMINI.md; do
+    if [ -L "$WORKSPACE_ROOT/$top" ]; then
+      printf '%s\0' "$WORKSPACE_ROOT/$top"
+    fi
+  done
+)
+if [ "$DANGLING" -gt 0 ]; then
+  echo "" >&2
+  echo "  $DANGLING kit symlink(s) above do not resolve — the kit submodule" >&2
+  echo "  is not checked out in this working tree. Fix with:" >&2
+  echo "    git submodule update --init --recursive" >&2
+else
+  echo "  ✓ all kit symlinks resolve"
+fi
+
 # ── Done ─────────────────────────────────────────────────────
 echo ""
 echo "=== Setup complete ==="
@@ -497,3 +561,11 @@ echo "  3. Run 'git add .claude/ .cursor/ .agents/ .gemini/ AGENTS.md GEMINI.md 
 echo ""
 echo "To update the framework later:"
 echo "  git submodule update --remote kit && bash kit/setup.sh"
+
+if [ "$IS_WORKTREE" -eq 1 ]; then
+  echo ""
+  echo "Note: this is a linked git worktree. Submodules are not populated"
+  echo "automatically by 'git worktree add' — in every new worktree run"
+  echo "'git submodule update --init --recursive' before 'bash $KIT_NAME/setup.sh'."
+  echo "See guides/quickstart-claude-code.md ('Using git worktree')."
+fi

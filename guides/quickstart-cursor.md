@@ -233,6 +233,33 @@ git submodule update --remote kit
 bash kit/setup.sh    # Copy new skills/rules, prune old ones
 ```
 
+## Using git worktree
+
+`git worktree add` does **not** populate submodules in the new worktree, so the
+`kit/` submodule starts out empty there. The `docs/` and `guides/` symlinks then
+point at nothing — and although `.cursor/` holds real file copies, its rules
+reference `@docs/...`, so the framework is effectively broken in that worktree.
+
+After creating a worktree, initialize the submodule and re-run setup **inside it**:
+
+```bash
+git worktree add ../my-org-workato-feature feature-branch
+cd ../my-org-workato-feature
+git submodule update --init --recursive   # populate kit/ in this worktree
+bash kit/setup.sh                          # refresh symlinks + re-copy .cursor/
+```
+
+`bash kit/setup.sh` re-copies `.cursor/` from the now-populated kit and verifies
+the symlinks at the end, printing a `DANGLING` warning if the submodule is still
+missing.
+
+> **Note on shared submodule state**: all worktrees share one `.git/modules/kit`,
+> and its `core.worktree` can only point at one worktree at a time. `git status` /
+> `git submodule status` for `kit/` may therefore look noisy across worktrees.
+> This is harmless because the kit is consumed read-only — just don't stage a
+> `kit` pointer change unless you intentionally bumped the kit version
+> (`git submodule update --remote kit`).
+
 ## FAQ
 
 ### Q: What is a Workato project?

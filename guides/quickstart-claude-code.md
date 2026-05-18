@@ -177,6 +177,32 @@ git push origin feature/learn-jira-fields
 # Open a PR on GitHub
 ```
 
+## Using git worktree
+
+`git worktree add` does **not** populate submodules in the new worktree, so the
+`kit/` submodule starts out empty there. Every `.claude/` symlink (and `docs/`,
+`guides/`, …) then points at nothing, and Claude Code cannot load the framework's
+rules or skills.
+
+After creating a worktree, initialize the submodule and re-run setup **inside it**:
+
+```bash
+git worktree add ../my-org-workato-feature feature-branch
+cd ../my-org-workato-feature
+git submodule update --init --recursive   # populate kit/ in this worktree
+bash kit/setup.sh                          # refresh the symlinks
+```
+
+`bash kit/setup.sh` verifies the symlinks at the end and prints a `DANGLING`
+warning if the submodule is still missing.
+
+> **Note on shared submodule state**: all worktrees share one `.git/modules/kit`,
+> and its `core.worktree` can only point at one worktree at a time. `git status` /
+> `git submodule status` for `kit/` may therefore look noisy across worktrees.
+> This is harmless because the kit is consumed read-only — just don't stage a
+> `kit` pointer change unless you intentionally bumped the kit version
+> (`git submodule update --remote kit`).
+
 ## FAQ
 
 ### Q: What is a Workato project?
