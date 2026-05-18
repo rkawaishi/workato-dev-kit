@@ -26,19 +26,41 @@ git status projects/<project-name>/
 
 If there are uncommitted changes, suggest the user commits or stashes them before pulling. Pulling without asking can lose in-progress edits. For `--all`, repeat this check per project. If the workspace repository is not under git, skip this check.
 
+### 0.5. Ensure `.workatoignore` (mandatory, before every pull)
+
+`workato pull` silently overwrites and deletes local files. Before pulling a project, make sure its `.workatoignore` exists so local-only artifacts (`specs/`, `DESIGN.md`, custom connector source, …) survive. Run this once the project directory exists — for a brand-new project, after `workato init`:
+
+```bash
+PROJ="projects/<project-name>"
+if [ ! -f "$PROJ/.workatoignore" ]; then
+  cp templates/workatoignore.template "$PROJ/.workatoignore"
+  echo "Created $PROJ/.workatoignore from the base template"
+else
+  # Append any base-template entries that are missing — never remove lines.
+  while IFS= read -r line; do
+    case "$line" in ''|\#*) continue ;; esac
+    grep -qxF "$line" "$PROJ/.workatoignore" || echo "$line" >> "$PROJ/.workatoignore"
+  done < templates/workatoignore.template
+fi
+```
+
+The base template ignores `*.custom_adapter.{rb,json}` by default: a connector pulled into the project would otherwise be re-pushed by a later `workato push` and could roll the connector back to an older version. If this project intentionally manages a connector as code, tell the user and remove those two lines.
+
 ### No argument / project name supplied
 ```bash
 # When a name is supplied, switch first
 workato projects use "<project-name>"
-# Pull
+```
+Then run **Step 0.5** for the project, and pull:
+```bash
 workato pull
 ```
 
 ### `--all`
 1. Get the remote list: `workato projects list --source remote --output-mode json`
 2. For each project:
-   - Not present locally: `workato init --non-interactive --profile default --project-id <id> --folder-name "projects/<name>"`
-   - Present locally: **run the git status check from Step 0** → `workato projects use "<name>" && workato pull`
+   - Not present locally: `workato init --non-interactive --profile default --project-id <id> --folder-name "projects/<name>"`, then **run Step 0.5** for it.
+   - Present locally: **run the git status check from Step 0**, then **Step 0.5** → `workato projects use "<name>" && workato pull`
 
 ### `--list`
 ```bash
@@ -47,4 +69,4 @@ workato projects list --source both
 
 ## Output
 
-After pull completes, list the modified files. If a new pattern emerged, suggest running `$learn-recipe`.
+After pull completes, list the modified files. Report whether `.workatoignore` was created or topped up. If a new pattern emerged, suggest running `$learn-recipe`.
