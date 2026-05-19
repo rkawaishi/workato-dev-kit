@@ -115,8 +115,8 @@ For example, for `[recipe] approval_main`:
 
 Dispatch the task to its owning skill. `/implement` itself never generates JSON.
 
-- **`[recipe]` / `[function]` / `[handler]`** — in Claude Code, dispatch directly to the **`workato-builder` subagent** (`Agent` tool, `subagent_type: workato-builder`, asset type `recipe`). `plan.md` already holds the finalized design, so no interview is needed: pass the recipe definition, Resource Inventory and Reused Assets from Step 4b plus the target file paths. The subagent runs on Sonnet and keeps the ~1000-line JSON out of this orchestrator's context, returning a short summary. (This is the generation half of `/create-recipe` Steps 7–9.) In editors without subagents, invoke `/create-recipe <project>/<NNN>-<slug>` instead.
-- **Other tags** — invoke the owning skill from the tag → skill table (via the `Agent` tool, or by instructing the user). `/create-workflow-app`, `/create-genie` and `/create-connector` each dispatch their own generation step to `workato-builder` internally.
+- **`[recipe]` / `[function]` / `[handler]`** — dispatch directly to the **`workato-builder` subagent** (asset type `recipe`), invoked through your editor's subagent mechanism. `plan.md` already holds the finalized design, so no interview is needed: pass the recipe definition, Resource Inventory and Reused Assets from Step 4b plus the target file paths. The subagent keeps the ~1000-line JSON out of this orchestrator's context, returning a short summary. (This is the generation half of `/create-recipe` Steps 7–9.) Only if your editor has no subagent support, invoke `/create-recipe <project>/<NNN>-<slug>` instead.
+- **Other tags** — invoke the owning skill from the tag → skill table. `/create-workflow-app`, `/create-genie` and `/create-connector` each dispatch their own generation step to `workato-builder` internally.
 
 > **Important**: `/implement` must not generate JSON itself. The `workato-builder` subagent and the owning skills own all implementation.
 

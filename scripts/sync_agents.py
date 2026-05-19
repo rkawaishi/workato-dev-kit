@@ -6,6 +6,9 @@ Canonical output (committed):
     framework/claude/skills/*/SKILL.md → framework/cursor/skills/*/SKILL.md
     framework/claude/skills/*/SKILL.md → framework/codex/skills/*/SKILL.md
     framework/claude/skills/*/SKILL.md → framework/gemini/skills/*/SKILL.md
+    framework/claude/agents/*.md       → framework/cursor/agents/*.md
+    framework/claude/agents/*.md       → framework/gemini/agents/*.md
+    framework/claude/agents/*.md       → framework/codex/agents/*.toml
     framework/claude/CLAUDE.md
         + framework/claude/rules/*.md → framework/AGENTS.md
 
@@ -25,15 +28,19 @@ CLAUDE_ROOT = REPO_ROOT / "framework" / "claude"
 CLAUDE_MD = CLAUDE_ROOT / "CLAUDE.md"
 CLAUDE_RULES = CLAUDE_ROOT / "rules"
 CLAUDE_SKILLS = CLAUDE_ROOT / "skills"
+CLAUDE_AGENTS = CLAUDE_ROOT / "agents"
 
 # Canonical generated output — committed, distributed via setup.sh.
 CURSOR_OUT = REPO_ROOT / "framework" / "cursor"
 CURSOR_RULES = CURSOR_OUT / "rules"
 CURSOR_SKILLS = CURSOR_OUT / "skills"
+CURSOR_AGENTS = CURSOR_OUT / "agents"
 CODEX_OUT = REPO_ROOT / "framework" / "codex"
 CODEX_SKILLS = CODEX_OUT / "skills"
+CODEX_AGENTS = CODEX_OUT / "agents"
 GEMINI_OUT = REPO_ROOT / "framework" / "gemini"
 GEMINI_SKILLS = GEMINI_OUT / "skills"
+GEMINI_AGENTS = GEMINI_OUT / "agents"
 AGENTS_MD = REPO_ROOT / "framework" / "AGENTS.md"
 
 
@@ -375,6 +382,66 @@ def sync_gemini() -> None:
         print(f"  ✓ skills/{skill_name}/SKILL.md")
 
 
+def _toml_str(s: str) -> str:
+    """Encode *s* as a TOML basic (single-line) string."""
+    return '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def sync_subagents() -> None:
+    """Convert Claude subagents → per-editor agent definitions.
+
+    framework/claude/agents/*.md (Markdown + YAML frontmatter) →
+      - framework/cursor/agents/*.md   (Cursor: Markdown + YAML frontmatter)
+      - framework/gemini/agents/*.md   (Gemini CLI: Markdown + YAML frontmatter)
+      - framework/codex/agents/*.toml  (Codex CLI: TOML)
+
+    All four editors support subagents. The non-Claude frontmatter carries
+    only name + description: ``tools`` is dropped (Claude tool names are not
+    portable — the agent inherits the parent's tools) and ``model`` is dropped
+    (it inherits the parent session's model; only the Claude source pins
+    ``sonnet``). Bodies are path-rewritten with the same rules as the matching
+    skill sync.
+    """
+    if not CLAUDE_AGENTS.is_dir():
+        return
+    slash_pattern = _build_codex_slash_pattern(_known_skill_names())
+    for src in sorted(CLAUDE_AGENTS.glob("*.md")):
+        text = src.read_text(encoding="utf-8")
+        fm, body = split_frontmatter(text)
+        name = extract_field(fm, "name") or src.stem
+        desc = extract_field(fm, "description") or ""
+
+        # Cursor — Markdown + YAML frontmatter, .cursor/agents/<name>.md
+        CURSOR_AGENTS.mkdir(parents=True, exist_ok=True)
+        cursor_body = trim_trailing_newlines(rewrite_skill_body(body))
+        (CURSOR_AGENTS / f"{name}.md").write_text(
+            f"---\nname: {name}\ndescription: {desc}\n---\n{cursor_body}\n",
+            encoding="utf-8",
+        )
+
+        # Gemini CLI — Markdown + YAML frontmatter, .gemini/agents/<name>.md
+        GEMINI_AGENTS.mkdir(parents=True, exist_ok=True)
+        gemini_body = trim_trailing_newlines(rewrite_gemini_body(body))
+        (GEMINI_AGENTS / f"{name}.md").write_text(
+            f"---\nname: {name}\ndescription: {desc}\n---\n{gemini_body}\n",
+            encoding="utf-8",
+        )
+
+        # Codex CLI — TOML, .codex/agents/<name>.toml
+        CODEX_AGENTS.mkdir(parents=True, exist_ok=True)
+        codex_desc = desc
+        codex_body = trim_trailing_newlines(rewrite_codex_body(body, slash_pattern))
+        if slash_pattern is not None:
+            codex_desc = slash_pattern.sub(r"$\1", codex_desc)
+        (CODEX_AGENTS / f"{name}.toml").write_text(
+            f"name = {_toml_str(name)}\n"
+            f"description = {_toml_str(codex_desc)}\n"
+            f"developer_instructions = '''\n{codex_body}\n'''\n",
+            encoding="utf-8",
+        )
+        print(f"  ✓ agents/{name} → cursor .md, gemini .md, codex .toml")
+
+
 def sync_agents_md() -> None:
     """Generate framework/AGENTS.md by aggregating CLAUDE.md and the rules.
 
@@ -454,6 +521,9 @@ def main() -> int:
     print()
     print("=== Syncing skills → framework/gemini/skills/ ===")
     sync_gemini()
+    print()
+    print("=== Syncing subagents → framework/{cursor,gemini,codex}/agents/ ===")
+    sync_subagents()
     print()
     print("=== Generating framework/AGENTS.md ===")
     sync_agents_md()

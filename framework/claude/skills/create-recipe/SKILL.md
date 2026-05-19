@@ -153,8 +153,7 @@ Remaining items:
 
 Steps 7–9 below are the **JSON generation procedure**. Generating a recipe produces ~1000 lines of JSON; running it inline keeps that JSON in the main conversation for the rest of the session even though it is never read again.
 
-- **In Claude Code**: dispatch Steps 7–9 to the **`workato-builder` subagent** rather than running them in the main conversation. Spawn it with the `Agent` tool (`subagent_type: workato-builder`) and pass asset type `recipe` plus the design from Steps 0–6 — the interview results (or the `plan.md` pointer), the catalog / pattern findings, the interviewed input values, and the target file paths. The subagent runs on Sonnet, executes Steps 7–9, validates and writes the files, and returns a short summary; the large JSON never enters the main context. Continue at "Output and deployment guide" using that summary.
-- **In editors without subagent support** (Cursor / Codex / Gemini): perform Steps 7–9 inline.
+**Dispatch Steps 7–9 to the `workato-builder` subagent.** Every supported editor — Claude Code, Cursor, Gemini CLI, Codex CLI — ships this subagent; invoke it through your editor's subagent mechanism. Pass it asset type `recipe` plus the design from Steps 0–6: the interview results (or the `plan.md` pointer), the catalog / pattern findings, the interviewed input values, and the target file paths. The subagent executes Steps 7–9, validates and writes the files, and returns a short summary — the large JSON never enters the main conversation. Continue at "Output and deployment guide" using that summary. (Only if your editor has no subagent support, perform Steps 7–9 inline.)
 
 The generation procedure itself is the same either way:
 

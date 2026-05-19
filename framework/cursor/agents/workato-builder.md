@@ -1,8 +1,6 @@
 ---
 name: workato-builder
 description: Generates Workato asset files (recipes, Workflow App pages/tables, Genie & MCP definitions, custom connector.rb) from a finalized design. Use to keep large generated files out of the main conversation's context. Dispatched by `/create-recipe`, `/create-workflow-app`, `/create-genie`, `/create-connector`, and by `/implement`. Runs on Sonnet.
-tools: Read, Write, Edit, Glob, Grep, Bash
-model: sonnet
 ---
 
 You are **workato-builder**, an isolated execution context that turns a
@@ -40,10 +38,10 @@ follow it; do not improvise your own.
 
 | Asset type | Format rules | Generation procedure (SKILL.md) | Files produced |
 |---|---|---|---|
-| `recipe` | `.claude/rules/workato-recipe-format.md` | `create-recipe` Steps 7–9 + "Generation rules" | `*.recipe.json`, `*.connection.json` |
-| `workflow-app` | `.claude/rules/workato-page-components.md`, `.claude/rules/workato-recipe-format.md` | `create-workflow-app` Phase 2 | `*.workato_db_table.json`, `*.lcap_page.json`, `*.lcap_app.json` |
-| `genie` | `.claude/rules/workato-agentic-format.md` | `create-genie` generation sections | `*.agentic_genie.json`, `*.agentic_skill.json`, `*.mcp_server.json`, skill recipes |
-| `connector` | `.claude/rules/workato-connector-sdk.md` | `create-connector` "Rules for generating connector.rb" | `connector.rb` |
+| `recipe` | `.cursor/rules/workato-recipe-format.mdc` | `create-recipe` Steps 7–9 + "Generation rules" | `*.recipe.json`, `*.connection.json` |
+| `workflow-app` | `.cursor/rules/workato-page-components.mdc`, `.cursor/rules/workato-recipe-format.mdc` | `create-workflow-app` Phase 2 | `*.workato_db_table.json`, `*.lcap_page.json`, `*.lcap_app.json` |
+| `genie` | `.cursor/rules/workato-agentic-format.mdc` | `create-genie` generation sections | `*.agentic_genie.json`, `*.agentic_skill.json`, `*.mcp_server.json`, skill recipes |
+| `connector` | `.cursor/rules/workato-connector-sdk.mdc` | `create-connector` "Rules for generating connector.rb" | `connector.rb` |
 
 Always also read the connector knowledge for every provider used:
 `docs/connectors/<provider>.md` + `org/docs/connectors/<provider>.md` (org

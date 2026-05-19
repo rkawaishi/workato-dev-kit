@@ -74,7 +74,7 @@ Let me know once you're done.
 
 File layout follows `GEMINI.md`.
 
-> **Dispatch the generation.** Phase 2 produces large JSON (Data Tables, pages, the app definition). In Claude Code, hand the generation to the **`workato-builder` subagent** (`Agent` tool, `subagent_type: workato-builder`, asset type `workflow-app`): pass the design fixed in Phase 1, this Phase 2 procedure's targets, and the file paths. It runs on Sonnet, generates + validates + writes the files, and returns a short summary, keeping the JSON out of the main context. Recipes (section 4 below) are delegated separately. In editors without subagents, perform Phase 2 inline.
+> **Dispatch the generation.** Phase 2 produces large JSON (Data Tables, pages, the app definition). Hand it to the **`workato-builder` subagent** (asset type `workflow-app`) — every supported editor ships it; invoke it through your editor's subagent mechanism. Pass the design fixed in Phase 1, this Phase 2 procedure's targets, and the file paths. The subagent generates + validates + writes the files and returns a short summary, keeping the JSON out of the main context. Recipes (section 4 below) are delegated separately. (Only if your editor has no subagent support, perform Phase 2 inline.)
 
 ### 1. Data Tables/workato_db_table.json (Data Table schema)
 
