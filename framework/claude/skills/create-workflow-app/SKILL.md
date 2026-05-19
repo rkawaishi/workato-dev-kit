@@ -1,6 +1,6 @@
 ---
 description: Build a Workato Workflow App (approval workflows, etc.). The only UI action is enabling the App. Everything else (Data Table, stages, pages, recipes) is generated as JSON and pushed. Japanese prompts are also supported.
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch, Agent
 ---
 
 # /create-workflow-app
@@ -73,6 +73,8 @@ Let me know once you're done.
 ## Phase 2: generate every component as JSON, then push
 
 File layout follows `@.claude/rules/workato-project-structure.md`.
+
+> **Dispatch the generation.** Phase 2 produces large JSON (Data Tables, pages, the app definition). In Claude Code, hand the generation to the **`workato-builder` subagent** (`Agent` tool, `subagent_type: workato-builder`, asset type `workflow-app`): pass the design fixed in Phase 1, this Phase 2 procedure's targets, and the file paths. It runs on Sonnet, generates + validates + writes the files, and returns a short summary, keeping the JSON out of the main context. Recipes (section 4 below) are delegated separately. In editors without subagents, perform Phase 2 inline.
 
 ### 1. Data Tables/workato_db_table.json (Data Table schema)
 

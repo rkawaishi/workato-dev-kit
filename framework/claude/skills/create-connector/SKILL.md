@@ -1,6 +1,6 @@
 ---
 description: Scaffold a Workato custom connector (Connector SDK) project and generate its connector.rb. Japanese prompts are also supported.
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch, Agent
 ---
 
 # /create-connector
@@ -33,6 +33,8 @@ Interactively generate a Workato Connector SDK custom-connector project.
    - If an OpenAPI spec exists, prefer it.
 
 4. Generate files under `connectors/<name>/`:
+
+   > **Dispatch the generation.** `connector.rb` runs to hundreds of lines. In Claude Code, hand the generation to the **`workato-builder` subagent** (`Agent` tool, `subagent_type: workato-builder`, asset type `connector`): pass the design from steps 1–3, the connector.rb conventions in "Rules for generating connector.rb" below, and the target paths. The subagent runs on Sonnet, generates + runs `ruby -c` + writes the files, and returns a short summary, keeping the Ruby source out of the main context. In editors without subagents, generate inline.
 
 ### Files generated
 

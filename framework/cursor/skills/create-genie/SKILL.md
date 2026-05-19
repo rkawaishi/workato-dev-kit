@@ -50,6 +50,8 @@ Supports Genie alone, MCP server alone, or both.
    - For MCP exposure: `<project>/Agents/<name>.mcp_server.json` — MCP server definition.
    - Make sure `zip_name` / `folder` inside the JSON include the subfolder path.
 
+   > **Dispatch the generation.** In Claude Code, hand this file generation to the **`workato-builder` subagent** (`Agent` tool, `subagent_type: workato-builder`, asset type `genie`): pass the design from steps 1–3, the `instructions` / skill-recipe / MCP-server conventions in the sections below, and the target paths. The subagent runs on Sonnet, writes the files, and returns a short summary, keeping the JSON out of the main context. In editors without subagents, generate inline.
+
 5. **Delegate skill recipes to `/create-recipe`**:
    - Lay out each skill's recipe requirements (trigger: `workato_genie/start_workflow`, parameters, external integration targets).
    - Invoke `/create-recipe` to generate the recipe (with interview).
