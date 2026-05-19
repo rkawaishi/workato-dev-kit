@@ -301,6 +301,33 @@ def test_gemini_strips_at_org():
     assert sa.rewrite_gemini_body("@org/docs/foo.md") == "org/docs/foo.md"
 
 
+# --- subagent sync --------------------------------------------------
+
+
+def test_toml_str_escapes_quote_and_backslash():
+    assert sa._toml_str('a"b\\c') == '"a\\"b\\\\c"'
+
+
+def test_toml_str_plain():
+    assert sa._toml_str("hello world") == '"hello world"'
+
+
+def test_codex_agent_toml_is_parseable():
+    """Every generated framework/codex/agents/*.toml must parse, and the
+    multi-line developer_instructions literal must survive the round-trip."""
+    import tomllib
+
+    codex_agents = sa.CODEX_AGENTS
+    if not codex_agents.is_dir():
+        return  # nothing generated yet — sync has not run
+    for toml_file in sorted(codex_agents.glob("*.toml")):
+        data = tomllib.loads(toml_file.read_text(encoding="utf-8"))
+        assert data.get("name"), f"{toml_file.name}: missing name"
+        assert data.get("description"), f"{toml_file.name}: missing description"
+        assert data.get("developer_instructions"), \
+            f"{toml_file.name}: missing developer_instructions"
+
+
 # --- main() smoke ---------------------------------------------------
 
 

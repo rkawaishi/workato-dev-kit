@@ -179,6 +179,19 @@ link_files_in_dir \
   "$WORKSPACE_ROOT/.claude/hooks" \
   "../../$KIT_REL/framework/claude/hooks"
 
+# ── 3b. .claude/agents/ (per-file symlinks; Claude Code subagents) ──
+# Subagents are the canonical source here; sync_agents.py regenerates the
+# Cursor / Gemini / Codex variants distributed in sections 8-10 below.
+if [ -d "$KIT_DIR/framework/claude/agents" ]; then
+  echo ""
+  echo "--- Setting up .claude/agents/ ---"
+  prune_stale_links "$WORKSPACE_ROOT/.claude/agents" "framework/claude/agents/"
+  link_files_in_dir \
+    "$KIT_DIR/framework/claude/agents" \
+    "$WORKSPACE_ROOT/.claude/agents" \
+    "../../$KIT_REL/framework/claude/agents"
+fi
+
 # ── 4. docs/ guides/ scripts/ templates/ (directory symlinks) ──
 echo ""
 echo "--- Setting up top-level directories ---"
@@ -366,7 +379,7 @@ if [ -d "$KIT_DIR/framework/cursor" ]; then
   NEW_MANIFEST="$(mktemp)"
   (
     cd "$KIT_DIR/framework/cursor"
-    find rules skills -type f 2>/dev/null | sort
+    find rules skills agents -type f 2>/dev/null | sort
     [ -f hooks.json ] && echo "hooks.json"
   ) > "$NEW_MANIFEST"
 
@@ -461,6 +474,16 @@ if [ -d "$KIT_DIR/framework/codex" ]; then
     ln -s "$rel_target" "$dst"
     echo "  ✓ skills/$skill_name → $rel_target"
   done
+
+  # Subagents → .codex/agents/<name>.toml (Codex CLI reads .codex/agents/).
+  if [ -d "$KIT_DIR/framework/codex/agents" ]; then
+    echo "--- Setting up .codex/agents/ ---"
+    prune_stale_links "$WORKSPACE_ROOT/.codex/agents" "framework/codex/agents/"
+    link_files_in_dir \
+      "$KIT_DIR/framework/codex/agents" \
+      "$WORKSPACE_ROOT/.codex/agents" \
+      "../../$KIT_REL/framework/codex/agents"
+  fi
 fi
 
 # ── 10. Gemini CLI distribution ──────────────────────────────
@@ -488,6 +511,16 @@ if [ -d "$KIT_DIR/framework/gemini" ]; then
     ln -s "$rel_target" "$dst"
     echo "  ✓ skills/$skill_name → $rel_target"
   done
+
+  # Subagents → .gemini/agents/<name>.md (Gemini CLI reads .gemini/agents/).
+  if [ -d "$KIT_DIR/framework/gemini/agents" ]; then
+    echo "--- Setting up .gemini/agents/ ---"
+    prune_stale_links "$WORKSPACE_ROOT/.gemini/agents" "framework/gemini/agents/"
+    link_files_in_dir \
+      "$KIT_DIR/framework/gemini/agents" \
+      "$WORKSPACE_ROOT/.gemini/agents" \
+      "../../$KIT_REL/framework/gemini/agents"
+  fi
 fi
 
 # ── 11. AGENTS.md / GEMINI.md (cross-agent conventions) ──────
@@ -585,8 +618,8 @@ while IFS= read -r -d '' link; do
   echo "  ⚠️  DANGLING: ${link#$WORKSPACE_ROOT/} → $target" >&2
   DANGLING=$((DANGLING + 1))
 done < <(
-  find "$WORKSPACE_ROOT/.claude" "$WORKSPACE_ROOT/.agents" "$WORKSPACE_ROOT/.gemini" \
-       -type l -print0 2>/dev/null
+  find "$WORKSPACE_ROOT/.claude" "$WORKSPACE_ROOT/.agents" "$WORKSPACE_ROOT/.codex" \
+       "$WORKSPACE_ROOT/.gemini" -type l -print0 2>/dev/null
   for top in docs guides scripts templates AGENTS.md GEMINI.md; do
     if [ -L "$WORKSPACE_ROOT/$top" ]; then
       printf '%s\0' "$WORKSPACE_ROOT/$top"

@@ -1,6 +1,6 @@
 ---
 description: Build a Workato Workflow App (approval workflows, etc.). The only UI action is enabling the App. Everything else (Data Table, stages, pages, recipes) is generated as JSON and pushed. Japanese prompts are also supported.
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch, Agent
 ---
 
 # /create-workflow-app
@@ -73,6 +73,8 @@ Let me know once you're done.
 ## Phase 2: generate every component as JSON, then push
 
 File layout follows `@.claude/rules/workato-project-structure.md`.
+
+> **Dispatch the generation.** Phase 2 produces large JSON (Data Tables, pages, the app definition). Hand it to the **`workato-builder` subagent** (asset type `workflow-app`) — every supported editor ships it; invoke it through your editor's subagent mechanism. Pass the design fixed in Phase 1, this Phase 2 procedure's targets, and the file paths. The subagent generates + validates + writes the files and returns a short summary, keeping the JSON out of the main context. Recipes (section 4 below) are delegated separately. (Only if your editor has no subagent support, perform Phase 2 inline.)
 
 ### 1. Data Tables/workato_db_table.json (Data Table schema)
 
