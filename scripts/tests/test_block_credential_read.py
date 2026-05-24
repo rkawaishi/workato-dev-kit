@@ -90,6 +90,40 @@ def test_claude_blocks_grep_inside_credential_dir():
     assert r.returncode == 2
 
 
+def test_claude_blocks_grep_on_dir_containing_credential(tmp_path=None):
+    """Codex P1 regression: Grep(path=<dir>) must block if the directory
+    contains a credential file, even when the path itself is innocent."""
+    import os, tempfile
+    with tempfile.TemporaryDirectory() as d:
+        cred_dir = Path(d) / "connectors" / "x"
+        cred_dir.mkdir(parents=True)
+        (cred_dir / "master.key").write_text("secret")
+        (cred_dir / "connector.rb").write_text("# code")
+        r = run(CLAUDE_HOOK, {"tool_name": "Grep",
+                              "tool_input": {"path": str(Path(d) / "connectors")}})
+        assert r.returncode == 2, r.stderr
+        assert "master.key" in r.stderr
+
+
+def test_claude_blocks_glob_on_dir_containing_credential():
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        (Path(d) / "settings.yaml.enc").write_text("ciphertext")
+        r = run(CLAUDE_HOOK, {"tool_name": "Glob",
+                              "tool_input": {"path": str(d), "pattern": "**/*.rb"}})
+        assert r.returncode == 2, r.stderr
+
+
+def test_claude_allows_grep_on_clean_dir():
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        (Path(d) / "a.recipe.json").write_text("{}")
+        (Path(d) / "b.recipe.json").write_text("{}")
+        r = run(CLAUDE_HOOK, {"tool_name": "Grep",
+                              "tool_input": {"path": str(d)}})
+        assert r.returncode == 0, r.stderr
+
+
 # ---------------------------------------------------------------------------
 # Claude hook — Bash
 # ---------------------------------------------------------------------------

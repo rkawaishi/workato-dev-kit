@@ -75,9 +75,33 @@ elif tool == "NotebookEdit":
     if np:
         paths.append(np)
 elif tool in ("Grep", "Glob"):
-    pp = ti.get("path")
-    if pp:
-        paths.append(pp)
+    # Direct path match (e.g. Grep(path="master.key")) — block immediately.
+    pp = ti.get("path") or "."
+    direct = path_hit(pp)
+    if direct:
+        print(f"DENY:{direct}:{pp}")
+        sys.exit(0)
+    # Reachability check: if Grep/Glob points at a directory that contains
+    # any credential file, its results would expose it. Walk the tree and
+    # deny if a credential basename is found. Bounded by skipping known
+    # heavy dirs (.git, node_modules, …) so the hook stays interactive.
+    try:
+        target = pp if os.path.isabs(pp) else os.path.abspath(pp)
+        if os.path.isdir(target):
+            SKIP_DIRS = {".git", "node_modules", ".venv", "venv",
+                         "dist", "build", "__pycache__", ".cache"}
+            for root, dirs, files in os.walk(target, followlinks=False):
+                dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
+                for f in files:
+                    for pat in patterns:
+                        if fnmatch.fnmatchcase(f, pat):
+                            rel = os.path.join(root, f)
+                            print(f"DENY:{pat}:{tool} on '{pp}' would expose {rel}")
+                            sys.exit(0)
+    except Exception:
+        pass  # fail open on traversal errors; Read/Bash hook layers still apply
+    print("OK")
+    sys.exit(0)
 elif tool == "Bash":
     hit = bash_hit(ti.get("command", "") or "")
     if hit:
