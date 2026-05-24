@@ -9,6 +9,15 @@
             "command": ".claude/hooks/validate-before-push.sh"
           }
         ]
+      },
+      {
+        "matcher": "Bash|Read|Edit|Write|NotebookEdit|Grep|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/block-credential-read.sh"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -34,7 +43,18 @@
     ],
     "deny": [
       "Bash(rm -rf:*)",
-      "Bash(sudo:*)"
+      "Bash(sudo:*)",
+      "Read(./**/.workatoenv)",
+      "Read(./**/master.key)",
+      "Read(./**/settings.yaml)",
+      "Read(./**/settings.yaml.enc)",
+      "Read(./**/.resource-providers.yml)",
+      "Read(./**/.env)",
+      "Read(./**/.env.*)",
+      "Read(./**/*.key)",
+      "Read(./**/*.pem)",
+      "Read(./**/*.secret)",
+      "Read(./**/*.credential*)"
     ]
   }
 }

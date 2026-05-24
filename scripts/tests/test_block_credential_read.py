@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+"""Tests for the credential-block PreToolUse hooks.
+
+Covers framework/claude/hooks/block-credential-read.sh (every read-ish
+tool plus Bash) and framework/codex/hooks/block-credential-read.sh
+(Bash-only — the rest do not fire PreToolUse in Codex).
+
+Run with:
+    python3 scripts/tests/test_block_credential_read.py
+"""
+
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+import traceback
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+REPO = HERE.parent.parent
+CLAUDE_HOOK = REPO / "framework" / "claude" / "hooks" / "block-credential-read.sh"
+CODEX_HOOK = REPO / "framework" / "codex" / "hooks" / "block-credential-read.sh"
+
+
+def run(hook: Path, payload: dict | str) -> subprocess.CompletedProcess:
+    body = payload if isinstance(payload, str) else json.dumps(payload)
+    return subprocess.run(
+        ["bash", str(hook)],
+        input=body, capture_output=True, text=True,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Claude hook — paths
+# ---------------------------------------------------------------------------
+
+def test_claude_blocks_read_workatoenv():
+    r = run(CLAUDE_HOOK, {"tool_name": "Read",
+                          "tool_input": {"file_path": "projects/foo/.workatoenv"}})
+    assert r.returncode == 2, r.stderr
+    assert ".workatoenv" in r.stderr
+
+
+def test_claude_blocks_read_master_key():
+    r = run(CLAUDE_HOOK, {"tool_name": "Read",
+                          "tool_input": {"file_path": "/abs/connectors/x/master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_read_settings_yaml_enc():
+    r = run(CLAUDE_HOOK, {"tool_name": "Read",
+                          "tool_input": {"file_path": "connectors/y/settings.yaml.enc"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_read_glob_dot_key():
+    r = run(CLAUDE_HOOK, {"tool_name": "Read",
+                          "tool_input": {"file_path": "secrets/id_rsa.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_read_dot_env_variant():
+    r = run(CLAUDE_HOOK, {"tool_name": "Read",
+                          "tool_input": {"file_path": ".env.production"}})
+    assert r.returncode == 2
+
+
+def test_claude_allows_normal_recipe_read():
+    r = run(CLAUDE_HOOK, {"tool_name": "Read",
+                          "tool_input": {"file_path": "projects/foo/Recipes/a.recipe.json"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_blocks_edit_credential():
+    r = run(CLAUDE_HOOK, {"tool_name": "Edit",
+                          "tool_input": {"file_path": "master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_write_credential():
+    r = run(CLAUDE_HOOK, {"tool_name": "Write",
+                          "tool_input": {"file_path": "settings.yaml"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_grep_inside_credential_dir():
+    r = run(CLAUDE_HOOK, {"tool_name": "Grep",
+                          "tool_input": {"path": "connectors/foo/master.key"}})
+    assert r.returncode == 2
+
+
+# ---------------------------------------------------------------------------
+# Claude hook — Bash
+# ---------------------------------------------------------------------------
+
+def test_claude_blocks_bash_cat_workatoenv():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "cat projects/foo/.workatoenv | head"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_bash_glob_token():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "openssl pkey -in id_rsa.key -text"}})
+    assert r.returncode == 2
+
+
+def test_claude_allows_bash_ls_projects():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "ls projects/"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_bash_no_creds():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git status"}})
+    assert r.returncode == 0, r.stderr
+
+
+# ---------------------------------------------------------------------------
+# Claude hook — fail-open on malformed input
+# ---------------------------------------------------------------------------
+
+def test_claude_allows_malformed_json():
+    r = run(CLAUDE_HOOK, "not-json{")
+    assert r.returncode == 0, r.stderr
+
+
+# ---------------------------------------------------------------------------
+# Codex hook (Bash-only)
+# ---------------------------------------------------------------------------
+
+def test_codex_blocks_bash_grep_master_key():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "grep token connectors/x/master.key"}})
+    assert r.returncode == 2
+
+
+def test_codex_blocks_bash_cat_workatoenv():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "cat .workatoenv"}})
+    assert r.returncode == 2
+
+
+def test_codex_allows_non_bash_read():
+    # Codex PreToolUse only fires for Bash; if a non-Bash payload somehow
+    # arrives, the hook must not block (it has no signal to act on).
+    r = run(CODEX_HOOK, {"tool_name": "Read",
+                         "tool_input": {"file_path": ".workatoenv"}})
+    assert r.returncode == 0
+
+
+def test_codex_allows_bash_no_creds():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "git status"}})
+    assert r.returncode == 0
+
+
+def test_codex_allows_malformed_json():
+    r = run(CODEX_HOOK, "{broken")
+    assert r.returncode == 0
+
+
+def main() -> int:
+    tests = [(name, obj) for name, obj in sorted(globals().items())
+             if name.startswith("test_") and callable(obj)]
+    failures: list[tuple[str, str]] = []
+    for name, fn in tests:
+        try:
+            fn()
+            print(f"  ok  {name}")
+        except Exception:
+            failures.append((name, traceback.format_exc()))
+            print(f"  FAIL {name}")
+    print(f"\n{len(tests) - len(failures)}/{len(tests)} passed")
+    for name, tb in failures:
+        print(f"\n--- {name} ---\n{tb}")
+    return 1 if failures else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
