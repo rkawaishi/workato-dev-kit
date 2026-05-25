@@ -92,7 +92,7 @@ File layout follows `GEMINI.md`.
 ```
 
 - The three system field UUIDs are common across every table.
-- Generate a fresh UUID with `uuidgen` for each user-defined field.
+- Generate a fresh UUID with `uuidgen` for each user-defined field. Use the raw 36-character output as-is — **do not add a prefix or suffix** (e.g. no `field-<uuid>`). The same 36-character limit applies to recipe step `uuid` fields; push rejects anything longer.
 - `type`: `short-text`, `long-text`, `number`, `boolean`, `date`, `date-time`, `file`, `relation`.
 
 ### 2. Pages/lcap_page.json (page definitions)

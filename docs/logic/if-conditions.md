@@ -107,3 +107,7 @@ ELSE → actions                   ← default branch
 - Use `else` for the default branch without a condition (using `elsif` without a condition is incorrect)
 - `elsif` can be chained multiple times (`if` → `elsif` → `elsif` → `else`)
 
+### `uuid` constraint
+
+Each entry under `conditions[]` has a `uuid` field. It is a UUID v4 and must be **36 characters or fewer** — same limit as the step-level `uuid`. Generate with `uuidgen` and use the raw output (do not add a prefix). Push rejects longer values.
+
