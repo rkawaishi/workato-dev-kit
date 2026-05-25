@@ -1124,7 +1124,7 @@ Each step has:
 | `block` | array | Array of child steps (nestable). |
 | `filter` | object | Conditional filter (optional). |
 | `comment` | string | Step comment (optional). |
-| `uuid` | string | UUID v4. |
+| `uuid` | string | UUID v4. **36 characters or fewer** (do not prefix or extend it — push rejects longer values). The same limit applies to `uuid` fields inside `filter.conditions[]` and `input.conditions[]`. |
 | `extended_output_schema` | array/null | Custom output schema. **Recommended on both triggers and actions** — omitting it forces a UI refresh. |
 | `extended_input_schema` | array/null | Custom input schema. Required on `return_result` and similar. |
 

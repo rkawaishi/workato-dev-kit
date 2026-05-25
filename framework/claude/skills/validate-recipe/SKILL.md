@@ -22,6 +22,7 @@ Validates the structure of Workato JSON files.
 - [ ] Every step has `number`, `provider`, `name`, `keyword`, `uuid`
 - [ ] `number` values are sequential
 - [ ] `uuid` is a valid UUID v4
+- [ ] `uuid` is 36 characters or fewer (push rejects longer values; applies to step `uuid`, `filter.conditions[].uuid`, and `input.conditions[].uuid`)
 - [ ] Steps inside `block` recursively follow the same structure
 - [ ] Every `provider` in `config` is actually used by the recipe
 - [ ] Datapill references (`_dp`) point at a real step (`provider` + `line`)
@@ -50,6 +51,7 @@ Validates the structure of Workato JSON files.
 ⚠️  file2.recipe.json — 2 warnings
   - W001: Step 3 is missing its uuid
   - W002: config contains unused provider "slack"
+  - E002: Step 5 uuid exceeds 36 characters (push will fail)
 ❌ file3.recipe.json — 1 error
   - E001: code.keyword is not "trigger"
 ```

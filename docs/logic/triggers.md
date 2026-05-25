@@ -79,3 +79,5 @@ Apply additional filtering after events are fetched.
 ```
 
 See `@docs/logic/if-conditions.md` for the full list of condition operators.
+
+Each entry's `uuid` is a UUID v4 and must be **36 characters or fewer** (push rejects longer values). Generate with `uuidgen` and use the raw 36-character output without prefixes.
