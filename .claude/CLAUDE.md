@@ -61,8 +61,11 @@ In a user repository (one that has added the kit as a submodule), running `bash 
 | `.cursor/.kit-manifest` | generated | list of kit-managed files (used for prune decisions on the next setup) |
 | `.agents/skills/<name>/` | symlink | `kit/framework/codex/skills/<name>/` |
 | `.codex/agents/<file>.toml` | symlink | `kit/framework/codex/agents/<file>.toml` |
+| `.codex/hooks/<file>.sh` | symlink | `kit/framework/codex/hooks/<file>.sh` |
+| `.codex/hooks.json` | initial copy | `kit/framework/codex/hooks.json` |
 | `.gemini/skills/<name>/` | symlink | `kit/framework/gemini/skills/<name>/` |
 | `.gemini/agents/<file>.md` | symlink | `kit/framework/gemini/agents/<file>.md` |
+| `.cursorignore` / `.geminiignore` / `.codexignore` | append | credential globs from `kit/framework/credential-patterns.txt` |
 | `AGENTS.md` | symlink | `kit/framework/AGENTS.md` |
 | `GEMINI.md` | symlink | `kit/framework/AGENTS.md` (same artifact) |
 

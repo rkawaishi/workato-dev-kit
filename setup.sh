@@ -244,15 +244,18 @@ PY
   echo "  ✓ Created .claude/settings.json (from kit template)"
 else
   # Existing settings: migrate hook paths written by older setup.sh to the
-  # framework/claude/ layout. Leave hooks the user added (non-kit ones)
-  # alone.
+  # framework/claude/ layout, and top up the credential-guard hook + the
+  # permissions.deny credential rules. Leave hooks / rules the user added
+  # (non-kit ones) alone.
   USER_SETTINGS="$USER_SETTINGS" KIT_REL="$KIT_REL" \
+    CRED_PATTERNS_FILE="$KIT_DIR/framework/credential-patterns.txt" \
     python3 <<'PY'
 import json
 import os
 
 user_settings = os.environ['USER_SETTINGS']
 kit_rel = os.environ['KIT_REL']
+patterns_file = os.environ.get('CRED_PATTERNS_FILE', '')
 old_prefix = kit_rel + '/.claude/hooks/'
 new_prefix = kit_rel + '/framework/claude/hooks/'
 
@@ -268,13 +271,56 @@ for event in s.get('hooks', {}).values():
                 hook['command'] = new_prefix + cmd[len(old_prefix):]
                 migrated += 1
 
-if migrated:
+# Top up the block-credential-read PreToolUse hook.
+hooks_root = s.setdefault('hooks', {})
+pre = hooks_root.setdefault('PreToolUse', [])
+def _has_cred_hook(pre_list):
+    for group in pre_list:
+        for h in group.get('hooks', []):
+            if 'block-credential-read' in h.get('command', ''):
+                return True
+    return False
+
+added_hook = False
+if not _has_cred_hook(pre):
+    pre.append({
+        'matcher': 'Bash|Read|Edit|Write|NotebookEdit|Grep|Glob',
+        'hooks': [{
+            'type': 'command',
+            'command': new_prefix + 'block-credential-read.sh',
+        }],
+    })
+    added_hook = True
+
+# Top up permissions.deny with Read(./**/<glob>) for every credential pattern.
+perms = s.setdefault('permissions', {})
+deny = perms.setdefault('deny', [])
+added_deny = 0
+if patterns_file and os.path.isfile(patterns_file):
+    with open(patterns_file) as pf:
+        for line in pf:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            rule = f'Read(./**/{line})'
+            if rule not in deny:
+                deny.append(rule)
+                added_deny += 1
+
+if migrated or added_hook or added_deny:
     with open(user_settings, 'w') as f:
         json.dump(s, f, indent=2, ensure_ascii=False)
         f.write('\n')
-    print(f'  ✓ Migrated {migrated} kit hook path(s) in .claude/settings.json (.claude/hooks/ → framework/claude/hooks/)')
+    msgs = []
+    if migrated:
+        msgs.append(f'migrated {migrated} kit hook path(s)')
+    if added_hook:
+        msgs.append('added block-credential-read PreToolUse hook')
+    if added_deny:
+        msgs.append(f'added {added_deny} credential deny rule(s)')
+    print('  ✓ Updated .claude/settings.json (' + '; '.join(msgs) + ')')
 else:
-    print('  EXISTS .claude/settings.json (no kit hook paths needed migrating — merge manually if other changes are needed)')
+    print('  EXISTS .claude/settings.json (kit entries already present)')
 PY
 fi
 
@@ -338,6 +384,52 @@ if [ $added -gt 0 ]; then
   echo "  ✓ Added $added entries to .gitignore"
 else
   echo "  ✓ .gitignore already up to date"
+fi
+
+# ── 7b. Per-editor credential ignore files ───────────────────
+# Distribute the credential glob list from framework/credential-patterns.txt
+# to each editor's ignore mechanism so the agent will not even index / read
+# credentials:
+#   .cursorignore   — Cursor: "hard block" (.cursorindexingignore is partial).
+#   .geminiignore   — Gemini CLI: gitignore-style; respected by tools.
+#   .codexignore    — Codex CLI: shipped for forward-compat; Codex currently
+#                     does not respect it (openai/codex#6530), so the .codex/
+#                     hooks/block-credential-read.sh hook (Bash-only) is the
+#                     enforcement layer available today.
+# Claude has no working ignore-file convention — credential reads are blocked
+# by the .claude/hooks/block-credential-read.sh PreToolUse hook and the
+# permissions.deny list in .claude/settings.json (section 5).
+CRED_PATTERNS_FILE="$KIT_DIR/framework/credential-patterns.txt"
+if [ -f "$CRED_PATTERNS_FILE" ]; then
+  echo ""
+  echo "--- Setting up per-editor credential ignore files ---"
+  add_credential_patterns() {
+    local target="$1"
+    local header="$2"
+    touch "$target"
+    local added=0
+    while IFS= read -r line; do
+      case "$line" in '#'*|'') continue ;; esac
+      if ! grep -qxF "$line" "$target" 2>/dev/null; then
+        if [ $added -eq 0 ] && [ -n "$header" ] && ! grep -qF "$header" "$target" 2>/dev/null; then
+          { [ -s "$target" ] && echo ""; echo "$header"; } >> "$target"
+        fi
+        echo "$line" >> "$target"
+        added=$((added + 1))
+      fi
+    done < "$CRED_PATTERNS_FILE"
+    local name
+    name="$(basename "$target")"
+    if [ $added -gt 0 ]; then
+      echo "  ✓ Added $added credential entries to $name"
+    else
+      echo "  ✓ $name already covers credentials"
+    fi
+  }
+  HEADER="# workato-dev-kit credential patterns (managed by kit/setup.sh)"
+  add_credential_patterns "$WORKSPACE_ROOT/.cursorignore"  "$HEADER"
+  add_credential_patterns "$WORKSPACE_ROOT/.geminiignore"  "$HEADER"
+  add_credential_patterns "$WORKSPACE_ROOT/.codexignore"   "$HEADER"
 fi
 
 # ── 8. Cursor distribution (copy mode) ───────────────────────
@@ -483,6 +575,24 @@ if [ -d "$KIT_DIR/framework/codex" ]; then
       "$KIT_DIR/framework/codex/agents" \
       "$WORKSPACE_ROOT/.codex/agents" \
       "../../$KIT_REL/framework/codex/agents"
+  fi
+
+  # Hooks → .codex/hooks/<file>.sh (referenced by .codex/hooks.json below).
+  if [ -d "$KIT_DIR/framework/codex/hooks" ]; then
+    echo "--- Setting up .codex/hooks/ ---"
+    prune_stale_links "$WORKSPACE_ROOT/.codex/hooks" "framework/codex/hooks/"
+    link_files_in_dir \
+      "$KIT_DIR/framework/codex/hooks" \
+      "$WORKSPACE_ROOT/.codex/hooks" \
+      "../../$KIT_REL/framework/codex/hooks"
+  fi
+
+  # .codex/hooks.json — initial copy only, never overwrites a user-customised
+  # hooks config.
+  if [ -f "$KIT_DIR/framework/codex/hooks.json" ] && [ ! -f "$WORKSPACE_ROOT/.codex/hooks.json" ]; then
+    mkdir -p "$WORKSPACE_ROOT/.codex"
+    cp "$KIT_DIR/framework/codex/hooks.json" "$WORKSPACE_ROOT/.codex/hooks.json"
+    echo "  ✓ Created .codex/hooks.json (from kit template)"
   fi
 fi
 
