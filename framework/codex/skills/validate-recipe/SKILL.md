@@ -51,9 +51,9 @@ Validates the structure of Workato JSON files.
 ⚠️  file2.recipe.json — 2 warnings
   - W001: Step 3 is missing its uuid
   - W002: config contains unused provider "slack"
-  - E002: Step 5 uuid exceeds 36 characters (push will fail)
-❌ file3.recipe.json — 1 error
+❌ file3.recipe.json — 2 errors
   - E001: code.keyword is not "trigger"
+  - E002: Step 5 uuid exceeds 36 characters (push will fail)
 ```
 
 Severity: ❌ Error (likely to fail on push) > ⚠️ Warning (works but discouraged) > ℹ️ Info (informational).
