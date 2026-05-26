@@ -230,7 +230,9 @@ Data references use the `_dp()` function:
 }
 ```
 
-`operand` values (the literal string in JSON, verified against a recipe exercising all 14 operators — see `@docs/logic/if-conditions.md` for details):
+`operand` values (the literal string in JSON, verified against a recipe exercising all 14 operators — see `@docs/logic/if-conditions.md` for the supported types, edge cases, and the full investigation):
+
+> The public Workato docs page ([conditions.html](https://docs.workato.com/en/features/conditions.html)) lists short forms such as `eq`, `not_eq`, `gt`, `lt`, `not_present`. **Recipe JSON does not use these.** Use the values in the table below.
 
 | Display | JSON `operand` |
 |---|---|

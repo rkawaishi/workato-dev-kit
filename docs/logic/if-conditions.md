@@ -40,7 +40,16 @@ All 14 values were verified by building a recipe that exercises every operator a
 | Is present | `present` | All | A value exists (null/empty string is false). **`present`, not `is_present`** |
 | Is not present | `blank` | All | No value exists. **`blank` — note the UI label is "Is not present"** |
 
-Unary operators (`is_true`, `is_not_true`, `present`, `blank`) still require `rhs` in the JSON — set it to an empty string (`"rhs": ""`).
+Unary operators (`is_true`, `is_not_true`, `present`, `blank`) still require `rhs` in the JSON — set it to an empty string (`"rhs": ""`). Minimal example:
+
+```json
+{
+  "operand": "present",
+  "lhs": "#{_dp('...')}",
+  "rhs": "",
+  "uuid": "..."
+}
+```
 
 > The Workato public docs page ([conditions.html](https://docs.workato.com/en/features/conditions.html)) presents short identifiers such as `eq`, `not_eq`, `gt`, `lt`, and `not_present`. **Those are not what the recipe JSON contains.** Use the JSON values in the table above.
 
@@ -64,6 +73,8 @@ Unary operators (`is_true`, `is_not_true`, `present`, `blank`) still require `rh
 
 Real recipe JSON places the `input` fields in the order `type`, `operand`, `conditions` (JSON object key order is cosmetic, but matching what `workato pull` writes makes diffs cleaner).
 
+Every step (`if` / `elsif` / `else` and the inner actions) carries its own top-level `uuid` — the examples below show it explicitly so the field doesn't look optional.
+
 ### if (conditional branch)
 ```json
 {
@@ -84,7 +95,8 @@ Real recipe JSON places the `input` fields in the order `type`, `operand`, `cond
   "block": [
     /* actions when true */
     { /* else or elsif — placed at the end of block */ }
-  ]
+  ],
+  "uuid": "..."
 }
 ```
 
@@ -111,7 +123,8 @@ Real recipe JSON places the `input` fields in the order `type`, `operand`, `cond
     "operand": "and",
     "conditions": [ /* conditions required */ ]
   },
-  "block": [ /* actions when the condition is true */ ]
+  "block": [ /* actions when the condition is true */ ],
+  "uuid": "..."
 }
 ```
 
