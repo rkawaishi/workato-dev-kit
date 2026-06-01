@@ -94,6 +94,7 @@ The three inviolable principles:
 - Custom connectors: `@.claude/rules/workato-connector-sdk.md`
 - CLI: `@.claude/rules/workato-cli.md`
 - CLI/API autonomy (always check before asking the user to do something in the UI): `@.claude/rules/workato-cli-autonomy.md`
+- **Deployment flow (inviolable: push targets dev only, promotion via Deploy)**: `@.claude/rules/workato-deployment-flow.md`
 - Organization knowledge overlay: `@.claude/rules/org-knowledge-overlay.md`
 - Connector details: pre-built → `@docs/connectors/` (+ `@org/docs/connectors/`); custom → `@connectors/docs/`. For missing entries, WebFetch.
 - Record new findings in `org/docs/<relative-path>` (do not edit the kit's `docs/` directly).
@@ -763,6 +764,91 @@ Steps:
 - `connectors/` lives in the organization's workspace repository.
 
 Details: `@docs/connector-sdk/connector-rb.md`.
+
+<!-- source: framework/claude/rules/workato-deployment-flow.md -->
+## Workato deployment flow (inviolable)
+
+*Applies to: `projects/**`, `.workatoenv`*
+
+### The rule
+
+**Push always targets dev.** Promotion to test or prod must go through Workato's **Deploy** feature (UI or Recipe Lifecycle Management API).
+
+> Never run `workato push` against a `<org>-test` or `<org>-prod` profile.
+> Never script around deployment approvals.
+> If unsure which environment a profile points at, **default to dev**.
+
+This rule applies to AI agents and human developers alike. It exists because:
+
+- A direct push to test or prod skips release-manager review.
+- A direct push leaves no manifest, so the deployment cannot be audited or rolled back.
+- A direct push silently overwrites whatever is currently running in that environment.
+
+### Pre-flight checks before every push
+
+Run these in order. **Abort the push if any check fails. There is no confirmation-prompt escape hatch — the rule is inviolable.**
+
+1. **Read `.workatoenv`** and extract `workspace_id`.
+2. **Resolve the profile** via `python3 scripts/workato-api.py profile show`.
+3. **Confirm the profile name ends with `-dev`.** Anything else — `-test`, `-prod`, `-production`, `-staging`, `-qa`, or any non-`-dev` suffix — is a hard stop. Abort and tell the user:
+
+   ```
+   Refusing to push: the resolved profile is <profile-name>, which does not match the dev convention (<org>-dev).
+   Push must target dev. Options:
+     (a) Switch to a dev profile: workato profiles use <org>-dev
+     (b) If <profile-name> is in fact your dev workspace, rename it to follow the <org>-dev convention.
+   To promote to test/prod, use the Deploy feature in the Workato UI.
+   ```
+
+   Do **not** ask the user for confirmation to proceed. The convention exists specifically so that AI agents can reason about the target environment from the profile name alone; honoring custom names ad-hoc defeats the safety guarantee.
+
+4. **Confirm `workspace_id` matches a dev workspace.** If your organization tags workspaces (e.g. in a comment field), verify the tag says dev.
+
+### When the user asks "push to prod"
+
+Do not do it. Reply with:
+
+```
+Direct push to prod is not allowed. To release to prod:
+
+1. Push to dev (workato push, with the <org>-dev profile).
+2. Verify in the dev workspace.
+3. In the Workato UI, open the project and click Deploy → test. Get QA sign-off.
+4. From test, click Deploy → prod. Get release-manager approval.
+
+See @docs/platform/environments.md for the full Deploy flow.
+```
+
+### When you must read from test or prod
+
+Reading (pull, list) is allowed against any profile because it does not mutate the remote. Use it sparingly — for example, to diff dev against prod when investigating a release issue:
+
+```bash
+# Allowed
+workato pull --profile <org>-prod   # into a scratch directory
+
+# Forbidden
+workato push --profile <org>-prod
+```
+
+### CLI/API operations the rule covers
+
+| Operation | Against `<org>-dev` | Against `<org>-test` | Against `<org>-prod` |
+|---|---|---|---|
+| `workato push` | ✅ | ❌ refuse | ❌ refuse |
+| `workato push --delete` | ✅ (with care) | ❌ refuse | ❌ refuse |
+| `workato push --restart-recipes` | ✅ | ❌ refuse | ❌ refuse |
+| `workato pull` | ✅ | ✅ | ✅ |
+| `workato recipes start --all` | ✅ | ❌ refuse | ❌ refuse |
+| `python3 scripts/workato-api.py sdk push` | ✅ | ❌ refuse | ❌ refuse |
+| `POST /api/deployments/{id}/approve` | n/a | ❌ never script | ❌ never script |
+
+### Related
+
+- `@docs/platform/environments.md` — environment roles and the Deploy feature
+- `@docs/platform/cli-profiles.md` — profile naming and push/pull matrix
+- `@.claude/rules/workato-cli.md` — Platform CLI commands
+- `@.claude/rules/workato-cli-autonomy.md` — when the CLI is the right answer
 
 <!-- source: framework/claude/rules/workato-page-components.md -->
 ## Workato Page Component JSON Format

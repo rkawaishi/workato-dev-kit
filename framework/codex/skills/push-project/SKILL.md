@@ -19,6 +19,18 @@ Push local changes to the Workato remote and verify the recipes work.
 
 ## Procedure
 
+### 0. Environment guard (mandatory)
+
+**Before any validation or push, confirm the push target is dev.** See `AGENTS.md` for the full rule.
+
+```bash
+python3 scripts/workato-api.py profile show
+```
+
+- **Hard-block: if the resolved profile name does not end with `-dev`, abort immediately.** This covers `-test`, `-prod`, `-production`, `-staging`, `-qa`, and any other non-dev suffix. Do not offer a confirmation prompt — the rule is inviolable.
+- The only way to proceed is for the user to either (a) switch to a `-dev` profile, or (b) rename their dev profile to follow the `<org>-dev` convention. Tell the user which option applies.
+- Direct push to test/prod is forbidden; promotion goes through the Deploy feature (`docs/platform/environments.md`).
+
 ### 1. Project validation
 
 Validate the project's JSON files before pushing. With `--validate-only`, stop here.

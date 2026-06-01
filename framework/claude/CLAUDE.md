@@ -91,6 +91,7 @@ The three inviolable principles:
 - Custom connectors: `@.claude/rules/workato-connector-sdk.md`
 - CLI: `@.claude/rules/workato-cli.md`
 - CLI/API autonomy (always check before asking the user to do something in the UI): `@.claude/rules/workato-cli-autonomy.md`
+- **Deployment flow (inviolable: push targets dev only, promotion via Deploy)**: `@.claude/rules/workato-deployment-flow.md`
 - Organization knowledge overlay: `@.claude/rules/org-knowledge-overlay.md`
 - Connector details: pre-built → `@docs/connectors/` (+ `@org/docs/connectors/`); custom → `@connectors/docs/`. For missing entries, WebFetch.
 - Record new findings in `org/docs/<relative-path>` (do not edit the kit's `docs/` directly).
