@@ -1304,24 +1304,26 @@ Data references use the `_dp()` function:
 }
 ```
 
-`operand` values (the literal string in JSON):
+`operand` values (the literal string in JSON, verified against a recipe exercising all 14 operators — see `@docs/logic/if-conditions.md` for the supported types, edge cases, and the full investigation):
+
+> The public Workato docs page ([conditions.html](https://docs.workato.com/en/features/conditions.html)) lists short forms such as `eq`, `not_eq`, `gt`, `lt`, `not_present`. **Recipe JSON does not use these.** Use the values in the table below.
 
 | Display | JSON `operand` |
 |---|---|
 | contains | `contains` |
 | doesn't contain | `not_contains` |
 | starts with | `starts_with` |
-| doesn't start with | `not_starts_with` (unverified) |
+| doesn't start with | `not_starts_with` |
 | ends with | `ends_with` |
-| doesn't end with | `not_ends_with` (unverified) |
-| equals | **`equals_to`** (not `equals`) |
-| doesn't equal | `not_equals` |
+| doesn't end with | `not_ends_with` |
+| equals | `equals_to` (not `equals` / `eq`) |
+| doesn't equal | `not_equals_to` (not `not_equals`) |
 | greater than | `greater_than` |
 | less than | `less_than` |
 | is true | `is_true` |
-| is not true | `is_false` |
-| is present | `is_present` |
-| is not present | `is_not_present` |
+| is not true | `is_not_true` |
+| is present | `present` (not `is_present`) |
+| is not present | `blank` (UI label is "Is not present") |
 
 ### `config`: connection references
 
