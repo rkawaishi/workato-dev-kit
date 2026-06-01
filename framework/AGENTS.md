@@ -786,16 +786,21 @@ This rule applies to AI agents and human developers alike. It exists because:
 
 ### Pre-flight checks before every push
 
-Run these in order. **Abort the push if any check fails.**
+Run these in order. **Abort the push if any check fails. There is no confirmation-prompt escape hatch — the rule is inviolable.**
 
 1. **Read `.workatoenv`** and extract `workspace_id`.
 2. **Resolve the profile** via `python3 scripts/workato-api.py profile show`.
-3. **Confirm the profile name ends with `-dev`.** If it ends with `-test` or `-prod`, abort and tell the user:
+3. **Confirm the profile name ends with `-dev`.** Anything else — `-test`, `-prod`, `-production`, `-staging`, `-qa`, or any non-`-dev` suffix — is a hard stop. Abort and tell the user:
 
    ```
-   Refusing to push: the resolved profile is <profile-name>, which targets a non-dev environment.
-   Push must target dev. To promote to test/prod, use the Deploy feature in the Workato UI.
+   Refusing to push: the resolved profile is <profile-name>, which does not match the dev convention (<org>-dev).
+   Push must target dev. Options:
+     (a) Switch to a dev profile: workato profiles use <org>-dev
+     (b) If <profile-name> is in fact your dev workspace, rename it to follow the <org>-dev convention.
+   To promote to test/prod, use the Deploy feature in the Workato UI.
    ```
+
+   Do **not** ask the user for confirmation to proceed. The convention exists specifically so that AI agents can reason about the target environment from the profile name alone; honoring custom names ad-hoc defeats the safety guarantee.
 
 4. **Confirm `workspace_id` matches a dev workspace.** If your organization tags workspaces (e.g. in a comment field), verify the tag says dev.
 
