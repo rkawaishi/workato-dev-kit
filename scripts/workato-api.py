@@ -23,6 +23,11 @@ Usage:
      connector_id back to connectors/docs/<name>.md frontmatter)
   python3 scripts/workato-api.py sdk edit <file> [--key <master.key>]
   python3 scripts/workato-api.py sdk decrypt <file> [--key <master.key>]
+  python3 scripts/workato-api.py deploy preview --from <env> --to <env>
+    [--folder-id <id>] [--from-profile <name>] [--to-profile <name>]
+    (read-only preview of the manifest that would be exported; runs the
+     same env-transition guards as a real deploy will. Real deploy
+     execution is tracked under Issue #160 PR-2b.)
   python3 scripts/workato-api.py profile show
 
 Global options:
@@ -42,9 +47,13 @@ Subcommand conventions (for contributors adding new subcommands):
     - provide --dry-run that prints the intended request without sending it
     - set epilog= with at least one --dry-run example as the first example
     - guard environment boundaries in code, not just docs:
-        * deploy commands: --from and --to required; refuse if
-          --to in {test,prod} and --from != dev
-        * --to prod additionally requires --yes (CI-friendly confirm)
+        * deploy commands: --from and --to required; the (from, to) pair
+          must be one of {(dev, test), (test, prod)} — skip-tier
+          (dev -> prod), backward (test -> dev, prod -> *), and same-env
+          transitions are refused
+        * execution deploys with --to prod additionally require --yes
+          (CI-friendly confirm); preview/read-only deploy commands do not
+          require --yes since they have no side effects
 
   Read-only subcommands (*list, *get, jobs list/get, profile show) do not
   need --dry-run or epilog, but still need help= and description=.
@@ -513,6 +522,167 @@ class WorkatoAPI:
             page += 1
         return all_recipes
 
+    # -- Deploy (Recipe Lifecycle Management) --
+
+    def deploy_folder_assets(self, folder_id: int) -> list:
+        """List assets in a folder that would be included in an export manifest.
+
+        Calls the read-only `GET /api/export_manifests/folder_assets`
+        endpoint. Returns the asset list as Workato reports it (each entry
+        carries id, type, name, and folder context). This drives the
+        preview output for `deploy preview`; the same data feeds the
+        manifest body used by `deploy run` (PR-2b).
+        """
+        result = self._request(
+            "/api/export_manifests/folder_assets",
+            params={"folder_id": folder_id},
+        )
+        if isinstance(result, dict):
+            data = result.get("result", result.get("data", result))
+            if isinstance(data, dict):
+                return data.get("assets", [])
+            if isinstance(data, list):
+                return data
+        return result if isinstance(result, list) else []
+
+
+# ---------------------------------------------------------------------------
+# Deploy helpers (environment guard + profile pair resolution)
+# ---------------------------------------------------------------------------
+
+
+DEPLOY_ENVS = ("dev", "test", "prod")
+ALLOWED_DEPLOY_TRANSITIONS = {("dev", "test"), ("test", "prod")}
+
+
+def check_deploy_transition(from_env: str, to_env: str) -> None:
+    """Refuse invalid (from, to) pairs before any API call or profile work.
+
+    Allowed: (dev, test), (test, prod). Everything else — skip-tier
+    (dev -> prod), backward (test -> dev, prod -> *), and same-env —
+    is rejected. See workato-deployment-flow.md.
+    """
+    if from_env == to_env:
+        print(
+            f"Error: --from and --to are both '{from_env}'. "
+            f"Deploy requires distinct source and target environments.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if (from_env, to_env) not in ALLOWED_DEPLOY_TRANSITIONS:
+        allowed = ", ".join(f"{a}->{b}" for a, b in sorted(ALLOWED_DEPLOY_TRANSITIONS))
+        print(
+            f"Error: deploy {from_env}->{to_env} is not allowed. "
+            f"Allowed transitions: {allowed}. "
+            f"Skip-tier (dev->prod), backward, and same-env transitions are "
+            f"refused (see workato-deployment-flow.md).",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+def _strip_env_suffix(profile_name: str) -> str | None:
+    """Return the org prefix if profile_name follows `<org>-<env>`."""
+    for env in DEPLOY_ENVS:
+        suffix = f"-{env}"
+        if profile_name.endswith(suffix) and len(profile_name) > len(suffix):
+            return profile_name[: -len(suffix)]
+    return None
+
+
+def derive_sibling_profile(source_name: str, target_env: str) -> str | None:
+    """Given `<org>-<env>`, return `<org>-<target_env>` if pattern matches."""
+    org = _strip_env_suffix(source_name)
+    if org is None:
+        return None
+    return f"{org}-{target_env}"
+
+
+def resolve_deploy_profiles(
+    from_env: str,
+    to_env: str,
+    explicit_from: str | None,
+    explicit_to: str | None,
+    explicit_default: str | None,
+) -> tuple[tuple[str, dict], tuple[str, dict]]:
+    """Resolve source and target profiles for a deploy.
+
+    Resolution order:
+      Source: explicit --from-profile, else current resolved profile
+              (must follow `<org>-<from_env>` so the target can be derived).
+      Target: explicit --to-profile, else `<org>-<to_env>` derived from
+              the source profile name.
+
+    Exits with a clear error if any required profile cannot be resolved.
+    """
+    profiles_data = load_profiles()
+    profiles = profiles_data.get("profiles", {})
+
+    # Source profile
+    if explicit_from:
+        source_name = explicit_from
+    else:
+        source_name, _ = resolve_profile(explicit_default)
+    if source_name not in profiles:
+        print(
+            f"Error: source profile '{source_name}' not found in "
+            f"~/.workato/profiles.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    source_profile = profiles[source_name]
+
+    # Target profile
+    if explicit_to:
+        target_name = explicit_to
+    else:
+        derived = derive_sibling_profile(source_name, to_env)
+        if derived is None:
+            print(
+                f"Error: cannot derive target profile from "
+                f"'{source_name}'. Expected `<org>-{from_env}` naming so "
+                f"the target can be inferred as `<org>-{to_env}`. Pass "
+                f"--to-profile <name> to override.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        target_name = derived
+    if target_name not in profiles:
+        print(
+            f"Error: target profile '{target_name}' not found in "
+            f"~/.workato/profiles. Configure it with `workato init` or "
+            f"pass --to-profile <name>.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    target_profile = profiles[target_name]
+
+    return (source_name, source_profile), (target_name, target_profile)
+
+
+def resolve_deploy_folder_id(explicit_folder_id: int | None) -> int:
+    """Resolve folder_id from --folder-id or .workatoenv. Exit if neither."""
+    if explicit_folder_id is not None:
+        return explicit_folder_id
+    env_data = find_workatoenv()
+    if env_data is None:
+        print(
+            "Error: no --folder-id given and no .workatoenv found by "
+            "walking up from the current directory. Run from inside a "
+            "project, or pass --folder-id <id>.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    folder_id = env_data.get("folder_id")
+    if not isinstance(folder_id, int):
+        print(
+            "Error: .workatoenv was found but does not contain an "
+            "integer folder_id. Pass --folder-id <id> explicitly.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    return folder_id
+
 
 # ---------------------------------------------------------------------------
 # CLI Commands
@@ -542,6 +712,74 @@ def cmd_connectors_list_custom(api: WorkatoAPI, args: argparse.Namespace):
 def cmd_recipes_list(api: WorkatoAPI, args: argparse.Namespace):
     recipes = api.recipes_list(args.folder_id)
     print(json.dumps(recipes, indent=2, ensure_ascii=False))
+
+
+def _summarize_assets(assets: list) -> dict:
+    """Group assets by `type` and return {type: count}."""
+    counts: dict = {}
+    for a in assets:
+        if not isinstance(a, dict):
+            continue
+        kind = a.get("type") or a.get("asset_type") or "unknown"
+        counts[kind] = counts.get(kind, 0) + 1
+    return counts
+
+
+def cmd_deploy_preview(_api: WorkatoAPI, args: argparse.Namespace):
+    """Read-only preview of what `deploy run` (PR-2b) would export.
+
+    Runs the env-transition guard, resolves source and target profiles,
+    resolves folder_id, then calls the source workspace's read-only
+    folder_assets endpoint and prints what would be packaged. Makes no
+    writes to either workspace.
+    """
+    check_deploy_transition(args.from_env, args.to_env)
+
+    (source_name, source_profile), (target_name, target_profile) = \
+        resolve_deploy_profiles(
+            args.from_env, args.to_env,
+            args.from_profile, args.to_profile,
+            args.profile,
+        )
+
+    folder_id = resolve_deploy_folder_id(args.folder_id)
+
+    source_region = source_profile.get("region_url", "")
+    if not source_region:
+        print(
+            f"Error: source profile '{source_name}' has no region_url.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    source_token = get_token(source_name)
+    source_api = WorkatoAPI(source_region, source_token)
+
+    assets = source_api.deploy_folder_assets(folder_id)
+    summary = _summarize_assets(assets)
+
+    output = {
+        "mode": "preview",
+        "source": {
+            "profile": source_name,
+            "workspace_url": source_region,
+            "env": args.from_env,
+        },
+        "target": {
+            "profile": target_name,
+            "workspace_url": target_profile.get("region_url", ""),
+            "env": args.to_env,
+        },
+        "folder_id": folder_id,
+        "asset_summary": summary,
+        "assets": assets,
+        "notes": [
+            "No API writes were performed; only the read-only "
+            "/api/export_manifests/folder_assets endpoint was called on the "
+            "source workspace.",
+            "Real deploy execution is tracked under Issue #160 PR-2b.",
+        ],
+    }
+    print(json.dumps(output, indent=2, ensure_ascii=False))
 
 
 def cmd_oauth_profiles_list(api: WorkatoAPI, args: argparse.Namespace):
@@ -1200,6 +1438,56 @@ def main():
         "--folder-id", type=int, default=None, help="Filter by folder ID"
     )
 
+    # -- deploy --
+    deploy_parser = subparsers.add_parser(
+        "deploy", help="Promote a project between environments (Recipe Lifecycle)"
+    )
+    deploy_sub = deploy_parser.add_subparsers(dest="deploy_command")
+
+    deploy_preview_p = deploy_sub.add_parser(
+        "preview",
+        help="Preview the manifest that would be exported",
+        description=(
+            "Preview what would be packaged for a deploy from --from to "
+            "--to, without writing to either workspace. Runs the same "
+            "(from, to) transition guards as a real deploy: only "
+            "dev->test and test->prod are allowed. Calls only the "
+            "read-only /api/export_manifests/folder_assets endpoint on "
+            "the source workspace."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  # Preview a dev -> test deploy of the current project\n"
+            "  python3 scripts/workato-api.py deploy preview --from dev --to test\n\n"
+            "  # Preview a test -> prod deploy with explicit folder and profiles\n"
+            "  python3 scripts/workato-api.py deploy preview --from test --to prod \\\n"
+            "      --folder-id 12345 --from-profile acme-test --to-profile acme-prod\n\n"
+            "  # Skip-tier (dev -> prod) is refused before any API call:\n"
+            "  python3 scripts/workato-api.py deploy preview --from dev --to prod\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    deploy_preview_p.add_argument(
+        "--from", dest="from_env", choices=DEPLOY_ENVS, required=True,
+        help="Source environment (dev/test/prod)",
+    )
+    deploy_preview_p.add_argument(
+        "--to", dest="to_env", choices=DEPLOY_ENVS, required=True,
+        help="Target environment (dev/test/prod)",
+    )
+    deploy_preview_p.add_argument(
+        "--folder-id", type=int, default=None,
+        help="Folder ID to export (default: from .workatoenv in cwd)",
+    )
+    deploy_preview_p.add_argument(
+        "--from-profile", default=None,
+        help="Source profile name (default: current resolved profile)",
+    )
+    deploy_preview_p.add_argument(
+        "--to-profile", default=None,
+        help="Target profile name (default: derive `<org>-<to>` from source)",
+    )
+
     # -- sdk --
     sdk_parser = subparsers.add_parser(
         "sdk", help="Connector SDK commands (uses Platform API token)"
@@ -1445,6 +1733,15 @@ def main():
     if args.command == "sdk" and getattr(args, "sdk_command", None) in ("decrypt", "edit"):
         handler = {"decrypt": cmd_sdk_decrypt, "edit": cmd_sdk_edit}[args.sdk_command]
         handler(None, args)
+        return
+
+    # deploy resolves source/target profiles independently of the global
+    # --profile flag, so it dispatches before the single-profile setup.
+    if args.command == "deploy":
+        if getattr(args, "deploy_command", None) == "preview":
+            cmd_deploy_preview(None, args)  # type: ignore[arg-type]
+        else:
+            deploy_parser.print_help()
         return
 
     # Resolve profile and create API client
