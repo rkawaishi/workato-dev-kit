@@ -23,6 +23,14 @@ Usage:
      connector_id back to connectors/docs/<name>.md frontmatter)
   python3 scripts/workato-api.py sdk edit <file> [--key <master.key>]
   python3 scripts/workato-api.py sdk decrypt <file> [--key <master.key>]
+  python3 scripts/workato-api.py deploy preview --to <test|prod>
+    [--project-id <id> | --folder-id <id>]
+    (read-only preview: same env guard as deploy run, but no API write)
+  python3 scripts/workato-api.py deploy run --to <test|prod>
+    [--project-id <id> | --folder-id <id>] [--description <text>]
+    [--yes] [--wait] [--timeout <sec>]
+    (--yes required when --to prod; --wait polls until success/failed)
+  python3 scripts/workato-api.py deploy status <deployment-id>
   python3 scripts/workato-api.py profile show
 
 Global options:
@@ -40,11 +48,19 @@ Subcommand conventions (for contributors adding new subcommands):
   changes state in Workato — push, deploy, recipe start/stop, oauth-profiles
   create/update/delete, etc.) additionally MUST:
     - provide --dry-run that prints the intended request without sending it
-    - set epilog= with at least one --dry-run example as the first example
+      (or ship a sibling `preview` subcommand that fulfills the same role —
+      see deploy preview)
+    - set epilog= with at least one --dry-run / preview example
     - guard environment boundaries in code, not just docs:
-        * deploy commands: --from and --to required; refuse if
-          --to in {test,prod} and --from != dev
-        * --to prod additionally requires --yes (CI-friendly confirm)
+        * deploy commands: --to is the only env flag; the source
+          environment is inferred from the resolved profile's
+          `<org>-<env>` suffix. The (source, --to) pair must be one of
+          {(dev, test), (test, prod)} — skip-tier (dev->prod), backward
+          (test->dev, prod->*), and same-env transitions are refused
+          before any API call.
+        * execution deploys with --to prod additionally require --yes
+          (CI-friendly confirm); preview commands do not require --yes
+          since they have no side effects.
 
   Read-only subcommands (*list, *get, jobs list/get, profile show) do not
   need --dry-run or epilog, but still need help= and description=.
@@ -513,6 +529,186 @@ class WorkatoAPI:
             page += 1
         return all_recipes
 
+    # -- Projects API: deploy --
+
+    def project_deploy(
+        self,
+        project_ref: str,
+        environment_type: str,
+        description: str | None = None,
+    ) -> dict:
+        """Deploy a project to test or prod via the Projects API.
+
+        POST /api/projects/:id/deploy?environment_type=test|prod
+        :id accepts either a numeric project_id or `f{folder_id}` (per
+        the Workato docs). Returns the Deployment object; state will
+        typically be `pending` and require polling via deployment_get().
+        """
+        body: dict = {}
+        if description is not None:
+            body["description"] = description
+        result = self._request(
+            f"/api/projects/{project_ref}/deploy",
+            params={"environment_type": environment_type},
+            method="POST",
+            body=body if body else None,
+        )
+        if isinstance(result, dict):
+            return result.get("data", result.get("result", result))
+        return result  # type: ignore[return-value]
+
+    def deployment_get(self, deployment_id: int | str) -> dict:
+        """GET /api/deployments/:id — fetch a single deployment record."""
+        result = self._request(f"/api/deployments/{deployment_id}")
+        if isinstance(result, dict):
+            return result.get("data", result.get("result", result))
+        return result  # type: ignore[return-value]
+
+
+# ---------------------------------------------------------------------------
+# Deploy helpers (env guard + profile env inference + polling)
+# ---------------------------------------------------------------------------
+
+
+DEPLOY_SOURCE_ENVS = ("dev", "test")
+DEPLOY_TARGET_ENVS = ("test", "prod")
+ALLOWED_DEPLOY_TRANSITIONS = {("dev", "test"), ("test", "prod")}
+DEPLOYMENT_TERMINAL_STATES = {"success", "failed", "succeeded", "failure"}
+
+
+def infer_profile_env(profile_name: str) -> str | None:
+    """Return `dev`, `test`, or `prod` if profile_name ends with `-<env>`.
+
+    Used to derive the source environment from the resolved profile, since
+    the Projects deploy API does not take a `--from` flag. Profile names
+    that do not follow the `<org>-<env>` convention return None and force
+    the caller to explain the constraint.
+    """
+    for env in ("dev", "test", "prod"):
+        suffix = f"-{env}"
+        if profile_name.endswith(suffix) and len(profile_name) > len(suffix):
+            return env
+    return None
+
+
+def check_deploy_transition(source_env: str | None, target_env: str) -> None:
+    """Refuse invalid (source, target) pairs before any API call.
+
+    Allowed: (dev, test), (test, prod). source_env=None means the profile
+    name did not follow the `<org>-<env>` convention; in that case we
+    cannot prove the transition is safe, so refuse with a clear message
+    about the naming requirement.
+    """
+    if source_env is None:
+        print(
+            "Error: cannot infer source environment from the resolved "
+            "profile name. The deploy guard requires the profile to "
+            "follow `<org>-<env>` (e.g. acme-dev, acme-test) so the "
+            "(source, --to) pair can be validated. Rename the profile "
+            "or use --profile <name> to select one that follows the "
+            "convention.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if source_env == target_env:
+        print(
+            f"Error: source profile is `{source_env}` and --to is "
+            f"`{target_env}`. Deploy requires distinct source and target "
+            f"environments.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if (source_env, target_env) not in ALLOWED_DEPLOY_TRANSITIONS:
+        allowed = ", ".join(
+            f"{a}->{b}" for a, b in sorted(ALLOWED_DEPLOY_TRANSITIONS)
+        )
+        print(
+            f"Error: deploy {source_env}->{target_env} is not allowed. "
+            f"Allowed transitions: {allowed}. Skip-tier (dev->prod), "
+            f"backward, and same-env transitions are refused (see "
+            f"workato-deployment-flow.md).",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+def resolve_project_ref(
+    explicit_project_id: int | None,
+    explicit_folder_id: int | None,
+) -> str:
+    """Return the `:id` path segment for /api/projects/:id/deploy.
+
+    Workato accepts either a numeric project_id or `f{folder_id}`.
+    Resolution order:
+      1. --project-id <int>
+      2. --folder-id <int>
+      3. .workatoenv folder_id (walking up from cwd)
+    Exits with a clear error if none of these resolves, or if both
+    --project-id and --folder-id are passed (the CLI also enforces the
+    mutex via argparse, but a defense-in-depth check here keeps the
+    helper safe for direct callers).
+    """
+    if explicit_project_id is not None and explicit_folder_id is not None:
+        print(
+            "Error: --project-id and --folder-id are mutually exclusive; "
+            "pass exactly one.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if explicit_project_id is not None:
+        return str(explicit_project_id)
+    if explicit_folder_id is not None:
+        return f"f{explicit_folder_id}"
+    env_data = find_workatoenv()
+    if env_data is not None:
+        folder_id = env_data.get("folder_id")
+        if isinstance(folder_id, int):
+            return f"f{folder_id}"
+    print(
+        "Error: no --project-id or --folder-id given and no usable "
+        "folder_id found in .workatoenv. Run from inside a project, "
+        "or pass one of --project-id <id> / --folder-id <id>.",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+
+
+def poll_deployment(
+    api: "WorkatoAPI",
+    deployment_id: int | str,
+    timeout_seconds: int,
+    poll_interval_seconds: float = 2.0,
+    _sleep=None,
+    _now=None,
+) -> dict:
+    """Poll GET /api/deployments/:id until state is terminal or timeout hits.
+
+    Returns the final deployment dict. Exits with a clear error if the
+    timeout expires before a terminal state is observed. _sleep and _now
+    are injection points for tests.
+    """
+    import time
+    sleep = _sleep if _sleep is not None else time.sleep
+    now = _now if _now is not None else time.monotonic
+
+    deadline = now() + timeout_seconds
+    while True:
+        record = api.deployment_get(deployment_id)
+        state = (record.get("state") or "").lower() if isinstance(record, dict) else ""
+        if state in DEPLOYMENT_TERMINAL_STATES:
+            return record
+        if now() >= deadline:
+            print(
+                f"Error: deployment {deployment_id} did not reach a "
+                f"terminal state within {timeout_seconds}s "
+                f"(last state: {state or 'unknown'}). The deployment "
+                f"may still complete server-side; check "
+                f"`deploy status {deployment_id}` later.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        sleep(poll_interval_seconds)
+
 
 # ---------------------------------------------------------------------------
 # CLI Commands
@@ -542,6 +738,146 @@ def cmd_connectors_list_custom(api: WorkatoAPI, args: argparse.Namespace):
 def cmd_recipes_list(api: WorkatoAPI, args: argparse.Namespace):
     recipes = api.recipes_list(args.folder_id)
     print(json.dumps(recipes, indent=2, ensure_ascii=False))
+
+
+# ---------------------------------------------------------------------------
+# deploy preview / run / status (Projects API)
+# ---------------------------------------------------------------------------
+
+
+def _deploy_resolve_profile_and_api(args: argparse.Namespace) -> tuple[str, dict, WorkatoAPI]:
+    """Resolve the single source profile, build a WorkatoAPI client.
+
+    Used by all deploy subcommands. Returns (profile_name, profile,
+    api). The same workspace token that authenticates the API call is
+    the source workspace for the deploy.
+    """
+    profile_name, profile = resolve_profile(args.profile)
+    region_url = profile.get("region_url", "")
+    if not region_url:
+        print(
+            f"Error: profile '{profile_name}' has no region_url.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    token = get_token(profile_name)
+    return profile_name, profile, WorkatoAPI(region_url, token)
+
+
+def cmd_deploy_preview(_unused: WorkatoAPI | None, args: argparse.Namespace):
+    """Print what `deploy run` would call against, without writing.
+
+    Same env-transition guard as `deploy run`. The Projects API has no
+    dedicated preview endpoint, so the preview is a planning summary:
+    resolved profile, source/target env, project reference, target URL,
+    and (when a folder_id is in play) the recipes currently in that
+    folder via the read-only /api/recipes endpoint.
+    """
+    profile_name, profile, api = _deploy_resolve_profile_and_api(args)
+    source_env = infer_profile_env(profile_name)
+    check_deploy_transition(source_env, args.to_env)
+
+    project_ref = resolve_project_ref(args.project_id, args.folder_id)
+
+    folder_id_for_listing: int | None = None
+    if args.folder_id is not None:
+        folder_id_for_listing = args.folder_id
+    elif args.project_id is None:
+        env_data = find_workatoenv()
+        if env_data is not None and isinstance(env_data.get("folder_id"), int):
+            folder_id_for_listing = env_data["folder_id"]
+
+    recipes_preview: list = []
+    if folder_id_for_listing is not None:
+        recipes_preview = api.recipes_list(folder_id_for_listing)
+
+    region_url = profile.get("region_url", "")
+    target_url = (
+        f"{region_url.rstrip('/')}/api/projects/{project_ref}/deploy"
+        f"?environment_type={args.to_env}"
+    )
+    output = {
+        "mode": "preview",
+        "profile": profile_name,
+        "workspace_url": region_url,
+        "source_env": source_env,
+        "target_env": args.to_env,
+        "project_ref": project_ref,
+        "would_call": {
+            "method": "POST",
+            "url": target_url,
+            "body": {"description": args.description} if args.description else {},
+        },
+        "recipes_in_folder": [
+            {"id": r.get("id"), "name": r.get("name"), "running": r.get("running")}
+            for r in recipes_preview
+            if isinstance(r, dict)
+        ],
+        "notes": [
+            "No API writes were performed.",
+            "Run `deploy run` with the same arguments to execute (requires "
+            "--yes when --to prod).",
+        ],
+    }
+    print(json.dumps(output, indent=2, ensure_ascii=False))
+
+
+def cmd_deploy_run(_unused: WorkatoAPI | None, args: argparse.Namespace):
+    """Execute a deploy via POST /api/projects/:id/deploy.
+
+    Runs the same env guard as preview, refuses --to prod without
+    --yes, then POSTs the deploy. With --wait, polls
+    GET /api/deployments/:id until state is terminal or --timeout
+    seconds elapse. Without --wait, returns immediately with the
+    pending Deployment record.
+    """
+    profile_name, _profile, api = _deploy_resolve_profile_and_api(args)
+    source_env = infer_profile_env(profile_name)
+    check_deploy_transition(source_env, args.to_env)
+
+    if args.to_env == "prod" and not args.yes:
+        print(
+            "Error: `deploy run --to prod` is destructive and requires "
+            "--yes to confirm. Re-run with --yes (typically after a "
+            "successful test deploy and release-manager sign-off).",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    project_ref = resolve_project_ref(args.project_id, args.folder_id)
+
+    record = api.project_deploy(
+        project_ref=project_ref,
+        environment_type=args.to_env,
+        description=args.description,
+    )
+
+    if not args.wait:
+        print(json.dumps(record, indent=2, ensure_ascii=False))
+        return
+
+    deployment_id = record.get("id") if isinstance(record, dict) else None
+    if deployment_id is None:
+        print(
+            "Error: deploy POST succeeded but the response did not "
+            "include a deployment id; cannot poll.",
+            file=sys.stderr,
+        )
+        print(json.dumps(record, indent=2, ensure_ascii=False))
+        sys.exit(1)
+
+    final = poll_deployment(api, deployment_id, args.timeout)
+    print(json.dumps(final, indent=2, ensure_ascii=False))
+    state = (final.get("state") or "").lower() if isinstance(final, dict) else ""
+    if state not in ("success", "succeeded"):
+        sys.exit(1)
+
+
+def cmd_deploy_status(_unused: WorkatoAPI | None, args: argparse.Namespace):
+    """Fetch a single deployment record by id (read-only)."""
+    _, _, api = _deploy_resolve_profile_and_api(args)
+    record = api.deployment_get(args.deployment_id)
+    print(json.dumps(record, indent=2, ensure_ascii=False))
 
 
 def cmd_oauth_profiles_list(api: WorkatoAPI, args: argparse.Namespace):
@@ -1200,6 +1536,115 @@ def main():
         "--folder-id", type=int, default=None, help="Filter by folder ID"
     )
 
+    # -- deploy (Projects API) --
+    deploy_parser = subparsers.add_parser(
+        "deploy",
+        help="Promote a project from dev->test or test->prod",
+    )
+    deploy_sub = deploy_parser.add_subparsers(dest="deploy_command")
+
+    def _add_deploy_common(p: argparse.ArgumentParser, with_description: bool):
+        p.add_argument(
+            "--to", dest="to_env", choices=DEPLOY_TARGET_ENVS, required=True,
+            help="Target environment (test or prod)",
+        )
+        # --project-id and --folder-id are alternate ways to name the
+        # deploy target; passing both at once is an error (argparse
+        # enforces this — silent precedence would be a footgun for a
+        # state-changing command).
+        target_group = p.add_mutually_exclusive_group()
+        target_group.add_argument(
+            "--project-id", type=int, default=None,
+            help="Project ID (mutually exclusive with --folder-id)",
+        )
+        target_group.add_argument(
+            "--folder-id", type=int, default=None,
+            help="Folder ID (becomes `f<id>` in the deploy URL; "
+                 "mutually exclusive with --project-id). "
+                 "Default: folder_id from .workatoenv in cwd.",
+        )
+        if with_description:
+            p.add_argument(
+                "--description", default=None,
+                help="Optional deployment description (for audit log)",
+            )
+
+    deploy_preview_p = deploy_sub.add_parser(
+        "preview",
+        help="Preview what `deploy run` would call",
+        description=(
+            "Print what `deploy run` would call against, without writing "
+            "to the workspace. Runs the same env-transition guard as "
+            "`deploy run`: the source environment is inferred from the "
+            "resolved profile's `<org>-<env>` suffix, and only "
+            "(dev, test) and (test, prod) are allowed. Lists recipes in "
+            "the resolved folder for context when a folder_id is in play."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  # Preview a dev -> test deploy (folder_id from .workatoenv)\n"
+            "  python3 scripts/workato-api.py deploy preview --to test\n\n"
+            "  # Preview a test -> prod deploy with an explicit folder\n"
+            "  python3 scripts/workato-api.py deploy preview --to prod \\\n"
+            "      --folder-id 12345 --profile acme-test\n\n"
+            "  # Skip-tier (dev profile -> --to prod) is refused before any API call.\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    _add_deploy_common(deploy_preview_p, with_description=True)
+
+    deploy_run_p = deploy_sub.add_parser(
+        "run",
+        help="Execute a deploy (POST /api/projects/:id/deploy)",
+        description=(
+            "Execute a deploy from the connected workspace to the --to "
+            "environment via the Projects API. Refuses unsafe transitions "
+            "(only dev->test and test->prod are allowed). --to prod also "
+            "requires --yes. With --wait, polls the deployment until "
+            "state becomes terminal or --timeout seconds elapse."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  # Preview first (read-only, no API write):\n"
+            "  python3 scripts/workato-api.py deploy preview --to test\n\n"
+            "  # Execute a dev -> test deploy and wait for it to finish:\n"
+            "  python3 scripts/workato-api.py deploy run --to test --wait\n\n"
+            "  # Execute a test -> prod deploy (--yes is required):\n"
+            "  python3 scripts/workato-api.py deploy run --to prod --yes --wait \\\n"
+            "      --description \"Release 2026-06-02\" --profile acme-test\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    _add_deploy_common(deploy_run_p, with_description=True)
+    deploy_run_p.add_argument(
+        "--yes", action="store_true",
+        help="Required confirmation when --to prod (CI-friendly)",
+    )
+    deploy_run_p.add_argument(
+        "--wait", action="store_true",
+        help="Poll until the deployment reaches a terminal state",
+    )
+    deploy_run_p.add_argument(
+        "--timeout", type=int, default=300,
+        help="Polling timeout in seconds (default: 300)",
+    )
+
+    deploy_status_p = deploy_sub.add_parser(
+        "status",
+        help="Get a single deployment's state",
+        description=(
+            "Fetch and print a single deployment record by ID "
+            "(GET /api/deployments/:id). Read-only. The profile must "
+            "point at the workspace that owns the deployment "
+            "(typically the target workspace, e.g. test for a "
+            "dev->test deploy)."
+        ),
+    )
+    deploy_status_p.add_argument(
+        "deployment_id", type=int,
+        help="Deployment ID returned by `deploy run`",
+    )
+
     # -- sdk --
     sdk_parser = subparsers.add_parser(
         "sdk", help="Connector SDK commands (uses Platform API token)"
@@ -1445,6 +1890,21 @@ def main():
     if args.command == "sdk" and getattr(args, "sdk_command", None) in ("decrypt", "edit"):
         handler = {"decrypt": cmd_sdk_decrypt, "edit": cmd_sdk_edit}[args.sdk_command]
         handler(None, args)
+        return
+
+    # deploy handlers manage their own profile/token resolution so they
+    # can run the env-transition guard before any API client is built.
+    if args.command == "deploy":
+        deploy_handlers = {
+            "preview": cmd_deploy_preview,
+            "run": cmd_deploy_run,
+            "status": cmd_deploy_status,
+        }
+        sub = getattr(args, "deploy_command", None)
+        if sub in deploy_handlers:
+            deploy_handlers[sub](None, args)
+        else:
+            deploy_parser.print_help()
         return
 
     # Resolve profile and create API client
