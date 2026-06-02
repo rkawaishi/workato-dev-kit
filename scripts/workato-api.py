@@ -15,6 +15,11 @@ Usage:
   python3 scripts/workato-api.py connectors list-platform [--provider <name>]
   python3 scripts/workato-api.py connectors list-custom
   python3 scripts/workato-api.py recipes list [--folder-id <id>]
+    [--status running|stopped]
+  python3 scripts/workato-api.py recipes start <id> [--dry-run]
+    (PUT /api/recipes/:id/start; requires <org>-dev profile)
+  python3 scripts/workato-api.py recipes stop <id> [--dry-run]
+    (PUT /api/recipes/:id/stop; requires <org>-dev profile)
   python3 scripts/workato-api.py sdk push --connector <path> [--title <t>]
     (auto-detects new vs. update by reading connector_id from
      connectors/docs/<name>.md frontmatter; saves ID back after initial create)
@@ -64,6 +69,13 @@ Subcommand conventions (for contributors adding new subcommands):
         * execution deploys with --to prod additionally require --yes
           (CI-friendly confirm); preview commands do not require --yes
           since they have no side effects.
+        * Non-deploy state-mutation commands that target a workspace
+          (recipes start/stop, and the sdk push / oauth-profiles
+          create-update-delete retrofits) refuse unless the resolved
+          profile is `<org>-dev`. Direct mutations against test/prod
+          workspaces violate the deploy-only promotion policy — those
+          changes must arrive via `deploy run`. See
+          workato-deployment-flow.md.
 
   Read-only subcommands (*list, *get, jobs list/get, profile show) do not
   need --dry-run or epilog, but still need help= and description=.
@@ -532,6 +544,32 @@ class WorkatoAPI:
             page += 1
         return all_recipes
 
+    def recipe_start(self, recipe_id: int) -> dict:
+        """PUT /api/recipes/:id/start — start a recipe.
+
+        State-changing; the caller must enforce the dev-profile
+        constraint (require_dev_profile_for_mutation) before invoking.
+        """
+        result = self._request(
+            f"/api/recipes/{recipe_id}/start", method="PUT",
+        )
+        if isinstance(result, dict):
+            return result.get("data", result.get("result", result))
+        return result  # type: ignore[return-value]
+
+    def recipe_stop(self, recipe_id: int) -> dict:
+        """PUT /api/recipes/:id/stop — stop a recipe.
+
+        State-changing; the caller must enforce the dev-profile
+        constraint (require_dev_profile_for_mutation) before invoking.
+        """
+        result = self._request(
+            f"/api/recipes/{recipe_id}/stop", method="PUT",
+        )
+        if isinstance(result, dict):
+            return result.get("data", result.get("result", result))
+        return result  # type: ignore[return-value]
+
     # -- Projects API: deploy --
 
     def project_deploy(
@@ -627,6 +665,42 @@ def infer_profile_env(profile_name: str) -> str | None:
         if profile_name.endswith(suffix) and len(profile_name) > len(suffix):
             return env
     return None
+
+
+def require_dev_profile_for_mutation(profile_name: str, operation: str) -> None:
+    """Refuse a non-deploy state mutation unless the profile is <org>-dev.
+
+    Used by commands like `recipes start` / `recipes stop` that mutate
+    Workato state directly. The deploy-only promotion policy in
+    workato-deployment-flow.md forbids such mutations against
+    test/prod workspaces — those changes must arrive via `deploy run`.
+
+    Refuses with a clear message when:
+      - the profile name does not follow `<org>-<env>` (cannot prove dev), or
+      - the inferred env is anything other than `dev`.
+    """
+    env = infer_profile_env(profile_name)
+    if env == "dev":
+        return
+    if env is None:
+        print(
+            f"Error: refusing to {operation} — cannot prove the resolved "
+            f"profile '{profile_name}' targets a dev workspace. The "
+            f"safety guard requires `<org>-dev` naming (e.g. acme-dev). "
+            f"Rename the profile or pass --profile <name> to select one "
+            f"that follows the convention.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    print(
+        f"Error: refusing to {operation} against `{env}` workspace "
+        f"(profile '{profile_name}'). Direct state mutations are "
+        f"allowed only on `<org>-dev` profiles; promote changes to "
+        f"test/prod via `deploy run` instead. See "
+        f"workato-deployment-flow.md.",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 
 def check_deploy_transition(source_env: str | None, target_env: str) -> None:
@@ -775,7 +849,47 @@ def cmd_connectors_list_custom(api: WorkatoAPI, args: argparse.Namespace):
 
 def cmd_recipes_list(api: WorkatoAPI, args: argparse.Namespace):
     recipes = api.recipes_list(args.folder_id)
+    if args.status is not None:
+        want_running = (args.status == "running")
+        recipes = [
+            r for r in recipes
+            if isinstance(r, dict) and bool(r.get("running")) is want_running
+        ]
     print(json.dumps(recipes, indent=2, ensure_ascii=False))
+
+
+def cmd_recipes_start(api: WorkatoAPI, args: argparse.Namespace):
+    """Start a recipe by ID. Refuses against non-`<org>-dev` profiles."""
+    require_dev_profile_for_mutation(
+        args._resolved_profile_name, f"start recipe {args.recipe_id}",
+    )
+    if args.dry_run:
+        url = f"{api.base_url}/api/recipes/{args.recipe_id}/start"
+        print(json.dumps({
+            "mode": "dry-run",
+            "would_call": {"method": "PUT", "url": url, "body": None},
+            "profile": args._resolved_profile_name,
+        }, indent=2, ensure_ascii=False))
+        return
+    result = api.recipe_start(args.recipe_id)
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+
+
+def cmd_recipes_stop(api: WorkatoAPI, args: argparse.Namespace):
+    """Stop a recipe by ID. Refuses against non-`<org>-dev` profiles."""
+    require_dev_profile_for_mutation(
+        args._resolved_profile_name, f"stop recipe {args.recipe_id}",
+    )
+    if args.dry_run:
+        url = f"{api.base_url}/api/recipes/{args.recipe_id}/stop"
+        print(json.dumps({
+            "mode": "dry-run",
+            "would_call": {"method": "PUT", "url": url, "body": None},
+            "profile": args._resolved_profile_name,
+        }, indent=2, ensure_ascii=False))
+        return
+    result = api.recipe_stop(args.recipe_id)
+    print(json.dumps(result, indent=2, ensure_ascii=False))
 
 
 # ---------------------------------------------------------------------------
@@ -1587,11 +1701,65 @@ def main():
         help="List recipes (JSON)",
         description=(
             "List recipes in the connected workspace as JSON, with "
-            "pagination. Optionally filter by folder. Read-only."
+            "pagination. Optionally filter by folder, and by run state "
+            "(running/stopped, filtered client-side on the `running` "
+            "field). Read-only."
         ),
     )
     recipes_list_p.add_argument(
         "--folder-id", type=int, default=None, help="Filter by folder ID"
+    )
+    recipes_list_p.add_argument(
+        "--status", choices=("running", "stopped"), default=None,
+        help="Filter by run state (client-side filter on the `running` field)",
+    )
+
+    recipes_start_p = recipes_sub.add_parser(
+        "start",
+        help="Start a recipe (PUT /api/recipes/:id/start)",
+        description=(
+            "Start a recipe by numeric ID. Refuses unless the resolved "
+            "profile is `<org>-dev` — direct mutations against test/prod "
+            "violate the deploy-only promotion policy. Use --dry-run to "
+            "print the intended request without sending it."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  # Dry run: print the URL that would be called\n"
+            "  python3 scripts/workato-api.py recipes start 12345 --dry-run\n\n"
+            "  # Start a recipe in the dev workspace\n"
+            "  python3 scripts/workato-api.py recipes start 12345\n\n"
+            "  # Refused: profile is not `<org>-dev`\n"
+            "  python3 scripts/workato-api.py recipes start 12345 --profile acme-prod\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    recipes_start_p.add_argument("recipe_id", type=int, help="Recipe ID")
+    recipes_start_p.add_argument(
+        "--dry-run", action="store_true",
+        help="Print the intended PUT request without sending it",
+    )
+
+    recipes_stop_p = recipes_sub.add_parser(
+        "stop",
+        help="Stop a recipe (PUT /api/recipes/:id/stop)",
+        description=(
+            "Stop a recipe by numeric ID. Refuses unless the resolved "
+            "profile is `<org>-dev` — direct mutations against test/prod "
+            "violate the deploy-only promotion policy. Use --dry-run to "
+            "print the intended request without sending it."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  python3 scripts/workato-api.py recipes stop 12345 --dry-run\n"
+            "  python3 scripts/workato-api.py recipes stop 12345\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    recipes_stop_p.add_argument("recipe_id", type=int, help="Recipe ID")
+    recipes_stop_p.add_argument(
+        "--dry-run", action="store_true",
+        help="Print the intended PUT request without sending it",
     )
 
     # -- deploy (Projects API) --
@@ -2030,6 +2198,9 @@ def main():
 
     token = get_token(profile_name)
     api = WorkatoAPI(region_url, token)
+    # Make the resolved profile name visible to handlers that need to
+    # apply env-aware guards (e.g. recipes start/stop's dev-only check).
+    args._resolved_profile_name = profile_name
 
     # Dispatch
     commands = {
@@ -2038,6 +2209,8 @@ def main():
         ("connectors", "list-platform"): cmd_connectors_list_platform,
         ("connectors", "list-custom"): cmd_connectors_list_custom,
         ("recipes", "list"): cmd_recipes_list,
+        ("recipes", "start"): cmd_recipes_start,
+        ("recipes", "stop"): cmd_recipes_stop,
         ("sdk", "push"): cmd_sdk_push,
         ("sdk", "pull"): cmd_sdk_pull,
         ("sdk", "generate-schema"): cmd_sdk_generate_schema,
