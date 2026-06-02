@@ -10,8 +10,11 @@ Authentication:
   so .workatoenv never needs to contain a profile name (Git-sharing safe).
 
 Usage:
-  python3 scripts/workato-api.py jobs list --recipe-id <id> [--status <status>]
+  python3 scripts/workato-api.py jobs list --recipe-id <id>
+    [--status <status>] [--limit <N>]
   python3 scripts/workato-api.py jobs get --recipe-id <id> --job-id <id>
+  python3 scripts/workato-api.py jobs tail --recipe-id <id>
+    [--status <status>] [--interval <sec>] [--max-iterations <N>]
   python3 scripts/workato-api.py connectors list-platform [--provider <name>]
   python3 scripts/workato-api.py connectors list-custom
   python3 scripts/workato-api.py recipes list [--folder-id <id>]
@@ -829,12 +832,83 @@ def poll_deployment(
 
 def cmd_jobs_list(api: WorkatoAPI, args: argparse.Namespace):
     jobs = api.jobs_list(args.recipe_id, args.status)
+    if args.limit is not None and args.limit >= 0:
+        jobs = jobs[: args.limit]
     print(json.dumps(jobs, indent=2, ensure_ascii=False))
 
 
 def cmd_jobs_get(api: WorkatoAPI, args: argparse.Namespace):
     job = api.jobs_get(args.recipe_id, args.job_id)
     print(json.dumps(job, indent=2, ensure_ascii=False))
+
+
+def jobs_tail_loop(
+    api: WorkatoAPI,
+    recipe_id: int,
+    status_filter: str | None,
+    interval_seconds: float,
+    max_iterations: int | None,
+    _sleep=None,
+    _print=print,
+) -> int:
+    """Poll `jobs_list` and print only newly-seen jobs each iteration.
+
+    Returns the number of poll iterations completed (after the priming
+    fetch). max_iterations=None means run until KeyboardInterrupt;
+    tests pass a finite value plus an injected `_sleep` so the suite
+    does not actually wait.
+
+    `_print` is injected so tests can capture per-iteration emissions.
+    """
+    import time
+    sleep = _sleep if _sleep is not None else time.sleep
+
+    # Prime the seen-set with whatever exists right now — we only want
+    # to stream NEW jobs from this point forward, not the backlog.
+    initial = api.jobs_list(recipe_id, status_filter)
+    seen: set = {
+        j.get("id") for j in initial
+        if isinstance(j, dict) and j.get("id") is not None
+    }
+
+    iterations = 0
+    try:
+        while True:
+            if max_iterations is not None and iterations >= max_iterations:
+                return iterations
+            sleep(interval_seconds)
+            iterations += 1
+            page = api.jobs_list(recipe_id, status_filter)
+            new_jobs = []
+            for j in page:
+                if not isinstance(j, dict):
+                    continue
+                jid = j.get("id")
+                if jid is None or jid in seen:
+                    continue
+                seen.add(jid)
+                new_jobs.append(j)
+            # Workato returns jobs newest-first; reverse so the tail
+            # reads top-to-bottom by time, matching `tail -f` semantics.
+            for j in reversed(new_jobs):
+                _print(json.dumps(j, ensure_ascii=False))
+    except KeyboardInterrupt:
+        return iterations
+
+
+def cmd_jobs_tail(api: WorkatoAPI, args: argparse.Namespace):
+    """Stream new jobs for a recipe, one JSON object per line.
+
+    Read-only; no env or dev-profile guard. Polling interval defaults
+    to 5 seconds. Without --max-iterations, runs until Ctrl+C.
+    """
+    jobs_tail_loop(
+        api,
+        recipe_id=args.recipe_id,
+        status_filter=args.status,
+        interval_seconds=args.interval,
+        max_iterations=args.max_iterations,
+    )
 
 
 def cmd_connectors_list_platform(api: WorkatoAPI, args: argparse.Namespace):
@@ -1650,11 +1724,16 @@ def main():
         help="List jobs for a recipe",
         description=(
             "List jobs for a recipe in reverse-chronological order. "
-            "Optionally filter by status (e.g. failed, success). Read-only."
+            "Optionally filter by status (e.g. failed, success). "
+            "--limit caps the output client-side. Read-only."
         ),
     )
     jobs_list_p.add_argument("--recipe-id", type=int, required=True)
     jobs_list_p.add_argument("--status", default=None, help="Filter by status")
+    jobs_list_p.add_argument(
+        "--limit", type=int, default=None,
+        help="Cap the number of jobs returned (client-side)",
+    )
 
     jobs_get_p = jobs_sub.add_parser(
         "get",
@@ -1666,6 +1745,41 @@ def main():
     )
     jobs_get_p.add_argument("--recipe-id", type=int, required=True)
     jobs_get_p.add_argument("--job-id", type=str, required=True)
+
+    jobs_tail_p = jobs_sub.add_parser(
+        "tail",
+        help="Stream new jobs as they appear",
+        description=(
+            "Poll the jobs endpoint and print only newly-seen jobs each "
+            "iteration, one JSON object per line. Read-only. The initial "
+            "fetch is used to prime the seen-set, so existing jobs are "
+            "NOT printed — only ones that appear after the command starts. "
+            "Default interval is 5 seconds; without --max-iterations the "
+            "command runs until Ctrl+C."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  # Tail failed jobs for a recipe, refreshing every 10s\n"
+            "  python3 scripts/workato-api.py jobs tail --recipe-id 12345 \\\n"
+            "      --status failed --interval 10\n\n"
+            "  # Tail for at most 6 polling iterations (e.g. ~30s at 5s interval)\n"
+            "  python3 scripts/workato-api.py jobs tail --recipe-id 12345 \\\n"
+            "      --max-iterations 6\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    jobs_tail_p.add_argument("--recipe-id", type=int, required=True)
+    jobs_tail_p.add_argument(
+        "--status", default=None, help="Filter by status (e.g. failed)",
+    )
+    jobs_tail_p.add_argument(
+        "--interval", type=float, default=5.0,
+        help="Polling interval in seconds (default: 5.0)",
+    )
+    jobs_tail_p.add_argument(
+        "--max-iterations", dest="max_iterations", type=int, default=None,
+        help="Stop after N polling iterations (default: run until Ctrl+C)",
+    )
 
     # -- connectors --
     conn_parser = subparsers.add_parser("connectors", help="Manage connectors")
@@ -2206,6 +2320,7 @@ def main():
     commands = {
         ("jobs", "list"): cmd_jobs_list,
         ("jobs", "get"): cmd_jobs_get,
+        ("jobs", "tail"): cmd_jobs_tail,
         ("connectors", "list-platform"): cmd_connectors_list_platform,
         ("connectors", "list-custom"): cmd_connectors_list_custom,
         ("recipes", "list"): cmd_recipes_list,
