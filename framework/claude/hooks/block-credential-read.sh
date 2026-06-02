@@ -90,15 +90,21 @@ SAFE_GIT_SUBCMDS = {"add", "rm", "mv", "status", "commit", "stash",
 def git_segment_safe(rest):
     """rest = tokens after git. Safe only when the first token is a non-reading
     subcommand, there are no global options before it (a global option like
-    -c alias or --no-pager can turn git into an arbitrary reader), and no
-    -p / --patch flag follows (those print hunks of file contents)."""
+    -c alias or --no-pager can turn git into an arbitrary reader), and no flag
+    that prints file contents to stdout follows: -p/--patch (hunks) and
+    -v/--verbose (e.g. `git status -v` emits the staged diff). Bundled short
+    flags such as -vp are caught too."""
     if not rest or rest[0].startswith("-"):
         return False
     if rest[0] not in SAFE_GIT_SUBCMDS:
         return False
     for t in rest[1:]:
-        if t in ("-p", "--patch") or t.startswith("--patch"):
-            return False
+        if t.startswith("--"):
+            if t.startswith("--patch") or t.startswith("--verbose"):
+                return False
+        elif t.startswith("-") and len(t) > 1:
+            if "p" in t[1:] or "v" in t[1:]:  # patch / verbose short flag
+                return False
     return True
 
 def segment_safe(seg):

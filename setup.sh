@@ -252,6 +252,7 @@ else
     python3 <<'PY'
 import json
 import os
+import re
 
 user_settings = os.environ['USER_SETTINGS']
 kit_rel = os.environ['KIT_REL']
@@ -308,12 +309,12 @@ if patterns_file and os.path.isfile(patterns_file):
                 added_deny += 1
 
 # Migrate: .workatoenv is no longer a credential. Older kit versions added a
-# Read(...) deny rule for it; remove any such entry (covering legacy spellings
-# like Read(.workatoenv) / Read(./.workatoenv)) so existing installs can read
-# it. .workatoenv is not a credential, so dropping any deny rule naming it is
-# safe.
+# Read(...) deny rule for it; remove only the kit-generated spellings
+# (Read(.workatoenv), Read(./.workatoenv), Read(./**/.workatoenv)) so a
+# user-authored rule like Read(./**/.workatoenv.local) is preserved.
+stale_deny_re = re.compile(r'^Read\((?:\./)?(?:\*\*/)?\.workatoenv\)$')
 before = len(deny)
-deny[:] = [r for r in deny if '.workatoenv' not in r]
+deny[:] = [r for r in deny if not stale_deny_re.match(r)]
 removed_deny = before - len(deny)
 
 if migrated or added_hook or added_deny or removed_deny:

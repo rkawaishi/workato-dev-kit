@@ -71,13 +71,20 @@ def pat_re(p):
     return re.compile(rf"(?<!\w){body}(?!\w)")
 
 def git_segment_safe(rest):
+    # Safe only for a non-reading subcommand with no leading global option and
+    # no content-printing flag: -p/--patch (hunks) or -v/--verbose (e.g.
+    # `git status -v` emits the staged diff). Bundled short flags (-vp) caught.
     if not rest or rest[0].startswith("-"):
         return False
     if rest[0] not in SAFE_GIT_SUBCMDS:
         return False
     for t in rest[1:]:
-        if t in ("-p", "--patch") or t.startswith("--patch"):
-            return False
+        if t.startswith("--"):
+            if t.startswith("--patch") or t.startswith("--verbose"):
+                return False
+        elif t.startswith("-") and len(t) > 1:
+            if "p" in t[1:] or "v" in t[1:]:
+                return False
     return True
 
 def segment_safe(seg):

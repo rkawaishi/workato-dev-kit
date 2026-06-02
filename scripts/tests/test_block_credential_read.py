@@ -196,6 +196,19 @@ def test_claude_blocks_git_stash_show_patch_named():
     assert r.returncode == 2
 
 
+def test_claude_blocks_git_status_verbose():
+    # `git status -v` prints the staged diff (content) to stdout.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git status -v -- connectors/x/settings.yaml"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_git_status_bundled_verbose_short_flag():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git status -vv connectors/x/master.key"}})
+    assert r.returncode == 2
+
+
 def test_claude_allows_output_dot_key_false_positive():
     # `*.key` must not block a non-credential output file passed to a safe tool.
     r = run(CLAUDE_HOOK, {"tool_name": "Bash",
