@@ -83,11 +83,6 @@ Subcommand conventions (for contributors adding new subcommands):
   Read-only subcommands (*list, *get, jobs list/get, profile show) do not
   need --dry-run or epilog, but still need help= and description=.
 
-  Pre-existing side-effect commands without --dry-run (sdk push,
-  oauth-profiles create/update/delete) are tracked under Issue #160 for
-  retrofit alongside the new feature work; new commands must comply from
-  the start.
-
   See workato-deployment-flow.md for the dev->test->prod policy that the
   environment guards enforce at the CLI level.
 """
@@ -1136,7 +1131,53 @@ def cmd_oauth_profiles_get(api: WorkatoAPI, args: argparse.Namespace):
     print(json.dumps(profile, indent=2, ensure_ascii=False))
 
 
+def _redact_oauth_body(body: dict) -> dict:
+    """Return a deep-copied body with secrets masked for dry-run output.
+
+    --dry-run writes to stdout, which CI logs and `tee` will capture.
+    The CLI already accepted the secret in argv, so we are not creating
+    a new exposure, but emitting the secret a second time in pipeline
+    logs is unnecessary. Mask `data.client_secret` and `data.token`.
+    """
+    safe = json.loads(json.dumps(body))
+    data = safe.get("data") if isinstance(safe, dict) else None
+    if isinstance(data, dict):
+        for key in ("client_secret", "token"):
+            if key in data and data[key] is not None:
+                data[key] = "***REDACTED***"
+    return safe
+
+
+def _oauth_dry_run_output(method: str, path: str, body: dict | None,
+                           profile_name: str, base_url: str) -> dict:
+    payload = {
+        "mode": "dry-run",
+        "would_call": {
+            "method": method,
+            "url": f"{base_url.rstrip('/')}{path}",
+            "body": _redact_oauth_body(body) if body is not None else None,
+        },
+        "profile": profile_name,
+    }
+    return payload
+
+
 def cmd_oauth_profiles_create(api: WorkatoAPI, args: argparse.Namespace):
+    require_dev_profile_for_mutation(
+        args._resolved_profile_name, f"create OAuth profile '{args.name}'",
+    )
+    body: dict = {
+        "name": args.name, "provider": args.provider,
+        "data": {"client_id": args.client_id, "client_secret": args.client_secret},
+    }
+    if args.token is not None:
+        body["data"]["token"] = args.token
+    if args.dry_run:
+        print(json.dumps(_oauth_dry_run_output(
+            "POST", "/api/custom_oauth_profiles", body,
+            args._resolved_profile_name, api.base_url,
+        ), indent=2, ensure_ascii=False))
+        return
     result = api.oauth_profiles_create(
         name=args.name, provider=args.provider,
         client_id=args.client_id, client_secret=args.client_secret,
@@ -1147,6 +1188,21 @@ def cmd_oauth_profiles_create(api: WorkatoAPI, args: argparse.Namespace):
 
 
 def cmd_oauth_profiles_update(api: WorkatoAPI, args: argparse.Namespace):
+    require_dev_profile_for_mutation(
+        args._resolved_profile_name, f"update OAuth profile id={args.id}",
+    )
+    body: dict = {
+        "name": args.name, "provider": args.provider,
+        "data": {"client_id": args.client_id, "client_secret": args.client_secret},
+    }
+    if args.token is not None:
+        body["data"]["token"] = args.token
+    if args.dry_run:
+        print(json.dumps(_oauth_dry_run_output(
+            "PUT", f"/api/custom_oauth_profiles/{args.id}", body,
+            args._resolved_profile_name, api.base_url,
+        ), indent=2, ensure_ascii=False))
+        return
     result = api.oauth_profiles_update(
         profile_id=args.id, name=args.name, provider=args.provider,
         client_id=args.client_id, client_secret=args.client_secret,
@@ -1157,6 +1213,15 @@ def cmd_oauth_profiles_update(api: WorkatoAPI, args: argparse.Namespace):
 
 
 def cmd_oauth_profiles_delete(api: WorkatoAPI, args: argparse.Namespace):
+    require_dev_profile_for_mutation(
+        args._resolved_profile_name, f"delete OAuth profile id={args.id}",
+    )
+    if args.dry_run:
+        print(json.dumps(_oauth_dry_run_output(
+            "DELETE", f"/api/custom_oauth_profiles/{args.id}", None,
+            args._resolved_profile_name, api.base_url,
+        ), indent=2, ensure_ascii=False))
+        return
     result = api.oauth_profiles_delete(args.id)
     print(json.dumps(result, indent=2, ensure_ascii=False))
     print(f"\nDeleted OAuth profile id={args.id}", file=sys.stderr)
@@ -1528,6 +1593,10 @@ def cmd_sdk_pull(api: WorkatoAPI, args: argparse.Namespace):
 
 
 def cmd_sdk_push(api: WorkatoAPI, args: argparse.Namespace):
+    require_dev_profile_for_mutation(
+        args._resolved_profile_name, f"push connector {args.connector}",
+    )
+
     connector_path = Path(args.connector)
     if not connector_path.exists():
         print(f"Error: File not found: {connector_path}", file=sys.stderr)
@@ -1564,6 +1633,34 @@ def cmd_sdk_push(api: WorkatoAPI, args: argparse.Namespace):
             f"(no connector_id found in {display_docs})",
             file=sys.stderr,
         )
+
+    if args.dry_run:
+        # Show what would be sent without calling the API. The source
+        # code can be large, so emit a summary (length + title) rather
+        # than the full body. The release follow-up is reported
+        # explicitly so users know what they're authorizing.
+        if is_update:
+            method, path = "PUT", f"/api/custom_connectors/{resolved_id}"
+        else:
+            method, path = "POST", "/api/custom_connectors"
+        print(json.dumps({
+            "mode": "dry-run",
+            "would_call": {
+                "method": method,
+                "url": f"{api.base_url.rstrip('/')}{path}",
+                "body_summary": {
+                    "code_length": len(source_code),
+                    "title": title,
+                    "description_set": bool(args.description),
+                    "notes_set": bool(args.notes),
+                },
+            },
+            "would_release": not args.no_release,
+            "profile": args._resolved_profile_name,
+            "docs_path": str(docs_path),
+            "is_update": is_update,
+        }, indent=2, ensure_ascii=False))
+        return
 
     result = api.sdk_push(
         source_code=source_code,
@@ -2051,10 +2148,14 @@ def main():
             "Push connector source to Workato as a new version and release "
             "it. Auto-detects create vs. update from the connector_id stored "
             "in connectors/docs/<name>.md frontmatter, and saves the ID back "
-            "after an initial create. Writes to the connected workspace."
+            "after an initial create. Refuses unless the resolved profile is "
+            "`<org>-dev` — direct mutations against test/prod must go via "
+            "`deploy run` instead."
         ),
         epilog=(
             "Examples:\n"
+            "  # Dry run: print intended URL + body summary, no API call\n"
+            "  python3 scripts/workato-api.py sdk push --connector connectors/foo/connector.rb --dry-run\n\n"
             "  # Update an existing connector (ID auto-resolved from docs frontmatter)\n"
             "  python3 scripts/workato-api.py sdk push --connector connectors/foo/connector.rb\n\n"
             "  # First-time push (creates the connector, then saves the new ID)\n"
@@ -2083,6 +2184,10 @@ def main():
         "--skip-save-id", action="store_true",
         help="Don't persist the returned connector_id to "
              "connectors/docs/<name>.md frontmatter",
+    )
+    sdk_push_p.add_argument(
+        "--dry-run", action="store_true",
+        help="Print intended POST/PUT (and release follow-up) without sending",
     )
 
     sdk_pull_p = sdk_sub.add_parser(
@@ -2197,10 +2302,16 @@ def main():
         help="Create OAuth profile",
         description=(
             "Create a new custom OAuth profile in the connected workspace. "
+            "Refuses unless the resolved profile is `<org>-dev` — direct "
+            "mutations against test/prod must go via `deploy run` instead. "
             "Writes to Workato."
         ),
         epilog=(
             "Examples:\n"
+            "  # Dry run: print intended POST with secrets redacted\n"
+            "  python3 scripts/workato-api.py oauth-profiles create --dry-run \\\n"
+            "      --name \"My App\" --provider slack \\\n"
+            "      --client-id <id> --client-secret <secret>\n\n"
             "  python3 scripts/workato-api.py oauth-profiles create \\\n"
             "      --name \"My App\" --provider slack \\\n"
             "      --client-id <id> --client-secret <secret>\n"
@@ -2212,17 +2323,27 @@ def main():
     oauth_create_p.add_argument("--client-id", required=True)
     oauth_create_p.add_argument("--client-secret", required=True)
     oauth_create_p.add_argument("--token", default=None, help="Token (Slack only)")
+    oauth_create_p.add_argument(
+        "--dry-run", action="store_true",
+        help="Print intended POST (secrets redacted) without sending it",
+    )
 
     oauth_update_p = oauth_sub.add_parser(
         "update",
         help="Update OAuth profile",
         description=(
             "Update a custom OAuth profile by ID. All identifying fields are "
-            "required (name, provider, client_id, client_secret). Writes to "
+            "required (name, provider, client_id, client_secret). Refuses "
+            "unless the resolved profile is `<org>-dev` — direct mutations "
+            "against test/prod must go via `deploy run` instead. Writes to "
             "Workato."
         ),
         epilog=(
             "Examples:\n"
+            "  # Dry run: print intended PUT with secrets redacted\n"
+            "  python3 scripts/workato-api.py oauth-profiles update --id 123 --dry-run \\\n"
+            "      --name \"My App\" --provider slack \\\n"
+            "      --client-id <id> --client-secret <secret>\n\n"
             "  python3 scripts/workato-api.py oauth-profiles update --id 123 \\\n"
             "      --name \"My App\" --provider slack \\\n"
             "      --client-id <id> --client-secret <secret>\n"
@@ -2235,21 +2356,32 @@ def main():
     oauth_update_p.add_argument("--client-id", required=True)
     oauth_update_p.add_argument("--client-secret", required=True)
     oauth_update_p.add_argument("--token", default=None, help="Token (Slack only)")
+    oauth_update_p.add_argument(
+        "--dry-run", action="store_true",
+        help="Print intended PUT (secrets redacted) without sending it",
+    )
 
     oauth_delete_p = oauth_sub.add_parser(
         "delete",
         help="Delete OAuth profile",
         description=(
             "Delete a custom OAuth profile by ID. Destructive; the profile "
-            "is removed from the connected workspace."
+            "is removed from the connected workspace. Refuses unless the "
+            "resolved profile is `<org>-dev`."
         ),
         epilog=(
             "Examples:\n"
+            "  # Dry run: print the DELETE that would be sent\n"
+            "  python3 scripts/workato-api.py oauth-profiles delete --id 123 --dry-run\n\n"
             "  python3 scripts/workato-api.py oauth-profiles delete --id 123\n"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     oauth_delete_p.add_argument("--id", type=int, required=True)
+    oauth_delete_p.add_argument(
+        "--dry-run", action="store_true",
+        help="Print the intended DELETE request without sending it",
+    )
 
     # -- profile --
     profile_parser = subparsers.add_parser(
