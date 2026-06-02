@@ -29,6 +29,10 @@ Usage:
   python3 scripts/workato-api.py sdk pull (--connector-id <id> | --name <name>)
     (downloads connector source to connectors/<name>/connector.rb and saves
      connector_id back to connectors/docs/<name>.md frontmatter)
+  python3 scripts/workato-api.py sdk pull-project [--project-dir <path>]
+    (wraps `workato pull` in the project directory)
+  python3 scripts/workato-api.py sdk diff-project [--project-dir <path>]
+    (pulls to a temp dir and diffs against the project directory)
   python3 scripts/workato-api.py sdk edit <file> [--key <master.key>]
   python3 scripts/workato-api.py sdk decrypt <file> [--key <master.key>]
   python3 scripts/workato-api.py deploy preview --to <test|prod>
@@ -121,9 +125,14 @@ def load_profiles() -> dict:
         return json.load(f)
 
 
-def find_workatoenv() -> dict | None:
-    """Walk up from cwd to find .workatoenv and return its contents."""
-    current = Path.cwd()
+def find_workatoenv(start_dir: Path | None = None) -> dict | None:
+    """Walk up from `start_dir` (default cwd) to find .workatoenv.
+
+    `start_dir` lets project-aware commands like `sdk pull-project
+    --project-dir <path>` resolve the workspace from the *target*
+    project, not from the shell's cwd.
+    """
+    current = start_dir if start_dir is not None else Path.cwd()
     while True:
         candidate = current / ".workatoenv"
         if candidate.exists():
@@ -136,13 +145,21 @@ def find_workatoenv() -> dict | None:
     return None
 
 
-def resolve_profile(explicit_profile: str | None) -> tuple[str, dict]:
+def resolve_profile(
+    explicit_profile: str | None,
+    start_dir: Path | None = None,
+) -> tuple[str, dict]:
     """Resolve which profile to use.
 
     Resolution order:
       1. --profile <name> explicitly given
-      2. .workatoenv workspace_id -> match against all profiles
+      2. .workatoenv workspace_id (walking up from `start_dir`, default cwd)
+         -> match against all profiles
       3. current_profile from ~/.workato/profiles
+
+    `start_dir` is forwarded to find_workatoenv() so callers that
+    operate on a specific project directory (e.g. sdk pull-project
+    --project-dir) resolve relative to that directory, not cwd.
 
     Returns (profile_name, profile_dict).
     """
@@ -165,7 +182,7 @@ def resolve_profile(explicit_profile: str | None) -> tuple[str, dict]:
         return explicit_profile, profiles[explicit_profile]
 
     # 2. workspace_id from .workatoenv
-    env = find_workatoenv()
+    env = find_workatoenv(start_dir)
     if env and "workspace_id" in env and env["workspace_id"] is not None:
         target_ws = str(env["workspace_id"])
         for name, prof in profiles.items():
@@ -1472,6 +1489,180 @@ def _connector_slug(record: dict, fallback: str | None = None) -> str:
     return slug or (str(record.get("id")) if isinstance(record, dict) else "connector")
 
 
+def _invoke_workato_pull(
+    profile_name: str, cwd: Path,
+    _runner=None,
+) -> tuple[int, str, str]:
+    """Invoke `workato --profile <name> pull` in `cwd`.
+
+    Returns (returncode, stdout, stderr). Never raises — including when
+    the `workato` binary itself is missing; in that case we return rc
+    127 with a clear message so callers can surface a controlled error
+    instead of an opaque FileNotFoundError traceback. `_runner` is an
+    injection point for tests (a callable taking (cmd_list, cwd) and
+    returning (rc, stdout, stderr)).
+    """
+    if _runner is not None:
+        return _runner(["workato", "--profile", profile_name, "pull"], cwd)
+    try:
+        result = subprocess.run(
+            ["workato", "--profile", profile_name, "pull"],
+            cwd=str(cwd),
+            capture_output=True, text=True,
+        )
+    except FileNotFoundError:
+        return 127, "", (
+            "Error: `workato` not found on PATH. Install the Workato "
+            "Platform CLI before running `sdk pull-project` / "
+            "`sdk diff-project`.\n"
+        )
+    return result.returncode, result.stdout, result.stderr
+
+
+def _validate_project_dir(project_dir: Path) -> None:
+    """Refuse if project_dir lacks .workatoenv (workato pull would fail)."""
+    if not project_dir.is_dir():
+        print(
+            f"Error: project dir '{project_dir}' does not exist.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if not (project_dir / ".workatoenv").exists():
+        print(
+            f"Error: '{project_dir}' has no .workatoenv. `workato pull` "
+            f"reads the workspace/folder from .workatoenv, so it must "
+            f"be run from inside a project directory.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+PROJECT_EXCLUDE_PATTERNS = (".git", ".venv", "node_modules", "__pycache__")
+
+
+def _resolve_project_profile(
+    explicit_profile: str | None, project_dir: Path,
+) -> str:
+    """Resolve the profile name from the *target* project directory.
+
+    `args._resolved_profile_name` is set by main() from cwd's
+    .workatoenv; when --project-dir points elsewhere, that name can
+    select the wrong workspace. Re-resolve relative to project_dir so
+    the workspace matches the project being pulled / diffed.
+    """
+    name, _ = resolve_profile(explicit_profile, start_dir=project_dir)
+    return name
+
+
+def cmd_sdk_pull_project(_api: WorkatoAPI | None, args: argparse.Namespace):
+    """Pull project assets from the resolved Workato workspace.
+
+    Thin wrapper around `workato --profile <name> pull` that adds
+    profile auto-resolution from the target project's .workatoenv.
+    Read-only against Workato (only modifies local files in
+    `--project-dir`, default cwd). No env-transition guard — pull is
+    allowed against any profile per workato-deployment-flow.md.
+    """
+    project_dir = Path(args.project_dir).resolve() if args.project_dir else Path.cwd()
+    _validate_project_dir(project_dir)
+    profile_name = _resolve_project_profile(args.profile, project_dir)
+    rc, out, err = _invoke_workato_pull(profile_name, project_dir)
+    if out:
+        sys.stdout.write(out)
+        if not out.endswith("\n"):
+            sys.stdout.write("\n")
+    if err:
+        sys.stderr.write(err)
+        if not err.endswith("\n"):
+            sys.stderr.write("\n")
+    sys.exit(rc)
+
+
+def _diff_argv(local: Path, pulled: Path) -> list[str]:
+    """Build the `diff -ru` argv with exclusions matching copytree's ignore set.
+
+    The exclude list MUST mirror PROJECT_EXCLUDE_PATTERNS so the temp
+    copy and the local tree are compared on the same surface; otherwise
+    a local-only `.venv` would always register as "only in local" and
+    diff-project would exit 1 even when Workato-managed assets are
+    identical.
+    """
+    argv = ["diff", "-ru"]
+    for pattern in PROJECT_EXCLUDE_PATTERNS:
+        argv.extend(["--exclude", pattern])
+    argv.extend([str(local), str(pulled)])
+    return argv
+
+
+def _run_diff(local: Path, pulled: Path, _runner=None) -> tuple[int, str, str]:
+    """Invoke `diff -ru` between two directories. Returns (rc, stdout, stderr).
+
+    diff's exit codes: 0 = identical, 1 = differ, 2 = error. If the
+    `diff` binary itself is missing we return rc 2 with a clear message
+    so the caller can surface a controlled error instead of an opaque
+    FileNotFoundError traceback.
+    """
+    argv = _diff_argv(local, pulled)
+    if _runner is not None:
+        return _runner(argv, None)
+    try:
+        result = subprocess.run(argv, capture_output=True, text=True)
+    except FileNotFoundError:
+        return 2, "", (
+            "Error: `diff` not found on PATH. Install diffutils to run "
+            "`sdk diff-project`.\n"
+        )
+    return result.returncode, result.stdout, result.stderr
+
+
+def cmd_sdk_diff_project(_api: WorkatoAPI | None, args: argparse.Namespace):
+    """Show diff between local project and dev workspace state.
+
+    Copies the project directory to a temp dir (excluding bulky local
+    dirs like .git / .venv / node_modules / __pycache__), runs
+    `workato pull` in the copy so the temp tree reflects the remote
+    state, then runs `diff -ru` between the local project and the
+    pulled copy using the same exclude set. Read-only — the original
+    project directory is never modified.
+
+    Exit codes mirror diff(1): 0 = identical, 1 = differences printed,
+    2 = the pull or the diff itself failed.
+    """
+    import shutil
+    project_dir = Path(args.project_dir).resolve() if args.project_dir else Path.cwd()
+    _validate_project_dir(project_dir)
+    profile_name = _resolve_project_profile(args.profile, project_dir)
+
+    with tempfile.TemporaryDirectory(prefix="kit-sdk-diff-") as tmp:
+        pulled_root = Path(tmp) / "pulled"
+        # Copy the project to a temp dir; exclude VCS and bulky local
+        # directories so the pull does not waste time on irrelevant
+        # files. The same exclude set is passed to `diff -ru` below
+        # (see _diff_argv) so the comparison surface matches.
+        ignore = shutil.ignore_patterns(*PROJECT_EXCLUDE_PATTERNS)
+        shutil.copytree(project_dir, pulled_root, ignore=ignore)
+
+        rc, _out, err = _invoke_workato_pull(profile_name, pulled_root)
+        if rc != 0:
+            sys.stderr.write(
+                f"Error: `workato pull` failed in temp copy "
+                f"(exit {rc}). stderr:\n{err}"
+            )
+            sys.exit(2)
+
+        diff_rc, diff_out, diff_err = _run_diff(project_dir, pulled_root)
+        if diff_out:
+            sys.stdout.write(diff_out)
+            if not diff_out.endswith("\n"):
+                sys.stdout.write("\n")
+        if diff_rc == 2:
+            sys.stderr.write(
+                f"Error: `diff -ru` failed (exit 2). stderr:\n{diff_err}"
+            )
+            sys.exit(2)
+        sys.exit(diff_rc)
+
+
 def cmd_sdk_pull(api: WorkatoAPI, args: argparse.Namespace):
     """Pull a custom connector's source from Workato to the local filesystem."""
     if args.connector_id is None and not args.name:
@@ -2229,6 +2420,55 @@ def main():
         help="Don't persist connector_id to connectors/docs/<name>.md frontmatter",
     )
 
+    sdk_pull_project_p = sdk_sub.add_parser(
+        "pull-project",
+        help="Pull all project assets via `workato pull`",
+        description=(
+            "Pull project assets (recipes, connections, lookup tables, "
+            "etc.) from the resolved Workato workspace by invoking "
+            "`workato --profile <name> pull` in the project directory. "
+            "Thin wrapper: profile is auto-resolved from .workatoenv. "
+            "Read-only against Workato; only local files are modified."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  # Pull into the current project directory\n"
+            "  python3 scripts/workato-api.py sdk pull-project\n\n"
+            "  # Pull into an explicit project directory\n"
+            "  python3 scripts/workato-api.py sdk pull-project --project-dir projects/my-app\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    sdk_pull_project_p.add_argument(
+        "--project-dir", default=None,
+        help="Project directory to pull into (default: cwd). Must contain .workatoenv.",
+    )
+
+    sdk_diff_project_p = sdk_sub.add_parser(
+        "diff-project",
+        help="Diff local project against dev workspace",
+        description=(
+            "Show differences between the local project and the "
+            "resolved Workato workspace. Copies the project to a temp "
+            "dir, runs `workato pull` in the copy so it reflects the "
+            "remote state, then `diff -ru` between local and pulled. "
+            "Read-only — does not modify the original project directory. "
+            "Exit code: 0 = identical, 1 = differences printed, 2 = error."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  # Diff the current project against dev\n"
+            "  python3 scripts/workato-api.py sdk diff-project\n\n"
+            "  # Diff an explicit project directory\n"
+            "  python3 scripts/workato-api.py sdk diff-project --project-dir projects/my-app\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    sdk_diff_project_p.add_argument(
+        "--project-dir", default=None,
+        help="Project directory to diff (default: cwd). Must contain .workatoenv.",
+    )
+
     sdk_decrypt_p = sdk_sub.add_parser(
         "decrypt",
         help="Decrypt a .enc file and print to stdout",
@@ -2412,9 +2652,19 @@ def main():
             profile_parser.print_help()
         return
 
-    if args.command == "sdk" and getattr(args, "sdk_command", None) in ("decrypt", "edit"):
-        handler = {"decrypt": cmd_sdk_decrypt, "edit": cmd_sdk_edit}[args.sdk_command]
-        handler(None, args)
+    # These sdk subcommands do not touch the Workato API directly:
+    # decrypt/edit operate on local .enc files, and pull-project/diff-project
+    # shell out to `workato pull`. Dispatch before the main() profile-and-token
+    # bootstrap so keyring problems do not block workflows that don't need a
+    # Python-side token.
+    _sdk_pre_api = {
+        "decrypt": cmd_sdk_decrypt,
+        "edit": cmd_sdk_edit,
+        "pull-project": cmd_sdk_pull_project,
+        "diff-project": cmd_sdk_diff_project,
+    }
+    if args.command == "sdk" and getattr(args, "sdk_command", None) in _sdk_pre_api:
+        _sdk_pre_api[args.sdk_command](None, args)
         return
 
     # deploy handlers manage their own profile/token resolution so they
