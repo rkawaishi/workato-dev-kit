@@ -97,7 +97,7 @@ If the target service itself has a sandbox (e.g. Salesforce Sandbox vs. Producti
 
 ### Folder / project IDs
 
-`folder_id` and `project_id` are workspace-specific. The `.workatoenv` file therefore differs per environment. **Do not commit a `.workatoenv` that points at prod** — each developer's local checkout should point at dev. See `@.claude/rules/workato-deployment-flow.md` for the safety rule.
+`folder_id` and `project_id` are workspace-specific. The `.workatoenv` file therefore differs per environment. `.workatoenv` is git-managed (it holds only IDs, no credentials) and **must point at dev** — that is the binding the whole team shares. Prod-push protection does not depend on hiding this file: it comes from the deployment-flow profile check (the resolved profile must end in `-dev`). See `@.claude/rules/workato-deployment-flow.md` for the safety rule.
 
 ## Mapping environments to CLI profiles
 
@@ -118,7 +118,7 @@ See `@docs/platform/cli-profiles.md` for the full profile selection rules and th
 | `workato push` against the prod profile | Bypasses Deploy approvals; overwrites prod | Set `<org>-dev` as the default profile in `.workatoenv`; use `<org>-test`/`<org>-prod` only for pull |
 | Renaming a connection per environment | Deploy treats it as a new connection | Keep the same display name across environments |
 | Hardcoding `folder_id` from dev into a doc / script | Targets the wrong workspace when the doc is reused | Always read `folder_id` from `.workatoenv` at runtime |
-| Committing `.workatoenv` for prod | Other developers accidentally push to prod | `.workatoenv` is gitignored by default; keep it that way |
+| Committing a `.workatoenv` that points at prod | Other developers resolve a prod profile | Commit only a dev-pointing `.workatoenv`; the deployment-flow check refuses any push whose profile is not `-dev` |
 | Auto-approving prod deploy via script | Skips release-manager review | Manual approval only; never script `POST /api/deployments/{id}/approve` |
 
 ## Related

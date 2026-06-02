@@ -76,9 +76,9 @@ workato profiles list
 |---|---|
 | `~/.workato/profiles` | Profile metadata (workspace_id, region, current_profile) — **not** the API tokens |
 | OS keyring (macOS Keychain / Linux Secret Service) | API token per profile, managed by `workato init` |
-| `.workatoenv` (per project) | `workspace_id` + `folder_id`; no credentials. Auto-generated; gitignored |
+| `.workatoenv` (per project) | `workspace_id` + `folder_id`; no credentials. Auto-generated; **git-managed** (commit it, pointing at dev) |
 
-Never commit `.workatoenv` or anything from `~/.workato/`.
+Never commit anything from `~/.workato/` (it holds the credential index). `.workatoenv` itself contains no secrets and **is** committed — keep it pointing at dev.
 
 ## Common mistakes
 

@@ -106,7 +106,8 @@ workato init --non-interactive --profile default --project-id <id> --folder-name
 - Platform features: `docs/platform/` (+ `org/docs/platform/`).
 - Record new findings under `org/docs/<relative-path>` (do not edit the kit's `docs/` directly).
 - `*.connection.json` never contains credentials.
-- Do not commit `.workatoenv` or `master.key`.
+- `.workatoenv` holds only project/folder/workspace IDs (no credentials) and **is** committed so the project↔Workato binding is shared. Keep it pointing at dev; prod-push safety comes from the deployment-flow profile check, not from hiding the file.
+- Do not commit `master.key` or other connector secrets (`settings.yaml`, `settings.yaml.enc`).
 
 ## Toolkit development rules
 

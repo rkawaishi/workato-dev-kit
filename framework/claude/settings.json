@@ -44,7 +44,6 @@
     "deny": [
       "Bash(rm -rf:*)",
       "Bash(sudo:*)",
-      "Read(./**/.workatoenv)",
       "Read(./**/master.key)",
       "Read(./**/settings.yaml)",
       "Read(./**/settings.yaml.enc)",

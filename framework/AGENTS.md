@@ -99,7 +99,8 @@ The three inviolable principles:
 - Connector details: pre-built → `@docs/connectors/` (+ `@org/docs/connectors/`); custom → `@connectors/docs/`. For missing entries, WebFetch.
 - Record new findings in `org/docs/<relative-path>` (do not edit the kit's `docs/` directly).
 - `*.connection.json` never contains credentials.
-- Do not commit `.workatoenv` or `master.key`.
+- `.workatoenv` holds only project/folder/workspace IDs (no credentials) and **is** committed so the project↔Workato binding is shared. Keep it pointing at dev; prod-push safety comes from the deployment-flow profile check, not from hiding the file.
+- Do not commit `master.key` or other connector secrets (`settings.yaml`, `settings.yaml.enc`).
 
 ## Skills
 

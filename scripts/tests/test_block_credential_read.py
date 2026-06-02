@@ -35,11 +35,11 @@ def run(hook: Path, payload: dict | str) -> subprocess.CompletedProcess:
 # Claude hook — paths
 # ---------------------------------------------------------------------------
 
-def test_claude_blocks_read_workatoenv():
+def test_claude_allows_read_workatoenv():
+    # .workatoenv is git-managed metadata (no credentials); skills must read it.
     r = run(CLAUDE_HOOK, {"tool_name": "Read",
                           "tool_input": {"file_path": "projects/foo/.workatoenv"}})
-    assert r.returncode == 2, r.stderr
-    assert ".workatoenv" in r.stderr
+    assert r.returncode == 0, r.stderr
 
 
 def test_claude_blocks_read_master_key():
@@ -128,10 +128,11 @@ def test_claude_allows_grep_on_clean_dir():
 # Claude hook — Bash
 # ---------------------------------------------------------------------------
 
-def test_claude_blocks_bash_cat_workatoenv():
+def test_claude_allows_bash_cat_workatoenv():
+    # .workatoenv is git-managed metadata (no credentials); reading it is fine.
     r = run(CLAUDE_HOOK, {"tool_name": "Bash",
                           "tool_input": {"command": "cat projects/foo/.workatoenv | head"}})
-    assert r.returncode == 2
+    assert r.returncode == 0, r.stderr
 
 
 def test_claude_blocks_bash_glob_token():
@@ -150,6 +151,135 @@ def test_claude_allows_bash_no_creds():
     r = run(CLAUDE_HOOK, {"tool_name": "Bash",
                           "tool_input": {"command": "git status"}})
     assert r.returncode == 0, r.stderr
+
+
+# Legitimate tools (workato CLI / git / kit helper) operate ON credential
+# files without dumping their contents, so they must not be blocked even when
+# a credential filename appears as an argument.
+
+def test_claude_allows_workato_edit_enc():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "workato edit settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_git_add_enc():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git add connectors/foo/settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_helper_script_normal_command():
+    # The helper's normal commands name no credential file, so they pass.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "python3 scripts/workato-api.py profile show"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_blocks_helper_sdk_decrypt():
+    # `sdk decrypt` prints plaintext to stdout — the helper is NOT allowlisted.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "python3 scripts/workato-api.py sdk decrypt settings.yaml.enc --key master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_git_add_patch():
+    # `git add -p <file>` prints hunks of file contents.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git add -p connectors/x/settings.yaml"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_git_stash_show_patch_named():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git stash show -p connectors/x/master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_git_status_verbose():
+    # `git status -v` prints the staged diff (content) to stdout.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git status -v -- connectors/x/settings.yaml"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_git_status_bundled_verbose_short_flag():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git status -vv connectors/x/master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_git_verbose_abbreviation():
+    # git accepts `--ver` as an abbreviation of --verbose.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git status --ver -- connectors/x/master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_git_patch_abbreviation():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git add --patc connectors/x/settings.yaml"}})
+    assert r.returncode == 2
+
+
+def test_claude_allows_git_add_with_pathspec_separator():
+    # `--` is the pathspec separator, not a content-printing option.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git add -- connectors/x/settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_output_dot_key_false_positive():
+    # `*.key` must not block a non-credential output file passed to a safe tool.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "workato generate schema --output=out.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_blocks_bash_cat_master_key():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "cat connectors/x/master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_dump_in_chained_command():
+    # A safe leading segment must not shield a later dump segment.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git status && cat master.key"}})
+    assert r.returncode == 2
+
+
+# The allowlist must not be defeatable by cheap tricks (Codex review).
+
+def test_claude_blocks_comment_spoof_helper_marker():
+    # A trailing comment naming the helper script must not allowlist a dump.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "cat master.key # workato-api.py"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_git_diff_no_index():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git --no-pager diff --no-index /dev/null master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_git_dash_c_alias():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git -c alias.x='!cat master.key' x"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_git_show_secret():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git show HEAD:connectors/x/settings.yaml"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_python_dash_c_dump():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "python3 -c \"print(open('master.key').read())\""}})
+    assert r.returncode == 2
 
 
 # ---------------------------------------------------------------------------
@@ -171,10 +301,11 @@ def test_codex_blocks_bash_grep_master_key():
     assert r.returncode == 2
 
 
-def test_codex_blocks_bash_cat_workatoenv():
+def test_codex_allows_bash_cat_workatoenv():
+    # .workatoenv is git-managed metadata (no credentials); reading it is fine.
     r = run(CODEX_HOOK, {"tool_name": "Bash",
                          "tool_input": {"command": "cat .workatoenv"}})
-    assert r.returncode == 2
+    assert r.returncode == 0, r.stderr
 
 
 def test_codex_allows_non_bash_read():
@@ -189,6 +320,30 @@ def test_codex_allows_bash_no_creds():
     r = run(CODEX_HOOK, {"tool_name": "Bash",
                          "tool_input": {"command": "git status"}})
     assert r.returncode == 0
+
+
+def test_codex_allows_workato_edit_enc():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "workato edit settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_allows_git_add_enc():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "git add connectors/foo/settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_blocks_helper_sdk_decrypt():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "python3 scripts/workato-api.py sdk decrypt settings.yaml.enc --key master.key"}})
+    assert r.returncode == 2
+
+
+def test_codex_blocks_git_add_patch():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "git add -p connectors/x/settings.yaml"}})
+    assert r.returncode == 2
 
 
 def test_codex_allows_malformed_json():

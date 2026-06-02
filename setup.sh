@@ -252,6 +252,7 @@ else
     python3 <<'PY'
 import json
 import os
+import re
 
 user_settings = os.environ['USER_SETTINGS']
 kit_rel = os.environ['KIT_REL']
@@ -307,7 +308,16 @@ if patterns_file and os.path.isfile(patterns_file):
                 deny.append(rule)
                 added_deny += 1
 
-if migrated or added_hook or added_deny:
+# Migrate: .workatoenv is no longer a credential. Older kit versions added a
+# Read(...) deny rule for it; remove only the kit-generated spellings
+# (Read(.workatoenv), Read(./.workatoenv), Read(./**/.workatoenv)) so a
+# user-authored rule like Read(./**/.workatoenv.local) is preserved.
+stale_deny_re = re.compile(r'^Read\((?:\./)?(?:\*\*/)?\.workatoenv\)$')
+before = len(deny)
+deny[:] = [r for r in deny if not stale_deny_re.match(r)]
+removed_deny = before - len(deny)
+
+if migrated or added_hook or added_deny or removed_deny:
     with open(user_settings, 'w') as f:
         json.dump(s, f, indent=2, ensure_ascii=False)
         f.write('\n')
@@ -318,6 +328,8 @@ if migrated or added_hook or added_deny:
         msgs.append('added block-credential-read PreToolUse hook')
     if added_deny:
         msgs.append(f'added {added_deny} credential deny rule(s)')
+    if removed_deny:
+        msgs.append('removed stale .workatoenv deny rule')
     print('  ✓ Updated .claude/settings.json (' + '; '.join(msgs) + ')')
 else:
     print('  EXISTS .claude/settings.json (kit entries already present)')
@@ -358,7 +370,9 @@ touch "$GITIGNORE"
 
 ENTRIES=(
   "# Workato Dev Kit (managed by kit/setup.sh)"
-  ".workatoenv"
+  # NOTE: .workatoenv is intentionally NOT ignored — it holds only project /
+  # folder / workspace IDs (no credentials) and is committed so the
+  # project↔Workato binding is shared across the team.
   "master.key"
   "settings.yaml"
   "settings.yaml.enc"
@@ -431,6 +445,35 @@ if [ -f "$CRED_PATTERNS_FILE" ]; then
   add_credential_patterns "$WORKSPACE_ROOT/.geminiignore"  "$HEADER"
   add_credential_patterns "$WORKSPACE_ROOT/.codexignore"   "$HEADER"
 fi
+
+# ── 7c. Migrate: drop stale `.workatoenv` ignore entries ─────
+# Older kit versions treated .workatoenv as a credential and added it to the
+# gitignore / per-editor ignore files. It is now git-managed (no secrets), so
+# strip the exact `.workatoenv` line from each kit-managed ignore file on
+# re-run. Only the standalone entry is removed; user content is untouched.
+strip_workatoenv_ignore() {
+  local target="$1"
+  [ -f "$target" ] || return 0
+  if grep -qxF ".workatoenv" "$target" 2>/dev/null; then
+    # Portable in-place delete of lines that are exactly `.workatoenv`.
+    # grep exits 1 when it selects no lines (i.e. the file was only
+    # `.workatoenv`); that is success here, so accept rc 0 and 1 and only
+    # bail on a real error (rc > 1), leaving the original untouched.
+    local tmp rc
+    tmp="$(mktemp)"
+    grep -vxF ".workatoenv" "$target" > "$tmp"; rc=$?
+    if [ "$rc" -le 1 ]; then
+      mv "$tmp" "$target"
+      echo "  ✓ Removed stale .workatoenv entry from $(basename "$target") (now git-managed)"
+    else
+      rm -f "$tmp"
+    fi
+  fi
+}
+strip_workatoenv_ignore "$GITIGNORE"
+strip_workatoenv_ignore "$WORKSPACE_ROOT/.cursorignore"
+strip_workatoenv_ignore "$WORKSPACE_ROOT/.geminiignore"
+strip_workatoenv_ignore "$WORKSPACE_ROOT/.codexignore"
 
 # ── 8. Cursor distribution (copy mode) ───────────────────────
 # framework/cursor/ is pre-generated on the kit side via
