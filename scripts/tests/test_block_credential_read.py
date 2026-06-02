@@ -195,6 +195,39 @@ def test_claude_blocks_dump_in_chained_command():
     assert r.returncode == 2
 
 
+# The allowlist must not be defeatable by cheap tricks (Codex review).
+
+def test_claude_blocks_comment_spoof_helper_marker():
+    # A trailing comment naming the helper script must not allowlist a dump.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "cat master.key # workato-api.py"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_git_diff_no_index():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git --no-pager diff --no-index /dev/null master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_git_dash_c_alias():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git -c alias.x='!cat master.key' x"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_git_show_secret():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git show HEAD:connectors/x/settings.yaml"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_python_dash_c_dump():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "python3 -c \"print(open('master.key').read())\""}})
+    assert r.returncode == 2
+
+
 # ---------------------------------------------------------------------------
 # Claude hook — fail-open on malformed input
 # ---------------------------------------------------------------------------

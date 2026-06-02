@@ -57,29 +57,61 @@ def pat_to_bash_re(p):
     return re.compile(rf"(?<!\w){body}(?!\w)")
 
 # Tools that legitimately operate ON credential files without dumping their
-# contents to the agent (the workato CLI encrypts/edits/runs; git stages and
-# commits). These must never be blocked, or the hook would break normal
-# workflows. The kit helper script is matched by substring (its program is
-# `python3`, which we cannot allowlist wholesale).
-SAFE_PROGS = {"workato", "git"}
-SAFE_MARKERS = ("workato-api.py",)
+# contents to the agent: the workato CLI (encrypt/edit/run — it has no "print
+# file" mode), git for staging only (add/rm/mv/commit/…), and the kit helper
+# script. These must never be blocked, or the hook would break normal
+# workflows.
+#
+# NOTE: this is an accident-guard, not a sandbox against a deliberately hostile
+# command. A determined caller can still exfiltrate by redefining a shell
+# function (`git(){ cat "$1"; }; git add master.key`) or by authoring connector
+# code that prints a secret; those are out of scope. We do close the cheap
+# holes: the safe program is the REAL program (the script behind `python`, not
+# a `-c` payload), and `git` is safe only for non-reading subcommands with no
+# global options (so `git -c …`, `git show`, `git diff`, `git cat-file` — all of
+# which can print file contents — are NOT allowlisted).
+SAFE_PROGS = {"workato", "workato-api.py"}
+# git subcommands that never print file contents to stdout.
+SAFE_GIT_SUBCMDS = {"add", "rm", "mv", "status", "commit", "stash",
+                    "restore", "checkout", "switch", "reset"}
 
-def _segment_program(seg):
-    """Program invoked in a command segment, skipping leading VAR=value env
-    assignments (so `FOO=1 workato ...` still resolves to `workato`)."""
+def _git_segment_safe(rest):
+    """rest = tokens after `git`. Safe only when the first token is a
+    non-reading subcommand and there are no global options before it (a global
+    option such as `-c alias…=!cat` or `-C` / `--no-pager` can turn git into an
+    arbitrary file reader, so any leading `-…` disqualifies the segment)."""
+    for t in rest:
+        if t.startswith("-"):
+            return False
+        return t in SAFE_GIT_SUBCMDS
+    return False  # bare `git` with no subcommand
+
+def _segment_safe(seg):
+    """True if this segment's program is a known-safe tool. Skips leading
+    VAR=value env assignments and resolves `python[3] <script>` to <script>."""
     toks = seg.split()
     i = 0
     while i < len(toks) and re.match(r"^\w+=", toks[i]):
         i += 1
-    return os.path.basename(toks[i]) if i < len(toks) else ""
+    if i >= len(toks):
+        return False
+    prog = os.path.basename(toks[i])
+    rest = toks[i + 1:]
+    if re.match(r"^python[0-9.]*$", prog) and rest:
+        prog = os.path.basename(rest[0])   # the interpreted script is the real program
+        rest = rest[1:]
+    if prog == "git":
+        return _git_segment_safe(rest)
+    return prog in SAFE_PROGS
 
 def bash_hit(cmd):
     """Block only when a credential file's CONTENTS would be dumped into the
     agent's tool output. We split on shell separators and deny a segment that
-    references a credential pattern UNLESS its program is a known-safe tool
-    (workato CLI / git / kit helper). `cat master.key`, `grep token
-    settings.yaml`, etc. are still blocked; `workato edit settings.yaml.enc`,
-    `git add settings.yaml.enc`, `python3 scripts/workato-api.py …` are not."""
+    references a credential pattern UNLESS its program is a known-safe tool.
+    `cat master.key`, `grep token settings.yaml`, `git show …:settings.yaml`,
+    `python3 -c "open('master.key')"` are still blocked; `workato edit
+    settings.yaml.enc`, `git add settings.yaml.enc`, and
+    `python3 scripts/workato-api.py …` are not."""
     sep = re.compile("|".join([r"\|\|", r"&&", r"[|;&\n]", r"\$\(", r"\)", re.escape(chr(96))]))
     for seg in sep.split(cmd):
         if not seg.strip():
@@ -91,9 +123,7 @@ def bash_hit(cmd):
                 break
         if not hit:
             continue
-        if any(m in seg for m in SAFE_MARKERS):
-            continue
-        if _segment_program(seg) in SAFE_PROGS:
+        if _segment_safe(seg):
             continue
         return hit
     return None

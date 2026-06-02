@@ -44,22 +44,42 @@ with open(os.environ["PATTERNS_FILE"]) as f:
             patterns.append(line)
 
 # Tools that legitimately operate ON credential files without dumping their
-# contents (workato CLI encrypts/edits/runs; git stages/commits). Never block
-# these. The kit helper script is matched by substring (its program is
-# `python3`, which we cannot allowlist wholesale).
-SAFE_PROGS = {"workato", "git"}
-SAFE_MARKERS = ("workato-api.py",)
+# contents: the workato CLI (no print-file mode), git for staging only, and the
+# kit helper script. This is an accident-guard, not a sandbox against a
+# deliberately hostile command. We close the cheap holes: the safe program is
+# the REAL program (the script behind python, not a -c payload), and git is
+# safe only for non-reading subcommands with no global options (so git -c,
+# git show, git diff, git cat-file are NOT allowlisted).
+SAFE_PROGS = {"workato", "workato-api.py"}
+SAFE_GIT_SUBCMDS = {"add", "rm", "mv", "status", "commit", "stash",
+                    "restore", "checkout", "switch", "reset"}
 
 def pat_re(p):
     body = re.escape(p).replace(r"\*", r"\S*")
     return re.compile(rf"(?<!\w){body}(?!\w)")
 
-def segment_program(seg):
+def git_segment_safe(rest):
+    for t in rest:
+        if t.startswith("-"):
+            return False
+        return t in SAFE_GIT_SUBCMDS
+    return False
+
+def segment_safe(seg):
     toks = seg.split()
     i = 0
     while i < len(toks) and re.match(r"^\w+=", toks[i]):
         i += 1
-    return os.path.basename(toks[i]) if i < len(toks) else ""
+    if i >= len(toks):
+        return False
+    prog = os.path.basename(toks[i])
+    rest = toks[i + 1:]
+    if re.match(r"^python[0-9.]*$", prog) and rest:
+        prog = os.path.basename(rest[0])
+        rest = rest[1:]
+    if prog == "git":
+        return git_segment_safe(rest)
+    return prog in SAFE_PROGS
 
 # Block only when credential file contents would be dumped to the agent.
 sep = re.compile("|".join([r"\|\|", r"&&", r"[|;&\n]", r"\$\(", r"\)", re.escape(chr(96))]))
@@ -73,9 +93,7 @@ for seg in sep.split(cmd):
             break
     if not hit:
         continue
-    if any(m in seg for m in SAFE_MARKERS):
-        continue
-    if segment_program(seg) in SAFE_PROGS:
+    if segment_safe(seg):
         continue
     print(f"DENY:{hit}")
     sys.exit(0)

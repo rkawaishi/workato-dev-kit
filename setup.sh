@@ -307,7 +307,15 @@ if patterns_file and os.path.isfile(patterns_file):
                 deny.append(rule)
                 added_deny += 1
 
-if migrated or added_hook or added_deny:
+# Migrate: .workatoenv is no longer a credential. Older kit versions added a
+# deny rule for it; remove the stale entry so existing installs can read it.
+removed_deny = 0
+stale = 'Read(./**/.workatoenv)'
+while stale in deny:
+    deny.remove(stale)
+    removed_deny += 1
+
+if migrated or added_hook or added_deny or removed_deny:
     with open(user_settings, 'w') as f:
         json.dump(s, f, indent=2, ensure_ascii=False)
         f.write('\n')
@@ -318,6 +326,8 @@ if migrated or added_hook or added_deny:
         msgs.append('added block-credential-read PreToolUse hook')
     if added_deny:
         msgs.append(f'added {added_deny} credential deny rule(s)')
+    if removed_deny:
+        msgs.append('removed stale .workatoenv deny rule')
     print('  ✓ Updated .claude/settings.json (' + '; '.join(msgs) + ')')
 else:
     print('  EXISTS .claude/settings.json (kit entries already present)')
@@ -444,10 +454,18 @@ strip_workatoenv_ignore() {
   [ -f "$target" ] || return 0
   if grep -qxF ".workatoenv" "$target" 2>/dev/null; then
     # Portable in-place delete of lines that are exactly `.workatoenv`.
-    local tmp
+    # grep exits 1 when it selects no lines (i.e. the file was only
+    # `.workatoenv`); that is success here, so accept rc 0 and 1 and only
+    # bail on a real error (rc > 1), leaving the original untouched.
+    local tmp rc
     tmp="$(mktemp)"
-    grep -vxF ".workatoenv" "$target" > "$tmp" && mv "$tmp" "$target"
-    echo "  ✓ Removed stale .workatoenv entry from $(basename "$target") (now git-managed)"
+    grep -vxF ".workatoenv" "$target" > "$tmp"; rc=$?
+    if [ "$rc" -le 1 ]; then
+      mv "$tmp" "$target"
+      echo "  ✓ Removed stale .workatoenv entry from $(basename "$target") (now git-managed)"
+    else
+      rm -f "$tmp"
+    fi
   fi
 }
 strip_workatoenv_ignore "$GITIGNORE"
