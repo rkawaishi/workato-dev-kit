@@ -643,8 +643,18 @@ def resolve_project_ref(
       1. --project-id <int>
       2. --folder-id <int>
       3. .workatoenv folder_id (walking up from cwd)
-    Exits with a clear error if none of these resolves.
+    Exits with a clear error if none of these resolves, or if both
+    --project-id and --folder-id are passed (the CLI also enforces the
+    mutex via argparse, but a defense-in-depth check here keeps the
+    helper safe for direct callers).
     """
+    if explicit_project_id is not None and explicit_folder_id is not None:
+        print(
+            "Error: --project-id and --folder-id are mutually exclusive; "
+            "pass exactly one.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     if explicit_project_id is not None:
         return str(explicit_project_id)
     if explicit_folder_id is not None:
@@ -1538,13 +1548,19 @@ def main():
             "--to", dest="to_env", choices=DEPLOY_TARGET_ENVS, required=True,
             help="Target environment (test or prod)",
         )
-        p.add_argument(
+        # --project-id and --folder-id are alternate ways to name the
+        # deploy target; passing both at once is an error (argparse
+        # enforces this — silent precedence would be a footgun for a
+        # state-changing command).
+        target_group = p.add_mutually_exclusive_group()
+        target_group.add_argument(
             "--project-id", type=int, default=None,
             help="Project ID (mutually exclusive with --folder-id)",
         )
-        p.add_argument(
+        target_group.add_argument(
             "--folder-id", type=int, default=None,
-            help="Folder ID (becomes `f<id>` in the deploy URL). "
+            help="Folder ID (becomes `f<id>` in the deploy URL; "
+                 "mutually exclusive with --project-id). "
                  "Default: folder_id from .workatoenv in cwd.",
         )
         if with_description:

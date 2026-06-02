@@ -174,9 +174,14 @@ def test_resolve_project_ref_uses_explicit_folder_id():
     assert wa.resolve_project_ref(None, 88) == "f88"
 
 
-def test_resolve_project_ref_prefers_project_id_over_folder():
-    # When both are given, project_id wins (it is the unambiguous form).
-    assert wa.resolve_project_ref(1, 2) == "1"
+def test_resolve_project_ref_refuses_both_at_once():
+    # Defense-in-depth: even if a direct caller bypasses the argparse
+    # mutex (e.g. constructs args by hand), the helper refuses.
+    exited, code, err = _capture_stderr_exit(
+        lambda: wa.resolve_project_ref(1, 2)
+    )
+    assert exited and code == 1
+    assert "mutually exclusive" in err
 
 
 def test_resolve_project_ref_reads_workatoenv():
@@ -189,6 +194,45 @@ def test_resolve_project_ref_reads_workatoenv():
             assert wa.resolve_project_ref(None, None) == "f777"
         finally:
             os.chdir(prev)
+
+
+def test_cli_argparse_refuses_both_project_and_folder_id():
+    """argparse mutex group: passing both should exit with code 2."""
+    import subprocess
+    result = subprocess.run(
+        [
+            sys.executable, str(SCRIPT),
+            "deploy", "preview",
+            "--to", "test",
+            "--project-id", "1",
+            "--folder-id", "2",
+        ],
+        capture_output=True, text=True,
+    )
+    # argparse uses exit code 2 for argument errors.
+    assert result.returncode == 2, (
+        f"expected exit 2 from argparse, got {result.returncode}; "
+        f"stdout={result.stdout!r} stderr={result.stderr!r}"
+    )
+    assert "not allowed with" in result.stderr or "mutually exclusive" in result.stderr
+
+
+def test_cli_argparse_refuses_both_for_run_subcommand():
+    """Mutex group is shared by `deploy run` too."""
+    import subprocess
+    result = subprocess.run(
+        [
+            sys.executable, str(SCRIPT),
+            "deploy", "run",
+            "--to", "test",
+            "--project-id", "1",
+            "--folder-id", "2",
+        ],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 2, (
+        f"expected exit 2 from argparse, got {result.returncode}"
+    )
 
 
 def test_resolve_project_ref_errors_when_nothing_resolves():
