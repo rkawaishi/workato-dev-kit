@@ -69,14 +69,21 @@ def _capture_stdout_stderr_exit(fn):
         sys.stdout, sys.stderr = saved_out, saved_err
 
 
-def _make_project_dir(root: Path) -> Path:
+def _make_project_dir(root: Path, workspace_id: int = 1) -> Path:
     """Create a minimal project dir with .workatoenv."""
     (root / ".workatoenv").write_text(
-        json.dumps({"workspace_id": 1, "folder_id": 42})
+        json.dumps({"workspace_id": workspace_id, "folder_id": 42})
     )
     (root / "Recipes").mkdir()
     (root / "Recipes" / "a.recipe.json").write_text('{"name": "local"}')
     return root
+
+
+def _patch_profile_pool(pool: dict):
+    """Patch load_profiles to return a controlled set; returns restore callable."""
+    saved = wa.load_profiles
+    wa.load_profiles = lambda: {"profiles": pool, "current_profile": None}
+    return lambda: setattr(wa, "load_profiles", saved)
 
 
 # ---------------------------------------------------------------------------
@@ -160,89 +167,138 @@ def _patch_pull(rc=0, stdout="", stderr=""):
     return (lambda: setattr(wa, "_invoke_workato_pull", saved)), calls
 
 
-def test_pull_project_invokes_workato_with_resolved_profile():
+def test_pull_project_resolves_profile_from_project_workatoenv():
+    """workspace_id in the project's .workatoenv selects the right profile."""
     with tempfile.TemporaryDirectory() as d:
-        _make_project_dir(Path(d))
+        _make_project_dir(Path(d), workspace_id=42)
         prev = _chdir(Path(d))
         try:
-            restore, calls = _patch_pull(rc=0, stdout="ok\n", stderr="")
+            restore_pool = _patch_profile_pool({
+                "acme-dev": {"workspace_id": 1, "region_url": "u"},
+                "acme-test": {"workspace_id": 42, "region_url": "u"},
+            })
+            restore_pull, calls = _patch_pull(rc=0, stdout="ok\n", stderr="")
             try:
                 args = SimpleNamespace(
-                    project_dir=None,
-                    _resolved_profile_name="acme-test",
+                    project_dir=None, profile=None,
                 )
-                exited, code, out, err = _capture_stdout_stderr_exit(
+                exited, code, out, _ = _capture_stdout_stderr_exit(
                     lambda: wa.cmd_sdk_pull_project(None, args)
                 )
                 assert exited and code == 0
                 assert calls == [("acme-test", Path(d).resolve())]
                 assert "ok" in out
             finally:
-                restore()
+                restore_pull()
+                restore_pool()
         finally:
             os.chdir(prev)
 
 
-def test_pull_project_uses_explicit_project_dir():
+def test_pull_project_dir_resolves_against_target_workatoenv_not_cwd():
+    """P1 regression: --project-dir picks the profile from the *target* project,
+    not from cwd's .workatoenv. Run with cwd's .workatoenv pointing at one
+    workspace and --project-dir at another; the call must use the latter."""
     with tempfile.TemporaryDirectory() as outer:
-        proj = Path(outer) / "subproj"
-        proj.mkdir()
-        _make_project_dir(proj)
-        restore, calls = _patch_pull(rc=0)
+        cwd_proj = Path(outer) / "cwd_proj"
+        target_proj = Path(outer) / "target_proj"
+        cwd_proj.mkdir()
+        target_proj.mkdir()
+        _make_project_dir(cwd_proj, workspace_id=1)
+        _make_project_dir(target_proj, workspace_id=42)
+        prev = _chdir(cwd_proj)
         try:
-            args = SimpleNamespace(
-                project_dir=str(proj),
-                _resolved_profile_name="acme-dev",
-            )
-            exited, code, _, _ = _capture_stdout_stderr_exit(
-                lambda: wa.cmd_sdk_pull_project(None, args)
-            )
-            assert exited and code == 0
-            assert calls == [("acme-dev", proj.resolve())]
+            restore_pool = _patch_profile_pool({
+                "acme-dev": {"workspace_id": 1, "region_url": "u"},
+                "acme-test": {"workspace_id": 42, "region_url": "u"},
+            })
+            restore_pull, calls = _patch_pull(rc=0)
+            try:
+                args = SimpleNamespace(
+                    project_dir=str(target_proj), profile=None,
+                )
+                exited, code, _, _ = _capture_stdout_stderr_exit(
+                    lambda: wa.cmd_sdk_pull_project(None, args)
+                )
+                assert exited and code == 0
+                # Must use the target's profile (acme-test), NOT cwd's (acme-dev).
+                assert calls == [("acme-test", target_proj.resolve())]
+            finally:
+                restore_pull()
+                restore_pool()
         finally:
-            restore()
+            os.chdir(prev)
+
+
+def test_pull_project_explicit_profile_wins_over_workatoenv():
+    """--profile overrides workspace_id resolution from .workatoenv."""
+    with tempfile.TemporaryDirectory() as d:
+        _make_project_dir(Path(d), workspace_id=42)
+        prev = _chdir(Path(d))
+        try:
+            restore_pool = _patch_profile_pool({
+                "acme-dev": {"workspace_id": 1, "region_url": "u"},
+                "acme-test": {"workspace_id": 42, "region_url": "u"},
+            })
+            restore_pull, calls = _patch_pull(rc=0)
+            try:
+                args = SimpleNamespace(
+                    project_dir=None, profile="acme-dev",
+                )
+                exited, code, _, _ = _capture_stdout_stderr_exit(
+                    lambda: wa.cmd_sdk_pull_project(None, args)
+                )
+                assert exited and code == 0
+                assert calls == [("acme-dev", Path(d).resolve())]
+            finally:
+                restore_pull()
+                restore_pool()
+        finally:
+            os.chdir(prev)
 
 
 def test_pull_project_propagates_non_zero_exit():
     with tempfile.TemporaryDirectory() as d:
-        _make_project_dir(Path(d))
+        _make_project_dir(Path(d), workspace_id=1)
         prev = _chdir(Path(d))
         try:
-            restore, _ = _patch_pull(rc=2, stdout="", stderr="auth failed\n")
+            restore_pool = _patch_profile_pool({
+                "acme-dev": {"workspace_id": 1, "region_url": "u"},
+            })
+            restore_pull, _ = _patch_pull(rc=2, stdout="", stderr="auth failed\n")
             try:
-                args = SimpleNamespace(
-                    project_dir=None, _resolved_profile_name="acme-dev",
-                )
+                args = SimpleNamespace(project_dir=None, profile=None)
                 exited, code, _out, err = _capture_stdout_stderr_exit(
                     lambda: wa.cmd_sdk_pull_project(None, args)
                 )
                 assert exited and code == 2
                 assert "auth failed" in err
             finally:
-                restore()
+                restore_pull()
+                restore_pool()
         finally:
             os.chdir(prev)
 
 
 def test_pull_project_refuses_missing_workatoenv():
     with tempfile.TemporaryDirectory() as d:
-        # No .workatoenv created
         prev = _chdir(Path(d))
         try:
-            restore, calls = _patch_pull(rc=0)
+            restore_pool = _patch_profile_pool({
+                "acme-dev": {"workspace_id": 1, "region_url": "u"},
+            })
+            restore_pull, calls = _patch_pull(rc=0)
             try:
-                args = SimpleNamespace(
-                    project_dir=None, _resolved_profile_name="acme-dev",
-                )
+                args = SimpleNamespace(project_dir=None, profile=None)
                 exited, code, _, err = _capture_stdout_stderr_exit(
                     lambda: wa.cmd_sdk_pull_project(None, args)
                 )
                 assert exited and code == 1
                 assert ".workatoenv" in err
-                # workato pull must NOT have been invoked
                 assert calls == []
             finally:
-                restore()
+                restore_pull()
+                restore_pool()
         finally:
             os.chdir(prev)
 
@@ -264,29 +320,31 @@ def _patch_diff(rc=0, stdout="", stderr=""):
     return (lambda: setattr(wa, "_run_diff", saved)), calls
 
 
+_DEFAULT_POOL = {"acme-dev": {"workspace_id": 1, "region_url": "u"}}
+
+
 def test_diff_project_identical_returns_zero():
     """diff -ru exit 0 → diff-project also exits 0."""
     with tempfile.TemporaryDirectory() as d:
         _make_project_dir(Path(d))
         prev = _chdir(Path(d))
         try:
+            restore_pool = _patch_profile_pool(_DEFAULT_POOL)
             restore_pull, _ = _patch_pull(rc=0)
             restore_diff, calls = _patch_diff(rc=0, stdout="")
             try:
-                args = SimpleNamespace(
-                    project_dir=None, _resolved_profile_name="acme-dev",
-                )
+                args = SimpleNamespace(project_dir=None, profile=None)
                 exited, code, out, _ = _capture_stdout_stderr_exit(
                     lambda: wa.cmd_sdk_diff_project(None, args)
                 )
                 assert exited and code == 0
                 assert out == ""
                 assert len(calls) == 1
-                # local arg is the resolved project dir
                 assert calls[0][0] == Path(d).resolve()
             finally:
                 restore_diff()
                 restore_pull()
+                restore_pool()
         finally:
             os.chdir(prev)
 
@@ -296,15 +354,14 @@ def test_diff_project_differs_returns_one_and_prints_diff():
         _make_project_dir(Path(d))
         prev = _chdir(Path(d))
         try:
+            restore_pool = _patch_profile_pool(_DEFAULT_POOL)
             restore_pull, _ = _patch_pull(rc=0)
             restore_diff, _ = _patch_diff(
                 rc=1,
                 stdout="diff -ru ./Recipes/a.recipe.json ./pulled/...",
             )
             try:
-                args = SimpleNamespace(
-                    project_dir=None, _resolved_profile_name="acme-dev",
-                )
+                args = SimpleNamespace(project_dir=None, profile=None)
                 exited, code, out, _ = _capture_stdout_stderr_exit(
                     lambda: wa.cmd_sdk_diff_project(None, args)
                 )
@@ -313,6 +370,7 @@ def test_diff_project_differs_returns_one_and_prints_diff():
             finally:
                 restore_diff()
                 restore_pull()
+                restore_pool()
         finally:
             os.chdir(prev)
 
@@ -322,23 +380,22 @@ def test_diff_project_pull_failure_returns_two():
         _make_project_dir(Path(d))
         prev = _chdir(Path(d))
         try:
+            restore_pool = _patch_profile_pool(_DEFAULT_POOL)
             restore_pull, _ = _patch_pull(rc=3, stderr="auth boom\n")
             restore_diff, calls = _patch_diff(rc=0)
             try:
-                args = SimpleNamespace(
-                    project_dir=None, _resolved_profile_name="acme-dev",
-                )
+                args = SimpleNamespace(project_dir=None, profile=None)
                 exited, code, _out, err = _capture_stdout_stderr_exit(
                     lambda: wa.cmd_sdk_diff_project(None, args)
                 )
                 assert exited and code == 2
                 assert "workato pull" in err
                 assert "auth boom" in err
-                # diff must NOT have been called
                 assert calls == []
             finally:
                 restore_diff()
                 restore_pull()
+                restore_pool()
         finally:
             os.chdir(prev)
 
@@ -349,12 +406,11 @@ def test_diff_project_diff_failure_returns_two():
         _make_project_dir(Path(d))
         prev = _chdir(Path(d))
         try:
+            restore_pool = _patch_profile_pool(_DEFAULT_POOL)
             restore_pull, _ = _patch_pull(rc=0)
             restore_diff, _ = _patch_diff(rc=2, stderr="cannot read\n")
             try:
-                args = SimpleNamespace(
-                    project_dir=None, _resolved_profile_name="acme-dev",
-                )
+                args = SimpleNamespace(project_dir=None, profile=None)
                 exited, code, _, err = _capture_stdout_stderr_exit(
                     lambda: wa.cmd_sdk_diff_project(None, args)
                 )
@@ -363,6 +419,7 @@ def test_diff_project_diff_failure_returns_two():
             finally:
                 restore_diff()
                 restore_pull()
+                restore_pool()
         finally:
             os.chdir(prev)
 
@@ -376,9 +433,8 @@ def test_diff_project_does_not_modify_original_dir():
 
         prev = _chdir(Path(d))
         try:
-            # Patch pull to *modify* the temp copy (simulating a real pull
-            # overwriting a file). This proves the helper isolates that
-            # mutation to the temp dir.
+            restore_pool = _patch_profile_pool(_DEFAULT_POOL)
+
             def writing_pull(profile, cwd, _runner=None):
                 target = Path(cwd) / "Recipes" / "a.recipe.json"
                 if target.exists():
@@ -389,19 +445,44 @@ def test_diff_project_does_not_modify_original_dir():
             wa._invoke_workato_pull = writing_pull
             restore_diff, _ = _patch_diff(rc=0, stdout="")
             try:
-                args = SimpleNamespace(
-                    project_dir=None, _resolved_profile_name="acme-dev",
-                )
+                args = SimpleNamespace(project_dir=None, profile=None)
                 _capture_stdout_stderr_exit(
                     lambda: wa.cmd_sdk_diff_project(None, args)
                 )
-                # The original must be untouched.
                 assert original_file.read_text() == original_text
             finally:
                 restore_diff()
                 wa._invoke_workato_pull = saved_pull
+                restore_pool()
         finally:
             os.chdir(prev)
+
+
+# ---------------------------------------------------------------------------
+# Exclusion-set consistency (P2 fix from the Codex review)
+# ---------------------------------------------------------------------------
+
+
+def test_diff_argv_excludes_match_project_exclude_patterns():
+    """diff -ru must exclude the same patterns copytree's ignore drops.
+
+    Otherwise a local-only `.venv` / `node_modules` would always show
+    as "only in local" and diff-project would exit 1 even when the
+    Workato-managed assets are identical.
+    """
+    argv = wa._diff_argv(Path("/a"), Path("/b"))
+    excludes = [
+        argv[i + 1] for i, tok in enumerate(argv) if tok == "--exclude"
+    ]
+    for pattern in wa.PROJECT_EXCLUDE_PATTERNS:
+        assert pattern in excludes, f"missing --exclude {pattern}"
+
+
+def test_diff_argv_minimal_shape():
+    argv = wa._diff_argv(Path("/x"), Path("/y"))
+    assert argv[0] == "diff"
+    assert "-ru" in argv
+    assert argv[-2:] == ["/x", "/y"]
 
 
 def main() -> int:
