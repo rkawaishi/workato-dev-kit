@@ -35,11 +35,11 @@ def run(hook: Path, payload: dict | str) -> subprocess.CompletedProcess:
 # Claude hook — paths
 # ---------------------------------------------------------------------------
 
-def test_claude_blocks_read_workatoenv():
+def test_claude_allows_read_workatoenv():
+    # .workatoenv is git-managed metadata (no credentials); skills must read it.
     r = run(CLAUDE_HOOK, {"tool_name": "Read",
                           "tool_input": {"file_path": "projects/foo/.workatoenv"}})
-    assert r.returncode == 2, r.stderr
-    assert ".workatoenv" in r.stderr
+    assert r.returncode == 0, r.stderr
 
 
 def test_claude_blocks_read_master_key():
@@ -128,10 +128,11 @@ def test_claude_allows_grep_on_clean_dir():
 # Claude hook — Bash
 # ---------------------------------------------------------------------------
 
-def test_claude_blocks_bash_cat_workatoenv():
+def test_claude_allows_bash_cat_workatoenv():
+    # .workatoenv is git-managed metadata (no credentials); reading it is fine.
     r = run(CLAUDE_HOOK, {"tool_name": "Bash",
                           "tool_input": {"command": "cat projects/foo/.workatoenv | head"}})
-    assert r.returncode == 2
+    assert r.returncode == 0, r.stderr
 
 
 def test_claude_blocks_bash_glob_token():
@@ -171,10 +172,11 @@ def test_codex_blocks_bash_grep_master_key():
     assert r.returncode == 2
 
 
-def test_codex_blocks_bash_cat_workatoenv():
+def test_codex_allows_bash_cat_workatoenv():
+    # .workatoenv is git-managed metadata (no credentials); reading it is fine.
     r = run(CODEX_HOOK, {"tool_name": "Bash",
                          "tool_input": {"command": "cat .workatoenv"}})
-    assert r.returncode == 2
+    assert r.returncode == 0, r.stderr
 
 
 def test_codex_allows_non_bash_read():

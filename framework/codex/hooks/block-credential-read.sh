@@ -4,7 +4,7 @@
 # Codex CLI's PreToolUse hook only fires for the Bash tool — Read / Write /
 # Edit / web fetch / MCP tool calls do not trigger it (documented limitation).
 # So this hook can only block credential reads that happen through the shell
-# (e.g. `cat .workatoenv`, `grep token master.key`).
+# (e.g. `cat master.key`, `grep token settings.yaml`).
 #
 # The kit also ships `.codexignore` with the same patterns, but Codex
 # currently ignores that file (openai/codex#6530); this hook is the best

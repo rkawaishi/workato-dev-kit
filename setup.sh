@@ -358,7 +358,9 @@ touch "$GITIGNORE"
 
 ENTRIES=(
   "# Workato Dev Kit (managed by kit/setup.sh)"
-  ".workatoenv"
+  # NOTE: .workatoenv is intentionally NOT ignored — it holds only project /
+  # folder / workspace IDs (no credentials) and is committed so the
+  # project↔Workato binding is shared across the team.
   "master.key"
   "settings.yaml"
   "settings.yaml.enc"
@@ -431,6 +433,27 @@ if [ -f "$CRED_PATTERNS_FILE" ]; then
   add_credential_patterns "$WORKSPACE_ROOT/.geminiignore"  "$HEADER"
   add_credential_patterns "$WORKSPACE_ROOT/.codexignore"   "$HEADER"
 fi
+
+# ── 7c. Migrate: drop stale `.workatoenv` ignore entries ─────
+# Older kit versions treated .workatoenv as a credential and added it to the
+# gitignore / per-editor ignore files. It is now git-managed (no secrets), so
+# strip the exact `.workatoenv` line from each kit-managed ignore file on
+# re-run. Only the standalone entry is removed; user content is untouched.
+strip_workatoenv_ignore() {
+  local target="$1"
+  [ -f "$target" ] || return 0
+  if grep -qxF ".workatoenv" "$target" 2>/dev/null; then
+    # Portable in-place delete of lines that are exactly `.workatoenv`.
+    local tmp
+    tmp="$(mktemp)"
+    grep -vxF ".workatoenv" "$target" > "$tmp" && mv "$tmp" "$target"
+    echo "  ✓ Removed stale .workatoenv entry from $(basename "$target") (now git-managed)"
+  fi
+}
+strip_workatoenv_ignore "$GITIGNORE"
+strip_workatoenv_ignore "$WORKSPACE_ROOT/.cursorignore"
+strip_workatoenv_ignore "$WORKSPACE_ROOT/.geminiignore"
+strip_workatoenv_ignore "$WORKSPACE_ROOT/.codexignore"
 
 # ── 8. Cursor distribution (copy mode) ───────────────────────
 # framework/cursor/ is pre-generated on the kit side via
