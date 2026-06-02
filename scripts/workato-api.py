@@ -29,6 +29,10 @@ Usage:
   python3 scripts/workato-api.py sdk pull (--connector-id <id> | --name <name>)
     (downloads connector source to connectors/<name>/connector.rb and saves
      connector_id back to connectors/docs/<name>.md frontmatter)
+  python3 scripts/workato-api.py sdk pull-project [--project-dir <path>]
+    (wraps `workato pull` in the project directory)
+  python3 scripts/workato-api.py sdk diff-project [--project-dir <path>]
+    (pulls to a temp dir and diffs against the project directory)
   python3 scripts/workato-api.py sdk edit <file> [--key <master.key>]
   python3 scripts/workato-api.py sdk decrypt <file> [--key <master.key>]
   python3 scripts/workato-api.py deploy preview --to <test|prod>
@@ -1472,6 +1476,132 @@ def _connector_slug(record: dict, fallback: str | None = None) -> str:
     return slug or (str(record.get("id")) if isinstance(record, dict) else "connector")
 
 
+def _invoke_workato_pull(
+    profile_name: str, cwd: Path,
+    _runner=None,
+) -> tuple[int, str, str]:
+    """Invoke `workato --profile <name> pull` in `cwd`.
+
+    Returns (returncode, stdout, stderr). Never raises; callers decide
+    how to surface failures. `_runner` is an injection point for tests
+    (a callable taking (cmd_list, cwd) and returning (rc, stdout, stderr)).
+    """
+    if _runner is not None:
+        return _runner(["workato", "--profile", profile_name, "pull"], cwd)
+    result = subprocess.run(
+        ["workato", "--profile", profile_name, "pull"],
+        cwd=str(cwd),
+        capture_output=True, text=True,
+    )
+    return result.returncode, result.stdout, result.stderr
+
+
+def _validate_project_dir(project_dir: Path) -> None:
+    """Refuse if project_dir lacks .workatoenv (workato pull would fail)."""
+    if not project_dir.is_dir():
+        print(
+            f"Error: project dir '{project_dir}' does not exist.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if not (project_dir / ".workatoenv").exists():
+        print(
+            f"Error: '{project_dir}' has no .workatoenv. `workato pull` "
+            f"reads the workspace/folder from .workatoenv, so it must "
+            f"be run from inside a project directory.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+def cmd_sdk_pull_project(_api: WorkatoAPI | None, args: argparse.Namespace):
+    """Pull project assets from the resolved Workato workspace.
+
+    Thin wrapper around `workato --profile <name> pull` that adds
+    profile auto-resolution from .workatoenv. Read-only against
+    Workato (only modifies local files in `--project-dir`, default
+    cwd). No env-transition guard — pull is allowed against any
+    profile per workato-deployment-flow.md.
+    """
+    project_dir = Path(args.project_dir).resolve() if args.project_dir else Path.cwd()
+    _validate_project_dir(project_dir)
+    rc, out, err = _invoke_workato_pull(args._resolved_profile_name, project_dir)
+    if out:
+        sys.stdout.write(out)
+        if not out.endswith("\n"):
+            sys.stdout.write("\n")
+    if err:
+        sys.stderr.write(err)
+        if not err.endswith("\n"):
+            sys.stderr.write("\n")
+    sys.exit(rc)
+
+
+def _run_diff(local: Path, pulled: Path, _runner=None) -> tuple[int, str, str]:
+    """Invoke `diff -ru` between two directories. Returns (rc, stdout, stderr).
+
+    diff's exit codes: 0 = identical, 1 = differ, 2 = error.
+    """
+    if _runner is not None:
+        return _runner(
+            ["diff", "-ru", "--exclude=.git", str(local), str(pulled)],
+            None,
+        )
+    result = subprocess.run(
+        ["diff", "-ru", "--exclude=.git", str(local), str(pulled)],
+        capture_output=True, text=True,
+    )
+    return result.returncode, result.stdout, result.stderr
+
+
+def cmd_sdk_diff_project(_api: WorkatoAPI | None, args: argparse.Namespace):
+    """Show diff between local project and dev workspace state.
+
+    Copies the project directory to a temp dir (excluding .git), runs
+    `workato pull` in the copy so the temp tree reflects the remote
+    state, then runs `diff -ru` between the local project and the
+    pulled copy. Read-only — the original project directory is never
+    modified.
+
+    Exit codes mirror diff(1): 0 = identical, 1 = differences printed,
+    2 = the pull or the diff itself failed.
+    """
+    import shutil
+    project_dir = Path(args.project_dir).resolve() if args.project_dir else Path.cwd()
+    _validate_project_dir(project_dir)
+
+    with tempfile.TemporaryDirectory(prefix="kit-sdk-diff-") as tmp:
+        pulled_root = Path(tmp) / "pulled"
+        # Copy the project to a temp dir; exclude VCS and bulky local
+        # directories so the pull does not waste time on irrelevant files.
+        ignore = shutil.ignore_patterns(
+            ".git", ".venv", "node_modules", "__pycache__",
+        )
+        shutil.copytree(project_dir, pulled_root, ignore=ignore)
+
+        rc, _out, err = _invoke_workato_pull(
+            args._resolved_profile_name, pulled_root,
+        )
+        if rc != 0:
+            sys.stderr.write(
+                f"Error: `workato pull` failed in temp copy "
+                f"(exit {rc}). stderr:\n{err}"
+            )
+            sys.exit(2)
+
+        diff_rc, diff_out, diff_err = _run_diff(project_dir, pulled_root)
+        if diff_out:
+            sys.stdout.write(diff_out)
+            if not diff_out.endswith("\n"):
+                sys.stdout.write("\n")
+        if diff_rc == 2:
+            sys.stderr.write(
+                f"Error: `diff -ru` failed (exit 2). stderr:\n{diff_err}"
+            )
+            sys.exit(2)
+        sys.exit(diff_rc)
+
+
 def cmd_sdk_pull(api: WorkatoAPI, args: argparse.Namespace):
     """Pull a custom connector's source from Workato to the local filesystem."""
     if args.connector_id is None and not args.name:
@@ -2229,6 +2359,55 @@ def main():
         help="Don't persist connector_id to connectors/docs/<name>.md frontmatter",
     )
 
+    sdk_pull_project_p = sdk_sub.add_parser(
+        "pull-project",
+        help="Pull all project assets via `workato pull`",
+        description=(
+            "Pull project assets (recipes, connections, lookup tables, "
+            "etc.) from the resolved Workato workspace by invoking "
+            "`workato --profile <name> pull` in the project directory. "
+            "Thin wrapper: profile is auto-resolved from .workatoenv. "
+            "Read-only against Workato; only local files are modified."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  # Pull into the current project directory\n"
+            "  python3 scripts/workato-api.py sdk pull-project\n\n"
+            "  # Pull into an explicit project directory\n"
+            "  python3 scripts/workato-api.py sdk pull-project --project-dir projects/my-app\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    sdk_pull_project_p.add_argument(
+        "--project-dir", default=None,
+        help="Project directory to pull into (default: cwd). Must contain .workatoenv.",
+    )
+
+    sdk_diff_project_p = sdk_sub.add_parser(
+        "diff-project",
+        help="Diff local project against dev workspace",
+        description=(
+            "Show differences between the local project and the "
+            "resolved Workato workspace. Copies the project to a temp "
+            "dir, runs `workato pull` in the copy so it reflects the "
+            "remote state, then `diff -ru` between local and pulled. "
+            "Read-only — does not modify the original project directory. "
+            "Exit code: 0 = identical, 1 = differences printed, 2 = error."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  # Diff the current project against dev\n"
+            "  python3 scripts/workato-api.py sdk diff-project\n\n"
+            "  # Diff an explicit project directory\n"
+            "  python3 scripts/workato-api.py sdk diff-project --project-dir projects/my-app\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    sdk_diff_project_p.add_argument(
+        "--project-dir", default=None,
+        help="Project directory to diff (default: cwd). Must contain .workatoenv.",
+    )
+
     sdk_decrypt_p = sdk_sub.add_parser(
         "decrypt",
         help="Decrypt a .enc file and print to stdout",
@@ -2460,6 +2639,8 @@ def main():
         ("recipes", "stop"): cmd_recipes_stop,
         ("sdk", "push"): cmd_sdk_push,
         ("sdk", "pull"): cmd_sdk_pull,
+        ("sdk", "pull-project"): cmd_sdk_pull_project,
+        ("sdk", "diff-project"): cmd_sdk_diff_project,
         ("sdk", "generate-schema"): cmd_sdk_generate_schema,
         ("oauth-profiles", "list"): cmd_oauth_profiles_list,
         ("oauth-profiles", "get"): cmd_oauth_profiles_get,
