@@ -33,6 +33,8 @@ Usage:
     (wraps `workato pull` in the project directory)
   python3 scripts/workato-api.py sdk diff-project [--project-dir <path>]
     (pulls to a temp dir and diffs against the project directory)
+  python3 scripts/workato-api.py sdk test <connector.rb>
+    (local lint: `ruby -c` syntax check + top-level structure report)
   python3 scripts/workato-api.py sdk edit <file> [--key <master.key>]
   python3 scripts/workato-api.py sdk decrypt <file> [--key <master.key>]
   python3 scripts/workato-api.py deploy preview --to <test|prod>
@@ -1489,6 +1491,116 @@ def _connector_slug(record: dict, fallback: str | None = None) -> str:
     return slug or (str(record.get("id")) if isinstance(record, dict) else "connector")
 
 
+CONNECTOR_TOP_LEVEL_KEYS = (
+    "title", "connection", "actions", "triggers", "methods",
+    "object_definitions", "pick_lists", "test", "custom_action_help",
+)
+
+
+def _ruby_syntax_check(path: Path, _runner=None) -> tuple[int, str, str]:
+    """Run `ruby -c <path>` to parse-check a connector file.
+
+    Returns (returncode, stdout, stderr). Never raises — if the `ruby`
+    binary itself is missing we return rc 127 with a clear message so
+    the caller can surface a controlled error.
+    """
+    argv = ["ruby", "-c", str(path)]
+    if _runner is not None:
+        return _runner(argv, None)
+    try:
+        result = subprocess.run(argv, capture_output=True, text=True)
+    except FileNotFoundError:
+        return 127, "", (
+            "Error: `ruby` not found on PATH. Install Ruby to run "
+            "`sdk test`.\n"
+        )
+    return result.returncode, result.stdout, result.stderr
+
+
+def _inspect_connector_structure(source: str) -> dict:
+    """Identify which CONNECTOR_TOP_LEVEL_KEYS appear as top-level entries.
+
+    A connector file is a Ruby hash literal: `{ title: 'X', connection:
+    {...}, actions: {...} }`. We are not parsing Ruby; instead we look
+    for `<key>:` appearing on a line at 0 or 2 spaces of indent (the
+    conventional formatting in every Workato connector example).
+    `# comment` content is stripped first.
+
+    Informational only — the caller does not fail if a key is missing.
+    """
+    import re
+    found: dict[str, bool] = {k: False for k in CONNECTOR_TOP_LEVEL_KEYS}
+    for raw_line in source.splitlines():
+        line = raw_line.split("#", 1)[0].rstrip()
+        if not line:
+            continue
+        stripped = line.lstrip()
+        indent = len(line) - len(stripped)
+        if indent > 2:
+            continue
+        m = re.match(r"['\"]?([a-z_]+)['\"]?\s*:", stripped)
+        if not m:
+            continue
+        key = m.group(1)
+        if key in found:
+            found[key] = True
+    return {
+        "found": [k for k, present in found.items() if present],
+        "missing": [k for k, present in found.items() if not present],
+    }
+
+
+def cmd_sdk_test(_api: WorkatoAPI | None, args: argparse.Namespace):
+    """Locally lint a connector source file.
+
+    Combines two checks:
+      1. `ruby -c <path>` — parses the file as Ruby; non-zero rc means
+         the syntax is broken and the connector cannot be pushed.
+      2. Structural inspection — informational report of which
+         top-level keys (title, connection, actions, triggers, ...)
+         appear in the source. Missing `title` or `connection` adds a
+         warning but does not fail the command.
+
+    Exit codes:
+      0 — syntax OK (structure report may still note missing keys)
+      1 — file not found OR ruby -c reported a syntax error
+      127 — ruby binary not found on PATH
+    """
+    path = Path(args.path)
+    if not path.exists():
+        print(f"Error: connector file not found: {path}", file=sys.stderr)
+        sys.exit(1)
+    if not path.is_file():
+        print(f"Error: not a file: {path}", file=sys.stderr)
+        sys.exit(1)
+
+    rc, _stdout, stderr = _ruby_syntax_check(path)
+    source = path.read_text()
+    structure = _inspect_connector_structure(source)
+
+    syntax_ok = (rc == 0)
+    output: dict = {
+        "path": str(path),
+        "syntax_ok": syntax_ok,
+        "ruby_exit_code": rc,
+        "structure": structure,
+    }
+    if not syntax_ok:
+        output["ruby_stderr"] = stderr.strip()
+    if "title" not in structure["found"] or "connection" not in structure["found"]:
+        output.setdefault("warnings", []).append(
+            "Connector is missing a top-level `title:` or `connection:`. "
+            "Workato may reject the push or surface an unhelpful error."
+        )
+
+    print(json.dumps(output, indent=2, ensure_ascii=False))
+
+    if rc == 127:
+        sys.exit(127)
+    if not syntax_ok:
+        sys.exit(1)
+
+
 def _invoke_workato_pull(
     profile_name: str, cwd: Path,
     _runner=None,
@@ -2444,6 +2556,29 @@ def main():
         help="Project directory to pull into (default: cwd). Must contain .workatoenv.",
     )
 
+    sdk_test_p = sdk_sub.add_parser(
+        "test",
+        help="Lint a connector file locally (no Workato API call)",
+        description=(
+            "Lint a Workato connector source file locally. Runs "
+            "`ruby -c` to parse-check the file and a structural "
+            "inspection that reports which top-level keys (title, "
+            "connection, actions, triggers, methods, ...) are present. "
+            "No API call to Workato. Exit code: 0 = syntax OK, "
+            "1 = syntax error or file missing, 127 = ruby not on PATH."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  # Lint a connector before push\n"
+            "  python3 scripts/workato-api.py sdk test connectors/foo/connector.rb\n\n"
+            "  # Common pre-push pipeline (test then push)\n"
+            "  python3 scripts/workato-api.py sdk test connectors/foo/connector.rb \\\n"
+            "    && python3 scripts/workato-api.py sdk push --connector connectors/foo/connector.rb\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    sdk_test_p.add_argument("path", help="Path to the connector Ruby file")
+
     sdk_diff_project_p = sdk_sub.add_parser(
         "diff-project",
         help="Diff local project against dev workspace",
@@ -2662,6 +2797,7 @@ def main():
         "edit": cmd_sdk_edit,
         "pull-project": cmd_sdk_pull_project,
         "diff-project": cmd_sdk_diff_project,
+        "test": cmd_sdk_test,
     }
     if args.command == "sdk" and getattr(args, "sdk_command", None) in _sdk_pre_api:
         _sdk_pre_api[args.sdk_command](None, args)
