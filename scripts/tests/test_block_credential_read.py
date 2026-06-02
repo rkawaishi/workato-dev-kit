@@ -209,6 +209,26 @@ def test_claude_blocks_git_status_bundled_verbose_short_flag():
     assert r.returncode == 2
 
 
+def test_claude_blocks_git_verbose_abbreviation():
+    # git accepts `--ver` as an abbreviation of --verbose.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git status --ver -- connectors/x/master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_git_patch_abbreviation():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git add --patc connectors/x/settings.yaml"}})
+    assert r.returncode == 2
+
+
+def test_claude_allows_git_add_with_pathspec_separator():
+    # `--` is the pathspec separator, not a content-printing option.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git add -- connectors/x/settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
 def test_claude_allows_output_dot_key_false_positive():
     # `*.key` must not block a non-credential output file passed to a safe tool.
     r = run(CLAUDE_HOOK, {"tool_name": "Bash",

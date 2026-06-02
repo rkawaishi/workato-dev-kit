@@ -79,8 +79,13 @@ def git_segment_safe(rest):
     if rest[0] not in SAFE_GIT_SUBCMDS:
         return False
     for t in rest[1:]:
+        if t == "--":
+            continue  # pathspec separator, not an option
         if t.startswith("--"):
-            if t.startswith("--patch") or t.startswith("--verbose"):
+            # git accepts any unambiguous prefix, so reject every abbreviation
+            # of --patch / --verbose (--ver, --patc, …).
+            stem = t[2:].split("=", 1)[0]
+            if stem and ("verbose".startswith(stem) or "patch".startswith(stem)):
                 return False
         elif t.startswith("-") and len(t) > 1:
             if "p" in t[1:] or "v" in t[1:]:
