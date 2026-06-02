@@ -31,6 +31,9 @@ Usage:
     [--yes] [--wait] [--timeout <sec>]
     (--yes required when --to prod; --wait polls until success/failed)
   python3 scripts/workato-api.py deploy status <deployment-id>
+  python3 scripts/workato-api.py deploy list [--project-id <id>]
+    [--environment-type <test|prod>] [--state <state>] [--limit <N>]
+    [--from-date <iso>] [--to-date <iso>]
   python3 scripts/workato-api.py profile show
 
 Global options:
@@ -564,6 +567,41 @@ class WorkatoAPI:
             return result.get("data", result.get("result", result))
         return result  # type: ignore[return-value]
 
+    def deployments_list(
+        self,
+        project_id: int | None = None,
+        folder_id: int | None = None,
+        environment_type: str | None = None,
+        state: str | None = None,
+        from_date: str | None = None,
+        to_date: str | None = None,
+    ) -> list:
+        """GET /api/deployments — list deployment records with filters.
+
+        Filter values are passed through to the API as-is. `from`/`to`
+        are date filters per the docs; their CLI flag names are
+        `--from-date` / `--to-date` to avoid clashing with the Python
+        keyword `from`.
+        """
+        params: dict = {}
+        if project_id is not None:
+            params["project_id"] = project_id
+        if folder_id is not None:
+            params["folder_id"] = folder_id
+        if environment_type is not None:
+            params["environment_type"] = environment_type
+        if state is not None:
+            params["state"] = state
+        if from_date is not None:
+            params["from"] = from_date
+        if to_date is not None:
+            params["to"] = to_date
+        result = self._request("/api/deployments", params=params or None)
+        if isinstance(result, dict):
+            items = result.get("items", result.get("result", result.get("data", [])))
+            return items if isinstance(items, list) else []
+        return result if isinstance(result, list) else []
+
 
 # ---------------------------------------------------------------------------
 # Deploy helpers (env guard + profile env inference + polling)
@@ -878,6 +916,26 @@ def cmd_deploy_status(_unused: WorkatoAPI | None, args: argparse.Namespace):
     _, _, api = _deploy_resolve_profile_and_api(args)
     record = api.deployment_get(args.deployment_id)
     print(json.dumps(record, indent=2, ensure_ascii=False))
+
+
+def cmd_deploy_list(_unused: WorkatoAPI | None, args: argparse.Namespace):
+    """List deployment records with optional filter passthrough.
+
+    Read-only; no env-transition guard. The resolved profile determines
+    which workspace's deployments are listed.
+    """
+    _, _, api = _deploy_resolve_profile_and_api(args)
+    items = api.deployments_list(
+        project_id=args.project_id,
+        folder_id=args.folder_id,
+        environment_type=args.environment_type,
+        state=args.state,
+        from_date=args.from_date,
+        to_date=args.to_date,
+    )
+    if args.limit is not None and args.limit >= 0:
+        items = items[: args.limit]
+    print(json.dumps(items, indent=2, ensure_ascii=False))
 
 
 def cmd_oauth_profiles_list(api: WorkatoAPI, args: argparse.Namespace):
@@ -1645,6 +1703,59 @@ def main():
         help="Deployment ID returned by `deploy run`",
     )
 
+    deploy_list_p = deploy_sub.add_parser(
+        "list",
+        help="List deployments with filters",
+        description=(
+            "List deployment records from the workspace the resolved "
+            "profile points at (GET /api/deployments). Read-only. All "
+            "filters are optional; the API returns the items array as "
+            "JSON, with --limit applied client-side."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  # Latest 5 deployments to test from the connected workspace\n"
+            "  python3 scripts/workato-api.py deploy list \\\n"
+            "      --environment-type test --limit 5\n\n"
+            "  # All failed prod deployments for one project\n"
+            "  python3 scripts/workato-api.py deploy list \\\n"
+            "      --project-id 42 --environment-type prod --state failed\n\n"
+            "  # Deployments since a specific date\n"
+            "  python3 scripts/workato-api.py deploy list \\\n"
+            "      --from-date 2026-06-01 --to-date 2026-06-30\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    deploy_list_target_group = deploy_list_p.add_mutually_exclusive_group()
+    deploy_list_target_group.add_argument(
+        "--project-id", type=int, default=None,
+        help="Filter by project ID (mutually exclusive with --folder-id)",
+    )
+    deploy_list_target_group.add_argument(
+        "--folder-id", type=int, default=None,
+        help="Filter by folder ID (mutually exclusive with --project-id)",
+    )
+    deploy_list_p.add_argument(
+        "--environment-type", choices=DEPLOY_TARGET_ENVS, default=None,
+        help="Filter by target environment (test or prod)",
+    )
+    deploy_list_p.add_argument(
+        "--state", default=None,
+        help="Filter by deployment state (e.g. pending, success, failed)",
+    )
+    deploy_list_p.add_argument(
+        "--from-date", dest="from_date", default=None,
+        help="Filter by deployment created_at >= this ISO date",
+    )
+    deploy_list_p.add_argument(
+        "--to-date", dest="to_date", default=None,
+        help="Filter by deployment created_at <= this ISO date",
+    )
+    deploy_list_p.add_argument(
+        "--limit", type=int, default=None,
+        help="Cap the number of items returned (client-side)",
+    )
+
     # -- sdk --
     sdk_parser = subparsers.add_parser(
         "sdk", help="Connector SDK commands (uses Platform API token)"
@@ -1899,6 +2010,7 @@ def main():
             "preview": cmd_deploy_preview,
             "run": cmd_deploy_run,
             "status": cmd_deploy_status,
+            "list": cmd_deploy_list,
         }
         sub = getattr(args, "deploy_command", None)
         if sub in deploy_handlers:
