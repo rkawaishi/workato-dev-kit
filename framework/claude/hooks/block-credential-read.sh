@@ -56,10 +56,46 @@ def pat_to_bash_re(p):
     body = re.escape(p).replace(r"\*", r"\S*")
     return re.compile(rf"(?<!\w){body}(?!\w)")
 
+# Tools that legitimately operate ON credential files without dumping their
+# contents to the agent (the workato CLI encrypts/edits/runs; git stages and
+# commits). These must never be blocked, or the hook would break normal
+# workflows. The kit helper script is matched by substring (its program is
+# `python3`, which we cannot allowlist wholesale).
+SAFE_PROGS = {"workato", "git"}
+SAFE_MARKERS = ("workato-api.py",)
+
+def _segment_program(seg):
+    """Program invoked in a command segment, skipping leading VAR=value env
+    assignments (so `FOO=1 workato ...` still resolves to `workato`)."""
+    toks = seg.split()
+    i = 0
+    while i < len(toks) and re.match(r"^\w+=", toks[i]):
+        i += 1
+    return os.path.basename(toks[i]) if i < len(toks) else ""
+
 def bash_hit(cmd):
-    for pat in patterns:
-        if pat_to_bash_re(pat).search(cmd):
-            return pat
+    """Block only when a credential file's CONTENTS would be dumped into the
+    agent's tool output. We split on shell separators and deny a segment that
+    references a credential pattern UNLESS its program is a known-safe tool
+    (workato CLI / git / kit helper). `cat master.key`, `grep token
+    settings.yaml`, etc. are still blocked; `workato edit settings.yaml.enc`,
+    `git add settings.yaml.enc`, `python3 scripts/workato-api.py …` are not."""
+    sep = re.compile("|".join([r"\|\|", r"&&", r"[|;&\n]", r"\$\(", r"\)", re.escape(chr(96))]))
+    for seg in sep.split(cmd):
+        if not seg.strip():
+            continue
+        hit = None
+        for pat in patterns:
+            if pat_to_bash_re(pat).search(seg):
+                hit = pat
+                break
+        if not hit:
+            continue
+        if any(m in seg for m in SAFE_MARKERS):
+            continue
+        if _segment_program(seg) in SAFE_PROGS:
+            continue
+        return hit
     return None
 
 tool = data.get("tool_name", "")

@@ -43,11 +43,42 @@ with open(os.environ["PATTERNS_FILE"]) as f:
         if line and not line.startswith("#"):
             patterns.append(line)
 
-for pat in patterns:
-    body = re.escape(pat).replace(r"\*", r"\S*")
-    if re.search(rf"(?<!\w){body}(?!\w)", cmd):
-        print(f"DENY:{pat}")
-        sys.exit(0)
+# Tools that legitimately operate ON credential files without dumping their
+# contents (workato CLI encrypts/edits/runs; git stages/commits). Never block
+# these. The kit helper script is matched by substring (its program is
+# `python3`, which we cannot allowlist wholesale).
+SAFE_PROGS = {"workato", "git"}
+SAFE_MARKERS = ("workato-api.py",)
+
+def pat_re(p):
+    body = re.escape(p).replace(r"\*", r"\S*")
+    return re.compile(rf"(?<!\w){body}(?!\w)")
+
+def segment_program(seg):
+    toks = seg.split()
+    i = 0
+    while i < len(toks) and re.match(r"^\w+=", toks[i]):
+        i += 1
+    return os.path.basename(toks[i]) if i < len(toks) else ""
+
+# Block only when credential file contents would be dumped to the agent.
+sep = re.compile("|".join([r"\|\|", r"&&", r"[|;&\n]", r"\$\(", r"\)", re.escape(chr(96))]))
+for seg in sep.split(cmd):
+    if not seg.strip():
+        continue
+    hit = None
+    for pat in patterns:
+        if pat_re(pat).search(seg):
+            hit = pat
+            break
+    if not hit:
+        continue
+    if any(m in seg for m in SAFE_MARKERS):
+        continue
+    if segment_program(seg) in SAFE_PROGS:
+        continue
+    print(f"DENY:{hit}")
+    sys.exit(0)
 
 print("OK")
 PY

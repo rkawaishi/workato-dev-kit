@@ -153,6 +153,48 @@ def test_claude_allows_bash_no_creds():
     assert r.returncode == 0, r.stderr
 
 
+# Legitimate tools (workato CLI / git / kit helper) operate ON credential
+# files without dumping their contents, so they must not be blocked even when
+# a credential filename appears as an argument.
+
+def test_claude_allows_workato_edit_enc():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "workato edit settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_git_add_enc():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git add connectors/foo/settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_helper_script_with_settings_arg():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "python3 scripts/workato-api.py pull --settings settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_output_dot_key_false_positive():
+    # `*.key` must not block a non-credential output file passed to a safe tool.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "workato generate schema --output=out.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_blocks_bash_cat_master_key():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "cat connectors/x/master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_dump_in_chained_command():
+    # A safe leading segment must not shield a later dump segment.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git status && cat master.key"}})
+    assert r.returncode == 2
+
+
 # ---------------------------------------------------------------------------
 # Claude hook — fail-open on malformed input
 # ---------------------------------------------------------------------------
@@ -191,6 +233,18 @@ def test_codex_allows_bash_no_creds():
     r = run(CODEX_HOOK, {"tool_name": "Bash",
                          "tool_input": {"command": "git status"}})
     assert r.returncode == 0
+
+
+def test_codex_allows_workato_edit_enc():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "workato edit settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_allows_git_add_enc():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "git add connectors/foo/settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
 
 
 def test_codex_allows_malformed_json():
