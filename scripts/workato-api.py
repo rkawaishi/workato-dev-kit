@@ -27,6 +27,35 @@ Usage:
 
 Global options:
   --profile <name>   Use a specific profile instead of auto-resolution
+
+Subcommand conventions (for contributors adding new subcommands):
+
+  Every subparser MUST set:
+    - help=    one-line summary, <=50 chars (shown in the {a,b,c} list)
+    - description=  2-3 sentences. State purpose AND any preconditions or
+                    environment restrictions in the first sentence.
+                    Use imperative voice ("Push connector...", not "Pushes...").
+
+  Side-effect subcommands (anything that creates, updates, deletes, or
+  changes state in Workato — push, deploy, recipe start/stop, oauth-profiles
+  create/update/delete, etc.) additionally MUST:
+    - provide --dry-run that prints the intended request without sending it
+    - set epilog= with at least one --dry-run example as the first example
+    - guard environment boundaries in code, not just docs:
+        * deploy commands: --from and --to required; refuse if
+          --to in {test,prod} and --from != dev
+        * --to prod additionally requires --yes (CI-friendly confirm)
+
+  Read-only subcommands (*list, *get, jobs list/get, profile show) do not
+  need --dry-run or epilog, but still need help= and description=.
+
+  Pre-existing side-effect commands without --dry-run (sdk push,
+  oauth-profiles create/update/delete) are tracked under Issue #160 for
+  retrofit alongside the new feature work; new commands must comply from
+  the start.
+
+  See workato-deployment-flow.md for the dev->test->prod policy that the
+  environment guards enforce at the CLI level.
 """
 
 import argparse
@@ -1108,11 +1137,25 @@ def main():
     jobs_parser = subparsers.add_parser("jobs", help="Manage recipe jobs")
     jobs_sub = jobs_parser.add_subparsers(dest="jobs_command")
 
-    jobs_list_p = jobs_sub.add_parser("list", help="List jobs for a recipe")
+    jobs_list_p = jobs_sub.add_parser(
+        "list",
+        help="List jobs for a recipe",
+        description=(
+            "List jobs for a recipe in reverse-chronological order. "
+            "Optionally filter by status (e.g. failed, success). Read-only."
+        ),
+    )
     jobs_list_p.add_argument("--recipe-id", type=int, required=True)
     jobs_list_p.add_argument("--status", default=None, help="Filter by status")
 
-    jobs_get_p = jobs_sub.add_parser("get", help="Get job details")
+    jobs_get_p = jobs_sub.add_parser(
+        "get",
+        help="Get job details",
+        description=(
+            "Show the full input/output payload, error, and metadata for a "
+            "single job. Read-only."
+        ),
+    )
     jobs_get_p.add_argument("--recipe-id", type=int, required=True)
     jobs_get_p.add_argument("--job-id", type=str, required=True)
 
@@ -1121,19 +1164,38 @@ def main():
     conn_sub = conn_parser.add_subparsers(dest="connectors_command")
 
     conn_platform_p = conn_sub.add_parser(
-        "list-platform", help="List Pre-built connectors"
+        "list-platform",
+        help="List Pre-built connectors",
+        description=(
+            "List Workato's Pre-built (platform) connectors with pagination. "
+            "When --provider is given, returns early on the first matching "
+            "page. Read-only."
+        ),
     )
     conn_platform_p.add_argument(
         "--provider", default=None, help="Filter by provider name"
     )
 
-    conn_sub.add_parser("list-custom", help="List custom connectors")
+    conn_sub.add_parser(
+        "list-custom",
+        help="List custom connectors",
+        description=(
+            "List custom connectors in the connected workspace. Read-only."
+        ),
+    )
 
     # -- recipes --
     recipes_parser = subparsers.add_parser("recipes", help="Manage recipes")
     recipes_sub = recipes_parser.add_subparsers(dest="recipes_command")
 
-    recipes_list_p = recipes_sub.add_parser("list", help="List recipes (JSON)")
+    recipes_list_p = recipes_sub.add_parser(
+        "list",
+        help="List recipes (JSON)",
+        description=(
+            "List recipes in the connected workspace as JSON, with "
+            "pagination. Optionally filter by folder. Read-only."
+        ),
+    )
     recipes_list_p.add_argument(
         "--folder-id", type=int, default=None, help="Filter by folder ID"
     )
@@ -1145,7 +1207,24 @@ def main():
     sdk_sub = sdk_parser.add_subparsers(dest="sdk_command")
 
     sdk_push_p = sdk_sub.add_parser(
-        "push", help="Push connector source code to Workato"
+        "push",
+        help="Push connector source code to Workato",
+        description=(
+            "Push connector source to Workato as a new version and release "
+            "it. Auto-detects create vs. update from the connector_id stored "
+            "in connectors/docs/<name>.md frontmatter, and saves the ID back "
+            "after an initial create. Writes to the connected workspace."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  # Update an existing connector (ID auto-resolved from docs frontmatter)\n"
+            "  python3 scripts/workato-api.py sdk push --connector connectors/foo/connector.rb\n\n"
+            "  # First-time push (creates the connector, then saves the new ID)\n"
+            "  python3 scripts/workato-api.py sdk push --connector connectors/foo/connector.rb --title \"Foo\"\n\n"
+            "  # Upload without releasing\n"
+            "  python3 scripts/workato-api.py sdk push --connector connectors/foo/connector.rb --no-release\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     sdk_push_p.add_argument(
         "--connector", required=True, help="Path to connector.rb file"
@@ -1169,7 +1248,21 @@ def main():
     )
 
     sdk_pull_p = sdk_sub.add_parser(
-        "pull", help="Pull a custom connector's source from Workato"
+        "pull",
+        help="Pull a custom connector's source from Workato",
+        description=(
+            "Download a custom connector's source to "
+            "connectors/<name>/connector.rb. Resolves the connector by --id "
+            "or by --name (via list-custom), and writes connector_id back to "
+            "connectors/docs/<name>.md frontmatter. Writes local files only."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  python3 scripts/workato-api.py sdk pull --connector-id 12345\n"
+            "  python3 scripts/workato-api.py sdk pull --name slack_custom\n"
+            "  python3 scripts/workato-api.py sdk pull --name foo --output-dir tmp/ --force\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     sdk_pull_p.add_argument(
         "--connector-id", type=int, default=None,
@@ -1194,7 +1287,12 @@ def main():
     )
 
     sdk_decrypt_p = sdk_sub.add_parser(
-        "decrypt", help="Decrypt a .enc file and print to stdout"
+        "decrypt",
+        help="Decrypt a .enc file and print to stdout",
+        description=(
+            "Decrypt a Workato CLI master.key-encrypted file and print the "
+            "plaintext to stdout. Read-only; does not modify the .enc file."
+        ),
     )
     sdk_decrypt_p.add_argument("file", help="Path to .enc file")
     sdk_decrypt_p.add_argument(
@@ -1202,7 +1300,19 @@ def main():
     )
 
     sdk_edit_p = sdk_sub.add_parser(
-        "edit", help="Decrypt .enc file, open in $EDITOR, re-encrypt on save"
+        "edit",
+        help="Decrypt .enc file, open in $EDITOR, re-encrypt on save",
+        description=(
+            "Decrypt a .enc file to a temp file, open it in $EDITOR, and "
+            "re-encrypt on save. Creates a new .enc file if the path does "
+            "not exist. Writes the local .enc file only; no Workato calls."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  python3 scripts/workato-api.py sdk edit connectors/foo/connection.enc\n"
+            "  python3 scripts/workato-api.py sdk edit connectors/foo/connection.enc --key path/to/master.key\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     sdk_edit_p.add_argument("file", help="Path to .enc file (created if not exists)")
     sdk_edit_p.add_argument(
@@ -1210,7 +1320,13 @@ def main():
     )
 
     sdk_gen_p = sdk_sub.add_parser(
-        "generate-schema", help="Generate Workato schema from JSON/CSV sample"
+        "generate-schema",
+        help="Generate Workato schema from JSON/CSV sample",
+        description=(
+            "Generate a Workato connector schema from a sample JSON or CSV "
+            "file by calling the Platform schema-generation API. Read-only; "
+            "prints the resulting schema to stdout."
+        ),
     )
     sdk_gen_p.add_argument("file", help="Path to JSON or CSV sample file")
 
@@ -1220,19 +1336,61 @@ def main():
     )
     oauth_sub = oauth_parser.add_subparsers(dest="oauth_profiles_command")
 
-    oauth_sub.add_parser("list", help="List custom OAuth profiles")
+    oauth_sub.add_parser(
+        "list",
+        help="List custom OAuth profiles",
+        description=(
+            "List custom OAuth profiles in the connected workspace. Read-only."
+        ),
+    )
 
-    oauth_get_p = oauth_sub.add_parser("get", help="Get OAuth profile by ID")
+    oauth_get_p = oauth_sub.add_parser(
+        "get",
+        help="Get OAuth profile by ID",
+        description=(
+            "Show a single custom OAuth profile (id, name, provider, data) "
+            "by its numeric ID. Read-only."
+        ),
+    )
     oauth_get_p.add_argument("--id", type=int, required=True)
 
-    oauth_create_p = oauth_sub.add_parser("create", help="Create OAuth profile")
+    oauth_create_p = oauth_sub.add_parser(
+        "create",
+        help="Create OAuth profile",
+        description=(
+            "Create a new custom OAuth profile in the connected workspace. "
+            "Writes to Workato."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  python3 scripts/workato-api.py oauth-profiles create \\\n"
+            "      --name \"My App\" --provider slack \\\n"
+            "      --client-id <id> --client-secret <secret>\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     oauth_create_p.add_argument("--name", required=True)
     oauth_create_p.add_argument("--provider", required=True)
     oauth_create_p.add_argument("--client-id", required=True)
     oauth_create_p.add_argument("--client-secret", required=True)
     oauth_create_p.add_argument("--token", default=None, help="Token (Slack only)")
 
-    oauth_update_p = oauth_sub.add_parser("update", help="Update OAuth profile")
+    oauth_update_p = oauth_sub.add_parser(
+        "update",
+        help="Update OAuth profile",
+        description=(
+            "Update a custom OAuth profile by ID. All identifying fields are "
+            "required (name, provider, client_id, client_secret). Writes to "
+            "Workato."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  python3 scripts/workato-api.py oauth-profiles update --id 123 \\\n"
+            "      --name \"My App\" --provider slack \\\n"
+            "      --client-id <id> --client-secret <secret>\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     oauth_update_p.add_argument("--id", type=int, required=True)
     oauth_update_p.add_argument("--name", required=True)
     oauth_update_p.add_argument("--provider", required=True)
@@ -1240,7 +1398,19 @@ def main():
     oauth_update_p.add_argument("--client-secret", required=True)
     oauth_update_p.add_argument("--token", default=None, help="Token (Slack only)")
 
-    oauth_delete_p = oauth_sub.add_parser("delete", help="Delete OAuth profile")
+    oauth_delete_p = oauth_sub.add_parser(
+        "delete",
+        help="Delete OAuth profile",
+        description=(
+            "Delete a custom OAuth profile by ID. Destructive; the profile "
+            "is removed from the connected workspace."
+        ),
+        epilog=(
+            "Examples:\n"
+            "  python3 scripts/workato-api.py oauth-profiles delete --id 123\n"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     oauth_delete_p.add_argument("--id", type=int, required=True)
 
     # -- profile --
@@ -1248,7 +1418,15 @@ def main():
         "profile", help="Show resolved profile info"
     )
     profile_sub = profile_parser.add_subparsers(dest="profile_command")
-    profile_sub.add_parser("show", help="Show current profile resolution")
+    profile_sub.add_parser(
+        "show",
+        help="Show current profile resolution",
+        description=(
+            "Show which profile is currently resolved and how (explicit "
+            "--profile, .workatoenv workspace_id match, or current_profile "
+            "fallback). Read-only; no Workato API call."
+        ),
+    )
 
     args = parser.parse_args()
 
