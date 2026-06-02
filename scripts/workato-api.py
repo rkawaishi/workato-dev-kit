@@ -2633,9 +2633,19 @@ def main():
             profile_parser.print_help()
         return
 
-    if args.command == "sdk" and getattr(args, "sdk_command", None) in ("decrypt", "edit"):
-        handler = {"decrypt": cmd_sdk_decrypt, "edit": cmd_sdk_edit}[args.sdk_command]
-        handler(None, args)
+    # These sdk subcommands do not touch the Workato API directly:
+    # decrypt/edit operate on local .enc files, and pull-project/diff-project
+    # shell out to `workato pull`. Dispatch before the main() profile-and-token
+    # bootstrap so keyring problems do not block workflows that don't need a
+    # Python-side token.
+    _sdk_pre_api = {
+        "decrypt": cmd_sdk_decrypt,
+        "edit": cmd_sdk_edit,
+        "pull-project": cmd_sdk_pull_project,
+        "diff-project": cmd_sdk_diff_project,
+    }
+    if args.command == "sdk" and getattr(args, "sdk_command", None) in _sdk_pre_api:
+        _sdk_pre_api[args.sdk_command](None, args)
         return
 
     # deploy handlers manage their own profile/token resolution so they
@@ -2681,8 +2691,6 @@ def main():
         ("recipes", "stop"): cmd_recipes_stop,
         ("sdk", "push"): cmd_sdk_push,
         ("sdk", "pull"): cmd_sdk_pull,
-        ("sdk", "pull-project"): cmd_sdk_pull_project,
-        ("sdk", "diff-project"): cmd_sdk_diff_project,
         ("sdk", "generate-schema"): cmd_sdk_generate_schema,
         ("oauth-profiles", "list"): cmd_oauth_profiles_list,
         ("oauth-profiles", "get"): cmd_oauth_profiles_get,
