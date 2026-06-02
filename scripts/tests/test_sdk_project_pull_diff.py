@@ -485,6 +485,93 @@ def test_diff_argv_minimal_shape():
     assert argv[-2:] == ["/x", "/y"]
 
 
+# ---------------------------------------------------------------------------
+# Missing-binary handling (FileNotFoundError → clean rc + message)
+# ---------------------------------------------------------------------------
+
+
+def _patch_subprocess_run_to_raise():
+    """Make subprocess.run raise FileNotFoundError. Returns restore callable."""
+    import subprocess as _sp
+    saved = _sp.run
+
+    def boom(*_a, **_kw):
+        raise FileNotFoundError("no such binary")
+
+    _sp.run = boom
+    return lambda: setattr(_sp, "run", saved)
+
+
+def test_invoke_workato_pull_returns_127_when_workato_missing():
+    restore = _patch_subprocess_run_to_raise()
+    try:
+        rc, _out, err = wa._invoke_workato_pull(
+            "acme-dev", Path("/tmp"),  # _runner=None — exercises subprocess path
+        )
+        assert rc == 127
+        assert "workato" in err
+        assert "PATH" in err
+    finally:
+        restore()
+
+
+def test_run_diff_returns_2_when_diff_missing():
+    restore = _patch_subprocess_run_to_raise()
+    try:
+        rc, _out, err = wa._run_diff(Path("/a"), Path("/b"))
+        assert rc == 2
+        assert "diff" in err
+        assert "PATH" in err
+    finally:
+        restore()
+
+
+def test_pull_project_exits_127_when_workato_missing():
+    with tempfile.TemporaryDirectory() as d:
+        _make_project_dir(Path(d))
+        prev = _chdir(Path(d))
+        try:
+            restore_pool = _patch_profile_pool(_DEFAULT_POOL)
+            restore_sp = _patch_subprocess_run_to_raise()
+            try:
+                args = SimpleNamespace(project_dir=None, profile=None)
+                exited, code, _out, err = _capture_stdout_stderr_exit(
+                    lambda: wa.cmd_sdk_pull_project(None, args)
+                )
+                assert exited and code == 127
+                assert "workato" in err
+            finally:
+                restore_sp()
+                restore_pool()
+        finally:
+            os.chdir(prev)
+
+
+def test_diff_project_exits_2_when_diff_missing_after_pull_succeeds():
+    """Pull succeeds (mocked), then diff binary is missing → rc 2."""
+    with tempfile.TemporaryDirectory() as d:
+        _make_project_dir(Path(d))
+        prev = _chdir(Path(d))
+        try:
+            restore_pool = _patch_profile_pool(_DEFAULT_POOL)
+            restore_pull, _ = _patch_pull(rc=0)
+            # subprocess.run will raise only for diff (pull is patched)
+            restore_sp = _patch_subprocess_run_to_raise()
+            try:
+                args = SimpleNamespace(project_dir=None, profile=None)
+                exited, code, _, err = _capture_stdout_stderr_exit(
+                    lambda: wa.cmd_sdk_diff_project(None, args)
+                )
+                assert exited and code == 2
+                assert "diff" in err
+            finally:
+                restore_sp()
+                restore_pull()
+                restore_pool()
+        finally:
+            os.chdir(prev)
+
+
 def main() -> int:
     tests = [(name, obj) for name, obj in sorted(globals().items())
              if name.startswith("test_") and callable(obj)]

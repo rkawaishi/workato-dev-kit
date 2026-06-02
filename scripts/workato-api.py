@@ -1495,17 +1495,27 @@ def _invoke_workato_pull(
 ) -> tuple[int, str, str]:
     """Invoke `workato --profile <name> pull` in `cwd`.
 
-    Returns (returncode, stdout, stderr). Never raises; callers decide
-    how to surface failures. `_runner` is an injection point for tests
-    (a callable taking (cmd_list, cwd) and returning (rc, stdout, stderr)).
+    Returns (returncode, stdout, stderr). Never raises — including when
+    the `workato` binary itself is missing; in that case we return rc
+    127 with a clear message so callers can surface a controlled error
+    instead of an opaque FileNotFoundError traceback. `_runner` is an
+    injection point for tests (a callable taking (cmd_list, cwd) and
+    returning (rc, stdout, stderr)).
     """
     if _runner is not None:
         return _runner(["workato", "--profile", profile_name, "pull"], cwd)
-    result = subprocess.run(
-        ["workato", "--profile", profile_name, "pull"],
-        cwd=str(cwd),
-        capture_output=True, text=True,
-    )
+    try:
+        result = subprocess.run(
+            ["workato", "--profile", profile_name, "pull"],
+            cwd=str(cwd),
+            capture_output=True, text=True,
+        )
+    except FileNotFoundError:
+        return 127, "", (
+            "Error: `workato` not found on PATH. Install the Workato "
+            "Platform CLI before running `sdk pull-project` / "
+            "`sdk diff-project`.\n"
+        )
     return result.returncode, result.stdout, result.stderr
 
 
@@ -1587,12 +1597,21 @@ def _diff_argv(local: Path, pulled: Path) -> list[str]:
 def _run_diff(local: Path, pulled: Path, _runner=None) -> tuple[int, str, str]:
     """Invoke `diff -ru` between two directories. Returns (rc, stdout, stderr).
 
-    diff's exit codes: 0 = identical, 1 = differ, 2 = error.
+    diff's exit codes: 0 = identical, 1 = differ, 2 = error. If the
+    `diff` binary itself is missing we return rc 2 with a clear message
+    so the caller can surface a controlled error instead of an opaque
+    FileNotFoundError traceback.
     """
     argv = _diff_argv(local, pulled)
     if _runner is not None:
         return _runner(argv, None)
-    result = subprocess.run(argv, capture_output=True, text=True)
+    try:
+        result = subprocess.run(argv, capture_output=True, text=True)
+    except FileNotFoundError:
+        return 2, "", (
+            "Error: `diff` not found on PATH. Install diffutils to run "
+            "`sdk diff-project`.\n"
+        )
     return result.returncode, result.stdout, result.stderr
 
 
