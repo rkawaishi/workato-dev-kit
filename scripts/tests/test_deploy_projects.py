@@ -676,6 +676,152 @@ def test_preview_refuses_when_profile_name_unparseable():
         restore_p()
 
 
+# ---------------------------------------------------------------------------
+# cmd_deploy_list — filter passthrough + --limit + CLI mutex
+# ---------------------------------------------------------------------------
+
+
+def test_list_passes_all_filters_to_api():
+    restore_p = _patch_profile("acme-dev")
+    seen: dict = {}
+
+    class RecordingAPI:
+        def __init__(self, *_a, **_kw):
+            pass
+
+        def deployments_list(self, project_id, folder_id, environment_type,
+                              state, from_date, to_date):
+            seen.update({
+                "project_id": project_id,
+                "folder_id": folder_id,
+                "environment_type": environment_type,
+                "state": state,
+                "from_date": from_date,
+                "to_date": to_date,
+            })
+            return [{"id": 1, "state": "success"}]
+
+    restore_api = _patch_api(RecordingAPI)
+    try:
+        args = SimpleNamespace(
+            profile=None,
+            project_id=42, folder_id=None,
+            environment_type="test", state="success",
+            from_date="2026-06-01", to_date="2026-06-30",
+            limit=None,
+        )
+        out = _capture_stdout(lambda: wa.cmd_deploy_list(None, args))
+        parsed = json.loads(out)
+        assert parsed == [{"id": 1, "state": "success"}]
+        assert seen == {
+            "project_id": 42, "folder_id": None,
+            "environment_type": "test", "state": "success",
+            "from_date": "2026-06-01", "to_date": "2026-06-30",
+        }
+    finally:
+        restore_api()
+        restore_p()
+
+
+def test_list_with_no_filters_passes_none_for_all():
+    restore_p = _patch_profile("acme-dev")
+    seen: dict = {}
+
+    class RecordingAPI:
+        def __init__(self, *_a, **_kw):
+            pass
+
+        def deployments_list(self, **kwargs):
+            seen.update(kwargs)
+            return []
+
+    restore_api = _patch_api(RecordingAPI)
+    try:
+        args = SimpleNamespace(
+            profile=None,
+            project_id=None, folder_id=None,
+            environment_type=None, state=None,
+            from_date=None, to_date=None,
+            limit=None,
+        )
+        _capture_stdout(lambda: wa.cmd_deploy_list(None, args))
+        assert all(v is None for v in seen.values())
+    finally:
+        restore_api()
+        restore_p()
+
+
+def test_list_limit_applies_client_side():
+    restore_p = _patch_profile("acme-dev")
+
+    class RecordingAPI:
+        def __init__(self, *_a, **_kw):
+            pass
+
+        def deployments_list(self, **_kw):
+            return [{"id": i} for i in range(10)]
+
+    restore_api = _patch_api(RecordingAPI)
+    try:
+        args = SimpleNamespace(
+            profile=None,
+            project_id=None, folder_id=None,
+            environment_type=None, state=None,
+            from_date=None, to_date=None,
+            limit=3,
+        )
+        out = _capture_stdout(lambda: wa.cmd_deploy_list(None, args))
+        parsed = json.loads(out)
+        assert len(parsed) == 3
+        assert [r["id"] for r in parsed] == [0, 1, 2]
+    finally:
+        restore_api()
+        restore_p()
+
+
+def test_list_limit_zero_returns_empty():
+    restore_p = _patch_profile("acme-dev")
+
+    class RecordingAPI:
+        def __init__(self, *_a, **_kw):
+            pass
+
+        def deployments_list(self, **_kw):
+            return [{"id": 1}, {"id": 2}]
+
+    restore_api = _patch_api(RecordingAPI)
+    try:
+        args = SimpleNamespace(
+            profile=None,
+            project_id=None, folder_id=None,
+            environment_type=None, state=None,
+            from_date=None, to_date=None,
+            limit=0,
+        )
+        out = _capture_stdout(lambda: wa.cmd_deploy_list(None, args))
+        assert json.loads(out) == []
+    finally:
+        restore_api()
+        restore_p()
+
+
+def test_cli_argparse_refuses_both_for_list_subcommand():
+    """Mutex group on `deploy list` --project-id / --folder-id."""
+    import subprocess
+    result = subprocess.run(
+        [
+            sys.executable, str(SCRIPT),
+            "deploy", "list",
+            "--project-id", "1",
+            "--folder-id", "2",
+        ],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 2, (
+        f"expected exit 2 from argparse, got {result.returncode}"
+    )
+
+
 def main() -> int:
     tests = [(name, obj) for name, obj in sorted(globals().items())
              if name.startswith("test_") and callable(obj)]
