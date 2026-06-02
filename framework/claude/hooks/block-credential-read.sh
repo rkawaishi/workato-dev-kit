@@ -9,6 +9,12 @@
 # Defense-in-depth: the .claude/settings.json permissions.deny list also
 # blocks these tools, but that list has known enforcement bugs in some Claude
 # Code versions. This hook is the reliable enforcement layer.
+#
+# The embedded Python decides AND emits the user-facing message itself, then
+# exits 2 (block) or 0 (allow). The wrapper deliberately does NOT capture the
+# output via $(...): a quoted heredoc inside command substitution makes bash
+# scan the body for quote/paren balance, so a stray ' " or ( in a comment
+# breaks the whole script. Running the heredoc directly avoids that entirely.
 
 INPUT=$(cat)
 
@@ -22,15 +28,21 @@ if [ ! -f "$PATTERNS_FILE" ]; then
   exit 0
 fi
 
-DECISION="$(INPUT="$INPUT" PATTERNS_FILE="$PATTERNS_FILE" python3 <<'PY'
+INPUT="$INPUT" PATTERNS_FILE="$PATTERNS_FILE" python3 <<'PY'
 import fnmatch, json, os, re, sys
+
+def deny(reason):
+    sys.stderr.write(f"Blocked by workato-dev-kit credential guard: {reason}\n")
+    sys.stderr.write("  Credential files (see kit/framework/credential-patterns.txt) must not be\n")
+    sys.stderr.write("  read by the agent. If this is intentional, edit that file or temporarily\n")
+    sys.stderr.write("  remove this hook from .claude/settings.json.\n")
+    sys.exit(2)
 
 raw = os.environ.get("INPUT", "")
 try:
     data = json.loads(raw)
 except Exception:
-    print("OK")
-    sys.exit(0)
+    sys.exit(0)  # fail open on malformed input
 
 patterns = []
 with open(os.environ["PATTERNS_FILE"]) as f:
@@ -51,44 +63,47 @@ def path_hit(p):
     return None
 
 def pat_to_bash_re(p):
-    """Glob → regex that matches the pattern as a whole token inside a shell
+    """Glob to regex that matches the pattern as a whole token inside a shell
     command (preceded and followed by non-word characters or boundaries)."""
     body = re.escape(p).replace(r"\*", r"\S*")
     return re.compile(rf"(?<!\w){body}(?!\w)")
 
-# Tools that legitimately operate ON credential files without dumping their
-# contents to the agent: the workato CLI (encrypt/edit/run — it has no "print
-# file" mode), git for staging only (add/rm/mv/commit/…), and the kit helper
-# script. These must never be blocked, or the hook would break normal
-# workflows.
+# The only tools allowlisted to appear alongside a credential filename are the
+# workato CLI (encrypt/edit/run; it has no print-file mode) and git used for
+# staging only (add/rm/mv/commit/...). Everything else that names a credential
+# is blocked. That is safe because the kit helper script's normal commands
+# (profile/pull/diff/deploy) never name a credential file; only its sdk-decrypt
+# (which prints plaintext to stdout) and sdk-edit subcommands do, and decrypt is
+# exactly what we want blocked. The workato gem covers the edit case.
 #
 # NOTE: this is an accident-guard, not a sandbox against a deliberately hostile
-# command. A determined caller can still exfiltrate by redefining a shell
-# function (`git(){ cat "$1"; }; git add master.key`) or by authoring connector
-# code that prints a secret; those are out of scope. We do close the cheap
-# holes: the safe program is the REAL program (the script behind `python`, not
-# a `-c` payload), and `git` is safe only for non-reading subcommands with no
-# global options (so `git -c …`, `git show`, `git diff`, `git cat-file` — all of
-# which can print file contents — are NOT allowlisted).
-SAFE_PROGS = {"workato", "workato-api.py"}
-# git subcommands that never print file contents to stdout.
+# command. Out of scope: redefining a shell function, connector code that
+# prints a secret, and commands that dump contents WITHOUT naming the file
+# (a git patch view of a stash) -- the hook only fires when a credential
+# pattern literally appears in the command.
+SAFE_PROGS = {"workato"}
+# git subcommands that never print file contents to stdout in their plain form.
+# The -p / --patch variants DO print hunks, so they are rejected below.
 SAFE_GIT_SUBCMDS = {"add", "rm", "mv", "status", "commit", "stash",
                     "restore", "checkout", "switch", "reset"}
 
-def _git_segment_safe(rest):
-    """rest = tokens after `git`. Safe only when the first token is a
-    non-reading subcommand and there are no global options before it (a global
-    option such as `-c alias…=!cat` or `-C` / `--no-pager` can turn git into an
-    arbitrary file reader, so any leading `-…` disqualifies the segment)."""
-    for t in rest:
-        if t.startswith("-"):
+def git_segment_safe(rest):
+    """rest = tokens after git. Safe only when the first token is a non-reading
+    subcommand, there are no global options before it (a global option like
+    -c alias or --no-pager can turn git into an arbitrary reader), and no
+    -p / --patch flag follows (those print hunks of file contents)."""
+    if not rest or rest[0].startswith("-"):
+        return False
+    if rest[0] not in SAFE_GIT_SUBCMDS:
+        return False
+    for t in rest[1:]:
+        if t in ("-p", "--patch") or t.startswith("--patch"):
             return False
-        return t in SAFE_GIT_SUBCMDS
-    return False  # bare `git` with no subcommand
+    return True
 
-def _segment_safe(seg):
+def segment_safe(seg):
     """True if this segment's program is a known-safe tool. Skips leading
-    VAR=value env assignments and resolves `python[3] <script>` to <script>."""
+    VAR=value env assignments so an env prefix still resolves to the program."""
     toks = seg.split()
     i = 0
     while i < len(toks) and re.match(r"^\w+=", toks[i]):
@@ -96,22 +111,14 @@ def _segment_safe(seg):
     if i >= len(toks):
         return False
     prog = os.path.basename(toks[i])
-    rest = toks[i + 1:]
-    if re.match(r"^python[0-9.]*$", prog) and rest:
-        prog = os.path.basename(rest[0])   # the interpreted script is the real program
-        rest = rest[1:]
     if prog == "git":
-        return _git_segment_safe(rest)
+        return git_segment_safe(toks[i + 1:])
     return prog in SAFE_PROGS
 
 def bash_hit(cmd):
-    """Block only when a credential file's CONTENTS would be dumped into the
-    agent's tool output. We split on shell separators and deny a segment that
-    references a credential pattern UNLESS its program is a known-safe tool.
-    `cat master.key`, `grep token settings.yaml`, `git show …:settings.yaml`,
-    `python3 -c "open('master.key')"` are still blocked; `workato edit
-    settings.yaml.enc`, `git add settings.yaml.enc`, and
-    `python3 scripts/workato-api.py …` are not."""
+    """Block only when credential file contents would be dumped into the agent
+    tool output. Split on shell separators and deny a segment that references a
+    credential pattern unless its program is a known-safe tool."""
     sep = re.compile("|".join([r"\|\|", r"&&", r"[|;&\n]", r"\$\(", r"\)", re.escape(chr(96))]))
     for seg in sep.split(cmd):
         if not seg.strip():
@@ -123,7 +130,7 @@ def bash_hit(cmd):
                 break
         if not hit:
             continue
-        if _segment_safe(seg):
+        if segment_safe(seg):
             continue
         return hit
     return None
@@ -141,16 +148,15 @@ elif tool == "NotebookEdit":
     if np:
         paths.append(np)
 elif tool in ("Grep", "Glob"):
-    # Direct path match (e.g. Grep(path="master.key")) — block immediately.
+    # Direct path match (e.g. Grep on master.key) — block immediately.
     pp = ti.get("path") or "."
     direct = path_hit(pp)
     if direct:
-        print(f"DENY:{direct}:{pp}")
-        sys.exit(0)
-    # Reachability check: if Grep/Glob points at a directory that contains
-    # any credential file, its results would expose it. Walk the tree and
-    # deny if a credential basename is found. Bounded by skipping known
-    # heavy dirs (.git, node_modules, …) so the hook stays interactive.
+        deny(f"{direct}: {pp}")
+    # Reachability check: if Grep/Glob points at a directory that contains any
+    # credential file, its results would expose it. Walk the tree and deny if a
+    # credential basename is found. Bounded by skipping known heavy dirs so the
+    # hook stays interactive.
     try:
         target = pp if os.path.isabs(pp) else os.path.abspath(pp)
         if os.path.isdir(target):
@@ -162,40 +168,27 @@ elif tool in ("Grep", "Glob"):
                     for pat in patterns:
                         if fnmatch.fnmatchcase(f, pat):
                             rel = os.path.join(root, f)
-                            print(f"DENY:{pat}:{tool} on '{pp}' would expose {rel}")
-                            sys.exit(0)
+                            deny(f"{pat}: {tool} on {pp} would expose {rel}")
+    except SystemExit:
+        raise
     except Exception:
         pass  # fail open on traversal errors; Read/Bash hook layers still apply
-    print("OK")
     sys.exit(0)
 elif tool == "Bash":
     hit = bash_hit(ti.get("command", "") or "")
     if hit:
-        print(f"DENY:{hit}:bash command references credential file")
-        sys.exit(0)
-    print("OK")
+        deny(f"{hit}: bash command references credential file")
     sys.exit(0)
 
 for p in paths:
     hit = path_hit(p)
     if hit:
-        print(f"DENY:{hit}:{p}")
-        sys.exit(0)
+        deny(f"{hit}: {p}")
 
-print("OK")
+sys.exit(0)
 PY
-)"
-
-case "$DECISION" in
-  DENY:*)
-    REASON="${DECISION#DENY:}"
-    echo "Blocked by workato-dev-kit credential guard: $REASON" >&2
-    echo "  Credential files (see kit/framework/credential-patterns.txt) must not be" >&2
-    echo "  read by the agent. If this is intentional, edit that file or temporarily" >&2
-    echo "  remove this hook from .claude/settings.json." >&2
-    exit 2
-    ;;
-  *)
-    exit 0
-    ;;
-esac
+rc=$?
+# Only an explicit deny (exit 2) blocks. Any other status — including an
+# unexpected Python error — falls through to allow (fail open).
+[ "$rc" -eq 2 ] && exit 2
+exit 0

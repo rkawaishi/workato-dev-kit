@@ -308,12 +308,13 @@ if patterns_file and os.path.isfile(patterns_file):
                 added_deny += 1
 
 # Migrate: .workatoenv is no longer a credential. Older kit versions added a
-# deny rule for it; remove the stale entry so existing installs can read it.
-removed_deny = 0
-stale = 'Read(./**/.workatoenv)'
-while stale in deny:
-    deny.remove(stale)
-    removed_deny += 1
+# Read(...) deny rule for it; remove any such entry (covering legacy spellings
+# like Read(.workatoenv) / Read(./.workatoenv)) so existing installs can read
+# it. .workatoenv is not a credential, so dropping any deny rule naming it is
+# safe.
+before = len(deny)
+deny[:] = [r for r in deny if '.workatoenv' not in r]
+removed_deny = before - len(deny)
 
 if migrated or added_hook or added_deny or removed_deny:
     with open(user_settings, 'w') as f:

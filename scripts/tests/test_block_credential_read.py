@@ -169,10 +169,31 @@ def test_claude_allows_git_add_enc():
     assert r.returncode == 0, r.stderr
 
 
-def test_claude_allows_helper_script_with_settings_arg():
+def test_claude_allows_helper_script_normal_command():
+    # The helper's normal commands name no credential file, so they pass.
     r = run(CLAUDE_HOOK, {"tool_name": "Bash",
-                          "tool_input": {"command": "python3 scripts/workato-api.py pull --settings settings.yaml.enc"}})
+                          "tool_input": {"command": "python3 scripts/workato-api.py profile show"}})
     assert r.returncode == 0, r.stderr
+
+
+def test_claude_blocks_helper_sdk_decrypt():
+    # `sdk decrypt` prints plaintext to stdout — the helper is NOT allowlisted.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "python3 scripts/workato-api.py sdk decrypt settings.yaml.enc --key master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_git_add_patch():
+    # `git add -p <file>` prints hunks of file contents.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git add -p connectors/x/settings.yaml"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_git_stash_show_patch_named():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "git stash show -p connectors/x/master.key"}})
+    assert r.returncode == 2
 
 
 def test_claude_allows_output_dot_key_false_positive():
@@ -278,6 +299,18 @@ def test_codex_allows_git_add_enc():
     r = run(CODEX_HOOK, {"tool_name": "Bash",
                          "tool_input": {"command": "git add connectors/foo/settings.yaml.enc"}})
     assert r.returncode == 0, r.stderr
+
+
+def test_codex_blocks_helper_sdk_decrypt():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "python3 scripts/workato-api.py sdk decrypt settings.yaml.enc --key master.key"}})
+    assert r.returncode == 2
+
+
+def test_codex_blocks_git_add_patch():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "git add -p connectors/x/settings.yaml"}})
+    assert r.returncode == 2
 
 
 def test_codex_allows_malformed_json():
