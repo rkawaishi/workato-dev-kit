@@ -163,6 +163,42 @@ def test_claude_allows_workato_edit_enc():
     assert r.returncode == 0, r.stderr
 
 
+def test_claude_allows_bundle_exec_workato_edit_enc():
+    # The SDK gem's `workato` collides with the Platform CLI, so kit docs
+    # mandate `bundle exec workato`. The allowlist must see through the wrapper.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "bundle exec workato edit settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_bundle_exec_workato_exec_with_settings_and_key():
+    # The standard local-test invocation names both the encrypted settings and
+    # the master key as `-s` / `-k` arguments to a non-printing tool.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "bundle exec workato exec connectors/foo/connector.rb test -s settings.yaml.enc -k master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_env_prefixed_bundle_exec_workato():
+    # docs show `LANG=… LC_ALL=… bundle exec workato exec …` for UTF-8 connectors.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 bundle exec workato exec test -s settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_blocks_bundle_exec_cat_master_key():
+    # Unwrapping `bundle exec` must NOT allowlist an arbitrary reader behind it.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "bundle exec cat master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_bundle_exec_ruby_dump():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "bundle exec ruby -e \"print(open('master.key').read())\""}})
+    assert r.returncode == 2
+
+
 def test_claude_allows_git_add_enc():
     r = run(CLAUDE_HOOK, {"tool_name": "Bash",
                           "tool_input": {"command": "git add connectors/foo/settings.yaml.enc"}})
@@ -326,6 +362,24 @@ def test_codex_allows_workato_edit_enc():
     r = run(CODEX_HOOK, {"tool_name": "Bash",
                          "tool_input": {"command": "workato edit settings.yaml.enc"}})
     assert r.returncode == 0, r.stderr
+
+
+def test_codex_allows_bundle_exec_workato_edit_enc():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "bundle exec workato edit settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_allows_bundle_exec_workato_exec_with_settings_and_key():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "bundle exec workato exec connectors/foo/connector.rb test -s settings.yaml.enc -k master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_blocks_bundle_exec_cat_master_key():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "bundle exec cat master.key"}})
+    assert r.returncode == 2
 
 
 def test_codex_allows_git_add_enc():

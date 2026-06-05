@@ -93,10 +93,25 @@ def git_segment_safe(rest):
     return True
 
 def segment_safe(seg):
+    # Skip leading VAR=value env assignments and unwrap `bundle exec` / bare
+    # `exec` runner prefixes. The kit docs MANDATE `bundle exec workato` (the
+    # SDK gem's `workato` collides with the Platform CLI), so without this the
+    # allowlisted `workato edit/exec` is unreachable. The wrapped program is
+    # still re-checked, so `bundle exec cat master.key` stays blocked.
     toks = seg.split()
     i = 0
     while i < len(toks) and re.match(r"^\w+=", toks[i]):
         i += 1
+    while i < len(toks):
+        base = os.path.basename(toks[i])
+        if base == "bundle" and i + 1 < len(toks) and toks[i + 1] == "exec":
+            i += 2
+            while i < len(toks) and toks[i].startswith("-"):
+                i += 1  # skip bundler options / `--` separator
+        elif base == "exec":
+            i += 1
+        else:
+            break
     if i >= len(toks):
         return False
     prog = os.path.basename(toks[i])

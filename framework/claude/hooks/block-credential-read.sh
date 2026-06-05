@@ -115,11 +115,27 @@ def git_segment_safe(rest):
 
 def segment_safe(seg):
     """True if this segment's program is a known-safe tool. Skips leading
-    VAR=value env assignments so an env prefix still resolves to the program."""
+    VAR=value env assignments and unwraps `bundle exec` / bare `exec` runner
+    prefixes so the wrapped program is what gets matched. The kit docs MANDATE
+    `bundle exec workato` (the SDK gem's `workato` collides with the Platform
+    CLI), so without this the allowlisted `workato edit/exec` is unreachable.
+    Unwrapping is safe: the real program is still re-checked against the
+    allowlist, so `bundle exec cat master.key` stays blocked."""
     toks = seg.split()
     i = 0
     while i < len(toks) and re.match(r"^\w+=", toks[i]):
         i += 1
+    # Unwrap runner prefixes that don't themselves read files.
+    while i < len(toks):
+        base = os.path.basename(toks[i])
+        if base == "bundle" and i + 1 < len(toks) and toks[i + 1] == "exec":
+            i += 2
+            while i < len(toks) and toks[i].startswith("-"):
+                i += 1  # skip bundler options / `--` separator
+        elif base == "exec":
+            i += 1
+        else:
+            break
     if i >= len(toks):
         return False
     prog = os.path.basename(toks[i])
