@@ -33,7 +33,7 @@ INPUT="$INPUT" PATTERNS_FILE="$PATTERNS_FILE" python3 <<'PY'
 import json, os, re, sys
 
 def deny(pat):
-    sys.stderr.write(f"Blocked by workato-dev-kit credential guard: bash command references {pat}\n")
+    sys.stderr.write(f"Blocked by workato-dev-kit credential guard: bash command would surface {pat} content to the agent\n")
     sys.stderr.write("  Credential files (see kit/framework/credential-patterns.txt) must not be\n")
     sys.stderr.write("  read through the shell. Edit that file or temporarily remove this hook\n")
     sys.stderr.write("  from .codex/hooks.json if this is intentional.\n")
