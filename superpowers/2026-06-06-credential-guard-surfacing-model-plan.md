@@ -18,29 +18,23 @@
 | `framework/codex/hooks/block-credential-read.sh` | Codex PreToolUse フック（Bash-only） | Modify（分類部） |
 | `scripts/tests/test_block_credential_read.py` | 両フックのテスト | Modify（ALLOW ケース追加・意味更新） |
 | `framework/credential-patterns.txt` | パターン単一ソース＋ヘッダ説明 | Modify（ヘッダに表出モデルを明記） |
-| `2026-06-06-credential-guard-surfacing-model-design.md` / `.html` | 設計 spec / 可視化 | 既存（branch に commit 済 / html は Task 1 で commit） |
+| `superpowers/2026-06-06-credential-guard-surfacing-model-design.md` / `.html` | 設計 spec / 可視化 | 既存（branch に commit 済） |
+| `superpowers/2026-06-06-credential-guard-surfacing-model-plan.md` | 本実装計画 | 既存（branch に commit 済） |
 
 不変領域（触らない）：両フックの path 分岐（`path_hit`、Grep/Glob 到達性 walk）、`pat_to_bash_re`、fail-open ラッパ、`git_segment_safe`（表出オラクルとして再利用）。
 
 ---
 
-## Task 1: ブランチ準備と設計成果物の commit
+## Task 1: ブランチ準備と設計成果物の配置（完了済み）
 
 **Files:**
-- Branch: `feature/credential-guard-surfacing-model`（作成済・spec commit 済）
-- Commit: `2026-06-06-credential-guard-surfacing-model-design.html`
+- Branch: `feature/credential-guard-surfacing-model`（作成済）
+- `superpowers/` 配下に spec(.md) / 可視化(.html) / 本計画(.md) を commit 済み
 
-- [ ] **Step 1: ブランチ確認**
+- [ ] **Step 1: ブランチと配置を確認**
 
-Run: `git -C /Users/ryotaro/workspace/workato-dev-kit branch --show-current`
-Expected: `feature/credential-guard-surfacing-model`
-
-- [ ] **Step 2: 可視化 HTML を commit**
-
-```bash
-git add 2026-06-06-credential-guard-surfacing-model-design.html
-git commit -m "docs: HTML visualization of the surfacing-model design"
-```
+Run: `git -C /Users/ryotaro/workspace/workato-dev-kit branch --show-current && ls superpowers/`
+Expected: `feature/credential-guard-surfacing-model` と、`superpowers/` に design.md / design.html / plan.md が存在。
 
 ---
 
@@ -575,7 +569,7 @@ credential guard の Bash スキャンはプログラム許可リスト（defaul
 ## 変更
 Bash ブランチを **表出モデル（default-allow）** へ。credential 名を含むセグメントは、内容を stdout/stderr に表出させるとき（emitter / 既知プリンタ `sdk decrypt`・`openssl -in`・`gpg -d` / インタプリタ `-c|-e` / `< cred` リダイレクト / 内容表示系 git）だけブロック。`SAFE_PROGS` 廃止。`bundle exec` 等のランナー展開は新しいプログラム解決器へ転用。Claude/Codex 両フックに適用。一次防御の Read/Grep/Glob パスフックは default-deny のまま不変。
 
-設計詳細: `2026-06-06-credential-guard-surfacing-model-design.md`（`.html` に可視化）。
+設計詳細: `superpowers/2026-06-06-credential-guard-surfacing-model-design.md`（`.html` に可視化）。
 
 ## テスト
 `scripts/tests/test_block_credential_read.py` 全パス。新規 ALLOW ケース（bundle exec workato exec / cp / deploy script / curl --key）と回帰 BLOCK ガード（env・bundle exec 経由の emitter、`$(< cred)`、base64）を追加。
