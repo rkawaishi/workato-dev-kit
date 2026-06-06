@@ -236,6 +236,75 @@ def test_claude_allows_output_dot_key_false_positive():
     assert r.returncode == 0, r.stderr
 
 
+# --- Surfacing model: feeding a credential to a program is allowed ----------
+
+def test_claude_allows_bundle_exec_workato_exec_with_settings_and_key():
+    # Standard local-test form names both the encrypted settings and the key as
+    # -s / -k args to a non-printing tool → content never reaches the agent.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "bundle exec workato exec connectors/foo/connector.rb test -s settings.yaml.enc -k master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_cp_encrypted_settings():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "cp connectors/x/settings.yaml.enc connectors/x/settings.yaml.enc.bak"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_mv_master_key():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "mv master.key connectors/x/master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_custom_script_takes_settings_arg():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "./deploy.sh --settings connectors/x/settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_curl_client_key():
+    # `*.key` matches client.key, but curl uses it for TLS, never printing it.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "curl --key connectors/x/client.key https://example.test"}})
+    assert r.returncode == 0, r.stderr
+
+
+# --- Surfacing model: emitters behind a runner wrapper still block -----------
+
+def test_claude_blocks_env_cat_master_key():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "env cat master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_time_cat_master_key():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "time cat master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_bundle_exec_cat_master_key():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "bundle exec cat master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_redirect_read_in_substitution():
+    # `$(< master.key)` splits to a bare `< master.key` segment that reads the
+    # file straight into the command substitution (→ stdout → agent).
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "echo \"$(< master.key)\""}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_base64_master_key():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "base64 connectors/x/master.key"}})
+    assert r.returncode == 2
+
+
 def test_claude_blocks_bash_cat_master_key():
     r = run(CLAUDE_HOOK, {"tool_name": "Bash",
                           "tool_input": {"command": "cat connectors/x/master.key"}})

@@ -6,6 +6,10 @@
 # NotebookEdit / Grep / Glob via tool_input paths, and Bash via command-string
 # scanning.
 #
+# The Bash layer uses a surfacing model: it blocks only commands that would
+# emit a credential file's CONTENT into the agent context, not every command
+# that merely names one. See framework/credential-patterns.txt for the model.
+#
 # Defense-in-depth: the .claude/settings.json permissions.deny list also
 # blocks these tools, but that list has known enforcement bugs in some Claude
 # Code versions. This hook is the reliable enforcement layer.
@@ -68,24 +72,36 @@ def pat_to_bash_re(p):
     body = re.escape(p).replace(r"\*", r"\S*")
     return re.compile(rf"(?<!\w){body}(?!\w)")
 
-# The only tools allowlisted to appear alongside a credential filename are the
-# workato CLI (encrypt/edit/run; it has no print-file mode) and git used for
-# staging only (add/rm/mv/commit/...). Everything else that names a credential
-# is blocked. That is safe because the kit helper script's normal commands
-# (profile/pull/diff/deploy) never name a credential file; only its sdk-decrypt
-# (which prints plaintext to stdout) and sdk-edit subcommands do, and decrypt is
-# exactly what we want blocked. The workato gem covers the edit case.
+# Surfacing model: a Bash segment is blocked only when it would emit a
+# credential file's CONTENT to stdout/stderr — i.e. into the agent/LLM context.
+# Passing a credential to a program as an argument or input (workato exec,
+# git-staging, cp, a deploy script, curl --key) is allowed: the bytes never
+# reach the agent, so it cannot reuse them at a lower layer.
 #
-# NOTE: this is an accident-guard, not a sandbox against a deliberately hostile
-# command. Out of scope: redefining a shell function, connector code that
-# prints a secret, and commands that dump contents WITHOUT naming the file
-# (a git patch view of a stash) -- the hook only fires when a credential
-# pattern literally appears in the command.
-SAFE_PROGS = {"workato"}
-# git subcommands that never print file contents to stdout in their plain form.
-# The -p / --patch variants DO print hunks, so they are rejected below.
+# This is an accident / bypass guard, NOT a sandbox. Out of scope: deliberate
+# multi-step evasion (copy to a non-credential name, then read it), shell
+# function redefinition, connector code that prints a secret, and network
+# exfiltration (feeding a credential to a program is explicitly allowed).
 SAFE_GIT_SUBCMDS = {"add", "rm", "mv", "status", "commit", "stash",
                     "restore", "checkout", "switch", "reset"}
+
+# Programs that read a named FILE argument and print its content to stdout.
+EMITTERS = {
+    "cat", "tac", "nl", "head", "tail", "less", "more", "bat", "view",
+    "strings", "xxd", "od", "hexdump", "base64", "base32",
+    "grep", "egrep", "fgrep", "rg", "ag", "ack",
+    "sed", "awk", "gawk", "cut", "sort", "uniq", "column", "jq", "yq",
+    "paste", "fold", "rev", "diff", "comm",
+}
+# Interpreters that surface content only when given inline code (-c / -e) that
+# reads the credential. Running a *script* file with a credential argument is a
+# consumer, not an emitter.
+INTERPRETERS = {"python", "python3", "ruby", "node", "nodejs", "perl", "php"}
+# Command-runner prefixes that do not themselves read files; unwrap to find the
+# real program. NOTE: value-taking wrapper flags (e.g. `nice -n 5`) are not
+# parsed, so a contrived `nice -n 5 cat secret` may slip — acceptable for an
+# accident guard (the path-based Read/Grep/Glob hooks are the primary defense).
+RUNNERS = {"env", "command", "exec", "nice", "time", "nohup", "stdbuf"}
 
 def git_segment_safe(rest):
     """rest = tokens after git. Safe only when the first token is a non-reading
@@ -113,24 +129,67 @@ def git_segment_safe(rest):
                 return False
     return True
 
-def segment_safe(seg):
-    """True if this segment's program is a known-safe tool. Skips leading
-    VAR=value env assignments so an env prefix still resolves to the program."""
-    toks = seg.split()
+def resolve_prog_index(toks):
+    """Index of the real program token after skipping VAR=value env assignments
+    and unwrapping `bundle exec` / RUNNER prefixes. Returns len(toks) if no
+    program token remains (e.g. a bare redirect)."""
     i = 0
-    while i < len(toks) and re.match(r"^\w+=", toks[i]):
-        i += 1
-    if i >= len(toks):
+    while i < len(toks):
+        if re.match(r"^\w+=", toks[i]):
+            i += 1
+            continue
+        base = os.path.basename(toks[i])
+        if base == "bundle" and i + 1 < len(toks) and toks[i + 1] == "exec":
+            i += 2
+            while i < len(toks) and toks[i].startswith("-"):
+                i += 1
+            continue
+        if base in RUNNERS:
+            i += 1
+            while i < len(toks) and toks[i].startswith("-"):
+                i += 1
+            continue
+        break
+    return i
+
+def surfaces(seg):
+    """True if this segment would emit a credential's CONTENT to stdout/stderr.
+    The segment is already known to reference a credential pattern."""
+    stripped = seg.strip()
+    # Bare read-redirect with no consuming program: `$(< master.key)` splits to
+    # a `< master.key` segment; bash reads the file straight into the
+    # substitution (→ stdout → agent).
+    if re.match(r"^<\s*\S", stripped):
+        return True
+    toks = seg.split()
+    pi = resolve_prog_index(toks)
+    if pi >= len(toks):
         return False
-    prog = os.path.basename(toks[i])
+    prog = os.path.basename(toks[pi])
+    args = toks[pi + 1:]
+    # git: defer to the vetted oracle — "not git-safe" means it would print
+    # file content (show <rev>:<path>, diff, log -p, -c alias=!cat, --no-index).
     if prog == "git":
-        return git_segment_safe(toks[i + 1:])
-    return prog in SAFE_PROGS
+        return not git_segment_safe(args)
+    if prog in EMITTERS:
+        return True
+    if prog in INTERPRETERS:
+        for a in args:
+            if a == "-c" or a == "-e" or a.startswith("-c") or a.startswith("-e"):
+                return True  # inline code in a segment that names a credential
+    if prog == "openssl" and "-in" in args:
+        return True
+    if prog == "gpg" and any(a in ("-d", "--decrypt") for a in args):
+        return True
+    # Generic decrypt subcommand: the kit helper `sdk decrypt`, gpg-style, etc.
+    if "decrypt" in args:
+        return True
+    return False
 
 def bash_hit(cmd):
-    """Block only when credential file contents would be dumped into the agent
-    tool output. Split on shell separators and deny a segment that references a
-    credential pattern unless its program is a known-safe tool."""
+    """Return the first credential pattern whose segment would SURFACE its
+    content, else None. Default-allow: naming a credential is fine unless the
+    segment emits its content into the agent's tool output."""
     sep = re.compile("|".join([r"\|\|", r"&&", r"[|;&\n]", r"\$\(", r"\)", re.escape(chr(96))]))
     for seg in sep.split(cmd):
         if not seg.strip():
@@ -142,9 +201,8 @@ def bash_hit(cmd):
                 break
         if not hit:
             continue
-        if segment_safe(seg):
-            continue
-        return hit
+        if surfaces(seg):
+            return hit
     return None
 
 tool = data.get("tool_name", "")
@@ -189,7 +247,7 @@ elif tool in ("Grep", "Glob"):
 elif tool == "Bash":
     hit = bash_hit(ti.get("command", "") or "")
     if hit:
-        deny(f"{hit}: bash command references credential file")
+        deny(f"{hit}: command would surface credential content to the agent")
     sys.exit(0)
 
 for p in paths:
