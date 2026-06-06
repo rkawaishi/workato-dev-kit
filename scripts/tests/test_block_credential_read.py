@@ -403,6 +403,36 @@ def test_codex_allows_git_add_enc():
     assert r.returncode == 0, r.stderr
 
 
+def test_codex_allows_bundle_exec_workato_exec_with_settings_and_key():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "bundle exec workato exec connectors/foo/connector.rb test -s settings.yaml.enc -k master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_allows_cp_encrypted_settings():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "cp connectors/x/settings.yaml.enc connectors/x/settings.yaml.enc.bak"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_allows_custom_script_takes_settings_arg():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "./deploy.sh --settings connectors/x/settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_blocks_env_cat_master_key():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "env cat master.key"}})
+    assert r.returncode == 2
+
+
+def test_codex_blocks_bundle_exec_cat_master_key():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "bundle exec cat master.key"}})
+    assert r.returncode == 2
+
+
 def test_codex_blocks_helper_sdk_decrypt():
     r = run(CODEX_HOOK, {"tool_name": "Bash",
                          "tool_input": {"command": "python3 scripts/workato-api.py sdk decrypt settings.yaml.enc --key master.key"}})

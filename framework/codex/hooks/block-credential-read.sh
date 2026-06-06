@@ -6,6 +6,10 @@
 # So this hook can only block credential reads that happen through the shell
 # (e.g. `cat master.key`, `grep token settings.yaml`).
 #
+# The Bash scan uses a surfacing model: it blocks only commands that would emit
+# a credential file's CONTENT into the agent context, not every command that
+# merely names one.
+#
 # The kit also ships `.codexignore` with the same patterns, but Codex
 # currently ignores that file (openai/codex#6530); this hook is the best
 # enforcement available today.
@@ -54,17 +58,23 @@ with open(os.environ["PATTERNS_FILE"]) as f:
         if line and not line.startswith("#"):
             patterns.append(line)
 
-# Only the workato CLI (no print-file mode) and git used for staging are
-# allowlisted alongside a credential filename. The kit helper script is NOT
-# allowlisted: its normal commands never name a credential file, while its
-# sdk-decrypt subcommand prints plaintext to stdout and must stay blocked.
-# This is an accident-guard, not a sandbox: shell-function redefinition,
-# connector code that prints secrets, and dumps that do not name the file
-# are out of scope. git is safe only for non-reading subcommands with no
-# global options and no -p / --patch flag.
-SAFE_PROGS = {"workato"}
+# Surfacing model: block a Bash command only when it would emit a credential
+# file's CONTENT to stdout/stderr (the agent context). Passing a credential to
+# a program as an argument/input (workato exec, git-staging, cp, deploy script,
+# curl --key) is allowed. Accident/bypass guard, not a sandbox: deliberate
+# multi-step evasion, shell-function redefinition, and network exfil are out of
+# scope.
 SAFE_GIT_SUBCMDS = {"add", "rm", "mv", "status", "commit", "stash",
                     "restore", "checkout", "switch", "reset"}
+EMITTERS = {
+    "cat", "tac", "nl", "head", "tail", "less", "more", "bat", "view",
+    "strings", "xxd", "od", "hexdump", "base64", "base32",
+    "grep", "egrep", "fgrep", "rg", "ag", "ack",
+    "sed", "awk", "gawk", "cut", "sort", "uniq", "column", "jq", "yq",
+    "paste", "fold", "rev", "diff", "comm",
+}
+INTERPRETERS = {"python", "python3", "ruby", "node", "nodejs", "perl", "php"}
+RUNNERS = {"env", "command", "exec", "nice", "time", "nohup", "stdbuf"}
 
 def pat_re(p):
     body = re.escape(p).replace(r"\*", r"\S*")
@@ -92,19 +102,53 @@ def git_segment_safe(rest):
                 return False
     return True
 
-def segment_safe(seg):
-    toks = seg.split()
+def resolve_prog_index(toks):
     i = 0
-    while i < len(toks) and re.match(r"^\w+=", toks[i]):
-        i += 1
-    if i >= len(toks):
-        return False
-    prog = os.path.basename(toks[i])
-    if prog == "git":
-        return git_segment_safe(toks[i + 1:])
-    return prog in SAFE_PROGS
+    while i < len(toks):
+        if re.match(r"^\w+=", toks[i]):
+            i += 1
+            continue
+        base = os.path.basename(toks[i])
+        if base == "bundle" and i + 1 < len(toks) and toks[i + 1] == "exec":
+            i += 2
+            while i < len(toks) and toks[i].startswith("-"):
+                i += 1
+            continue
+        if base in RUNNERS:
+            i += 1
+            while i < len(toks) and toks[i].startswith("-"):
+                i += 1
+            continue
+        break
+    return i
 
-# Block only when credential file contents would be dumped to the agent.
+def surfaces(seg):
+    stripped = seg.strip()
+    if re.match(r"^<\s*\S", stripped):
+        return True
+    toks = seg.split()
+    pi = resolve_prog_index(toks)
+    if pi >= len(toks):
+        return False
+    prog = os.path.basename(toks[pi])
+    args = toks[pi + 1:]
+    if prog == "git":
+        return not git_segment_safe(args)
+    if prog in EMITTERS:
+        return True
+    if prog in INTERPRETERS:
+        for a in args:
+            if a == "-c" or a == "-e" or a.startswith("-c") or a.startswith("-e"):
+                return True
+    if prog == "openssl" and "-in" in args:
+        return True
+    if prog == "gpg" and any(a in ("-d", "--decrypt") for a in args):
+        return True
+    if "decrypt" in args:
+        return True
+    return False
+
+# Block only when a segment would surface credential content to the agent.
 sep = re.compile("|".join([r"\|\|", r"&&", r"[|;&\n]", r"\$\(", r"\)", re.escape(chr(96))]))
 for seg in sep.split(cmd):
     if not seg.strip():
@@ -116,9 +160,8 @@ for seg in sep.split(cmd):
             break
     if not hit:
         continue
-    if segment_safe(seg):
-        continue
-    deny(hit)
+    if surfaces(seg):
+        deny(hit)
 
 sys.exit(0)
 PY
