@@ -305,6 +305,46 @@ def test_claude_blocks_base64_master_key():
     assert r.returncode == 2
 
 
+# --- Surfacing model: stdin-echoers and interpreter heredoc/stdin (Codex review) ---
+
+def test_claude_blocks_tr_redirect_read():
+    # `tr` echoes stdin to stdout, so `tr ... < master.key` surfaces content.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "tr -d '\\n' < master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_tee_redirect_read():
+    # `tee` echoes stdin to stdout, so `tee f < master.key` surfaces content.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "tee /tmp/backup < master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_python_heredoc_dump():
+    # An interpreter reading its script from a heredoc can print the credential;
+    # the filename lands in a program-less split segment, so guard at the
+    # whole-command level. Same intent as the already-blocked `python -c` form.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "python - <<'PY'\nprint(open('master.key').read())\nPY"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_python_stdin_redirect_dump():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "python3 < dump.py # reads master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_cat_master_key_redirect_to_file():
+    # Conservative by design: blocking the emitter regardless of `>` redirect
+    # closes the `cat master.key > /tmp/x; cat /tmp/x` two-step bypass. There is
+    # no legitimate Workato dev step that writes credential plaintext elsewhere.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "cat master.key > /tmp/key-copy"}})
+    assert r.returncode == 2
+
+
 def test_claude_blocks_bash_cat_master_key():
     r = run(CLAUDE_HOOK, {"tool_name": "Bash",
                           "tool_input": {"command": "cat connectors/x/master.key"}})
@@ -430,6 +470,18 @@ def test_codex_blocks_env_cat_master_key():
 def test_codex_blocks_bundle_exec_cat_master_key():
     r = run(CODEX_HOOK, {"tool_name": "Bash",
                          "tool_input": {"command": "bundle exec cat master.key"}})
+    assert r.returncode == 2
+
+
+def test_codex_blocks_tr_redirect_read():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "tr -d '\\n' < master.key"}})
+    assert r.returncode == 2
+
+
+def test_codex_blocks_python_heredoc_dump():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "python - <<'PY'\nprint(open('master.key').read())\nPY"}})
     assert r.returncode == 2
 
 

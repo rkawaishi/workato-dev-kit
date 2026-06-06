@@ -66,15 +66,24 @@ with open(os.environ["PATTERNS_FILE"]) as f:
 # scope.
 SAFE_GIT_SUBCMDS = {"add", "rm", "mv", "status", "commit", "stash",
                     "restore", "checkout", "switch", "reset"}
+# Programs that print file/stdin content to stdout — both `prog cred` and
+# `prog < cred` surface it. tr/tee echo stdin (no file arg), so `tr a b cred`
+# over-blocks harmlessly while `tr ... < cred` / `tee ... < cred` is caught.
 EMITTERS = {
     "cat", "tac", "nl", "head", "tail", "less", "more", "bat", "view",
     "strings", "xxd", "od", "hexdump", "base64", "base32",
     "grep", "egrep", "fgrep", "rg", "ag", "ack",
     "sed", "awk", "gawk", "cut", "sort", "uniq", "column", "jq", "yq",
-    "paste", "fold", "rev", "diff", "comm",
+    "paste", "fold", "rev", "diff", "comm", "tr", "tee",
 }
 INTERPRETERS = {"python", "python3", "ruby", "node", "nodejs", "perl", "php"}
 RUNNERS = {"env", "command", "exec", "nice", "time", "nohup", "stdbuf"}
+# An interpreter reading its SCRIPT from stdin (`python -`), a heredoc, or `<`
+# can print a credential named anywhere in the command; the name otherwise
+# lands in a program-less split segment. Caught at the whole-command level.
+INTERP_STDIN_RE = re.compile(
+    r"(?<!\w)(?:python3?|ruby|node|nodejs|perl|php)\b[^|;&\n]*?(?:\s-(?=\s|$)|<)"
+)
 
 def pat_re(p):
     body = re.escape(p).replace(r"\*", r"\S*")
@@ -147,6 +156,14 @@ def surfaces(seg):
     if "decrypt" in args:
         return True
     return False
+
+# Whole-command guard: an interpreter fed its script via stdin/heredoc/`<` can
+# print a credential named anywhere in the command, but the name lands in a
+# program-less split segment that surfaces() can't attribute to it.
+if INTERP_STDIN_RE.search(cmd):
+    for pat in patterns:
+        if pat_re(pat).search(cmd):
+            deny(pat)
 
 # Block only when a segment would surface credential content to the agent.
 sep = re.compile("|".join([r"\|\|", r"&&", r"[|;&\n]", r"\$\(", r"\)", re.escape(chr(96))]))

@@ -85,18 +85,28 @@ def pat_to_bash_re(p):
 SAFE_GIT_SUBCMDS = {"add", "rm", "mv", "status", "commit", "stash",
                     "restore", "checkout", "switch", "reset"}
 
-# Programs that read a named FILE argument and print its content to stdout.
+# Programs that print file/stdin content to stdout — so both `prog cred` and
+# `prog < cred` surface it. tr/tee echo stdin (they don't read a file arg), so
+# `tr a b cred` / `tee cred` over-block harmlessly, but `tr ... < cred` /
+# `tee ... < cred` would otherwise leak — the read case wins.
 EMITTERS = {
     "cat", "tac", "nl", "head", "tail", "less", "more", "bat", "view",
     "strings", "xxd", "od", "hexdump", "base64", "base32",
     "grep", "egrep", "fgrep", "rg", "ag", "ack",
     "sed", "awk", "gawk", "cut", "sort", "uniq", "column", "jq", "yq",
-    "paste", "fold", "rev", "diff", "comm",
+    "paste", "fold", "rev", "diff", "comm", "tr", "tee",
 }
 # Interpreters that surface content only when given inline code (-c / -e) that
 # reads the credential. Running a *script* file with a credential argument is a
 # consumer, not an emitter.
 INTERPRETERS = {"python", "python3", "ruby", "node", "nodejs", "perl", "php"}
+# An interpreter that reads its SCRIPT from stdin (`python -`), a heredoc
+# (`python <<EOF`), or an input redirect (`python < file`) can print a
+# credential named anywhere in the command — but the name lands in a
+# program-less split segment, so this is caught at the whole-command level.
+INTERP_STDIN_RE = re.compile(
+    r"(?<!\w)(?:python3?|ruby|node|nodejs|perl|php)\b[^|;&\n]*?(?:\s-(?=\s|$)|<)"
+)
 # Command-runner prefixes that do not themselves read files; unwrap to find the
 # real program. NOTE: value-taking wrapper flags (e.g. `nice -n 5`) are not
 # parsed, so a contrived `nice -n 5 cat secret` may slip — acceptable for an
@@ -190,6 +200,13 @@ def bash_hit(cmd):
     """Return the first credential pattern whose segment would SURFACE its
     content, else None. Default-allow: naming a credential is fine unless the
     segment emits its content into the agent's tool output."""
+    # Whole-command guard: an interpreter fed its script via stdin/heredoc/`<`
+    # can print a credential named anywhere in the command, but the name lands
+    # in a program-less split segment that surfaces() can't attribute to it.
+    if INTERP_STDIN_RE.search(cmd):
+        for pat in patterns:
+            if pat_to_bash_re(pat).search(cmd):
+                return pat
     sep = re.compile("|".join([r"\|\|", r"&&", r"[|;&\n]", r"\$\(", r"\)", re.escape(chr(96))]))
     for seg in sep.split(cmd):
         if not seg.strip():
