@@ -384,6 +384,49 @@ def test_claude_allows_tr_credential_as_positional_arg():
     assert r.returncode == 0, r.stderr
 
 
+# --- Surfacing model: round-3 Codex review (printers, fd-redirect, -in binding) ---
+
+def test_claude_blocks_iconv_reads_credential():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "iconv -f utf-8 -t utf-8 master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_pr_reads_credential():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "pr connectors/x/master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_tr_fd_prefixed_redirect_read():
+    # `0<file` is an explicit fd-0 (stdin) redirect, same leak as `< file`.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "tr -d '\\n' 0<master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_openssl_in_credential():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "openssl pkey -in master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_allows_openssl_credential_as_output_only():
+    # `-in` reads a non-credential file; the credential is only the -out target,
+    # which openssl writes, not reads. (A `*.pem` -in would itself match a
+    # credential pattern and stay blocked — that is intended.)
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "openssl pkey -in input.txt -out master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_interpreter_inline_code_with_credential_data_arg():
+    # `-c` code is "print('ok')"; master.key is sys.argv[1] (data), not read.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "python3 -c \"print('ok')\" master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
 def test_claude_blocks_bash_cat_master_key():
     r = run(CLAUDE_HOOK, {"tool_name": "Bash",
                           "tool_input": {"command": "cat connectors/x/master.key"}})
@@ -547,6 +590,24 @@ def test_codex_blocks_dd_reads_credential():
 def test_codex_allows_tee_credential_output_target():
     r = run(CODEX_HOOK, {"tool_name": "Bash",
                          "tool_input": {"command": "tee connectors/x/master.key < template.txt"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_blocks_iconv_reads_credential():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "iconv -f utf-8 -t utf-8 master.key"}})
+    assert r.returncode == 2
+
+
+def test_codex_blocks_tr_fd_prefixed_redirect_read():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "tr -d '\\n' 0<master.key"}})
+    assert r.returncode == 2
+
+
+def test_codex_allows_openssl_credential_as_output_only():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "openssl pkey -in input.txt -out master.key"}})
     assert r.returncode == 0, r.stderr
 
 

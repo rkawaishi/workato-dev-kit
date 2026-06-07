@@ -74,6 +74,7 @@ EMITTERS = {
     "grep", "egrep", "fgrep", "rg", "ag", "ack",
     "sed", "awk", "gawk", "cut", "sort", "uniq", "column", "jq", "yq",
     "paste", "fold", "rev", "diff", "comm", "dd",
+    "iconv", "pr", "expand", "unexpand", "fmt",
 }
 # Echo stdin but read no file arg: surface only when the credential is the
 # stdin redirect source (`tr ... < cred`, `tee f < cred`), not when it is a
@@ -138,10 +139,12 @@ def _cred_token(t):
     return any(pat_re(p).search(t) for p in patterns)
 
 def _reads_cred_via_stdin(args):
+    # `< cred`, `<cred`, or fd-prefixed `0< cred` / `0<cred`.
     for i, t in enumerate(args):
-        if t == "<" and i + 1 < len(args) and _cred_token(args[i + 1]):
+        if re.fullmatch(r"\d*<", t) and i + 1 < len(args) and _cred_token(args[i + 1]):
             return True
-        if t.startswith("<") and len(t) > 1 and _cred_token(t[1:]):
+        m = re.match(r"^\d*<(.+)$", t)
+        if m and _cred_token(m.group(1)):
             return True
     return False
 
@@ -178,8 +181,10 @@ def surfaces(seg):
             if _cred_token(a):
                 return True
             break
-    if prog == "openssl" and "-in" in args:
-        return True
+    if prog == "openssl":
+        for i, a in enumerate(args):
+            if a == "-in" and i + 1 < len(args) and _cred_token(args[i + 1]):
+                return True  # only the `-in` operand is read; `-out cred` writes
     if prog == "gpg" and any(a in ("-d", "--decrypt") for a in args):
         return True
     if "decrypt" in args:

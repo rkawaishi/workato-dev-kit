@@ -93,6 +93,7 @@ EMITTERS = {
     "grep", "egrep", "fgrep", "rg", "ag", "ack",
     "sed", "awk", "gawk", "cut", "sort", "uniq", "column", "jq", "yq",
     "paste", "fold", "rev", "diff", "comm", "dd",
+    "iconv", "pr", "expand", "unexpand", "fmt",
 }
 # Programs that echo STDIN to stdout but do NOT read a named file argument, so
 # they surface a credential only when it is the stdin redirect source
@@ -170,11 +171,13 @@ def _cred_token(t):
     return any(pat_to_bash_re(p).search(t) for p in patterns)
 
 def _reads_cred_via_stdin(args):
-    """True if a `< cred` / `<cred` input redirect feeds a credential as stdin."""
+    """True if an input redirect feeds a credential as stdin: `< cred`, `<cred`,
+    or an fd-prefixed form like `0< cred` / `0<cred`."""
     for i, t in enumerate(args):
-        if t == "<" and i + 1 < len(args) and _cred_token(args[i + 1]):
+        if re.fullmatch(r"\d*<", t) and i + 1 < len(args) and _cred_token(args[i + 1]):
             return True
-        if t.startswith("<") and len(t) > 1 and _cred_token(t[1:]):
+        m = re.match(r"^\d*<(.+)$", t)
+        if m and _cred_token(m.group(1)):
             return True
     return False
 
@@ -218,8 +221,10 @@ def surfaces(seg):
             if _cred_token(a):
                 return True
             break  # first positional is not a credential; keep checking below
-    if prog == "openssl" and "-in" in args:
-        return True
+    if prog == "openssl":
+        for i, a in enumerate(args):
+            if a == "-in" and i + 1 < len(args) and _cred_token(args[i + 1]):
+                return True  # only the `-in` operand is read; `-out cred` writes
     if prog == "gpg" and any(a in ("-d", "--decrypt") for a in args):
         return True
     # Generic decrypt subcommand: the kit helper `sdk decrypt`, gpg-style, etc.
