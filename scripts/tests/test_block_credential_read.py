@@ -427,6 +427,14 @@ def test_claude_allows_interpreter_inline_code_with_credential_data_arg():
     assert r.returncode == 0, r.stderr
 
 
+def test_claude_allows_lt_inside_quoted_inline_code():
+    # `<` inside `-c` code is not a shell stdin redirect — the INTERP_STDIN guard
+    # must be quote-aware, so this legitimate command is not blocked (Codex r4).
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "python3 -c \"print(1<2)\" settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
 def test_claude_blocks_bash_cat_master_key():
     r = run(CLAUDE_HOOK, {"tool_name": "Bash",
                           "tool_input": {"command": "cat connectors/x/master.key"}})
@@ -590,6 +598,12 @@ def test_codex_blocks_dd_reads_credential():
 def test_codex_allows_tee_credential_output_target():
     r = run(CODEX_HOOK, {"tool_name": "Bash",
                          "tool_input": {"command": "tee connectors/x/master.key < template.txt"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_allows_lt_inside_quoted_inline_code():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "python3 -c \"print(1<2)\" settings.yaml.enc"}})
     assert r.returncode == 0, r.stderr
 
 

@@ -89,6 +89,11 @@ INTERP_STDIN_RE = re.compile(
     r"(?<!\w)(?:python3?|ruby|node|nodejs|perl|php)\b[^|;&\n]*?(?:\s-(?=\s|$)|<)"
 )
 
+def _dequote(s):
+    # Blank out quoted spans so a `<`/`-` inside inline `-c` code is not a false
+    # redirect for INTERP_STDIN_RE. The credential check runs on the original.
+    return re.sub(r"\"[^\"]*\"|'[^']*'", " ", s)
+
 def pat_re(p):
     body = re.escape(p).replace(r"\*", r"\S*")
     return re.compile(rf"(?<!\w){body}(?!\w)")
@@ -197,7 +202,7 @@ def _decide():
     # Whole-command guard: an interpreter fed its script via stdin/heredoc/`<`
     # can print a credential named anywhere in the command, but the name lands
     # in a program-less split segment that surfaces() can't attribute to it.
-    if INTERP_STDIN_RE.search(cmd):
+    if INTERP_STDIN_RE.search(_dequote(cmd)):
         for pat in patterns:
             if pat_re(pat).search(cmd):
                 deny(pat)

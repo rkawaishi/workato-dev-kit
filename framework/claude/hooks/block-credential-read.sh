@@ -111,6 +111,13 @@ INTERPRETERS = {"python", "python3", "ruby", "node", "nodejs", "perl", "php"}
 INTERP_STDIN_RE = re.compile(
     r"(?<!\w)(?:python3?|ruby|node|nodejs|perl|php)\b[^|;&\n]*?(?:\s-(?=\s|$)|<)"
 )
+
+def _dequote(s):
+    """Blank out single/double-quoted spans so a `<` or `-` inside inline code
+    (e.g. `python -c "print(1<2)"`) is not mistaken for a shell redirect by
+    INTERP_STDIN_RE. Not a full shell parser — just enough to avoid that match.
+    The credential pattern check still runs against the original command."""
+    return re.sub(r"\"[^\"]*\"|'[^']*'", " ", s)
 # Command-runner prefixes that do not themselves read files; unwrap to find the
 # real program. NOTE: value-taking wrapper flags (e.g. `nice -n 5`) are not
 # parsed, so a contrived `nice -n 5 cat secret` may slip — acceptable for an
@@ -242,7 +249,9 @@ def bash_hit(cmd):
     # Whole-command guard: an interpreter fed its script via stdin/heredoc/`<`
     # can print a credential named anywhere in the command, but the name lands
     # in a program-less split segment that surfaces() can't attribute to it.
-    if INTERP_STDIN_RE.search(cmd):
+    # Detect on a quote-stripped view so a `<` inside inline `-c` code is not a
+    # false redirect; check the credential pattern against the original command.
+    if INTERP_STDIN_RE.search(_dequote(cmd)):
         for pat in patterns:
             if pat_to_bash_re(pat).search(cmd):
                 return pat

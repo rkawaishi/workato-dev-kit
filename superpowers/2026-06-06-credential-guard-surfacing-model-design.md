@@ -122,5 +122,6 @@ INPUT(JSON) ─▶ tool_name 判定
   - interpreter: `python3 -W ignore master.key`（第1 positional 判定が `-W` の値 `ignore` をスクリプトと誤認）
   - 対応するにはツールごとのフラグ引数アリティ表が必要で、複雑化＋新たな偽陽性リスクを生むため不採用（Codex round-3 #1/#7）。
 - **コマンド間接化**（意図的構築）: `find . -name master.key -exec cat {} \;` や `… | xargs cat` のように別コマンドへ委譲して読む形。埋め込みコマンドの再帰解析は arts-race かつ `find -name <cred> -exec rm` 等の正当操作を巻き込む偽陽性リスクがあるため不採用（Codex round-3 #3）。
+- **インタプリタ `-c`/`-e` が credential を argv 経由で読む形**（意図的構築）: `python3 -c "import sys;print(open(sys.argv[1]).read())" master.key`。credential をコードに直書きする形（`python3 -c "open('master.key')…"`）は**ブロック済み**。argv 間接化はそれを回避する意図的構築で、データ引数の正当形（`python3 -c "print('ok')" master.key`）と**コード意味解析なしには静的に区別不能**。保守的に「`-c`＋cred 引数」を一律ブロックすると正当形まで巻き込むため不採用（Codex round-4 #1）。
 
 > いずれも「うっかり読む」一般形（`cat`/`python -c open(...)` 等）ではなく**意図的に異常なコマンドを構築する**ケース。本ガードは事故/迂回ガードでありサンドボックスではないため対象外とする。一次防御の Read/Grep/Glob パスフックはこれらに影響されない。
