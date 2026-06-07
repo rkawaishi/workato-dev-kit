@@ -345,6 +345,45 @@ def test_claude_blocks_cat_master_key_redirect_to_file():
     assert r.returncode == 2
 
 
+# --- Surfacing model: round-2 Codex review (interpreter-as-script, dd, tr/tee FP) ---
+
+def test_claude_blocks_interpreter_runs_credential_as_script():
+    # `python3 master.key` parses the credential as source; SyntaxError echoes
+    # its lines to stderr (agent-visible). Block when the credential is the
+    # interpreter's SCRIPT (first positional), not a later data argument.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "python3 master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_allows_interpreter_script_with_credential_data_arg():
+    # The credential is a data argument to a real script, not the script itself.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "python3 connectors/foo/run.py --settings settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_blocks_dd_reads_credential():
+    # `dd if=master.key` copies the file straight to stdout.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "dd if=master.key status=none"}})
+    assert r.returncode == 2
+
+
+def test_claude_allows_tee_credential_output_target():
+    # tee writes template.txt INTO the credential path; it does not read it.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "tee connectors/x/master.key < template.txt"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_tr_credential_as_positional_arg():
+    # tr reads stdin, not its file args, so `tr a b master.key` surfaces nothing.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "tr a b master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
 def test_claude_blocks_bash_cat_master_key():
     r = run(CLAUDE_HOOK, {"tool_name": "Bash",
                           "tool_input": {"command": "cat connectors/x/master.key"}})
@@ -483,6 +522,24 @@ def test_codex_blocks_python_heredoc_dump():
     r = run(CODEX_HOOK, {"tool_name": "Bash",
                          "tool_input": {"command": "python - <<'PY'\nprint(open('master.key').read())\nPY"}})
     assert r.returncode == 2
+
+
+def test_codex_blocks_interpreter_runs_credential_as_script():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "python3 master.key"}})
+    assert r.returncode == 2
+
+
+def test_codex_blocks_dd_reads_credential():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "dd if=master.key status=none"}})
+    assert r.returncode == 2
+
+
+def test_codex_allows_tee_credential_output_target():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "tee connectors/x/master.key < template.txt"}})
+    assert r.returncode == 0, r.stderr
 
 
 def test_codex_blocks_helper_sdk_decrypt():

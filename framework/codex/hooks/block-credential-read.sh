@@ -66,16 +66,19 @@ with open(os.environ["PATTERNS_FILE"]) as f:
 # scope.
 SAFE_GIT_SUBCMDS = {"add", "rm", "mv", "status", "commit", "stash",
                     "restore", "checkout", "switch", "reset"}
-# Programs that print file/stdin content to stdout — both `prog cred` and
-# `prog < cred` surface it. tr/tee echo stdin (no file arg), so `tr a b cred`
-# over-blocks harmlessly while `tr ... < cred` / `tee ... < cred` is caught.
+# Programs that read a named FILE argument (or stdin) and print its content to
+# stdout — a credential anywhere in the segment surfaces it.
 EMITTERS = {
     "cat", "tac", "nl", "head", "tail", "less", "more", "bat", "view",
     "strings", "xxd", "od", "hexdump", "base64", "base32",
     "grep", "egrep", "fgrep", "rg", "ag", "ack",
     "sed", "awk", "gawk", "cut", "sort", "uniq", "column", "jq", "yq",
-    "paste", "fold", "rev", "diff", "comm", "tr", "tee",
+    "paste", "fold", "rev", "diff", "comm", "dd",
 }
+# Echo stdin but read no file arg: surface only when the credential is the
+# stdin redirect source (`tr ... < cred`, `tee f < cred`), not when it is a
+# positional/output arg (`tr a b cred`, `tee cred`).
+STDIN_ECHOERS = {"tr", "tee"}
 INTERPRETERS = {"python", "python3", "ruby", "node", "nodejs", "perl", "php"}
 RUNNERS = {"env", "command", "exec", "nice", "time", "nohup", "stdbuf"}
 # An interpreter reading its SCRIPT from stdin (`python -`), a heredoc, or `<`
@@ -131,6 +134,17 @@ def resolve_prog_index(toks):
         break
     return i
 
+def _cred_token(t):
+    return any(pat_re(p).search(t) for p in patterns)
+
+def _reads_cred_via_stdin(args):
+    for i, t in enumerate(args):
+        if t == "<" and i + 1 < len(args) and _cred_token(args[i + 1]):
+            return True
+        if t.startswith("<") and len(t) > 1 and _cred_token(t[1:]):
+            return True
+    return False
+
 def surfaces(seg):
     stripped = seg.strip()
     if re.match(r"^<\s*\S", stripped):
@@ -145,10 +159,25 @@ def surfaces(seg):
         return not git_segment_safe(args)
     if prog in EMITTERS:
         return True
+    if prog in STDIN_ECHOERS:
+        return _reads_cred_via_stdin(args)
     if prog in INTERPRETERS:
         for a in args:
             if a == "-c" or a == "-e" or a.startswith("-c") or a.startswith("-e"):
                 return True
+        # Credential used AS the interpreter's script (first positional), e.g.
+        # `python3 master.key` — parse errors echo its lines. `-m` runs a
+        # module, so a later credential is a data arg, not the script. Only the
+        # first positional is the script; otherwise fall through (e.g. the
+        # `sdk decrypt` helper run via python3).
+        for a in args:
+            if a == "-m":
+                break
+            if a.startswith("-"):
+                continue
+            if _cred_token(a):
+                return True
+            break
     if prog == "openssl" and "-in" in args:
         return True
     if prog == "gpg" and any(a in ("-d", "--decrypt") for a in args):

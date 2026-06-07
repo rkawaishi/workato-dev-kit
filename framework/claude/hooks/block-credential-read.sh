@@ -85,17 +85,20 @@ def pat_to_bash_re(p):
 SAFE_GIT_SUBCMDS = {"add", "rm", "mv", "status", "commit", "stash",
                     "restore", "checkout", "switch", "reset"}
 
-# Programs that print file/stdin content to stdout — so both `prog cred` and
-# `prog < cred` surface it. tr/tee echo stdin (they don't read a file arg), so
-# `tr a b cred` / `tee cred` over-block harmlessly, but `tr ... < cred` /
-# `tee ... < cred` would otherwise leak — the read case wins.
+# Programs that read a named FILE argument (or stdin) and print its content to
+# stdout — so a credential appearing anywhere in the segment surfaces it.
 EMITTERS = {
     "cat", "tac", "nl", "head", "tail", "less", "more", "bat", "view",
     "strings", "xxd", "od", "hexdump", "base64", "base32",
     "grep", "egrep", "fgrep", "rg", "ag", "ack",
     "sed", "awk", "gawk", "cut", "sort", "uniq", "column", "jq", "yq",
-    "paste", "fold", "rev", "diff", "comm", "tr", "tee",
+    "paste", "fold", "rev", "diff", "comm", "dd",
 }
+# Programs that echo STDIN to stdout but do NOT read a named file argument, so
+# they surface a credential only when it is the stdin redirect source
+# (`tr ... < cred`, `tee f < cred`) — not when a credential is a positional or
+# output argument (`tr a b cred`, `tee cred`, which read/​write nothing of it).
+STDIN_ECHOERS = {"tr", "tee"}
 # Interpreters that surface content only when given inline code (-c / -e) that
 # reads the credential. Running a *script* file with a credential argument is a
 # consumer, not an emitter.
@@ -162,6 +165,19 @@ def resolve_prog_index(toks):
         break
     return i
 
+def _cred_token(t):
+    """True if a single shell token names a credential pattern."""
+    return any(pat_to_bash_re(p).search(t) for p in patterns)
+
+def _reads_cred_via_stdin(args):
+    """True if a `< cred` / `<cred` input redirect feeds a credential as stdin."""
+    for i, t in enumerate(args):
+        if t == "<" and i + 1 < len(args) and _cred_token(args[i + 1]):
+            return True
+        if t.startswith("<") and len(t) > 1 and _cred_token(t[1:]):
+            return True
+    return False
+
 def surfaces(seg):
     """True if this segment would emit a credential's CONTENT to stdout/stderr.
     The segment is already known to reference a credential pattern."""
@@ -183,10 +199,25 @@ def surfaces(seg):
         return not git_segment_safe(args)
     if prog in EMITTERS:
         return True
+    if prog in STDIN_ECHOERS:
+        return _reads_cred_via_stdin(args)
     if prog in INTERPRETERS:
         for a in args:
             if a == "-c" or a == "-e" or a.startswith("-c") or a.startswith("-e"):
                 return True  # inline code in a segment that names a credential
+        # Credential used AS the interpreter's script (first positional), e.g.
+        # `python3 master.key` — parse errors echo its lines to stderr. `-m`
+        # runs a module, so any later credential is a data arg, not the script.
+        # Only the first positional is the script; otherwise fall through to the
+        # remaining checks (e.g. the `sdk decrypt` helper run via python3).
+        for a in args:
+            if a == "-m":
+                break
+            if a.startswith("-"):
+                continue
+            if _cred_token(a):
+                return True
+            break  # first positional is not a credential; keep checking below
     if prog == "openssl" and "-in" in args:
         return True
     if prog == "gpg" and any(a in ("-d", "--decrypt") for a in args):
