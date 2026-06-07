@@ -55,6 +55,8 @@ credential guard の Bash スキャンは「プログラム許可リスト（`SA
    `cat tac nl head tail less more bat view strings xxd od hexdump base64 base32 grep egrep fgrep rg ag ack sed awk gawk cut sort uniq fold paste column jq yq diff comm dd iconv pr expand unexpand fmt`
    - credential が**出力リダイレクトのシンク**（`> cred` `>> cred` `1> cred` `&> cred`、左端密着形 `1>cred`）や **dd の `of=cred`** の場合は**書き先**であり表出しないので allow（`cat README.md > master.key` は許可、`cat master.key > x` は読み元なのでブロック）。判定は `_emitter_surfaces_cred()`（round-5 Codex レビュー）。
    - 残余の軽微な偽陽性: `>` がトークン中央に密着する `cat README.md>master.key`（スペース無し）は naive な whitespace split では分離できず over-block する。**安全側の過剰ブロック**かつ人間が通常書かない形のため未対応（一般形・スペース形・左端密着形は解消済み）。
+   - fd-dup（`2>&1` `>&2`）はシンク正規表現に一致してシンク集合へ入るが、これらは **credential トークンではない**ので読み位置スキャンに影響しない（無害な過剰マッチ）。一方 `>&file`（stdout+stderr をファイルへ）は**正当な書き先**なのでシンク扱いのまま allow が正しい。→ round-5 Codex レビュー FINDING 1 の「`>&` をシンクから除外せよ」は **`>&master.key` を新たな偽陽性にするため不採用**。実機で `cat master.key 2>&1`=BLOCK / `cat README.md >&master.key`=allow を確認しテストで固定済み。
+   - プロセス置換 `>(cat cred)` は表出するが round-5 とは無関係で、既出の **out-of-scope「コマンド間接化」**クラス（`find -exec` 等と同様、naive split では検出しない）。
    - `tr` `tee` は file 引数を読まず stdin を echo するだけなので emitter ではなく **STDIN_ECHOERS** として扱い、stdin リダイレクト元が credential のとき（`tr ... < cred`、`tee f < cred`）だけブロック。`tee cred`（書き先）・`tr a b cred`（positional）は allow。
 2. **既知の平文プリンタ**:
    - `openssl` で `-in <cred>` を伴う呼び出し

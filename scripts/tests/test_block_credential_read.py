@@ -375,6 +375,23 @@ def test_claude_allows_dd_credential_output_target():
     assert r.returncode == 0, r.stderr
 
 
+def test_claude_blocks_cat_credential_read_with_fd_dup():
+    # fd-dup tokens (`2>&1`) must not be mistaken for an output sink that lets a
+    # READ credential through: master.key is still the read source → block.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "cat master.key 2>&1"}})
+    assert r.returncode == 2
+
+
+def test_claude_allows_combined_redirect_to_credential():
+    # `>&file` redirects stdout+stderr INTO the file (a write target), so a
+    # credential there is written, not surfaced. (Excluding `>&` from sinks —
+    # as a naive fd-dup filter would — wrongly reintroduces a false positive.)
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "cat README.md >&master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
 # --- Surfacing model: round-2 Codex review (interpreter-as-script, dd, tr/tee FP) ---
 
 def test_claude_blocks_interpreter_runs_credential_as_script():
@@ -649,6 +666,18 @@ def test_codex_blocks_cat_credential_source_with_redirect():
 def test_codex_allows_dd_credential_output_target():
     r = run(CODEX_HOOK, {"tool_name": "Bash",
                          "tool_input": {"command": "dd if=template of=master.key status=none"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_blocks_cat_credential_read_with_fd_dup():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "cat master.key 2>&1"}})
+    assert r.returncode == 2
+
+
+def test_codex_allows_combined_redirect_to_credential():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "cat README.md >&master.key"}})
     assert r.returncode == 0, r.stderr
 
 
