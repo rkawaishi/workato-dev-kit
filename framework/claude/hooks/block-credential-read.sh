@@ -213,6 +213,9 @@ def surfaces(seg):
         # runs a module, so any later credential is a data arg, not the script.
         # Only the first positional is the script; otherwise fall through to the
         # remaining checks (e.g. the `sdk decrypt` helper run via python3).
+        # Out of scope (deliberate construction): a value-taking flag before the
+        # script, e.g. `python3 -W ignore master.key` — see credential-patterns
+        # and the design's "out of scope" section (same class as `nice -n 5`).
         for a in args:
             if a == "-m":
                 break
