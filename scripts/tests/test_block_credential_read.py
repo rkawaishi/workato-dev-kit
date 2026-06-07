@@ -337,12 +337,42 @@ def test_claude_blocks_python_stdin_redirect_dump():
 
 
 def test_claude_blocks_cat_master_key_redirect_to_file():
-    # Conservative by design: blocking the emitter regardless of `>` redirect
-    # closes the `cat master.key > /tmp/x; cat /tmp/x` two-step bypass. There is
-    # no legitimate Workato dev step that writes credential plaintext elsewhere.
+    # The credential is the READ source here (only the output is redirected), so
+    # its content still surfaces — and this closes the `cat master.key > /tmp/x;
+    # cat /tmp/x` two-step bypass.
     r = run(CLAUDE_HOOK, {"tool_name": "Bash",
                           "tool_input": {"command": "cat master.key > /tmp/key-copy"}})
     assert r.returncode == 2
+
+
+# --- Surfacing model: round-5 Codex review (output-redirect sink is not a read) ---
+
+def test_claude_allows_cat_into_credential_redirect_target():
+    # `> master.key` is a WRITE target: cat reads README.md and writes the
+    # credential file. No credential content reaches the agent.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "cat README.md > master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_cat_append_into_credential_redirect_target():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "cat header >> connectors/x/master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_inline_fd_redirect_into_credential():
+    # Inline form `1>master.key` is still just a write target, not a read.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "cat README.md 1>master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_dd_credential_output_target():
+    # `of=` is dd's write target; only `if=` reads. (Mirrors `cat > cred`.)
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "dd if=template of=master.key status=none"}})
+    assert r.returncode == 0, r.stderr
 
 
 # --- Surfacing model: round-2 Codex review (interpreter-as-script, dd, tr/tee FP) ---
@@ -593,6 +623,33 @@ def test_codex_blocks_dd_reads_credential():
     r = run(CODEX_HOOK, {"tool_name": "Bash",
                          "tool_input": {"command": "dd if=master.key status=none"}})
     assert r.returncode == 2
+
+
+# --- Surfacing model: round-5 Codex review (output-redirect sink is not a read) ---
+
+def test_codex_allows_cat_into_credential_redirect_target():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "cat README.md > master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_allows_inline_fd_redirect_into_credential():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "cat README.md 1>master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_blocks_cat_credential_source_with_redirect():
+    # Regression: credential is the READ source, only output is redirected.
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "cat master.key > /tmp/key-copy"}})
+    assert r.returncode == 2
+
+
+def test_codex_allows_dd_credential_output_target():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "dd if=template of=master.key status=none"}})
+    assert r.returncode == 0, r.stderr
 
 
 def test_codex_allows_tee_credential_output_target():

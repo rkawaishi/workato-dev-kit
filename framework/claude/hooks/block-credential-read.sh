@@ -188,6 +188,35 @@ def _reads_cred_via_stdin(args):
             return True
     return False
 
+def _out_redirect_sink_indices(toks):
+    """Indices of tokens that are the FILE operand of an OUTPUT redirection — a
+    write target, so a credential there is written to, not surfaced. Covers the
+    split form (`> f`, `>> f`, `1> f`, `2>> f`, `&> f`) and the inline form
+    (`>f`, `1>f`, `&>f`)."""
+    sinks = set()
+    for i, t in enumerate(toks):
+        if re.fullmatch(r"(?:&|\d*)>>?", t):
+            if i + 1 < len(toks):
+                sinks.add(i + 1)
+        elif re.match(r"^(?:&|\d*)>>?.+$", t):
+            sinks.add(i)  # inline form: the filename is part of this token
+    return sinks
+
+def _emitter_surfaces_cred(toks):
+    """An emitter surfaces a credential only when the credential is in a READ
+    position — a positional/input arg, NOT an output-redirect sink (`> cred`)
+    nor dd's `of=` write target. `cat README.md > master.key` writes the file;
+    `cat master.key > x` still reads (and surfaces) it."""
+    sinks = _out_redirect_sink_indices(toks)
+    for i, t in enumerate(toks):
+        if i in sinks:
+            continue
+        if t.startswith("of=") and _cred_token(t):
+            continue  # dd write target (its `if=`/positional reads do surface)
+        if _cred_token(t):
+            return True
+    return False
+
 def surfaces(seg):
     """True if this segment would emit a credential's CONTENT to stdout/stderr.
     The segment is already known to reference a credential pattern."""
@@ -208,7 +237,10 @@ def surfaces(seg):
     if prog == "git":
         return not git_segment_safe(args)
     if prog in EMITTERS:
-        return True
+        # Surface only when a credential is READ; a credential that is merely an
+        # output-redirect sink (`cat README.md > master.key`) or dd's `of=`
+        # target is written, not emitted into the agent context.
+        return _emitter_surfaces_cred(toks)
     if prog in STDIN_ECHOERS:
         return _reads_cred_via_stdin(args)
     if prog in INTERPRETERS:

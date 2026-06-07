@@ -51,8 +51,11 @@ credential guard の Bash スキャンは「プログラム許可リスト（`SA
 
 セグメントの実プログラムを解決する際、既存の**ランナー展開**（`VAR=value` env 代入のスキップ＋ `bundle exec [opts]` / `exec` / `env` / `command` / `time` / `nice` の剥がし）を流用して「実プログラム」を得る。PR #176 の `segment_safe` 内展開ロジックをこの解決器へ転用する。
 
-1. **Emitter プログラム**（実プログラムが下記集合）:
-   `cat tac nl head tail less more bat view strings xxd od hexdump base64 base32 grep egrep fgrep rg ag ack sed awk gawk cut sort uniq tr fold paste column jq yq tee`
+1. **Emitter プログラム**（実プログラムが下記集合）が credential を**読み位置**で参照するとき:
+   `cat tac nl head tail less more bat view strings xxd od hexdump base64 base32 grep egrep fgrep rg ag ack sed awk gawk cut sort uniq fold paste column jq yq diff comm dd iconv pr expand unexpand fmt`
+   - credential が**出力リダイレクトのシンク**（`> cred` `>> cred` `1> cred` `&> cred`、左端密着形 `1>cred`）や **dd の `of=cred`** の場合は**書き先**であり表出しないので allow（`cat README.md > master.key` は許可、`cat master.key > x` は読み元なのでブロック）。判定は `_emitter_surfaces_cred()`（round-5 Codex レビュー）。
+   - 残余の軽微な偽陽性: `>` がトークン中央に密着する `cat README.md>master.key`（スペース無し）は naive な whitespace split では分離できず over-block する。**安全側の過剰ブロック**かつ人間が通常書かない形のため未対応（一般形・スペース形・左端密着形は解消済み）。
+   - `tr` `tee` は file 引数を読まず stdin を echo するだけなので emitter ではなく **STDIN_ECHOERS** として扱い、stdin リダイレクト元が credential のとき（`tr ... < cred`、`tee f < cred`）だけブロック。`tee cred`（書き先）・`tr a b cred`（positional）は allow。
 2. **既知の平文プリンタ**:
    - `openssl` で `-in <cred>` を伴う呼び出し
    - `gpg` で `-d` / `--decrypt` を伴う呼び出し
@@ -69,7 +72,7 @@ credential guard の Bash スキャンは「プログラム許可リスト（`SA
 
 ### allow されるケース（表出しない）
 
-`bundle exec workato exec -s settings.yaml.enc -k master.key` / `workato edit settings.yaml.enc` / `git add settings.yaml.enc` / `cp|mv settings.yaml.enc bak` / `./deploy.sh --settings settings.yaml.enc` / `curl --key client.key https://...` / `workato generate schema --output=out.key`
+`bundle exec workato exec -s settings.yaml.enc -k master.key` / `workato edit settings.yaml.enc` / `git add settings.yaml.enc` / `cp|mv settings.yaml.enc bak` / `./deploy.sh --settings settings.yaml.enc` / `curl --key client.key https://...` / `workato generate schema --output=out.key` / `cat template > master.key`（出力リダイレクト先）/ `dd if=template of=master.key`（dd の書き先）
 
 ## コンポーネントとデータフロー
 
@@ -85,9 +88,13 @@ INPUT(JSON) ─▶ tool_name 判定
 
 `surfaces(seg)` が True を返したら最初の該当でブロック理由を添えて exit 2。
 
-## エラーハンドリング / fail-open
+## エラーハンドリング / fail-open（ハイブリッド ※round-2 で確定）
 
-現行を維持: malformed JSON・パターンファイル欠如・Python 例外は **fail-open（allow）**。bash ラッパは exit 2 のみブロック、他は allow。
+- **malformed JSON・パターンファイル欠如**: fail-**open**（allow）。入力が読めない/パターンが無いと判定不能なため。
+- **自前の分類ロジックが例外**（`_decide()` 内）: fail-**CLOSED**（exit 2）。バグで credential 読み出しを黙って許可するのを防ぐ。`try/except SystemExit: raise / except Exception: exit(2)` で囲う。
+- **Python 自体が起動不能**: bash ラッパが fail-open（ここで閉じると全ツール呼び出しが文鎖するため）。
+
+> 当初案は「Python 例外も fail-open」だったが、round-2 Codex レビューを受けユーザー合意のもとハイブリッド（自前バグは fail-closed）へ変更。
 
 ## テスト方針
 

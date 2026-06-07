@@ -153,6 +153,32 @@ def _reads_cred_via_stdin(args):
             return True
     return False
 
+def _out_redirect_sink_indices(toks):
+    # Indices of tokens that are the FILE operand of an OUTPUT redirection — a
+    # write target, so a credential there is written, not surfaced. Split form
+    # (`> f`, `>> f`, `1> f`, `&> f`) and inline form (`>f`, `1>f`, `&>f`).
+    sinks = set()
+    for i, t in enumerate(toks):
+        if re.fullmatch(r"(?:&|\d*)>>?", t):
+            if i + 1 < len(toks):
+                sinks.add(i + 1)
+        elif re.match(r"^(?:&|\d*)>>?.+$", t):
+            sinks.add(i)
+    return sinks
+
+def _emitter_surfaces_cred(toks):
+    # Surface only when a credential is in a READ position — not an output-
+    # redirect sink (`cat README.md > master.key`) nor dd's `of=` write target.
+    sinks = _out_redirect_sink_indices(toks)
+    for i, t in enumerate(toks):
+        if i in sinks:
+            continue
+        if t.startswith("of=") and _cred_token(t):
+            continue  # dd write target
+        if _cred_token(t):
+            return True
+    return False
+
 def surfaces(seg):
     stripped = seg.strip()
     if re.match(r"^<\s*\S", stripped):
@@ -166,7 +192,7 @@ def surfaces(seg):
     if prog == "git":
         return not git_segment_safe(args)
     if prog in EMITTERS:
-        return True
+        return _emitter_surfaces_cred(toks)
     if prog in STDIN_ECHOERS:
         return _reads_cred_via_stdin(args)
     if prog in INTERPRETERS:
