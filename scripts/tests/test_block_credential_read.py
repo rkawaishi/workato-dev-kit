@@ -236,6 +236,252 @@ def test_claude_allows_output_dot_key_false_positive():
     assert r.returncode == 0, r.stderr
 
 
+# --- Surfacing model: feeding a credential to a program is allowed ----------
+
+def test_claude_allows_bundle_exec_workato_exec_with_settings_and_key():
+    # Standard local-test form names both the encrypted settings and the key as
+    # -s / -k args to a non-printing tool → content never reaches the agent.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "bundle exec workato exec connectors/foo/connector.rb test -s settings.yaml.enc -k master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_cp_encrypted_settings():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "cp connectors/x/settings.yaml.enc connectors/x/settings.yaml.enc.bak"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_mv_master_key():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "mv master.key connectors/x/master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_custom_script_takes_settings_arg():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "./deploy.sh --settings connectors/x/settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_curl_client_key():
+    # `*.key` matches client.key, but curl uses it for TLS, never printing it.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "curl --key connectors/x/client.key https://example.test"}})
+    assert r.returncode == 0, r.stderr
+
+
+# --- Surfacing model: emitters behind a runner wrapper still block -----------
+
+def test_claude_blocks_env_cat_master_key():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "env cat master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_time_cat_master_key():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "time cat master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_bundle_exec_cat_master_key():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "bundle exec cat master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_redirect_read_in_substitution():
+    # `$(< master.key)` splits to a bare `< master.key` segment that reads the
+    # file straight into the command substitution (→ stdout → agent).
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "echo \"$(< master.key)\""}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_base64_master_key():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "base64 connectors/x/master.key"}})
+    assert r.returncode == 2
+
+
+# --- Surfacing model: stdin-echoers and interpreter heredoc/stdin (Codex review) ---
+
+def test_claude_blocks_tr_redirect_read():
+    # `tr` echoes stdin to stdout, so `tr ... < master.key` surfaces content.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "tr -d '\\n' < master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_tee_redirect_read():
+    # `tee` echoes stdin to stdout, so `tee f < master.key` surfaces content.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "tee /tmp/backup < master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_python_heredoc_dump():
+    # An interpreter reading its script from a heredoc can print the credential;
+    # the filename lands in a program-less split segment, so guard at the
+    # whole-command level. Same intent as the already-blocked `python -c` form.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "python - <<'PY'\nprint(open('master.key').read())\nPY"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_python_stdin_redirect_dump():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "python3 < dump.py # reads master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_cat_master_key_redirect_to_file():
+    # The credential is the READ source here (only the output is redirected), so
+    # its content still surfaces — and this closes the `cat master.key > /tmp/x;
+    # cat /tmp/x` two-step bypass.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "cat master.key > /tmp/key-copy"}})
+    assert r.returncode == 2
+
+
+# --- Surfacing model: round-5 Codex review (output-redirect sink is not a read) ---
+
+def test_claude_allows_cat_into_credential_redirect_target():
+    # `> master.key` is a WRITE target: cat reads README.md and writes the
+    # credential file. No credential content reaches the agent.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "cat README.md > master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_cat_append_into_credential_redirect_target():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "cat header >> connectors/x/master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_inline_fd_redirect_into_credential():
+    # Inline form `1>master.key` is still just a write target, not a read.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "cat README.md 1>master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_dd_credential_output_target():
+    # `of=` is dd's write target; only `if=` reads. (Mirrors `cat > cred`.)
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "dd if=template of=master.key status=none"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_blocks_cat_credential_read_with_fd_dup():
+    # fd-dup tokens (`2>&1`) must not be mistaken for an output sink that lets a
+    # READ credential through: master.key is still the read source → block.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "cat master.key 2>&1"}})
+    assert r.returncode == 2
+
+
+def test_claude_allows_combined_redirect_to_credential():
+    # `>&file` redirects stdout+stderr INTO the file (a write target), so a
+    # credential there is written, not surfaced. (Excluding `>&` from sinks —
+    # as a naive fd-dup filter would — wrongly reintroduces a false positive.)
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "cat README.md >&master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+# --- Surfacing model: round-2 Codex review (interpreter-as-script, dd, tr/tee FP) ---
+
+def test_claude_blocks_interpreter_runs_credential_as_script():
+    # `python3 master.key` parses the credential as source; SyntaxError echoes
+    # its lines to stderr (agent-visible). Block when the credential is the
+    # interpreter's SCRIPT (first positional), not a later data argument.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "python3 master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_allows_interpreter_script_with_credential_data_arg():
+    # The credential is a data argument to a real script, not the script itself.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "python3 connectors/foo/run.py --settings settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_blocks_dd_reads_credential():
+    # `dd if=master.key` copies the file straight to stdout.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "dd if=master.key status=none"}})
+    assert r.returncode == 2
+
+
+def test_claude_allows_tee_credential_output_target():
+    # tee writes template.txt INTO the credential path; it does not read it.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "tee connectors/x/master.key < template.txt"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_tr_credential_as_positional_arg():
+    # tr reads stdin, not its file args, so `tr a b master.key` surfaces nothing.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "tr a b master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+# --- Surfacing model: round-3 Codex review (printers, fd-redirect, -in binding) ---
+
+def test_claude_blocks_iconv_reads_credential():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "iconv -f utf-8 -t utf-8 master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_pr_reads_credential():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "pr connectors/x/master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_tr_fd_prefixed_redirect_read():
+    # `0<file` is an explicit fd-0 (stdin) redirect, same leak as `< file`.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "tr -d '\\n' 0<master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_blocks_openssl_in_credential():
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "openssl pkey -in master.key"}})
+    assert r.returncode == 2
+
+
+def test_claude_allows_openssl_credential_as_output_only():
+    # `-in` reads a non-credential file; the credential is only the -out target,
+    # which openssl writes, not reads. (A `*.pem` -in would itself match a
+    # credential pattern and stay blocked — that is intended.)
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "openssl pkey -in input.txt -out master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_interpreter_inline_code_with_credential_data_arg():
+    # `-c` code is "print('ok')"; master.key is sys.argv[1] (data), not read.
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "python3 -c \"print('ok')\" master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_claude_allows_lt_inside_quoted_inline_code():
+    # `<` inside `-c` code is not a shell stdin redirect — the INTERP_STDIN guard
+    # must be quote-aware, so this legitimate command is not blocked (Codex r4).
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash",
+                          "tool_input": {"command": "python3 -c \"print(1<2)\" settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
 def test_claude_blocks_bash_cat_master_key():
     r = run(CLAUDE_HOOK, {"tool_name": "Bash",
                           "tool_input": {"command": "cat connectors/x/master.key"}})
@@ -291,6 +537,14 @@ def test_claude_allows_malformed_json():
     assert r.returncode == 0, r.stderr
 
 
+def test_claude_fails_closed_on_internal_error():
+    # A valid tool call whose `command` is the wrong type makes the classifier
+    # raise. Our own code failing must fail CLOSED (deny), not silently allow.
+    # (Malformed JSON, by contrast, fails open — see the test above.)
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash", "tool_input": {"command": 123}})
+    assert r.returncode == 2
+
+
 # ---------------------------------------------------------------------------
 # Codex hook (Bash-only)
 # ---------------------------------------------------------------------------
@@ -334,6 +588,129 @@ def test_codex_allows_git_add_enc():
     assert r.returncode == 0, r.stderr
 
 
+def test_codex_allows_bundle_exec_workato_exec_with_settings_and_key():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "bundle exec workato exec connectors/foo/connector.rb test -s settings.yaml.enc -k master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_allows_cp_encrypted_settings():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "cp connectors/x/settings.yaml.enc connectors/x/settings.yaml.enc.bak"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_allows_custom_script_takes_settings_arg():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "./deploy.sh --settings connectors/x/settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_blocks_env_cat_master_key():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "env cat master.key"}})
+    assert r.returncode == 2
+
+
+def test_codex_blocks_bundle_exec_cat_master_key():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "bundle exec cat master.key"}})
+    assert r.returncode == 2
+
+
+def test_codex_blocks_tr_redirect_read():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "tr -d '\\n' < master.key"}})
+    assert r.returncode == 2
+
+
+def test_codex_blocks_python_heredoc_dump():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "python - <<'PY'\nprint(open('master.key').read())\nPY"}})
+    assert r.returncode == 2
+
+
+def test_codex_blocks_interpreter_runs_credential_as_script():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "python3 master.key"}})
+    assert r.returncode == 2
+
+
+def test_codex_blocks_dd_reads_credential():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "dd if=master.key status=none"}})
+    assert r.returncode == 2
+
+
+# --- Surfacing model: round-5 Codex review (output-redirect sink is not a read) ---
+
+def test_codex_allows_cat_into_credential_redirect_target():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "cat README.md > master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_allows_inline_fd_redirect_into_credential():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "cat README.md 1>master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_blocks_cat_credential_source_with_redirect():
+    # Regression: credential is the READ source, only output is redirected.
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "cat master.key > /tmp/key-copy"}})
+    assert r.returncode == 2
+
+
+def test_codex_allows_dd_credential_output_target():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "dd if=template of=master.key status=none"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_blocks_cat_credential_read_with_fd_dup():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "cat master.key 2>&1"}})
+    assert r.returncode == 2
+
+
+def test_codex_allows_combined_redirect_to_credential():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "cat README.md >&master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_allows_tee_credential_output_target():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "tee connectors/x/master.key < template.txt"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_allows_lt_inside_quoted_inline_code():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "python3 -c \"print(1<2)\" settings.yaml.enc"}})
+    assert r.returncode == 0, r.stderr
+
+
+def test_codex_blocks_iconv_reads_credential():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "iconv -f utf-8 -t utf-8 master.key"}})
+    assert r.returncode == 2
+
+
+def test_codex_blocks_tr_fd_prefixed_redirect_read():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "tr -d '\\n' 0<master.key"}})
+    assert r.returncode == 2
+
+
+def test_codex_allows_openssl_credential_as_output_only():
+    r = run(CODEX_HOOK, {"tool_name": "Bash",
+                         "tool_input": {"command": "openssl pkey -in input.txt -out master.key"}})
+    assert r.returncode == 0, r.stderr
+
+
 def test_codex_blocks_helper_sdk_decrypt():
     r = run(CODEX_HOOK, {"tool_name": "Bash",
                          "tool_input": {"command": "python3 scripts/workato-api.py sdk decrypt settings.yaml.enc --key master.key"}})
@@ -349,6 +726,11 @@ def test_codex_blocks_git_add_patch():
 def test_codex_allows_malformed_json():
     r = run(CODEX_HOOK, "{broken")
     assert r.returncode == 0
+
+
+def test_codex_fails_closed_on_internal_error():
+    r = run(CODEX_HOOK, {"tool_name": "Bash", "tool_input": {"command": 123}})
+    assert r.returncode == 2
 
 
 def main() -> int:
