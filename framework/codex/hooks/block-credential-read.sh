@@ -186,32 +186,45 @@ def surfaces(seg):
         return True
     return False
 
-# Whole-command guard: an interpreter fed its script via stdin/heredoc/`<` can
-# print a credential named anywhere in the command, but the name lands in a
-# program-less split segment that surfaces() can't attribute to it.
-if INTERP_STDIN_RE.search(cmd):
-    for pat in patterns:
-        if pat_re(pat).search(cmd):
-            deny(pat)
+def _decide():
+    # Whole-command guard: an interpreter fed its script via stdin/heredoc/`<`
+    # can print a credential named anywhere in the command, but the name lands
+    # in a program-less split segment that surfaces() can't attribute to it.
+    if INTERP_STDIN_RE.search(cmd):
+        for pat in patterns:
+            if pat_re(pat).search(cmd):
+                deny(pat)
 
-# Block only when a segment would surface credential content to the agent.
-sep = re.compile("|".join([r"\|\|", r"&&", r"[|;&\n]", r"\$\(", r"\)", re.escape(chr(96))]))
-for seg in sep.split(cmd):
-    if not seg.strip():
-        continue
-    hit = None
-    for pat in patterns:
-        if pat_re(pat).search(seg):
-            hit = pat
-            break
-    if not hit:
-        continue
-    if surfaces(seg):
-        deny(hit)
+    # Block only when a segment would surface credential content to the agent.
+    sep = re.compile("|".join([r"\|\|", r"&&", r"[|;&\n]", r"\$\(", r"\)", re.escape(chr(96))]))
+    for seg in sep.split(cmd):
+        if not seg.strip():
+            continue
+        hit = None
+        for pat in patterns:
+            if pat_re(pat).search(seg):
+                hit = pat
+                break
+        if not hit:
+            continue
+        if surfaces(seg):
+            deny(hit)
+    sys.exit(0)
 
-sys.exit(0)
+# If OUR classification raises, fail CLOSED (deny) rather than letting the bash
+# wrapper's non-2 fail-open silently allow a credential read. Malformed input
+# already failed open earlier.
+try:
+    _decide()
+except SystemExit:
+    raise
+except Exception:
+    sys.stderr.write("Blocked by workato-dev-kit credential guard: internal error during credential check (failing closed)\n")
+    sys.exit(2)
 PY
 rc=$?
-# Only an explicit deny (exit 2) blocks; anything else falls through to allow.
+# exit 2 blocks. The embedded Python fails CLOSED on its own classification
+# errors, so the only fail-open left here is Python failing to start at all
+# (failing closed there would brick every tool call).
 [ "$rc" -eq 2 ] && exit 2
 exit 0

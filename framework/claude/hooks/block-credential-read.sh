@@ -253,60 +253,73 @@ def bash_hit(cmd):
             return hit
     return None
 
-tool = data.get("tool_name", "")
-ti = data.get("tool_input") or {}
+def _decide():
+    tool = data.get("tool_name", "")
+    ti = data.get("tool_input") or {}
 
-paths = []
-if tool in ("Read", "Edit", "Write"):
-    fp = ti.get("file_path")
-    if fp:
-        paths.append(fp)
-elif tool == "NotebookEdit":
-    np = ti.get("notebook_path")
-    if np:
-        paths.append(np)
-elif tool in ("Grep", "Glob"):
-    # Direct path match (e.g. Grep on master.key) — block immediately.
-    pp = ti.get("path") or "."
-    direct = path_hit(pp)
-    if direct:
-        deny(f"{direct}: {pp}")
-    # Reachability check: if Grep/Glob points at a directory that contains any
-    # credential file, its results would expose it. Walk the tree and deny if a
-    # credential basename is found. Bounded by skipping known heavy dirs so the
-    # hook stays interactive.
-    try:
-        target = pp if os.path.isabs(pp) else os.path.abspath(pp)
-        if os.path.isdir(target):
-            SKIP_DIRS = {".git", "node_modules", ".venv", "venv",
-                         "dist", "build", "__pycache__", ".cache"}
-            for root, dirs, files in os.walk(target, followlinks=False):
-                dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
-                for f in files:
-                    for pat in patterns:
-                        if fnmatch.fnmatchcase(f, pat):
-                            rel = os.path.join(root, f)
-                            deny(f"{pat}: {tool} on {pp} would expose {rel}")
-    except SystemExit:
-        raise
-    except Exception:
-        pass  # fail open on traversal errors; Read/Bash hook layers still apply
+    paths = []
+    if tool in ("Read", "Edit", "Write"):
+        fp = ti.get("file_path")
+        if fp:
+            paths.append(fp)
+    elif tool == "NotebookEdit":
+        np = ti.get("notebook_path")
+        if np:
+            paths.append(np)
+    elif tool in ("Grep", "Glob"):
+        # Direct path match (e.g. Grep on master.key) — block immediately.
+        pp = ti.get("path") or "."
+        direct = path_hit(pp)
+        if direct:
+            deny(f"{direct}: {pp}")
+        # Reachability check: if Grep/Glob points at a directory that contains
+        # any credential file, its results would expose it. Walk the tree and
+        # deny if a credential basename is found. Bounded by skipping known
+        # heavy dirs so the hook stays interactive.
+        try:
+            target = pp if os.path.isabs(pp) else os.path.abspath(pp)
+            if os.path.isdir(target):
+                SKIP_DIRS = {".git", "node_modules", ".venv", "venv",
+                             "dist", "build", "__pycache__", ".cache"}
+                for root, dirs, files in os.walk(target, followlinks=False):
+                    dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
+                    for f in files:
+                        for pat in patterns:
+                            if fnmatch.fnmatchcase(f, pat):
+                                rel = os.path.join(root, f)
+                                deny(f"{pat}: {tool} on {pp} would expose {rel}")
+        except SystemExit:
+            raise
+        except Exception:
+            pass  # fail open on traversal errors; Read/Bash layers still apply
+        sys.exit(0)
+    elif tool == "Bash":
+        hit = bash_hit(ti.get("command", "") or "")
+        if hit:
+            deny(f"{hit}: command would surface credential content to the agent")
+        sys.exit(0)
+
+    for p in paths:
+        hit = path_hit(p)
+        if hit:
+            deny(f"{hit}: {p}")
     sys.exit(0)
-elif tool == "Bash":
-    hit = bash_hit(ti.get("command", "") or "")
-    if hit:
-        deny(f"{hit}: command would surface credential content to the agent")
-    sys.exit(0)
 
-for p in paths:
-    hit = path_hit(p)
-    if hit:
-        deny(f"{hit}: {p}")
-
-sys.exit(0)
+# Run the decision. Malformed input and a missing patterns file already failed
+# open earlier; but if OUR classification raises, fail CLOSED (deny) instead of
+# letting the bash wrapper's non-2 fail-open silently allow a credential read.
+try:
+    _decide()
+except SystemExit:
+    raise  # deny()'s exit(2) and the normal exit(0) pass through unchanged
+except Exception:
+    sys.stderr.write("Blocked by workato-dev-kit credential guard: internal error during credential check (failing closed)\n")
+    sys.exit(2)
 PY
 rc=$?
-# Only an explicit deny (exit 2) blocks. Any other status — including an
-# unexpected Python error — falls through to allow (fail open).
+# exit 2 blocks. The embedded Python fails CLOSED (exits 2) if its own
+# classification raises, so the only remaining fail-open here is the case where
+# Python cannot start at all (missing interpreter) — which would brick every
+# tool call if we failed closed, so we allow it.
 [ "$rc" -eq 2 ] && exit 2
 exit 0

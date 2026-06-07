@@ -439,6 +439,14 @@ def test_claude_allows_malformed_json():
     assert r.returncode == 0, r.stderr
 
 
+def test_claude_fails_closed_on_internal_error():
+    # A valid tool call whose `command` is the wrong type makes the classifier
+    # raise. Our own code failing must fail CLOSED (deny), not silently allow.
+    # (Malformed JSON, by contrast, fails open — see the test above.)
+    r = run(CLAUDE_HOOK, {"tool_name": "Bash", "tool_input": {"command": 123}})
+    assert r.returncode == 2
+
+
 # ---------------------------------------------------------------------------
 # Codex hook (Bash-only)
 # ---------------------------------------------------------------------------
@@ -557,6 +565,11 @@ def test_codex_blocks_git_add_patch():
 def test_codex_allows_malformed_json():
     r = run(CODEX_HOOK, "{broken")
     assert r.returncode == 0
+
+
+def test_codex_fails_closed_on_internal_error():
+    r = run(CODEX_HOOK, {"tool_name": "Bash", "tool_input": {"command": 123}})
+    assert r.returncode == 2
 
 
 def main() -> int:
