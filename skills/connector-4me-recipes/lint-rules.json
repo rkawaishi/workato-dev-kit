@@ -1,0 +1,15 @@
+{
+  "version": "0.1.0",
+  "connector": "connector_4me",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "custom_operation",
+    "mutation",
+    "query",
+    "upload_attachment"
+  ],
+  "valid_trigger_names": [
+    "new_event"
+  ]
+}

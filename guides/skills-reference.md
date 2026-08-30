@@ -32,82 +32,6 @@ For a workspace that already has Workato projects and custom connectors before t
 - Resumable: progress is tracked per step / per project in `org/onboarding-report.md`, which also becomes the final summary.
 - CLI / API only — runs in every editor. Use `/auto-learn` afterward for browser-based deep dives on heavily-used connectors.
 
-## Specification and design phases
-
-### /spec — create feature requirements
-
-Organize the business requirements (WHAT/WHY) in business language and generate `spec.md`. Workato vocabulary is forbidden.
-
-```
-/spec <project-name>       # Create spec.md from an interview
-```
-
-**Interview items:**
-1. Who wants to do what (in business language)
-2. What flow they have in mind
-3. Who is involved
-4. What needs to happen for success
-5. Whether there are existing tools or data sources
-
-**Output:** `projects/<project>/specs/<NNN>-<slug>/spec.md` (User Stories, Success Criteria, Out of Scope, Open Questions)
-
-Add `specs/` to `.workatoignore` so that `workato pull` does not remove it.
-
-### /clarify — resolve Open Questions
-
-Walk through `## Open Questions` in spec.md one item at a time with the user and reflect the answers into the spec body. Also serves as a resume command after interruptions or context exhaustion.
-
-```
-/clarify <project>/<NNN>-<slug>
-```
-
-### /plan — translate into Workato configuration (HOW)
-
-Cross-read spec.md with `projects/CATALOG.md` / `.resource-providers.yml` / the pattern catalog, and write the concrete Workato configuration (Data Table / Recipe / Connection / Stage Transitions / Reused Assets / New Components / Unlearned Actions) into `plan.md`.
-
-```
-/plan <project>/<NNN>-<slug>
-```
-
-**Key points:**
-- Halts if `## Open Questions` remains (run `/clarify` first)
-- State reuse of existing shared assets explicitly under `## Reused Assets`
-- Record actions that are missing from the documentation in the `## Unlearned Actions` table (they become `[learn]` tasks via `/tasks`)
-
-### /tasks — decompose into executable tasks
-
-Decompose plan.md into executable tasks in `tasks.md`, attaching the parallel marker `[P]` and type tags such as `[recipe]` / `[page]` / `[data-table]` / `[connection]` / `[mcp]` / `[connector]` / `[learn]` / `[test]`.
-
-```
-/tasks <project>/<NNN>-<slug>
-```
-
-### /analyze — consistency check
-
-Verify the consistency of `spec.md` ↔ `plan.md` ↔ `tasks.md` in read-only mode and report contradictions, gaps, and duplicates.
-
-```
-/analyze <project>/<NNN>-<slug>
-```
-
-### /design — deprecated (migration tool only)
-
-> ⚠️ `/design` has been migrated to the spec-driven workflow. Do not use it for new projects.
-
-Only `/design migrate` remains useful as a standard-operation subcommand:
-
-```
-/design migrate <project>  # Migrate an existing DESIGN.md into specs/<NNN>-<slug>/{spec,plan,tasks}.md
-/design <project>          # Display legacy DESIGN.md (compatibility mode with warning)
-/design update             # Update legacy DESIGN.md (compatibility mode with warning)
-```
-
-- `/design new` has been **retired** (if invoked, refuse and direct the user to `/spec`)
-- For projects with an existing DESIGN.md, convert it to `specs/` early via `/design migrate`
-- See the Deprecation phase in [Lifecycle and responsibility map](lifecycle.md) for details
-
----
-
 ## Build phase
 
 ### /create-recipe — generate recipe JSON
@@ -186,9 +110,28 @@ See [Custom connector development guide](connector-development.md) for details.
 
 ## Validation phase
 
-### /validate-recipe — JSON structure validation
+### wk lint — deterministic recipe validation (run this first)
 
-Validate recipe and Genie JSON files and report issues.
+Recipes go through the official [`recipe-lint`](https://github.com/workato-devs/recipe-lint)
+plugin, not `/validate-recipe`. It carries 66 built-in rules across four tiers
+(schema → step → control flow → cross-step data flow), and the kit's generated
+`skills/` pack adds the per-connector allow-lists.
+
+```
+wk plugins install recipe-lint                                  # once
+wk lint projects/<project>/Recipes/*.recipe.json --skills-path kit/skills
+```
+
+An `ACTION_NAME_VALID` error means the connector has no such action — fix the
+recipe, or run `/sync-connectors <provider>` if the allow-list is stale.
+
+---
+
+### /validate-recipe — the asset types wk lint does not cover
+
+Validate Genie, Workflow App, and connection JSON files and report issues.
+For `.recipe.json`, prefer `wk lint` above; this skill stays useful for the
+Workato asset types `recipe-lint` does not model.
 
 ```
 /validate-recipe <file>            # Validate a specific file
@@ -350,6 +293,6 @@ Scan the organization's shared projects and catalog reusable assets.
 - Workflow Apps
 - MCP servers
 
-**Output:** `projects/CATALOG.md` — referenced by `/create-recipe` and `/plan` to suggest reuse of existing assets.
+**Output:** `projects/CATALOG.md` — referenced by `/create-recipe` to suggest reuse of existing assets.
 
 **Scope control:** configure `global` / `team:<name>` / `private` in `projects/CATALOG_CONFIG.yaml`. `private` projects are not included in the catalog.

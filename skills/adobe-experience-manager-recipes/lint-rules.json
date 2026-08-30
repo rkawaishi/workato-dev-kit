@@ -1,0 +1,22 @@
+{
+  "version": "0.1.0",
+  "connector": "adobe_experience_manager",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "copy_folder_asset",
+    "create_folder",
+    "delete_folder_asset",
+    "download_asset",
+    "move_folder_asset",
+    "search_assets",
+    "update_asset_metadata",
+    "upload_asset",
+    "upload_asset_streaming"
+  ],
+  "valid_trigger_names": [
+    "new_asset_or_folder",
+    "new_or_updated_asset"
+  ]
+}

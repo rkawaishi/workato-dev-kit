@@ -1,0 +1,39 @@
+{
+  "version": "0.1.0",
+  "connector": "microsoft_sharepoint",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_row_in_sharepoint_list",
+    "copy_file",
+    "create_folder",
+    "create_row_in_sharepoint_list_batch",
+    "delete_file_from_library",
+    "delete_row_in_sharepoint_list",
+    "download_attachment",
+    "download_file_from_library",
+    "get_file_folder",
+    "get_permission",
+    "list_files_folders",
+    "move_file",
+    "rename_file_folder",
+    "search_file_by_name",
+    "search_list_items_v2",
+    "search_users",
+    "update_file_in_library",
+    "update_file_metadata",
+    "update_row_in_sharepoint_list",
+    "update_row_in_sharepoint_list_batch",
+    "upload_attachment",
+    "upload_file_in_library"
+  ],
+  "valid_trigger_names": [
+    "deleted_file_folder",
+    "new_row_in_sharepoint_list",
+    "new_updated_file_in_folder_hierarchy",
+    "new_updated_file_in_folder_hierarchy_v2",
+    "new_updated_file_in_sharepoint_library",
+    "new_updated_row_in_sharepoint_list"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "version": "0.1.0",
+  "connector": "splunk",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "execute_saved_search",
+    "search_objects",
+    "send_event_to_splunk"
+  ],
+  "valid_trigger_names": [
+    "new_generic_alert",
+    "new_service_alert"
+  ]
+}

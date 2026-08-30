@@ -1,0 +1,19 @@
+{
+  "version": "0.1.0",
+  "connector": "excel",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_rows_batch",
+    "add_table",
+    "add_worksheet",
+    "delete_row",
+    "get_range_cells",
+    "get_table_rows",
+    "list_tables",
+    "list_worksheets",
+    "search_workbooks",
+    "update_row"
+  ]
+}

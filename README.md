@@ -22,17 +22,32 @@ Covers recipe development, Workflow App construction, AI agent creation (Genie /
 - **Custom connectors** — assistance for Connector SDK (Ruby DSL) development
 - **Knowledge base** — docs for 316 connectors, 7 logic patterns, and 13 platform features
 - **Learning cycle** — pull → analyze → accumulate patterns → feed back into the next generation
-- **Spec-driven artifacts** — `spec.md` / `plan.md` / `tasks.md` per feature, with cross-session continuity
+- **Lint pack for `wk lint`** — a generated connector skill pack (`skills/`, 302 connectors) that makes the official [recipe-lint](https://github.com/workato-devs/recipe-lint) reject actions and triggers a connector does not actually have
 
 ## Prerequisites
 
 - A [Workato](https://www.workato.com/) account and API token
-- [Workato Platform CLI](https://github.com/workato-devs/workato-platform-cli) (`pipx install workato-platform-cli`)
+- [`wk`](https://github.com/workato-devs/wk) and the [`recipe-lint`](https://github.com/workato-devs/recipe-lint) plugin — the official Workato Labs CLI and linter
+- [Workato Platform CLI](https://github.com/workato-devs/workato-platform-cli) (`pipx install workato-platform-cli`) — still used for the asset types `wk` does not cover
 - One of the supported editors: [Claude Code](https://claude.com/claude-code), [Cursor](https://cursor.com), [Codex CLI](https://github.com/openai/codex), or [Gemini CLI](https://github.com/google-gemini/gemini-cli)
 
 ## Setup
 
 > For the full walkthrough, see **[Quick Start (Claude Code)](guides/quickstart-claude-code.md)** or **[Quick Start (Cursor)](guides/quickstart-cursor.md)**.
+
+### Option A: Claude Code plugin (quickest)
+
+```
+/plugin marketplace add rkawaishi/workato-dev-kit
+/plugin install workato-dev-kit@workato-dev-kit
+```
+
+This gives you the skills, the `workato-builder` subagent and the credential-guard
+hooks. Use Option B as well when you want the knowledge base (`docs/`), the
+generated lint pack (`skills/`) and the `org/` overlay checked into your workspace
+repository — which is what makes the learning cycle stick.
+
+### Option B: git submodule (full workspace setup)
 
 Add workato-dev-kit as a submodule of your organization's workspace repository. You can update the framework later with `git submodule update`.
 
@@ -105,50 +120,64 @@ workato pull
 git add projects/<project-name> && git commit -m "Add IT Onboarding workflow"
 ```
 
-### Spec-driven artifacts (spec.md / plan.md / tasks.md)
+### Linting recipes (`skills/`)
 
-Record each feature of each project in three files under `projects/<project>/specs/<NNN>-<slug>/`:
-
-- `spec.md` — user experience and business requirements (WHAT/WHY; no Workato terminology)
-- `plan.md` — Workato configuration (HOW)
-- `tasks.md` — executable tasks (with `[P]` parallel markers and kind tags)
-
-Add `specs/` to `.workatoignore` so it isn't wiped out by `workato pull`.
+`scripts/gen_lint_rules.py` turns `docs/connectors/*.md` into a connector skill
+pack that the official [`recipe-lint`](https://github.com/workato-devs/recipe-lint)
+plugin consumes, so a hallucinated action name fails before it reaches Workato:
 
 ```bash
-/spec "[App] IT Onboarding"                # create spec.md
-/clarify "[App] IT Onboarding"/001-main    # resolve Open Questions
-/plan "[App] IT Onboarding"/001-main       # create plan.md
-/tasks "[App] IT Onboarding"/001-main      # create tasks.md
-/analyze "[App] IT Onboarding"/001-main    # consistency check
-/implement "[App] IT Onboarding"/001-main  # dispatch to implementation skills
+wk plugins install recipe-lint     # once
+wk lint projects/<project>/Recipes/*.recipe.json --skills-path kit/skills
 ```
 
-> The old single-file `DESIGN.md` workflow is **deprecated**. Use `/design migrate <project>` to split an existing DESIGN.md into `specs/`. `/design new` is retired.
+```
+/code/block/0/name [ERROR] ACTION_NAME_VALID: Action name "post_message" is not
+valid for provider "slack"; expected one of [__adhoc_http_action ...
+post_message_to_channel ...]
+```
+
+The `skills/` tree is generated — regenerate it after `/sync-connectors` or
+`/auto-learn` updates a connector doc:
+
+```bash
+python3 scripts/gen_lint_rules.py            # all connectors
+python3 scripts/gen_lint_rules.py --only slack
+```
+
+Pass `--exclude-official` to skip the seven connectors
+[workato-devs/recipe-skills](https://github.com/workato-devs/recipe-skills)
+already ships, if you point `--skills-path` at a directory that merges both.
+
+### Validating the assets `wk` does not model
+
+`wk` has no commands for Genies, Data Tables or Workflow Apps, and `recipe-lint`
+only models `*.recipe.json`. The kit ships a `wk` plugin for the rest:
+
+```bash
+wk plugins install kit/wk-plugin
+wk kit projects/<project>          # connection filenames, Data Table system
+                                   # columns, Genie/skill reference resolution
+```
+
+See [wk-plugin/README.md](wk-plugin/README.md).
 
 ## Skills
 
 | Skill | Description |
 |---|---|
-| `/spec` | Create feature requirements (spec.md), technology-agnostic |
-| `/clarify` | Resolve Open Questions in spec.md |
-| `/plan` | spec.md → plan.md (Workato configuration) |
-| `/tasks` | plan.md → tasks.md (tagged executable tasks) |
-| `/analyze` | Verify spec ↔ plan ↔ tasks consistency (read-only) |
-| `/implement` | Read tasks.md and dispatch to existing skills (thin orchestrator) |
 | `/create-recipe` | Generate a recipe JSON interactively |
 | `/create-workflow-app` | Build a Workflow App in stages (Data Table, pages, recipes) |
 | `/create-genie` | Generate a Genie / MCP server + skills configuration |
 | `/create-connector` | Scaffold a custom connector |
 | `/catalog` | Scan and catalog shared assets |
-| `/validate-recipe` | Validate recipe JSON structure |
+| `/validate-recipe` | Validate Genie / Workflow App / connection JSON (recipes go through `wk lint`) |
 | `/pull-project` | Pull a project from Workato |
 | `/push-project` | Push local changes (with validation and recipe start) |
-| `/learn-recipe` | Learn field info from pulled recipes; reconcile plan.md/tasks.md Unlearned/[learn] entries |
+| `/learn-recipe` | Learn field info from pulled recipes into `org/docs/` |
 | `/learn-pattern` | Record or update recipe construction patterns in the catalog |
 | `/sync-connectors` | Collect and update connector info (pre-built: API; custom: parse `connector.rb`) |
 | `/auto-learn` | Autonomously collect all operations for one connector via Claude in Chrome (no prompts) |
-| `/design` | **Deprecated**: only `/design migrate` (legacy DESIGN.md → specs/) is in normal use |
 
 See [skill reference](guides/skills-reference.md) and [lifecycle and responsibility map](guides/lifecycle.md) for details.
 
@@ -168,18 +197,14 @@ Cross-agent conventions (`CLAUDE.md` + `rules/` aggregated) are distributed as `
 ### New project
 
 ```
-/spec "<project-name>"                       ← create spec.md (business requirements)
-/clarify "<project-name>"/001-<slug>         ← resolve Open Questions
-/plan "<project-name>"/001-<slug>            ← create plan.md (Workato configuration)
-/tasks "<project-name>"/001-<slug>           ← create tasks.md
-/analyze "<project-name>"/001-<slug>         ← consistency check
-/implement "<project-name>"/001-<slug>       ← dispatch to /create-recipe etc.
+/catalog                                     ← check what already exists and can be reused
+/sync-connectors <provider>                  ← fetch metadata + regenerate the lint pack
+/create-recipe "<project-name>"              ← interview → generate recipe JSON
+wk lint ... --skills-path kit/skills         ← deterministic validation
 /push-project --start                        ← push + start recipes
 (adjust in the Workato UI)
-/pull-project → /learn-recipe                ← learning cycle (auto-reconciles plan.md/tasks.md)
+/pull-project → /learn-recipe                ← learning cycle
 ```
-
-> Projects on the legacy single-file `DESIGN.md` should run `/design migrate <project>` to convert into `specs/` before joining this flow. `/design new` is retired.
 
 ### Learning cycle
 

@@ -1,0 +1,10 @@
+{
+  "version": "0.1.0",
+  "connector": "edi_parser",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "generate_edi_v2",
+    "parse_edi_v2"
+  ]
+}

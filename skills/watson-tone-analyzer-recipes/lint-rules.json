@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "connector": "watson_tone_analyzer",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "analyze_content"
+  ]
+}

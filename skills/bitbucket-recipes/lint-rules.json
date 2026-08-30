@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "connector": "bitbucket",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_comment_in_an_issue",
+    "create_issue",
+    "get_events",
+    "get_issue_by_id",
+    "list_comments_in_an_issue",
+    "search_issues",
+    "update_issue_by_id"
+  ],
+  "valid_trigger_names": [
+    "closed_issue",
+    "new_issue",
+    "new_or_updated_issue"
+  ]
+}

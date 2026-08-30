@@ -1,0 +1,57 @@
+{
+  "name": "workato-dev-kit",
+  "description": "Build Workato recipes, Workflow Apps, Genies and custom connectors with an AI coding agent. Adds the knowledge layer and the asset types the Workato Labs toolchain does not cover.",
+  "version": "0.1.0",
+  "author": {
+    "name": "rkawaishi",
+    "url": "https://github.com/rkawaishi/workato-dev-kit"
+  },
+  "homepage": "https://github.com/rkawaishi/workato-dev-kit",
+  "license": "MIT",
+  "keywords": [
+    "workato",
+    "ipaas",
+    "integration",
+    "recipe",
+    "workflow-app",
+    "genie",
+    "mcp",
+    "connector-sdk"
+  ],
+  "agents": [
+    "./agents/workato-builder.md"
+  ],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/validate-before-push.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Read|Edit|Write|NotebookEdit|Grep|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/block-credential-read.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/sync-docs-after-sdk-push.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

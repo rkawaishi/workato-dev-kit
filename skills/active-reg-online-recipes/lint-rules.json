@@ -1,0 +1,19 @@
+{
+  "version": "0.1.0",
+  "connector": "active_reg_online",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "lookup_event",
+    "lookup_registration",
+    "lookup_transaction",
+    "query_events",
+    "query_registrations",
+    "query_transactions"
+  ],
+  "valid_trigger_names": [
+    "on_new_event",
+    "on_new_registration",
+    "on_new_transaction"
+  ]
+}

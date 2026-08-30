@@ -126,7 +126,7 @@ Patterns that were recorded in older versions under `projects/docs/patterns/` ar
 
 **How patterns are used:**
 - Referenced automatically during step design in `/create-recipe`
-- Proposed as candidates during architecture decisions in `/plan`
+- Proposed as reuse candidates by `/create-recipe` before it generates new logic
 - Patterns are composable blocks, not monolithic templates
 
 ### 3. `/sync-connectors` — sync connector information

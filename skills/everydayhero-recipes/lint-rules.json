@@ -1,0 +1,10 @@
+{
+  "version": "0.1.0",
+  "connector": "everydayhero",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_trigger_names": [
+    "new_page",
+    "new_team"
+  ]
+}

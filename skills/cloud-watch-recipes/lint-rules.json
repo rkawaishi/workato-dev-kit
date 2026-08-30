@@ -1,0 +1,14 @@
+{
+  "version": "0.1.0",
+  "connector": "cloud_watch",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "disable_alarm",
+    "enable_alarm",
+    "set_alarm_state"
+  ],
+  "valid_trigger_names": [
+    "new_or_updated_alarm"
+  ]
+}

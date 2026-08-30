@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0",
+  "connector": "aws_cognito",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "admin_initiate_auth_admin_no_srp_auth",
+    "admin_initiate_auth_refresh_token_auth",
+    "get_credentials_for_identity"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "connector": "outreach",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_prospect_to_sequence",
+    "add_template_to_sequence_step",
+    "create_object",
+    "get_object",
+    "get_steps_in_sequence",
+    "search_object",
+    "update_object"
+  ],
+  "valid_trigger_names": [
+    "completed_sequence_task",
+    "new_or_updated_record",
+    "new_record"
+  ]
+}

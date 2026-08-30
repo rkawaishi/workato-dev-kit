@@ -1,0 +1,12 @@
+{
+  "version": "0.1.0",
+  "connector": "prontoforms",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "dispatch_form"
+  ],
+  "valid_trigger_names": [
+    "new_form"
+  ]
+}

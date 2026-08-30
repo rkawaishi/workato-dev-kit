@@ -1,0 +1,31 @@
+{
+  "version": "0.1.0",
+  "connector": "dropbox",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "copy_file",
+    "create_folder",
+    "delete_file",
+    "fetch_deleted_files_and_folders",
+    "file_download",
+    "get_metadata",
+    "move_file",
+    "read_csv_file_lines",
+    "search_files",
+    "search_folder",
+    "update_csv_file",
+    "upload_file_content_stream",
+    "upload_file_from_url",
+    "upload_multiline_file"
+  ],
+  "valid_trigger_names": [
+    "file_revision",
+    "new_batch_csv_file_lines",
+    "new_csv_file_line",
+    "new_or_changed_file",
+    "new_or_updated_csv_file",
+    "updated_csv_file_line"
+  ]
+}

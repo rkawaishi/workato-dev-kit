@@ -1,0 +1,27 @@
+{
+  "version": "0.1.0",
+  "connector": "insightly",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_note_to_opportunity",
+    "create_contact",
+    "create_event",
+    "create_opportunity",
+    "create_organisation",
+    "get_user_by_id",
+    "search_contacts",
+    "search_pipelines",
+    "search_users",
+    "update_contact",
+    "update_opportunity"
+  ],
+  "valid_trigger_names": [
+    "new_contact",
+    "new_organisation",
+    "updated_contact",
+    "updated_opportunity",
+    "updated_organisation"
+  ]
+}

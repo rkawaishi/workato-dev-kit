@@ -1,0 +1,34 @@
+{
+  "version": "0.1.0",
+  "connector": "workday_rest",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "cancel_business_process_event",
+    "create_job_changes",
+    "get_absence_balances",
+    "get_business_process_events",
+    "get_business_process_types",
+    "get_direct_reports",
+    "get_eligible_absence_types",
+    "get_event_in_progress_steps",
+    "get_inbox_tasks",
+    "get_staffing_worker",
+    "get_supervisory_organization",
+    "get_time_off_details",
+    "get_time_off_entry",
+    "get_time_off_request",
+    "get_time_off_status_values",
+    "get_valid_time_off_dates",
+    "get_worker",
+    "get_worker_service_dates",
+    "list_time_off_entries",
+    "request_time_off",
+    "search_workers",
+    "update_inbox_task"
+  ],
+  "valid_trigger_names": [
+    "new_worker"
+  ]
+}

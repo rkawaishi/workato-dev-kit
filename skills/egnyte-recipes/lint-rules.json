@@ -1,0 +1,20 @@
+{
+  "version": "0.1.0",
+  "connector": "egnyte",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "copy_or_move_file",
+    "copy_or_move_folder",
+    "create_folder",
+    "download_file",
+    "get_event_details",
+    "get_object",
+    "search_objects",
+    "upload_file"
+  ],
+  "valid_trigger_names": [
+    "new_events"
+  ]
+}

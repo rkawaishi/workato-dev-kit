@@ -1,0 +1,10 @@
+{
+  "version": "0.1.0",
+  "connector": "azure_monitor",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "send_custom_log",
+    "send_log_injection"
+  ]
+}

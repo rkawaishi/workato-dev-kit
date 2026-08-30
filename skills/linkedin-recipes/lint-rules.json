@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "connector": "linkedin",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "get_campaign_by_id",
+    "get_lead_gen_forms_by_id",
+    "get_list_of_campaigns_by_status",
+    "search_lead_gen_form_responses"
+  ],
+  "valid_trigger_names": [
+    "new_lead_gen_form_response"
+  ]
+}

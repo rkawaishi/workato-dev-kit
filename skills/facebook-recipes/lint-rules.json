@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0",
+  "connector": "facebook",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "get_adset_insights",
+    "get_campaign_insights",
+    "list_adsets",
+    "list_campaigns"
+  ]
+}

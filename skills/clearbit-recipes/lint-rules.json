@@ -1,0 +1,10 @@
+{
+  "version": "0.1.0",
+  "connector": "clearbit",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "company_lookup",
+    "email_lookup"
+  ]
+}

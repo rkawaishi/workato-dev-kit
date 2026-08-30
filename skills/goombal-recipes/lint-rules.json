@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0",
+  "connector": "goombal",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "add_attendee",
+    "get_activities"
+  ],
+  "valid_trigger_names": [
+    "updated_attendee"
+  ]
+}

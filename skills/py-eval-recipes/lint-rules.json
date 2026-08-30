@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "connector": "py_eval",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "invoke_custom_py_code"
+  ]
+}

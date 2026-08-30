@@ -1,0 +1,40 @@
+{
+  "version": "0.1.0",
+  "connector": "hubspot",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_contact_to_list_v3",
+    "add_contact_to_workflow",
+    "associate_records",
+    "associate_records_batch",
+    "bulk_import_crm",
+    "create_engagement",
+    "create_object",
+    "create_object_batch",
+    "delete_associations",
+    "delete_contact",
+    "export_file",
+    "get_associations",
+    "get_contacts_at_a_company",
+    "get_contacts_in_list_v3",
+    "get_owner",
+    "get_owner_v3",
+    "get_record",
+    "list_associations",
+    "remove_contact_from_list_v3",
+    "search_pipeline_stages",
+    "search_record",
+    "update_object",
+    "update_object_batch"
+  ],
+  "valid_trigger_names": [
+    "new_contact_in_list_v3",
+    "new_form_submission",
+    "new_object",
+    "new_object_batch",
+    "new_or_updated_object",
+    "new_or_updated_object_batch"
+  ]
+}

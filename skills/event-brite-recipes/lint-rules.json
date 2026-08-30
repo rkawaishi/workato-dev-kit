@@ -1,0 +1,22 @@
+{
+  "version": "0.1.0",
+  "connector": "event_brite",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_contact",
+    "create_contact_list",
+    "get_attendees",
+    "search_events"
+  ],
+  "valid_trigger_names": [
+    "new_contact",
+    "new_user_event",
+    "new_user_event_attendee",
+    "new_user_event_order",
+    "updated_user_event_attendee",
+    "updated_user_event_attendee_webhook",
+    "updated_user_event_order"
+  ]
+}

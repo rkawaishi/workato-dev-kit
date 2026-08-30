@@ -1,0 +1,28 @@
+{
+  "version": "0.1.0",
+  "connector": "zoom_info",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "enrich_company",
+    "enrich_contact",
+    "retrieve_comp_location",
+    "retrieve_compliance",
+    "retrieve_corporate_hierarchy",
+    "retrieve_hashtag",
+    "retrieve_intent",
+    "retrieve_news",
+    "retrieve_org_chart",
+    "retrieve_scoops",
+    "retrieve_technology",
+    "search_companies",
+    "search_contacts",
+    "search_intent",
+    "search_news",
+    "search_scoops"
+  ],
+  "valid_trigger_names": [
+    "new_event"
+  ]
+}

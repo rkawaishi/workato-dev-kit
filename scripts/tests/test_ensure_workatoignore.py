@@ -45,8 +45,7 @@ def test_creates_when_absent():
         assert woi.exists()
         body = lines(woi)
         # Core + opt-out content is all present on a fresh create.
-        for entry in ("specs/", "DESIGN.md", "DESIGN.md.legacy.*",
-                      "CATALOG.md", ".workatoignore",
+        for entry in ("CATALOG.md", "CATALOG_CONFIG.yaml", ".workatoignore",
                       "*.custom_adapter.rb", "*.custom_adapter.json"):
             assert entry in body, f"missing {entry!r}"
         assert any(">>> opt-out" in ln for ln in body)
@@ -70,15 +69,15 @@ def test_tops_up_old_file_without_optout_block():
     with tempfile.TemporaryDirectory() as d:
         proj = Path(d) / "p"
         proj.mkdir()
-        (proj / ".workatoignore").write_text("specs/\n")
+        (proj / ".workatoignore").write_text("CATALOG.md\n")
         r = run(str(proj))
         assert r.returncode == 0, r.stderr
         body = lines(proj / ".workatoignore")
-        assert "DESIGN.md" in body            # core topped up
+        assert ".workatoignore" in body       # core topped up
         assert "*.custom_adapter.rb" in body  # opt-out block added
         assert "*.custom_adapter.json" in body
         assert any(">>> opt-out" in ln for ln in body)
-        assert body.count("specs/") == 1      # no duplication
+        assert body.count("CATALOG.md") == 1  # no duplication
 
 
 def test_topup_handles_missing_trailing_newline():
@@ -87,13 +86,13 @@ def test_topup_handles_missing_trailing_newline():
     with tempfile.TemporaryDirectory() as d:
         proj = Path(d) / "p"
         proj.mkdir()
-        (proj / ".workatoignore").write_text("specs/")  # no trailing \n
+        (proj / ".workatoignore").write_text("CATALOG.md")  # no trailing \n
         r = run(str(proj))
         assert r.returncode == 0, r.stderr
         body = lines(proj / ".workatoignore")
-        assert "specs/" in body            # intact, not "specs/DESIGN.md"
-        assert "DESIGN.md" in body          # appended on its own line
-        assert not any(ln.startswith("specs/") and ln != "specs/"
+        assert "CATALOG.md" in body        # intact, not "CATALOG.md.workatoignore"
+        assert ".workatoignore" in body     # appended on its own line
+        assert not any(ln.startswith("CATALOG.md") and ln != "CATALOG.md"
                        for ln in body)
 
 
@@ -101,7 +100,7 @@ def test_preserves_user_lines():
     with tempfile.TemporaryDirectory() as d:
         proj = Path(d) / "p"
         proj.mkdir()
-        (proj / ".workatoignore").write_text("specs/\nmy-private-notes.txt\n")
+        (proj / ".workatoignore").write_text("CATALOG.md\nmy-private-notes.txt\n")
         run(str(proj))
         body = lines(proj / ".workatoignore")
         assert "my-private-notes.txt" in body
@@ -152,7 +151,7 @@ def test_idempotent_after_topup():
     with tempfile.TemporaryDirectory() as d:
         proj = Path(d) / "p"
         proj.mkdir()
-        (proj / ".workatoignore").write_text("specs/\n")
+        (proj / ".workatoignore").write_text("CATALOG.md\n")
         run(str(proj))
         after_first = (proj / ".workatoignore").read_text()
         run(str(proj))

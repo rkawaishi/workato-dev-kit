@@ -25,7 +25,7 @@ A Workflow App is a Workato feature for building form-based business application
 
 ### 1. Design
 
-Solidify the overall design with `/spec` → `/plan`. For Workflow Apps, make the following clear in `plan.md`:
+`/create-workflow-app` interviews you for the design. Have answers ready for:
 
 - **Stages**: what state transitions exist (e.g. submitted → review → approved/rejected)
 - **Data**: data fields needed at each stage

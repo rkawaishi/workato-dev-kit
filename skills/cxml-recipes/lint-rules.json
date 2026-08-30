@@ -1,0 +1,12 @@
+{
+  "version": "0.1.0",
+  "connector": "cxml",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "new_invoice"
+  ],
+  "valid_trigger_names": [
+    "new_purchase_order"
+  ]
+}

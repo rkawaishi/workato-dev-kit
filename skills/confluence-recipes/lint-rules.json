@@ -1,0 +1,18 @@
+{
+  "version": "0.1.0",
+  "connector": "confluence",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_page_v2",
+    "get_ancestors_for_page",
+    "get_attachments_for_page",
+    "get_children_for_page",
+    "get_page_by_id",
+    "search_labels",
+    "search_pages",
+    "search_spaces",
+    "update_page"
+  ]
+}

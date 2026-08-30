@@ -1,0 +1,19 @@
+{
+  "version": "0.1.0",
+  "connector": "workfront_secondary",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_object",
+    "download_document",
+    "search_objects",
+    "update_object",
+    "upload_document"
+  ],
+  "valid_trigger_names": [
+    "new_event",
+    "new_object",
+    "new_or_updated_object"
+  ]
+}

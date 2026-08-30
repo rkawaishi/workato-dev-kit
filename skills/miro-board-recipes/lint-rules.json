@@ -1,0 +1,12 @@
+{
+  "version": "0.1.0",
+  "connector": "miro_board",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "copy_board",
+    "create_board",
+    "create_card_widget"
+  ]
+}

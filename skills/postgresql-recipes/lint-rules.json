@@ -1,0 +1,24 @@
+{
+  "version": "0.1.0",
+  "connector": "postgresql",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "delete_rows",
+    "export_csv_v2",
+    "insert_row",
+    "run_custom_sql",
+    "run_custom_sql_async_v2",
+    "search_rows",
+    "search_rows_sql",
+    "table_schema_info",
+    "update_rows",
+    "upsert_rows_batch"
+  ],
+  "valid_trigger_names": [
+    "new_row_v2",
+    "new_rows_batch",
+    "updated_row_v2",
+    "updated_rows_batch"
+  ]
+}

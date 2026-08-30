@@ -1,0 +1,26 @@
+{
+  "version": "0.1.0",
+  "connector": "deputy",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "associate",
+    "create_employee",
+    "create_object",
+    "create_salesdata",
+    "create_task",
+    "disassociate",
+    "get_object",
+    "search_employees",
+    "search_object",
+    "search_operational_unit",
+    "update_employee",
+    "update_object"
+  ],
+  "valid_trigger_names": [
+    "new_employee",
+    "new_leave",
+    "new_timesheet"
+  ]
+}

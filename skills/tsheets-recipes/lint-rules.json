@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0",
+  "connector": "tsheets",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_timesheet",
+    "add_user",
+    "delete_timesheet",
+    "edit_timesheet",
+    "edit_user",
+    "get_jobcode",
+    "get_payroll_report",
+    "get_user"
+  ],
+  "valid_trigger_names": [
+    "new_jobcode",
+    "new_timesheet",
+    "new_user",
+    "updated_timesheet"
+  ]
+}

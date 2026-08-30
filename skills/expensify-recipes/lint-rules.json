@@ -1,0 +1,18 @@
+{
+  "version": "0.1.0",
+  "connector": "expensify",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_expense",
+    "create_report",
+    "get_policy_list",
+    "get_report_status",
+    "manage_employee",
+    "update_report_status"
+  ],
+  "valid_trigger_names": [
+    "expense_report_created"
+  ]
+}

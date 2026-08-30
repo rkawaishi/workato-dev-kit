@@ -1,0 +1,17 @@
+{
+  "version": "0.1.0",
+  "connector": "word_press",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_post",
+    "delete_post",
+    "likes_for_post",
+    "post_lookup"
+  ],
+  "valid_trigger_names": [
+    "new_comment",
+    "new_post"
+  ]
+}

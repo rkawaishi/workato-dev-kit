@@ -39,8 +39,9 @@ if [ ! -f "$DST" ]; then
 fi
 
 # Make sure the file ends with a newline — otherwise the first appended
-# entry would concatenate onto the last existing line (specs/ + DESIGN.md
-# -> specs/DESIGN.md). Command substitution strips a trailing newline, so a
+# entry would concatenate onto the last existing line (CATALOG.md +
+# .workatoignore -> CATALOG.md.workatoignore). Command substitution strips a
+# trailing newline, so a
 # non-empty result means the last byte was not a newline.
 if [ -s "$DST" ] && [ -n "$(tail -c1 "$DST")" ]; then
   printf '\n' >> "$DST"

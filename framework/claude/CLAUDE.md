@@ -23,11 +23,6 @@ my-org-workato/                   ← your organization's repository (working ro
 ├── kit/                          ← git submodule (workato-dev-kit, read-only)
 ├── projects/                     ← your organization's recipes
 │   └── <project-name>/
-│       ├── specs/                # spec-driven artifacts
-│       │   └── <NNN>-<slug>/     # e.g. 001-it-onboarding
-│       │       ├── spec.md       # requirements (WHAT/WHY)
-│       │       ├── plan.md       # Workato configuration (HOW)
-│       │       └── tasks.md      # executable tasks
 │       ├── Recipes/
 │       ├── Pages/
 │       └── ...
@@ -37,19 +32,6 @@ my-org-workato/                   ← your organization's repository (working ro
 ```
 
 To update the framework: `git submodule update --remote kit && bash kit/setup.sh`
-
-### Spec-driven artifacts (spec.md / plan.md / tasks.md)
-
-Split each feature into three files under `projects/<project-name>/specs/<NNN>-<slug>/`:
-- `spec.md` — user experience and business requirements (WHAT/WHY; no Workato terminology)
-- `plan.md` — Workato configuration (HOW; Data Table / Recipe / Connection, etc.)
-- `tasks.md` — executable tasks (`[P]` parallel markers + kind tags)
-
-At session start, read these and progress in order: `/spec` → `/clarify` → `/plan` → `/tasks` → `/analyze` → `/implement`. See `@guides/lifecycle.md` for the full flow.
-
-Include `specs/` in `.workatoignore` so it isn't wiped by `workato pull`.
-
-> **Migrating from legacy DESIGN.md**: existing projects should run `/design migrate <project>` to convert into specs/. Do not use `/design` for new projects (`/design new` is retired; `/design` and `/design update` keep working only as warning-decorated compatibility shims).
 
 ## Knowledge lookup order
 
@@ -81,7 +63,7 @@ The three inviolable principles:
 
 1. **docs-first**: before using a trigger or action, always read `@docs/connectors/<provider>.md` (pre-built, kit canonical) and `@org/docs/connectors/<provider>.md` (organization-side corrections/additions, when present). For custom connectors, read `@connectors/docs/<provider>.md`. When the official docs are missing, fall back to WebFetch.
 2. **Do not grep other projects**: do not rummage through `projects/<other-project>/Recipes/` to obtain input/output schemas. Doing so leaks project-specific logic, naming, and datapill references — and obscures gaps in your knowledge base. (Exception: pattern learning that reads `@docs/patterns/recipe-patterns/`, `@org/docs/patterns/recipe-patterns/`, or `@projects/docs/patterns/` (legacy) is allowed.)
-3. **Record unknowns and run `/learn-recipe`**: if you have to implement an action that is not documented, record it both as an entry in the project's `specs/<NNN>-<slug>/plan.md` "Unlearned Actions" table and as a `[learn]` task in the same directory's `tasks.md` (or in a GitHub issue). After push/pull, running `/learn-recipe <project-name>` extends `org/docs/` and automatically reconciles the matching plan.md / tasks.md entries.
+3. **Record unknowns and run `/learn-recipe`**: if you have to implement an action that is not documented, say so in the session and record it as an "Unlearned" entry in `org/docs/connectors/<provider>.md` (or a GitHub issue). After push/pull, running `/learn-recipe <project-name>` extends `org/docs/` and clears the entry.
 
 ## Development rules
 
@@ -90,6 +72,9 @@ The three inviolable principles:
 - Pages: `@.claude/rules/workato-page-components.md`
 - Custom connectors: `@.claude/rules/workato-connector-sdk.md`
 - CLI: `@.claude/rules/workato-cli.md`
+- Recipe linting: `wk lint <file>.recipe.json --skills-path kit/skills` — the kit ships a
+  generated connector skill pack (`kit/skills/`) that makes `wk lint` reject action and
+  trigger names the connector does not actually have. Run it before `/push-project`.
 - CLI/API autonomy (always check before asking the user to do something in the UI): `@.claude/rules/workato-cli-autonomy.md`
 - **Deployment flow (inviolable: push targets dev only, promotion via Deploy)**: `@.claude/rules/workato-deployment-flow.md`
 - Organization knowledge overlay: `@.claude/rules/org-knowledge-overlay.md`
@@ -105,23 +90,16 @@ For when each skill should be invoked, what it reads, and what it writes, see `@
 
 | Skill | Purpose |
 |---|---|
-| `/spec` | Create feature requirements (spec.md), technology-agnostic |
-| `/clarify` | Resolve Open Questions in spec.md |
-| `/plan` | spec.md → plan.md (Workato configuration) |
-| `/tasks` | plan.md → tasks.md (tagged tasks) |
-| `/analyze` | Verify spec ↔ plan ↔ tasks consistency (read-only) |
-| `/implement` | Read tasks.md and dispatch to existing skills (thin orchestrator) |
-| `/create-recipe` | Generate recipe JSON (reads plan.md) |
-| `/create-workflow-app` | Build a Workflow App (reads plan.md) |
+| `/create-recipe` | Generate recipe JSON |
+| `/create-workflow-app` | Build a Workflow App |
 | `/create-genie` | Generate a Genie / MCP server |
 | `/create-connector` | Scaffold a custom connector |
 | `/catalog` | Scan and catalog shared assets |
-| `/validate-recipe` | Validate JSON structure |
+| `/validate-recipe` | Validate JSON structure (recipes run through `wk lint` first) |
 | `/pull-project` | Pull a project from Workato |
 | `/push-project` | Push a project (with validation) |
-| `/learn-recipe` | Learn field info from a recipe; reconcile plan.md / tasks.md Unlearned / [learn] entries |
+| `/learn-recipe` | Learn field info from a recipe and extend `org/docs/` |
 | `/learn-pattern` | Extract construction patterns from recipes and accumulate them in the catalog |
 | `/sync-connectors` | Collect and update connector info (pre-built: API; custom: parse connector.rb) |
 | `/onboard` | First-time onboarding: pull all existing projects/connectors and run the learn / sync / catalog skills to bootstrap the org knowledge base (thin orchestrator) |
 | `/auto-learn` | Autonomously collect every operation for one connector via Claude in Chrome (no prompts, skip + log uncertain cases). Prefer breadth over completeness. |
-| `/design` | **Deprecated**: only `/design migrate` is used in normal operation. `/design` (view) and `/design update` keep working with a warning. `/design new` is retired. |

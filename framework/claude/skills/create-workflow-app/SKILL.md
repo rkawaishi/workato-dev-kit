@@ -9,31 +9,14 @@ Build a Workato Workflow App. The only UI action required is enabling the Workfl
 
 ## Usage
 
-- `/create-workflow-app <project>/<NNN>-<slug>` — pull context from `plan.md` and build (**preferred**; how `/implement` invokes it)
-- `/create-workflow-app` — build a new Workflow App interactively (fallback when no plan.md)
-- `/create-workflow-app <name>` — start with a fixed name (legacy invocation from before spec-driven workflow; DESIGN.md is not consulted)
-
-> **Note**: as part of the migration to the spec-driven workflow, the legacy `DESIGN.md` reference is retired. Start new projects with `/spec`; for existing projects, run `/design migrate` first to convert into `specs/`.
+- `/create-workflow-app` — build a new Workflow App interactively
+- `/create-workflow-app <name>` — start with a fixed name
 
 ## Background reading
 
 - `@docs/platform/workflow-apps.md` — construction patterns, providers, actions
 - `@docs/patterns/deployment-guide.md` — deployment steps and common errors
 - `@.claude/rules/workato-agentic-format.md` — JSON structure for lcap_app / workato_db_table / lcap_page
-
-## Phase 0: pull context from plan.md
-
-When `<project>/<NNN>-<slug>` is supplied, read `projects/<project>/specs/<NNN>-<slug>/plan.md` and take the following as **defaults**:
-
-| plan.md section | What to pull in |
-|---|---|
-| `## New Components` `### Data Tables` | Table names, field definitions |
-| `## New Components` `### Pages` | Page roles, main components |
-| `## Stage Transitions` | Stage transition diagram |
-| `## New Components` `### Recipes` | Recipe definitions to generate alongside |
-| `## Resource Inventory` | Resource values (choices for external services) |
-
-If plan.md is missing, fall back to the interactive Phase 1.
 
 ## Phase 1: design + project creation
 

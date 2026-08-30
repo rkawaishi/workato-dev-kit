@@ -1,0 +1,28 @@
+{
+  "version": "0.1.0",
+  "connector": "google_drive",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_permission",
+    "copy_file",
+    "create_folder",
+    "delete_file",
+    "download_file_contents",
+    "export_file",
+    "get_permission",
+    "list_permission",
+    "move_rename_file",
+    "remove_permission",
+    "search_file_or_folder",
+    "update_permission",
+    "upload_file_stream"
+  ],
+  "valid_trigger_names": [
+    "new_activity",
+    "new_csv_file_batch",
+    "new_file_in_subfolder",
+    "new_file_or_folder"
+  ]
+}

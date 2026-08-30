@@ -1,0 +1,15 @@
+{
+  "version": "0.1.0",
+  "connector": "apttus_intelligent_cloud",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "create_object",
+    "search_object",
+    "update_object"
+  ],
+  "valid_trigger_names": [
+    "new_object",
+    "new_or_updated_object"
+  ]
+}

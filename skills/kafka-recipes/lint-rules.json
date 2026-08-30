@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "connector": "kafka",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "publish_to_topic",
+    "publish_to_topic_batch"
+  ],
+  "valid_trigger_names": [
+    "new_message",
+    "new_message_batch",
+    "new_message_batch_v2",
+    "new_message_v2"
+  ]
+}

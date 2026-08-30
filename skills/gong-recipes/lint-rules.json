@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "connector": "gong",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_call",
+    "add_call_media",
+    "digital_interaction_action",
+    "get_call_by_id",
+    "search_aggregated_user_data",
+    "search_call_scorecards",
+    "search_call_transcripts",
+    "search_calls",
+    "search_users"
+  ],
+  "valid_trigger_names": [
+    "new_call"
+  ]
+}

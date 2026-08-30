@@ -1,0 +1,15 @@
+{
+  "version": "0.1.0",
+  "connector": "open_ai_utility",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "analyse_document",
+    "analyse_image",
+    "categorise_text",
+    "draft_email",
+    "parse_text_v2",
+    "summarize_text",
+    "translate_text"
+  ]
+}

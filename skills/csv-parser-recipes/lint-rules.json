@@ -1,0 +1,10 @@
+{
+  "version": "0.1.0",
+  "connector": "csv_parser",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "create_csv_lines",
+    "parse_csv"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "version": "0.1.0",
+  "connector": "bim360",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_issue_in_project_v2",
+    "create_object_in_project",
+    "download_cost_document_in_project",
+    "download_document",
+    "download_drawing_export",
+    "export_project_plan",
+    "get_document_in_project",
+    "get_drawing_export_status",
+    "get_folder_contents",
+    "get_folder_details",
+    "get_issue_in_project_v2",
+    "get_object_in_project",
+    "get_project_details",
+    "search_issues_in_project_v2",
+    "search_objects_in_project",
+    "update_issue_in_project_v2",
+    "update_object_in_project",
+    "upload_document_to_project"
+  ],
+  "valid_trigger_names": [
+    "new_updated_document_in_project",
+    "new_updated_document_in_project_subfolders",
+    "new_updated_issue_in_project_v2",
+    "new_updated_object_in_project"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "connector": "jdbc_secondary",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "export_csv_v2",
+    "insert_rows_batch",
+    "run_custom_sql",
+    "run_custom_sql_async_v2",
+    "search_rows",
+    "search_rows_sql"
+  ],
+  "valid_trigger_names": [
+    "new_row",
+    "new_rows_batch",
+    "new_rows_sql_batch",
+    "scheduled_select",
+    "updated_rows_sql_batch"
+  ]
+}

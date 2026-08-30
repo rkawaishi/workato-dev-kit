@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "connector": "databricks",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "delete_rows",
+    "export_csv_v2",
+    "insert_row",
+    "run_custom_sql",
+    "search_rows",
+    "search_rows_sql",
+    "update_rows",
+    "upload_to_volume"
+  ],
+  "valid_trigger_names": [
+    "new_rows_batch",
+    "new_rows_sql_batch",
+    "updated_rows_batch"
+  ]
+}

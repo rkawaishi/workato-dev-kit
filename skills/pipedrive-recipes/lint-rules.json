@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0",
+  "connector": "pipedrive",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_activity",
+    "create_deal",
+    "create_note",
+    "create_organization",
+    "get_deal_related_products",
+    "get_object",
+    "update_deal",
+    "update_organization",
+    "update_person"
+  ],
+  "valid_trigger_names": [
+    "added_object",
+    "updated_object",
+    "updated_object_batch"
+  ]
+}

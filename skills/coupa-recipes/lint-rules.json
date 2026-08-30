@@ -1,0 +1,24 @@
+{
+  "version": "0.1.0",
+  "connector": "coupa",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "cancel_purchase_order",
+    "close_purchase_order",
+    "create_attachment_on_object",
+    "create_object",
+    "get_object_by_id",
+    "get_remit_to_addresses_by_object_id",
+    "get_supplier_sites_by_supplier",
+    "grant_approval",
+    "reject_approval",
+    "search_objects",
+    "set_integration_run_status",
+    "update_object"
+  ],
+  "valid_trigger_names": [
+    "new_or_updated_object"
+  ]
+}

@@ -29,7 +29,7 @@ If there are uncommitted changes, suggest the user commits or stashes them befor
 
 ### 0.5. Ensure `.workatoignore` (mandatory, before every pull)
 
-`workato pull` silently overwrites and deletes local files. Before pulling a project, make sure its `.workatoignore` exists so local-only artifacts (`specs/`, `DESIGN.md`, custom connector source, …) survive. Run the kit helper once the project directory exists — for a brand-new project, after `workato init`:
+`workato pull` silently overwrites and deletes local files. Before pulling a project, make sure its `.workatoignore` exists so local-only artifacts (the catalog files, custom connector source, …) survive. Run the kit helper once the project directory exists — for a brand-new project, after `workato init`:
 
 ```bash
 bash scripts/ensure-workatoignore.sh "projects/<project-name>"

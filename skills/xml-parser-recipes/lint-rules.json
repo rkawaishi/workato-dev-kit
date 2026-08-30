@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0",
+  "connector": "xml_parser",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "generate_xml_xsd",
+    "parse_xml",
+    "transform_xml_xslt",
+    "transform_xml_xslt_v2",
+    "validate_xml"
+  ]
+}

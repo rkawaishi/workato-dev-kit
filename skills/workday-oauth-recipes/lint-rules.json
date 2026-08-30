@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "connector": "workday_oauth",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "Get_business_object_details",
+    "Search_business_object",
+    "Update_business_object",
+    "call_operation"
+  ],
+  "valid_trigger_names": [
+    "new_updated_object",
+    "new_updated_object_batch"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0",
+  "connector": "docparser",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "fetch_document_from_url"
+  ],
+  "valid_trigger_names": [
+    "parsed_data"
+  ]
+}

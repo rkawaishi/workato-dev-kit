@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0",
+  "connector": "two_checkout",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_trigger_names": [
+    "ins_webhook",
+    "ipn_webhook",
+    "lcn_webhook"
+  ]
+}

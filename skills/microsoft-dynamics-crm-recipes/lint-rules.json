@@ -1,0 +1,30 @@
+{
+  "version": "0.1.0",
+  "connector": "microsoft_dynamics_crm",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "close_case",
+    "create_object",
+    "create_object_batch",
+    "get_object_by_id",
+    "get_object_schema",
+    "search_objects",
+    "update_object",
+    "update_object_batch"
+  ],
+  "valid_trigger_names": [
+    "created_bulk_object",
+    "created_or_updated_bulk_object",
+    "deleted_object",
+    "monitor_changes_delta_link_trigger",
+    "monitor_changes_delta_link_trigger_batch",
+    "new_object_v2",
+    "new_or_updated_batch_object",
+    "new_or_updated_object_v2",
+    "new_webhook",
+    "scheduled_object_search",
+    "updated_webhook"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "version": "0.1.0",
+  "connector": "etapestry",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "add_account",
+    "add_contact",
+    "add_gift",
+    "search_accounts",
+    "update_account"
+  ],
+  "valid_trigger_names": [
+    "account_created",
+    "account_updated"
+  ]
+}

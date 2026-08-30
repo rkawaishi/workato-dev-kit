@@ -1,0 +1,22 @@
+{
+  "version": "0.1.0",
+  "connector": "open_ai",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "analyse_document",
+    "analyse_image",
+    "categorise_text",
+    "chat_completion",
+    "draft_email",
+    "embedding",
+    "images",
+    "moderations",
+    "parse_text_v2",
+    "summarize_text",
+    "transcription",
+    "translate_text",
+    "translation"
+  ]
+}

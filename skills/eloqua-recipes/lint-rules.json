@@ -1,0 +1,18 @@
+{
+  "version": "0.1.0",
+  "connector": "eloqua",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_object",
+    "delete_object",
+    "get_object_by_id",
+    "search_object",
+    "update_object"
+  ],
+  "valid_trigger_names": [
+    "new_objects",
+    "new_or_updated_objects"
+  ]
+}

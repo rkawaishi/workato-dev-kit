@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "connector": "podio",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_item",
+    "get_item_by_id",
+    "update_item"
+  ],
+  "valid_trigger_names": [
+    "new_item_new",
+    "updated_item_new"
+  ]
+}

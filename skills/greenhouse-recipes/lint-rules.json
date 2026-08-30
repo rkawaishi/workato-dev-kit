@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "connector": "greenhouse",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_attachment_v3",
+    "create_object_v3_post",
+    "mark_candidate_hire_v3",
+    "move_application_v3",
+    "reject_application_v3",
+    "search_object_v3",
+    "update_object_v3_patch"
+  ],
+  "valid_trigger_names": [
+    "new_event",
+    "new_object_v3",
+    "new_or_updated_objects_batch_v3"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0",
+  "connector": "oracle_ebs",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "execute_operation"
+  ],
+  "valid_trigger_names": [
+    "new_business_event",
+    "new_custom_business_event"
+  ]
+}

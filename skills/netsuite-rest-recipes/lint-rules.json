@@ -1,0 +1,22 @@
+{
+  "version": "0.1.0",
+  "connector": "netsuite_rest",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_record",
+    "create_record_async",
+    "delete_record",
+    "delete_record_async",
+    "execute_restlet",
+    "execute_suiteql",
+    "get_job_result",
+    "get_record",
+    "search_records",
+    "update_record",
+    "update_record_async",
+    "upsert_record",
+    "upsert_record_async"
+  ]
+}

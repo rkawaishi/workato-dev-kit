@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0",
+  "connector": "adp7",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "applicant_onboard"
+  ],
+  "valid_trigger_names": [
+    "scheduled_worker_v2"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "version": "0.1.0",
+  "connector": "magento",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_customer",
+    "create_or_update_product",
+    "get_customer_by_ID",
+    "get_order_by_ID",
+    "search_customer",
+    "search_order",
+    "search_product"
+  ],
+  "valid_trigger_names": [
+    "new_customer",
+    "new_invoice",
+    "new_or_updated_customer",
+    "new_or_updated_product",
+    "new_product",
+    "new_purchase_order"
+  ]
+}

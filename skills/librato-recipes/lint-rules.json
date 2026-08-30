@@ -1,0 +1,15 @@
+{
+  "version": "0.1.0",
+  "connector": "librato",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "get_alert_by_id",
+    "search_alerts",
+    "search_metrics",
+    "update_alert"
+  ],
+  "valid_trigger_names": [
+    "triggered_alerts"
+  ]
+}

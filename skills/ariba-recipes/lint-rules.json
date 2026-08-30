@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0",
+  "connector": "ariba",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "add_invoice"
+  ],
+  "valid_trigger_names": [
+    "new_invoice",
+    "new_purchase_order"
+  ]
+}

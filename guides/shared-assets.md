@@ -144,7 +144,7 @@ scopes:
 ### Using the catalog
 
 - `/create-recipe` references the catalog at step 2 and proposes reusing existing Connections and Recipe Functions
-- `/plan` lists candidate shared assets from the catalog under `## Reused Assets` in `plan.md` during architecture design
+- `/create-recipe` proposes candidate shared assets from the catalog before generating new logic
 - Before starting a new project, run `/catalog` to see the latest list of shared assets
 
 ## Workato's reference mechanism

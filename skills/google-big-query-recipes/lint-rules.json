@@ -1,0 +1,26 @@
+{
+  "version": "0.1.0",
+  "connector": "google_big_query",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "get_query_job_output",
+    "insert_row",
+    "insert_rows_stream",
+    "load_data_from_file",
+    "load_data_from_google_table",
+    "run_custom_sql_sync",
+    "search_rows",
+    "search_rows_sync",
+    "search_rows_using_custom_sql",
+    "search_rows_using_custom_sql_sync",
+    "search_rows_using_custom_sql_sync_insert_table"
+  ],
+  "valid_trigger_names": [
+    "new_job_completed",
+    "new_row",
+    "new_rows_batch",
+    "scheduled_query"
+  ]
+}

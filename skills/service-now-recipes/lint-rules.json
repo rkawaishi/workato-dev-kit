@@ -1,0 +1,29 @@
+{
+  "version": "0.1.0",
+  "connector": "service_now",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_object",
+    "create_object_using_template",
+    "download_attachment",
+    "get_table_schema",
+    "search_objects_v2",
+    "search_using_query",
+    "update_object",
+    "update_object_using_template",
+    "upload_attachment"
+  ],
+  "valid_trigger_names": [
+    "new_object",
+    "new_object_webhook",
+    "object_batch_created",
+    "object_batch_created_or_updated",
+    "object_created_bulk",
+    "object_created_or_updated_bulk",
+    "scheduled_query",
+    "updated_object",
+    "updated_object_webhook"
+  ]
+}

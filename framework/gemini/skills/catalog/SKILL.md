@@ -1,12 +1,12 @@
 ---
 name: catalog
-description: Scan the organization's shared assets (Recipe Functions, connections) and catalog them. Referenced by `/create-recipe` and `/plan`. Japanese prompts are also supported.
+description: Scan the organization's shared assets (Recipe Functions, connections) and catalog them. Referenced by `/create-recipe`. Japanese prompts are also supported.
 ---
 
 # /catalog
 
 Scans assets in the **shared projects** under the organization's `projects/` and generates / updates a catalog file.
-Other skills (`/create-recipe`, `/plan`) consult the catalog to propose reusing existing assets.
+`/create-recipe` consults the catalog to propose reusing existing assets.
 
 **Important**: do not scan private-scope projects. Respect departmental visibility controls.
 
@@ -71,7 +71,7 @@ projects:
 2. Confirm the scope of each project with the user.
 3. Generate `CATALOG_CONFIG.yaml`.
 
-`CATALOG.md` and `CATALOG_CONFIG.yaml` are part of the kit's base `.workatoignore` template (`templates/workatoignore.template`), which `/pull-project`, `/spec` and `/design` place into each project — so no separate `.workatoignore` step is needed here.
+`CATALOG.md` and `CATALOG_CONFIG.yaml` are part of the kit's base `.workatoignore` template (`templates/workatoignore.template`), which `/pull-project` places into each project — so no separate `.workatoignore` step is needed here.
 
 ## Catalog structure
 
@@ -160,18 +160,9 @@ When `/create-recipe` is generating a recipe:
    ```
 4. On user approval, generate a recipe that references the shared assets via `call_recipe` or `config`.
 
-### From `/plan`
-
-In the technical-design phase of `/plan <project>/<NNN>-<slug>`:
-
-1. Load the catalog.
-2. From the user experience in spec.md, identify the required capabilities.
-3. List the parts covered by shared assets in `plan.md`'s `## Reused Assets`.
-4. Plan the remainder under `## New Components` for new development.
-
 ## Proposing consolidation
 
-When you detect duplicate logic across private projects (during `/learn-recipe` or `/plan`):
+When you detect duplicate logic across private projects (during `/learn-recipe`):
 - Do not expose the specific code content.
 - Suggest: "the same logic appears in multiple projects; consider extracting it into a shared Recipe Function."
 - The user decides whether to consolidate.

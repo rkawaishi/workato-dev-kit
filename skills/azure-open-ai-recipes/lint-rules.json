@@ -1,0 +1,19 @@
+{
+  "version": "0.1.0",
+  "connector": "azure_open_ai",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "analyse_document",
+    "analyse_image",
+    "categorize_text",
+    "chat_completion",
+    "completion",
+    "draft_email",
+    "embedding",
+    "parse_text",
+    "summarize_text",
+    "translate_text"
+  ]
+}

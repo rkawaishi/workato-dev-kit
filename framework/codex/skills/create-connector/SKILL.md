@@ -9,10 +9,10 @@ Interactively generate a Workato Connector SDK custom-connector project.
 
 ## Usage
 
-- `$create-connector <api-name>` — create a connector for the given API (**preferred**; how `$implement` invokes it)
+- `$create-connector <api-name>` — create a connector for the given API
 - `$create-connector` — create a new custom connector interactively (fallback)
 
-> **Note**: connectors live under `connectors/<name>/` and are not tied to a single project (they're shared assets reused across projects). That's why this skill does not take a `<project>/<NNN>-<slug>` argument. When `$implement` dispatches a `[connector]` task, pass the **API documentation URL and the auth-method hints** from the calling project's `plan.md` `## New Components` `### Connections` section as arguments, or confirm them interactively.
+> **Note**: connectors live under `connectors/<name>/` and are not tied to a single project (they're shared assets reused across projects). Supply the **API documentation URL and the auth-method hints** as arguments, or confirm them interactively.
 
 ## Procedure
 

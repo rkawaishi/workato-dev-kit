@@ -1,0 +1,14 @@
+{
+  "version": "0.1.0",
+  "connector": "clock",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "get_time",
+    "wait_for_interval",
+    "wait_until_time"
+  ],
+  "valid_trigger_names": [
+    "scheduled_event"
+  ]
+}

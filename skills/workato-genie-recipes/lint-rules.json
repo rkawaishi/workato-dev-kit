@@ -1,0 +1,17 @@
+{
+  "version": "0.1.0",
+  "connector": "workato_genie",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "assign_task_to_genie",
+    "create_request",
+    "create_task",
+    "send_business_event",
+    "upsert_knowledge",
+    "workflow_return_result"
+  ],
+  "valid_trigger_names": [
+    "start_workflow"
+  ]
+}

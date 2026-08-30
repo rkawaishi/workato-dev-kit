@@ -1,0 +1,24 @@
+{
+  "version": "0.1.0",
+  "connector": "quickbase",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_record",
+    "bulk_upsert_records",
+    "delete_record",
+    "download_attachment",
+    "edit_record",
+    "get_records_from_a_report",
+    "purge_records_by_query",
+    "search_records"
+  ],
+  "valid_trigger_names": [
+    "new_record",
+    "new_record_webhook_trigger",
+    "scheduled_table_query",
+    "updated_record",
+    "updated_record_webhook_trigger"
+  ]
+}

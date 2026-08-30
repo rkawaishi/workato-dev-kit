@@ -1,0 +1,25 @@
+{
+  "version": "0.1.0",
+  "connector": "fresh_books",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "add_line_item_to_invoice",
+    "create_client",
+    "create_expense",
+    "create_invoice",
+    "create_item",
+    "get_client_by_id",
+    "get_item_by_id",
+    "lookup_staff_member",
+    "make_payment",
+    "search_client",
+    "update_client"
+  ],
+  "valid_trigger_names": [
+    "new_or_updated_client",
+    "new_or_updated_estimate",
+    "new_or_updated_invoice",
+    "new_or_updated_payment"
+  ]
+}

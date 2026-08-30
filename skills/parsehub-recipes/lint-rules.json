@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0",
+  "connector": "parsehub",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "cancel_a_run",
+    "get_data_for_a_run",
+    "start_a_run"
+  ]
+}

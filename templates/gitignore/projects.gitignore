@@ -19,7 +19,5 @@ Thumbs.db
 .vscode/
 
 # Note: always commit the following
-# - specs/ (the spec-driven workflow artifacts; add it to .workatoignore so workato pull does not wipe it)
-# - DESIGN.md (legacy; add it to .workatoignore too if your project still uses it)
 # - .workatoignore
 # - Recipes/ Pages/ Connections/ Data Tables/ Agents/ docs/

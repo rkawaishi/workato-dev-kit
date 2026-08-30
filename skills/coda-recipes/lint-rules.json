@@ -1,0 +1,15 @@
+{
+  "version": "0.1.0",
+  "connector": "coda",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_export",
+    "get_content_export_status",
+    "list_documents",
+    "list_pages",
+    "list_table_rows",
+    "list_tables"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "workato-dev-kit",
+  "owner": {
+    "name": "rkawaishi",
+    "url": "https://github.com/rkawaishi/workato-dev-kit"
+  },
+  "metadata": {
+    "description": "Community extensions for the Workato Labs developer toolkit. Not affiliated with or endorsed by Workato.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "workato-dev-kit",
+      "source": "./framework/claude",
+      "description": "Build Workato recipes, Workflow Apps, Genies and custom connectors with an AI coding agent — the knowledge layer and asset types the Workato Labs toolchain does not cover.",
+      "category": "integration",
+      "keywords": [
+        "workato",
+        "ipaas",
+        "integration",
+        "recipe",
+        "workflow-app",
+        "genie",
+        "mcp",
+        "connector-sdk"
+      ]
+    }
+  ]
+}

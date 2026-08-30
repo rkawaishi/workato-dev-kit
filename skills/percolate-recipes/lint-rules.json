@@ -1,0 +1,24 @@
+{
+  "version": "0.1.0",
+  "connector": "percolate",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "check_content_workflow_step",
+    "copy_asset",
+    "create_object",
+    "custom_action",
+    "download_asset",
+    "get_object_details_by_id",
+    "search_objects",
+    "update_object",
+    "update_production_workflow_transition",
+    "upload_asset"
+  ],
+  "valid_trigger_names": [
+    "delete_object",
+    "new_object",
+    "new_updated_object"
+  ]
+}

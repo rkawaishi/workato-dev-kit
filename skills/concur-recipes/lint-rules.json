@@ -1,0 +1,42 @@
+{
+  "version": "0.1.0",
+  "connector": "concur",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_receipt_image_v3",
+    "create_list_item_v4",
+    "create_user_v4",
+    "create_user_v4_batch",
+    "create_vendor",
+    "delete_list_item_v4",
+    "fetch_children_of_list_item",
+    "get_all_attendee_types",
+    "get_all_expense_group_configurations",
+    "get_all_expense_types",
+    "get_all_lists",
+    "get_all_payment_types",
+    "get_all_users",
+    "get_entry_image_url",
+    "get_expense_itemizations",
+    "get_expense_report_details_v4",
+    "get_first_level_list_items_v4",
+    "get_invoice_by_id",
+    "get_user_profile",
+    "get_user_provisioning_detail",
+    "post_workflow_action",
+    "search_expense_reports",
+    "search_vendors",
+    "update_user_v4",
+    "update_user_v4_batch",
+    "update_vendor"
+  ],
+  "valid_trigger_names": [
+    "new_expense_report_submission_v3",
+    "new_expense_report_v3_new",
+    "new_or_updated_invoice",
+    "new_or_updated_user",
+    "updated_expense_report_v3"
+  ]
+}

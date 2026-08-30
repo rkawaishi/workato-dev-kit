@@ -1,0 +1,35 @@
+# HipChat recipes
+
+Provider value to use in every step: `hipchat`
+
+This skill extends the base `workato-recipes` skill. Read that first for recipe JSON structure, datapill syntax, and control flow; this document only covers what is specific to this connector.
+
+## Before you generate
+
+- Set `"provider": "hipchat"` on every step that uses this connector.
+- Use only the internal names listed below. They are the same list `lint-rules.json` enforces, so anything else fails `wk lint`.
+- Reach for `__adhoc_http_action` only when no native operation covers the call.
+
+## Triggers (0)
+
+_None._
+
+
+## Actions (7)
+
+| Internal name | Title | Batch |
+|---|---|---|
+| `__adhoc_http_action` | Custom action | - |
+| `add_member_to_private_room` | Add member to private room | - |
+| `create_room` | Create room | - |
+| `invite_user_to_public_room` | Invite user to public room | - |
+| `post_message` | Post message | - |
+| `reply_to_message` | Reply to message | - |
+| `send_private_message_to_people` | Send private message to people | - |
+
+
+## Validation
+
+```bash
+wk lint <recipe>.recipe.json --skills-path <path-to>/skills
+```

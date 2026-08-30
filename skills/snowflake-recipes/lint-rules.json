@@ -1,0 +1,29 @@
+{
+  "version": "0.1.0",
+  "connector": "snowflake",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "bulk_load_s3",
+    "delete_rows",
+    "export_csv_v2",
+    "insert_row",
+    "merge_action",
+    "replicate_table_schema",
+    "run_custom_sql",
+    "run_custom_sql_async_v2",
+    "search_rows",
+    "search_rows_sql",
+    "sync_objects_to_snowflake_v2",
+    "update_rows",
+    "upload_to_internal_stage",
+    "upsert_rows_batch"
+  ],
+  "valid_trigger_names": [
+    "new_row",
+    "new_rows_batch",
+    "scheduled_select",
+    "updated_row",
+    "updated_rows_batch"
+  ]
+}

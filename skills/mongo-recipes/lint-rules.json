@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0",
+  "connector": "mongo",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "delete_documents",
+    "insert_documents_batch",
+    "replicate_documents",
+    "search_documents",
+    "update_documents_batch"
+  ]
+}

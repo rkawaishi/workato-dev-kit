@@ -1,0 +1,19 @@
+{
+  "version": "0.1.0",
+  "connector": "woocommerce",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_product",
+    "search_customers",
+    "search_products"
+  ],
+  "valid_trigger_names": [
+    "new_customer",
+    "new_order",
+    "new_product",
+    "new_subscriber",
+    "updated_order"
+  ]
+}

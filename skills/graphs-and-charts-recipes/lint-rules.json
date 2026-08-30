@@ -1,0 +1,10 @@
+{
+  "version": "0.1.0",
+  "connector": "graphs_and_charts",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "column_chart",
+    "pie_chart"
+  ]
+}

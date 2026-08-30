@@ -1,0 +1,34 @@
+{
+  "version": "0.1.0",
+  "connector": "mssql_secondary",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "bulk_load",
+    "delete_rows",
+    "execute_procedure",
+    "export_csv_v2",
+    "insert_row",
+    "insert_rows_batch",
+    "replicate_table_schema",
+    "run_custom_sql",
+    "run_custom_sql_async_v2",
+    "search_rows",
+    "search_rows_sql",
+    "sync_objects_to_sqlserver",
+    "table_schema_info",
+    "update_rows",
+    "update_rows_batch",
+    "upsert_rows",
+    "upsert_rows_batch"
+  ],
+  "valid_trigger_names": [
+    "new_row_v2",
+    "new_rows_batch",
+    "new_rows_sql_batch",
+    "scheduled_select",
+    "updated_row_v2",
+    "updated_rows_batch",
+    "updated_rows_sql_batch"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "version": "0.1.0",
+  "connector": "rest",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "make_request_v2"
+  ],
+  "valid_trigger_names": [
+    "new_poll_event"
+  ]
+}

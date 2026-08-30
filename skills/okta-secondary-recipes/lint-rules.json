@@ -1,0 +1,35 @@
+{
+  "version": "0.1.0",
+  "connector": "okta_secondary",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "activate_people",
+    "add_user_to_group",
+    "create_people",
+    "deactivate_people",
+    "delete_people",
+    "expire_user_password",
+    "get_group_members",
+    "get_groups_by_name",
+    "get_people_by_id",
+    "get_people_groups",
+    "get_recent_logon_events_by_ip_address",
+    "get_recent_logon_events_by_user",
+    "list_applications_assigned_to_people",
+    "remove_user_from_group",
+    "reset_forgotten_user_password",
+    "reset_user_mfa",
+    "reset_user_password",
+    "search_users",
+    "suspend_user",
+    "unsuspend_user",
+    "update_people"
+  ],
+  "valid_trigger_names": [
+    "new_events",
+    "new_events_hook",
+    "scheduled_new_events"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "version": "0.1.0",
+  "connector": "jms",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "publish_to_queue",
+    "publish_to_topic",
+    "receive_message_from_queue"
+  ],
+  "valid_trigger_names": [
+    "new_message_queue",
+    "new_message_topic"
+  ]
+}

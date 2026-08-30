@@ -1,0 +1,12 @@
+{
+  "version": "0.1.0",
+  "connector": "pingdom",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "get_detailed_check_information"
+  ],
+  "valid_trigger_names": [
+    "new_alert"
+  ]
+}

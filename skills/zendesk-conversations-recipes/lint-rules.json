@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "connector": "zendesk_conversations",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action"
+  ]
+}

@@ -1,0 +1,36 @@
+# Anaplan recipes
+
+Provider value to use in every step: `anaplan`
+
+This skill extends the base `workato-recipes` skill. Read that first for recipe JSON structure, datapill syntax, and control flow; this document only covers what is specific to this connector.
+
+## Before you generate
+
+- Set `"provider": "anaplan"` on every step that uses this connector.
+- Use only the internal names listed below. They are the same list `lint-rules.json` enforces, so anything else fails `wk lint`.
+- Reach for `__adhoc_http_action` only when no native operation covers the call.
+
+## Triggers (0)
+
+_None._
+
+
+## Actions (8)
+
+| Internal name | Title | Batch |
+|---|---|---|
+| `__adhoc_http_action` | Custom action | - |
+| `download_dump_file` | Download dump file | - |
+| `download_file` | Download file | - |
+| `run_deletion` | Run deletion | yes |
+| `run_export` | Run data export | yes |
+| `run_import` | Run data import | yes |
+| `run_process` | Run process | yes |
+| `upload_file` | Upload file | - |
+
+
+## Validation
+
+```bash
+wk lint <recipe>.recipe.json --skills-path <path-to>/skills
+```

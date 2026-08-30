@@ -1,0 +1,10 @@
+{
+  "version": "0.1.0",
+  "connector": "relateiq",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "add_contact",
+    "add_contact_to_list"
+  ]
+}

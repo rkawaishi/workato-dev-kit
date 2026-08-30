@@ -1,0 +1,12 @@
+{
+  "version": "0.1.0",
+  "connector": "workato_api_platform",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "return_response"
+  ],
+  "valid_trigger_names": [
+    "receive_request"
+  ]
+}

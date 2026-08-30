@@ -1,0 +1,15 @@
+{
+  "version": "0.1.0",
+  "connector": "twitter",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "post_status",
+    "search_tweets",
+    "search_users"
+  ],
+  "valid_trigger_names": [
+    "new_search_mention"
+  ]
+}

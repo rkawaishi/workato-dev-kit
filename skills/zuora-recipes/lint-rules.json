@@ -1,0 +1,24 @@
+{
+  "version": "0.1.0",
+  "connector": "zuora",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_custom_object",
+    "create_record",
+    "get_custom_object_record",
+    "get_object",
+    "get_order",
+    "get_subscriptions",
+    "query_records",
+    "search_records",
+    "update_custom_object",
+    "update_order_triggerdate",
+    "update_record"
+  ],
+  "valid_trigger_names": [
+    "new_updated_order",
+    "new_updated_record"
+  ]
+}

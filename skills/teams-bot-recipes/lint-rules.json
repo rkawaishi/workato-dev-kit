@@ -1,0 +1,24 @@
+{
+  "version": "0.1.0",
+  "connector": "teams_bot",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "delete_message",
+    "get_user_by_principal_name",
+    "invoke_response",
+    "post_blocks_message",
+    "post_blocks_reply_message",
+    "post_bot_message",
+    "post_bot_reply",
+    "post_simple_message",
+    "post_simple_reply"
+  ],
+  "valid_trigger_names": [
+    "bot_command",
+    "help_event",
+    "new_event",
+    "new_message_event"
+  ]
+}
