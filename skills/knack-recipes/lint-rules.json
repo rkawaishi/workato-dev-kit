@@ -1,0 +1,15 @@
+{
+  "version": "0.1.0",
+  "connector": "knack",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "create_record",
+    "get_record_by_id",
+    "search_record",
+    "update_record"
+  ],
+  "valid_trigger_names": [
+    "new_record"
+  ]
+}

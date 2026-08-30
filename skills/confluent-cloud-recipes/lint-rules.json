@@ -1,0 +1,14 @@
+{
+  "version": "0.1.0",
+  "connector": "confluent_cloud",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "publish_to_topic",
+    "publish_to_topic_batch"
+  ],
+  "valid_trigger_names": [
+    "new_message",
+    "new_message_batch"
+  ]
+}

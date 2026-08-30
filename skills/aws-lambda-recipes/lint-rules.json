@@ -1,0 +1,14 @@
+{
+  "version": "0.1.0",
+  "connector": "aws_lambda",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "get_function_by_name",
+    "invoke_function"
+  ],
+  "valid_trigger_names": [
+    "new_function"
+  ]
+}

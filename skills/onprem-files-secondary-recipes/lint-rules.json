@@ -1,0 +1,25 @@
+{
+  "version": "0.1.0",
+  "connector": "onprem_files_secondary",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "add_csv_line",
+    "create_folder",
+    "delete_file",
+    "delete_folder",
+    "download_file",
+    "generate_file_url",
+    "list_files",
+    "move_file",
+    "rename_file",
+    "upload_file",
+    "upload_file_multistep"
+  ],
+  "valid_trigger_names": [
+    "csv_file_batch",
+    "new_csv_file_batch",
+    "new_csv_file_line",
+    "new_file"
+  ]
+}

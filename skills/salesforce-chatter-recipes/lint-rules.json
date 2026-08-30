@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "connector": "salesforce_chatter",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "post_feed_item"
+  ]
+}

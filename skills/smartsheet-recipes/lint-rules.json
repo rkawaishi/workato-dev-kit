@@ -1,0 +1,18 @@
+{
+  "version": "0.1.0",
+  "connector": "smartsheet",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_row",
+    "get_row_by_id",
+    "search_rows",
+    "update_row"
+  ],
+  "valid_trigger_names": [
+    "new_or_updated_row",
+    "new_or_updated_row_in_report",
+    "new_row_in_report"
+  ]
+}

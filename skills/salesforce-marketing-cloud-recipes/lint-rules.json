@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "connector": "salesforce_marketing_cloud",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "copy_data_extension",
+    "create_asset",
+    "create_data_extension_from_template",
+    "delete_data_extension",
+    "list_data_extension",
+    "read_data_extension",
+    "upload_asset",
+    "upsert_data_extension",
+    "upsert_data_extension_row_bulk"
+  ],
+  "valid_trigger_names": [
+    "new_data_extension_row"
+  ]
+}

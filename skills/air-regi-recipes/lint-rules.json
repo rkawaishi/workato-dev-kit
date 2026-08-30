@@ -1,0 +1,10 @@
+{
+  "version": "0.1.0",
+  "connector": "air_regi",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_trigger_names": [
+    "new_refund",
+    "new_sale"
+  ]
+}

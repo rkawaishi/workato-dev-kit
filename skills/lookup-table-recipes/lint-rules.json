@@ -1,0 +1,17 @@
+{
+  "version": "0.1.0",
+  "connector": "lookup_table",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "add_batch_of_entries",
+    "add_entry",
+    "delete_entries",
+    "delete_entry",
+    "get_entries",
+    "get_entry",
+    "search_entries",
+    "truncate",
+    "update_entry"
+  ]
+}

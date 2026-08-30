@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "connector": "pivotal_tracker",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_comment",
+    "create_story",
+    "create_task",
+    "delete_story",
+    "get_story_by_id",
+    "get_task_by_id",
+    "list_task_in_a_story",
+    "update_story",
+    "update_task"
+  ],
+  "valid_trigger_names": [
+    "new_or_updated_story"
+  ]
+}

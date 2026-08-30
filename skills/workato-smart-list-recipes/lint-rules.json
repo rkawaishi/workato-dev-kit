@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0",
+  "connector": "workato_smart_list",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "create_list",
+    "create_list_from_csv",
+    "insert_rows",
+    "insert_rows_from_csv",
+    "query_list"
+  ]
+}

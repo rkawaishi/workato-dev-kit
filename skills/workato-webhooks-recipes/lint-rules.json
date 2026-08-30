@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "connector": "workato_webhooks",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_trigger_names": [
+    "new_event"
+  ]
+}

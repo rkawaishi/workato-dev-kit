@@ -1,0 +1,22 @@
+{
+  "version": "0.1.0",
+  "connector": "success_factors",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "advance_search_object",
+    "create_object",
+    "get_object",
+    "merge_object",
+    "search_object",
+    "update_object",
+    "upsert_object",
+    "upsert_record_object",
+    "upsert_records_transactional"
+  ],
+  "valid_trigger_names": [
+    "new_updated_object",
+    "new_updated_object_batch"
+  ]
+}

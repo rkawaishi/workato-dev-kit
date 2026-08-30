@@ -1,0 +1,12 @@
+{
+  "version": "0.1.0",
+  "connector": "nimblecrm",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "create_contact"
+  ],
+  "valid_trigger_names": [
+    "new_contact"
+  ]
+}

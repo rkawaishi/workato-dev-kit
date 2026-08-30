@@ -1,0 +1,19 @@
+{
+  "version": "0.1.0",
+  "connector": "namely",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_post",
+    "get_profile",
+    "post_comment",
+    "search_profile",
+    "update_profile"
+  ],
+  "valid_trigger_names": [
+    "new_event",
+    "new_profile",
+    "new_updated_profile"
+  ]
+}

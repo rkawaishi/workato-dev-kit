@@ -1,0 +1,26 @@
+{
+  "version": "0.1.0",
+  "connector": "mailchimp",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_subscriber_tag",
+    "add_subscriber_v3",
+    "get_subscriber_activity",
+    "get_subscriber_tags",
+    "remove_subscriber_v3",
+    "search_campaigns",
+    "search_subscribers",
+    "search_tags",
+    "update_subscriber_v3"
+  ],
+  "valid_trigger_names": [
+    "campaign_created",
+    "campaign_opened",
+    "campaign_sent",
+    "new_list",
+    "new_subscriber",
+    "updated_subscriber"
+  ]
+}

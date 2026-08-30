@@ -1,0 +1,12 @@
+{
+  "version": "0.1.0",
+  "connector": "aws_sns",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "publish_to_topic"
+  ],
+  "valid_trigger_names": [
+    "new_message"
+  ]
+}

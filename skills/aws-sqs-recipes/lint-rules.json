@@ -1,0 +1,17 @@
+{
+  "version": "0.1.0",
+  "connector": "aws_sqs",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "delete_message",
+    "delete_messages_batch",
+    "receive_message",
+    "send_message",
+    "send_messages_batch"
+  ],
+  "valid_trigger_names": [
+    "new_message",
+    "new_messages_batch"
+  ]
+}

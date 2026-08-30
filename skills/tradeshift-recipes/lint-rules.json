@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0",
+  "connector": "tradeshift",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_code",
+    "create_credit_note",
+    "create_external_connection",
+    "create_invoice",
+    "delete_coding_list",
+    "get_account_info",
+    "search_connections",
+    "tag_document",
+    "untag_document",
+    "update_connection_properties"
+  ],
+  "valid_trigger_names": [
+    "credit_note_ready",
+    "invoice_ready"
+  ]
+}

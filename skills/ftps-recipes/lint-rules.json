@@ -1,0 +1,19 @@
+{
+  "version": "0.1.0",
+  "connector": "ftps",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "get_file_content",
+    "list_directories_files",
+    "remove",
+    "rename",
+    "stat",
+    "streamable_get_file_content",
+    "upload"
+  ],
+  "valid_trigger_names": [
+    "new_csv_file",
+    "new_file_in_dir"
+  ]
+}

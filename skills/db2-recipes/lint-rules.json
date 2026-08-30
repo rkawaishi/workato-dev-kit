@@ -1,0 +1,15 @@
+{
+  "version": "0.1.0",
+  "connector": "db2",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "delete_rows",
+    "export_csv_v2",
+    "insert_rows_batch",
+    "run_custom_sql",
+    "search_rows",
+    "search_rows_sql",
+    "upsert_rows_batch"
+  ]
+}

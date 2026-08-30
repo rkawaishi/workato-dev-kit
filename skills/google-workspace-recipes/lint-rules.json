@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "connector": "google_workspace",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_object",
+    "delete_object",
+    "get_object",
+    "mobile_device_action",
+    "search_object",
+    "transfer_data_v2",
+    "update_object"
+  ],
+  "valid_trigger_names": [
+    "new_admin_activity_event",
+    "new_application_activity_event",
+    "new_user_event"
+  ]
+}

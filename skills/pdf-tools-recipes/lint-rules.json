@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "connector": "pdf_tools",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "stamp_pdf"
+  ]
+}

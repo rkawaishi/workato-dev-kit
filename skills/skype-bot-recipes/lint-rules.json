@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0",
+  "connector": "skype_bot",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "post_bot_notification",
+    "post_bot_reply"
+  ],
+  "valid_trigger_names": [
+    "bot_command"
+  ]
+}

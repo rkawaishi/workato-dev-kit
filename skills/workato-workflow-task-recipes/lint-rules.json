@@ -1,0 +1,30 @@
+{
+  "version": "0.1.0",
+  "connector": "workato_workflow_task",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "add_request",
+    "app_function_return",
+    "change_workflow_stage",
+    "complete_task",
+    "delete_request",
+    "delete_user",
+    "find_users",
+    "get_requests",
+    "human_review_on_existing_record",
+    "invite_user",
+    "list_workflow_stages",
+    "lookup_events",
+    "share_request",
+    "unshare_request",
+    "update_request"
+  ],
+  "valid_trigger_names": [
+    "app_function_generic_request",
+    "app_function_load_dropdown_request",
+    "app_function_load_table_request",
+    "new_requests_realtime",
+    "updated_requests_realtime"
+  ]
+}

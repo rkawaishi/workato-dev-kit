@@ -1,0 +1,10 @@
+{
+  "version": "0.1.0",
+  "connector": "workato_idp",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "classify_document",
+    "process_document"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "connector": "chargify",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_charge",
+    "create_subscription",
+    "get_customer_by_id",
+    "get_product_by_id",
+    "get_subscription_by_id",
+    "get_transaction_by_id",
+    "lookup_customer_by_reference"
+  ],
+  "valid_trigger_names": [
+    "new_customer",
+    "new_event",
+    "new_subscription"
+  ]
+}

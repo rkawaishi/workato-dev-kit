@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0",
+  "connector": "workato_files",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "append_to_file",
+    "create_shareable_link",
+    "delete_directory",
+    "delete_file",
+    "ensure_dir_exists",
+    "get_csv_file_contents",
+    "get_file_contents",
+    "move_file",
+    "search_files",
+    "store_file"
+  ],
+  "valid_trigger_names": [
+    "new_csv_file",
+    "new_file",
+    "new_lines_in_csv_file"
+  ]
+}

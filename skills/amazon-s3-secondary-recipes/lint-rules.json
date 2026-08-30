@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0",
+  "connector": "amazon_s3_secondary",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "copy_object",
+    "create_bucket",
+    "delete_bucket",
+    "delete_file",
+    "generate_presigned_url",
+    "get_file",
+    "list_bucket",
+    "upload_file"
+  ],
+  "valid_trigger_names": [
+    "new_CSV_file",
+    "new_file",
+    "new_file_slice",
+    "new_updated_file"
+  ]
+}

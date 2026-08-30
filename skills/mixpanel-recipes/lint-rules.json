@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0",
+  "connector": "mixpanel",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "get_funnel_data",
+    "get_funnel_list",
+    "get_user_info",
+    "set_property"
+  ]
+}

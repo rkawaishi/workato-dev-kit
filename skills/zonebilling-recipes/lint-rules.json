@@ -1,0 +1,22 @@
+{
+  "version": "0.1.0",
+  "connector": "zonebilling",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_record",
+    "create_records_batch",
+    "get_file",
+    "get_process_status",
+    "get_record",
+    "get_record_file",
+    "get_record_file_attachments",
+    "get_records",
+    "post_automation",
+    "update_record",
+    "update_records_batch",
+    "upsert_record",
+    "upsert_records_batch"
+  ]
+}

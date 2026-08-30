@@ -1,0 +1,10 @@
+{
+  "version": "0.1.0",
+  "connector": "utility",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "format_name",
+    "log_message"
+  ]
+}

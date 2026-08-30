@@ -1,0 +1,24 @@
+{
+  "version": "0.1.0",
+  "connector": "bigtincan",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_story",
+    "delete_story",
+    "get_form_by_id",
+    "get_form_data_by_id",
+    "get_story_by_id",
+    "list_channels",
+    "list_form_categories",
+    "list_form_fields",
+    "list_forms",
+    "list_stories",
+    "update_story"
+  ],
+  "valid_trigger_names": [
+    "new_form_submission",
+    "new_story"
+  ]
+}

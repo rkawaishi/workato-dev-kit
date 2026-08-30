@@ -1,0 +1,24 @@
+{
+  "version": "0.1.0",
+  "connector": "github",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_comment_in_an_issue",
+    "create_issue",
+    "get_issue_or_PR_details",
+    "list_statuses_for_a_ref",
+    "search_issues",
+    "update_issue"
+  ],
+  "valid_trigger_names": [
+    "new_closed_issue",
+    "new_issue",
+    "new_or_updated_issue",
+    "new_or_updated_milestone",
+    "new_or_updated_pull_request",
+    "new_pr",
+    "new_updated_issue_comment"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "version": "0.1.0",
+  "connector": "airtable",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_record",
+    "delete_records",
+    "delete_records_batch",
+    "get_records",
+    "list_records",
+    "search_records",
+    "update_record",
+    "upsert_record",
+    "upsert_records_batch"
+  ],
+  "valid_trigger_names": [
+    "new_or_updated_record",
+    "new_record"
+  ]
+}

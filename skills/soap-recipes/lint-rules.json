@@ -1,0 +1,10 @@
+{
+  "version": "0.1.0",
+  "connector": "soap",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "create_message",
+    "parse_soap"
+  ]
+}

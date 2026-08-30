@@ -1,0 +1,28 @@
+{
+  "version": "0.1.0",
+  "connector": "google_calendar",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_attendee_to_an_event",
+    "create_allday_event",
+    "create_calendar",
+    "create_event",
+    "create_task",
+    "delete_attendees_from_an_event",
+    "delete_event",
+    "get_calendar_by_id",
+    "get_event_by_id",
+    "list_calendars_public",
+    "search_events",
+    "update_event",
+    "update_task"
+  ],
+  "valid_trigger_names": [
+    "event_end",
+    "event_start",
+    "new_event",
+    "updated_event"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "version": "0.1.0",
+  "connector": "active_directory",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "add_entry",
+    "add_group",
+    "add_user",
+    "add_user_to_group",
+    "delete_entry",
+    "disable_user",
+    "move_user_to_ou",
+    "remove_user_from_group",
+    "rename_entry",
+    "search_entries",
+    "search_groups",
+    "search_users",
+    "set_password",
+    "update_entry",
+    "update_user"
+  ],
+  "valid_trigger_names": [
+    "new_entry",
+    "paged_search_entries",
+    "updated_entry"
+  ]
+}

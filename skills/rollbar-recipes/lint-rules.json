@@ -1,0 +1,14 @@
+{
+  "version": "0.1.0",
+  "connector": "rollbar",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "invite_user",
+    "search_item"
+  ],
+  "valid_trigger_names": [
+    "new_item",
+    "new_occurrence"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "version": "0.1.0",
+  "connector": "bamboohr",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_employee",
+    "create_or_update_time_off_request",
+    "create_table_record",
+    "delete_table_record",
+    "get_company_report",
+    "get_employee_by_id",
+    "get_table_records",
+    "list_employees_in_directory",
+    "list_time_off_requests",
+    "request_custom_report",
+    "update_employee",
+    "update_table_record",
+    "update_time_off_request_status"
+  ],
+  "valid_trigger_names": [
+    "new_employee",
+    "new_employee_webhook",
+    "schedule_custom_report",
+    "updated_employee",
+    "updated_employee_webhook"
+  ]
+}

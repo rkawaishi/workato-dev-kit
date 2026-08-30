@@ -1,0 +1,28 @@
+{
+  "version": "0.1.0",
+  "connector": "oracle_secondary",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "delete_rows",
+    "execute_procedure",
+    "export_csv_v2",
+    "insert_row",
+    "insert_rows_batch",
+    "run_custom_sql",
+    "run_custom_sql_async_v2",
+    "search_rows",
+    "search_rows_sql",
+    "table_schema_info",
+    "update_rows",
+    "update_rows_batch",
+    "upsert_row_v2",
+    "upsert_rows_batch"
+  ],
+  "valid_trigger_names": [
+    "new_row",
+    "new_rows_batch",
+    "updated_row",
+    "updated_rows_batch"
+  ]
+}

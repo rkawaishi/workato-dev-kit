@@ -1,0 +1,22 @@
+{
+  "version": "0.1.0",
+  "connector": "sftp",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "dir",
+    "mkdir",
+    "remove",
+    "remove_folder",
+    "rename",
+    "search_files_folders",
+    "set_permissions",
+    "stat",
+    "streamable_download",
+    "upload"
+  ],
+  "valid_trigger_names": [
+    "new_csv_file",
+    "new_file_in_dir"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "version": "0.1.0",
+  "connector": "workato_rpa",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "get_departments",
+    "get_job_detail",
+    "get_job_logs",
+    "get_process_by_department",
+    "get_process_details",
+    "start_job"
+  ]
+}

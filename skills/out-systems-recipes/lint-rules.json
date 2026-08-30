@@ -1,0 +1,20 @@
+{
+  "version": "0.1.0",
+  "connector": "out_systems",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "create_batch_record",
+    "create_record",
+    "get_entity_by_id",
+    "search_records",
+    "update_batch_record",
+    "update_record"
+  ],
+  "valid_trigger_names": [
+    "new_record",
+    "new_record_batch",
+    "new_updated_record",
+    "new_updated_record_batch"
+  ]
+}

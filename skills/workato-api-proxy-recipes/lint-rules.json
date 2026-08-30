@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0",
+  "connector": "workato_api_proxy",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "forward_request",
+    "return_response"
+  ],
+  "valid_trigger_names": [
+    "receive_request"
+  ]
+}

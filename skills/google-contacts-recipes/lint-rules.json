@@ -1,0 +1,6 @@
+{
+  "version": "0.1.0",
+  "connector": "google_contacts",
+  "connector_internals": [],
+  "action_rules": []
+}

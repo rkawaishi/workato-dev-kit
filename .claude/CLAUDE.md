@@ -29,12 +29,14 @@ workato-dev-kit/                  ← this repository
 │   ├── gemini/                   # for Gemini CLI (generated)
 │   │   └── skills/               # SKILL.md
 │   └── AGENTS.md                 # agent-neutral rules (generated; aggregated CLAUDE.md + rules). GEMINI.md is the same artifact
-├── docs/                         # knowledge base (connector info, logic, platform)
+├── docs/                         # knowledge base (connector info, logic, platform) — SOURCE for skills/
+├── skills/                       # GENERATED wk-lint connector pack (302 connectors); never hand-edit
 ├── guides/                       # lifecycle and other guides
 ├── connectors/                   # custom connector doc templates (users add connector.rb here)
 ├── projects/                     # patterns/ for user projects, etc.
 ├── scripts/
 │   ├── sync_agents.py            # syncs framework/claude/ → framework/{cursor,codex,gemini}/ + AGENTS.md
+│   ├── gen_lint_rules.py         # docs/connectors/*.md → skills/<provider>-recipes/
 │   ├── sync-cursor-rules.sh      # backwards-compat wrapper (just invokes sync_agents.py)
 │   └── workato-api.py
 ├── templates/                    # templates for user repositories (gitignore, etc.)
@@ -122,6 +124,27 @@ Everything else (8 rules + skill set) is overwritten by sync — do not edit it 
   bash kit/setup.sh
   ```
 - After changing `scripts/sync_agents.py`, run it in the repository and confirm `framework/cursor/rules/*.mdc` and `framework/cursor/skills/*/SKILL.md` are regenerated. CI (`.github/workflows/sync-check.yml`) catches drift automatically.
+
+### Editing docs/connectors/ or scripts/gen_lint_rules.py
+
+`skills/` is generated from `docs/connectors/*.md`. After touching either, run:
+
+```bash
+python3 scripts/gen_lint_rules.py
+```
+
+and commit `docs/` and `skills/` together. To verify a change end-to-end against
+the real linter:
+
+```bash
+wk plugins install <path-to-recipe-lint>
+wk lint <some>.recipe.json --skills-path skills
+```
+
+The extraction is validated against the official pack: `skills/slack-recipes/lint-rules.json`
+must stay byte-identical to `workato-devs/recipe-skills/skills/slack-recipes/lint-rules.json`.
+Deprecated operations are excluded from `valid_action_names`, which is what the
+official pack does.
 
 ## Notes
 

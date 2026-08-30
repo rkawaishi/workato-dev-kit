@@ -1,0 +1,15 @@
+{
+  "version": "0.1.0",
+  "connector": "workato_recipe_function",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "call_recipe",
+    "call_recipe_async",
+    "return_result",
+    "wait_for_async_jobs"
+  ],
+  "valid_trigger_names": [
+    "execute"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "version": "0.1.0",
+  "connector": "gmail",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "download_attachment",
+    "send_mail"
+  ],
+  "valid_trigger_names": [
+    "new_email"
+  ]
+}

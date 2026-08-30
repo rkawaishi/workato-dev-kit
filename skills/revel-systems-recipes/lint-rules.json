@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0",
+  "connector": "revel_systems",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_customer",
+    "create_employee",
+    "get_customer_by_id",
+    "update_customer",
+    "update_employee",
+    "update_product"
+  ],
+  "valid_trigger_names": [
+    "new_customer",
+    "new_purchaseorder",
+    "new_sales",
+    "new_timesheetentry",
+    "updated_customer",
+    "updated_sales"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "connector": "workflow",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "GetApproval"
+  ]
+}

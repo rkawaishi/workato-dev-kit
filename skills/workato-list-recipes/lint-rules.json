@@ -1,0 +1,10 @@
+{
+  "version": "0.1.0",
+  "connector": "workato_list",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "accumulate_list_items",
+    "create_list"
+  ]
+}

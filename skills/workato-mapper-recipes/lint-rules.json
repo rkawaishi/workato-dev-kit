@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "connector": "workato_mapper",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "map"
+  ]
+}

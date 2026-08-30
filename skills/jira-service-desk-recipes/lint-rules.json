@@ -1,0 +1,19 @@
+{
+  "version": "0.1.0",
+  "connector": "jira_service_desk",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_comment",
+    "create_customer",
+    "create_customer_request",
+    "get_comment_by_ID",
+    "get_issue_in_queue_v2",
+    "get_queues",
+    "list_comments"
+  ],
+  "valid_trigger_names": [
+    "new_customer_request"
+  ]
+}

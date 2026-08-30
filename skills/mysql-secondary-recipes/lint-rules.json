@@ -1,0 +1,27 @@
+{
+  "version": "0.1.0",
+  "connector": "mysql_secondary",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "delete_rows",
+    "execute_procedure",
+    "export_csv_v2",
+    "insert_row",
+    "insert_row_batch",
+    "run_custom_sql",
+    "run_custom_sql_async_v2",
+    "search_rows",
+    "table_schema_info",
+    "update_rows",
+    "upsert_row_batch",
+    "upsert_rows"
+  ],
+  "valid_trigger_names": [
+    "new_row_v2",
+    "new_rows_batch",
+    "scheduled_select",
+    "updated_row_v2",
+    "updated_rows_batch"
+  ]
+}

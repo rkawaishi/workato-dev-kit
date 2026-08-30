@@ -1,0 +1,24 @@
+{
+  "version": "0.1.0",
+  "connector": "google_sheets",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_row_v4_bulk",
+    "add_spreadsheet_row_v4",
+    "get_spreadsheet_rows_v4",
+    "search_spreadsheet_rows_v4_new",
+    "update_row_v4_bulk",
+    "update_row_v4_new",
+    "update_spreadsheet_row_v3_new"
+  ],
+  "valid_trigger_names": [
+    "new_polling_spreadsheet_row_v4",
+    "new_spreadsheet_row_v4",
+    "team_drive_new_spreadsheet_row_v4",
+    "team_drive_updated_spreadsheet_row_v4_2",
+    "updated_polling_spreadsheet_row_v4_2",
+    "updated_spreadsheet_row_v4_2"
+  ]
+}

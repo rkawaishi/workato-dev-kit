@@ -1,0 +1,29 @@
+{
+  "version": "0.1.0",
+  "connector": "vend",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_payment_to_register_sale",
+    "create_customer",
+    "create_product",
+    "create_register_sale",
+    "get_customer_by_id",
+    "get_sale_details",
+    "search_customers",
+    "search_product",
+    "update_customer",
+    "update_product"
+  ],
+  "valid_trigger_names": [
+    "new_consignment",
+    "new_customer",
+    "new_inventory_record",
+    "new_product",
+    "new_sales",
+    "updated_consignment",
+    "updated_inventory_record",
+    "updated_sale"
+  ]
+}

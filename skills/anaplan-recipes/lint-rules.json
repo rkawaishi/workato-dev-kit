@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "connector": "anaplan",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "download_dump_file",
+    "download_file",
+    "run_deletion",
+    "run_export",
+    "run_import",
+    "run_process",
+    "upload_file"
+  ]
+}

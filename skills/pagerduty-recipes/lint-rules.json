@@ -1,0 +1,19 @@
+{
+  "version": "0.1.0",
+  "connector": "pagerduty",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_note_to_incident",
+    "get_incident_by_ID",
+    "list_log_entries",
+    "search_incident",
+    "send_an_event",
+    "update_incident"
+  ],
+  "valid_trigger_names": [
+    "new_incident",
+    "new_notification"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0",
+  "connector": "trackvia",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_record",
+    "create_user",
+    "delete_all_records_in_view",
+    "delete_record",
+    "get_all_view_records",
+    "get_file_from_record",
+    "get_record",
+    "update_record",
+    "upload_file_to_record"
+  ],
+  "valid_trigger_names": [
+    "deleted_record",
+    "new_record",
+    "updated_record"
+  ]
+}

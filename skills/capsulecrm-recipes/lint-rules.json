@@ -1,0 +1,22 @@
+{
+  "version": "0.1.0",
+  "connector": "capsulecrm",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "add_opportunity",
+    "add_organisation",
+    "add_person",
+    "search_organisations",
+    "search_people",
+    "update_opportunity",
+    "update_organisation",
+    "update_person"
+  ],
+  "valid_trigger_names": [
+    "new_opportunity",
+    "new_organisation",
+    "new_party_opportunity",
+    "new_person"
+  ]
+}

@@ -22,6 +22,7 @@ Covers recipe development, Workflow App construction, AI agent creation (Genie /
 - **Custom connectors** — assistance for Connector SDK (Ruby DSL) development
 - **Knowledge base** — docs for 316 connectors, 7 logic patterns, and 13 platform features
 - **Learning cycle** — pull → analyze → accumulate patterns → feed back into the next generation
+- **Lint pack for `wk lint`** — a generated connector skill pack (`skills/`, 302 connectors) that makes the official [recipe-lint](https://github.com/workato-devs/recipe-lint) reject actions and triggers a connector does not actually have
 - **Spec-driven artifacts** — `spec.md` / `plan.md` / `tasks.md` per feature, with cross-session continuity
 
 ## Prerequisites
@@ -104,6 +105,35 @@ workato pull
 # Develop, then commit
 git add projects/<project-name> && git commit -m "Add IT Onboarding workflow"
 ```
+
+### Linting recipes (`skills/`)
+
+`scripts/gen_lint_rules.py` turns `docs/connectors/*.md` into a connector skill
+pack that the official [`recipe-lint`](https://github.com/workato-devs/recipe-lint)
+plugin consumes, so a hallucinated action name fails before it reaches Workato:
+
+```bash
+wk plugins install recipe-lint     # once
+wk lint projects/<project>/Recipes/*.recipe.json --skills-path kit/skills
+```
+
+```
+/code/block/0/name [ERROR] ACTION_NAME_VALID: Action name "post_message" is not
+valid for provider "slack"; expected one of [__adhoc_http_action ...
+post_message_to_channel ...]
+```
+
+The `skills/` tree is generated — regenerate it after `/sync-connectors` or
+`/auto-learn` updates a connector doc:
+
+```bash
+python3 scripts/gen_lint_rules.py            # all connectors
+python3 scripts/gen_lint_rules.py --only slack
+```
+
+Pass `--exclude-official` to skip the seven connectors
+[workato-devs/recipe-skills](https://github.com/workato-devs/recipe-skills)
+already ships, if you point `--skills-path` at a directory that merges both.
 
 ### Spec-driven artifacts (spec.md / plan.md / tasks.md)
 

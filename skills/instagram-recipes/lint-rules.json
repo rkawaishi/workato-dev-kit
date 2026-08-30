@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0",
+  "connector": "instagram",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_trigger_names": [
+    "new_media_posted_by_follows",
+    "new_tagged_media",
+    "recent_media"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "version": "0.1.0",
+  "connector": "goto_webinar",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "get_attendees_from_session",
+    "get_webinar_details"
+  ],
+  "valid_trigger_names": [
+    "new_webinar_session"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "version": "0.1.0",
+  "connector": "servicem8",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "add_job",
+    "add_job_material",
+    "add_material",
+    "add_staff",
+    "create_client",
+    "create_contact",
+    "get_client_by_uuid",
+    "get_job_by_uuid",
+    "get_job_material",
+    "get_staff_by_uuid",
+    "search_client",
+    "search_contact",
+    "search_job_activities",
+    "search_materials",
+    "search_staff",
+    "update_client",
+    "update_contact",
+    "update_job",
+    "update_material"
+  ],
+  "valid_trigger_names": [
+    "created_companycontact",
+    "created_jobactivity",
+    "created_material",
+    "created_staff",
+    "quoted_job",
+    "updated_company",
+    "updated_job"
+  ]
+}

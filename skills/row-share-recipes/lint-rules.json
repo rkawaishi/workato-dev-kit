@@ -1,0 +1,18 @@
+{
+  "version": "0.1.0",
+  "connector": "row_share",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "assign_row",
+    "create_record",
+    "delete_record",
+    "get_record",
+    "search_records",
+    "update_record"
+  ],
+  "valid_trigger_names": [
+    "new_updated_record"
+  ]
+}

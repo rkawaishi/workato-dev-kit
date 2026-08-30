@@ -1,0 +1,28 @@
+{
+  "version": "0.1.0",
+  "connector": "basecamp",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_calendar_event",
+    "create_project",
+    "create_project_calendar_event",
+    "create_todo",
+    "create_todolist",
+    "lookup_calendar",
+    "lookup_person",
+    "lookup_project"
+  ],
+  "valid_trigger_names": [
+    "calendar_access_granted",
+    "new_calendar_event",
+    "new_people_event",
+    "new_project",
+    "new_project_calendar_event",
+    "new_project_event",
+    "new_todo",
+    "new_todolist",
+    "project_access_granted"
+  ]
+}

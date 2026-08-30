@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "connector": "workato_decision_engine",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "execute_model"
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "version": "0.1.0",
+  "connector": "workato_app",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "get_recipe",
+    "list_jobs",
+    "rerun_jobs",
+    "search_connections",
+    "search_recipes",
+    "search_recipes_v2",
+    "start_recipe",
+    "stop_recipe",
+    "summary_status"
+  ],
+  "valid_trigger_names": [
+    "customer_usage_threshold_reached",
+    "deployment_failed",
+    "deployment_finished",
+    "deployment_review_approved",
+    "deployment_review_rejected",
+    "deployment_review_reset",
+    "deployment_submitted_for_review",
+    "fanbus_apim_api_request_timeout",
+    "fanbus_apim_concurrency_limit_reached",
+    "fanbus_apim_quota_threshold_reached",
+    "fanbus_apim_rate_limit_reached",
+    "fanbus_opa_disconnected",
+    "job_error",
+    "member_invitation_accepted",
+    "package_deployed",
+    "recipe_started",
+    "recipe_stopped",
+    "shared_account_connected",
+    "shared_account_disconnected",
+    "shared_account_refresh_failed",
+    "stop_error"
+  ]
+}

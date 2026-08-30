@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "connector": "onprem_command_line_scripts",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "execute_script"
+  ]
+}

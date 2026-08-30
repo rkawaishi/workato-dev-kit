@@ -1,0 +1,27 @@
+{
+  "version": "0.1.0",
+  "connector": "onedrive",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_folder",
+    "create_permission",
+    "delete_file_or_folder",
+    "delete_permission",
+    "download_file",
+    "list_files_folders",
+    "list_permission",
+    "search_files_new",
+    "upload_file",
+    "upload_file_from_url",
+    "upload_file_session"
+  ],
+  "valid_trigger_names": [
+    "new_csv_line",
+    "new_event_trigger",
+    "new_file",
+    "new_folder",
+    "updated_file"
+  ]
+}

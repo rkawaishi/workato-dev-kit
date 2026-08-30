@@ -1,0 +1,29 @@
+{
+  "version": "0.1.0",
+  "connector": "intercom",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_conversation_note",
+    "archive_users",
+    "get_conversation_by_id",
+    "reply_conversation",
+    "search_conversations_by_user",
+    "search_notes_by_user",
+    "search_segments_by_user",
+    "search_tags_by_user",
+    "search_user",
+    "update_user",
+    "upsert_users"
+  ],
+  "valid_trigger_names": [
+    "new_company",
+    "new_contact",
+    "new_conversation",
+    "new_user",
+    "updated_contact",
+    "updated_conversation",
+    "updated_user"
+  ]
+}

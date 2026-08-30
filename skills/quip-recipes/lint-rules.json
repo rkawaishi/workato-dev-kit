@@ -1,0 +1,15 @@
+{
+  "version": "0.1.0",
+  "connector": "quip",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "get_messages",
+    "get_user_by_id",
+    "send_message"
+  ],
+  "valid_trigger_names": [
+    "updated_inbox_item"
+  ]
+}

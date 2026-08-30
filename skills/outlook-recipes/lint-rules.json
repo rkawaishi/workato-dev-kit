@@ -1,0 +1,36 @@
+{
+  "version": "0.1.0",
+  "connector": "outlook",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_calendar",
+    "create_contact",
+    "create_event",
+    "delete_calendar_event",
+    "delete_contact",
+    "get_attachments",
+    "get_calendar",
+    "get_contact",
+    "get_event",
+    "list_calendars_outlook",
+    "list_contact",
+    "list_event_instances",
+    "search_calendar",
+    "search_contact",
+    "search_events",
+    "send_mail",
+    "update_contact",
+    "update_event"
+  ],
+  "valid_trigger_names": [
+    "delete_deleted_event",
+    "new_contact",
+    "new_email",
+    "new_event_v2",
+    "new_updated_contact",
+    "updated_email",
+    "updated_event"
+  ]
+}

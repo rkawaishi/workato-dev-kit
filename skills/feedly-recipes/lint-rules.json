@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "connector": "feedly",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_trigger_names": [
+    "new_item"
+  ]
+}

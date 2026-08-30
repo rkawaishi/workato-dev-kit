@@ -1,0 +1,14 @@
+{
+  "version": "0.1.0",
+  "connector": "workato_variable",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "clear_list",
+    "declare_list",
+    "declare_variable",
+    "insert_to_list",
+    "insert_to_list_batch",
+    "update_variables"
+  ]
+}

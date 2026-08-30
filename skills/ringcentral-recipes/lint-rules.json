@@ -1,0 +1,20 @@
+{
+  "version": "0.1.0",
+  "connector": "ringcentral",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "ring_out",
+    "send_pager_message",
+    "send_sms"
+  ],
+  "valid_trigger_names": [
+    "call_ended",
+    "new_call",
+    "new_call_recording",
+    "new_company_level_call",
+    "new_event",
+    "new_sms"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "version": "0.1.0",
+  "connector": "zendesk_demo",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "create_ticket",
+    "create_user",
+    "search_ticket",
+    "search_user",
+    "update_ticket",
+    "update_user"
+  ]
+}

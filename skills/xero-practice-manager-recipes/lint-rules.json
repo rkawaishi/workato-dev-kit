@@ -1,0 +1,12 @@
+{
+  "version": "0.1.0",
+  "connector": "xero_practice_manager",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_object",
+    "list_object",
+    "update_object"
+  ]
+}

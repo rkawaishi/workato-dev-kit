@@ -1,0 +1,19 @@
+{
+  "version": "0.1.0",
+  "connector": "sap_secondary",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "call_bapi",
+    "idoc_status",
+    "idoc_upload_new",
+    "idoc_upload_v3",
+    "run_rfm",
+    "trfc_begin",
+    "trfc_end"
+  ],
+  "valid_trigger_names": [
+    "new_idocs_batch",
+    "new_updated_idoc"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "connector": "cisco_spark",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_person_to_room",
+    "create_room",
+    "get_attachment_details",
+    "get_message_details",
+    "get_person_details",
+    "get_room_details",
+    "post_blocks_message",
+    "update_room"
+  ],
+  "valid_trigger_names": [
+    "new_attachment",
+    "new_message"
+  ]
+}

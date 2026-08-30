@@ -1,0 +1,12 @@
+{
+  "version": "0.1.0",
+  "connector": "facebook_lead_ads",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action"
+  ],
+  "valid_trigger_names": [
+    "new_lead"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "version": "0.1.0",
+  "connector": "smb",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "create_folder",
+    "delete",
+    "download_file",
+    "list",
+    "metadata",
+    "upload_file"
+  ],
+  "valid_trigger_names": [
+    "new_file"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "version": "0.1.0",
+  "connector": "marketo_secondary",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "activate_smart_campaign",
+    "add_custom_activity",
+    "add_leads_to_list",
+    "bulk_export_objects_action",
+    "bulk_import_objects_action",
+    "change_lead_program_status",
+    "clone_objects_action",
+    "create_objects_action",
+    "get_objects_action",
+    "remove_leads_from_list",
+    "return_marketo_async_action_result",
+    "schedule_campaign",
+    "search_objects_action",
+    "submit_form",
+    "trigger_campaign",
+    "update_objects_action",
+    "upsert_custom_objects",
+    "upsert_lead",
+    "upsert_object",
+    "upsert_tokens"
+  ],
+  "valid_trigger_names": [
+    "lead_created_bulk",
+    "lead_created_or_updated_bulk",
+    "monitor_leads_added_list_batch",
+    "new_lead_activity_batch",
+    "new_lead_in_list",
+    "new_marketo_async_submission",
+    "new_updated_lead_batch",
+    "updated_lead"
+  ]
+}

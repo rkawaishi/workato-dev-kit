@@ -1,0 +1,36 @@
+{
+  "version": "0.1.0",
+  "connector": "nasuni_management",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "auto_caching_for_file",
+    "bring_path_into_cache",
+    "create_directory",
+    "create_folder_quota",
+    "create_share",
+    "create_volume",
+    "delete_folder_quota",
+    "disable_auto_cache_mode",
+    "disable_pinning_mode_for_folder",
+    "get_auto_cache_status",
+    "get_folder_quota",
+    "get_health_status_for_filer",
+    "get_info_path",
+    "get_pinning_status_for_path",
+    "global_lock_folders",
+    "list_folder_quotas",
+    "list_folder_quotas_volume",
+    "list_health_status_for_filer",
+    "list_shares",
+    "list_volumes",
+    "pin_data_to_cache",
+    "request_snapshot_volume",
+    "update_folder_quota",
+    "update_share"
+  ],
+  "valid_trigger_names": [
+    "new_notification"
+  ]
+}

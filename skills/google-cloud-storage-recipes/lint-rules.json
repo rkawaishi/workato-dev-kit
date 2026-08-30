@@ -1,0 +1,20 @@
+{
+  "version": "0.1.0",
+  "connector": "google_cloud_storage",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_bucket",
+    "delete_bucket",
+    "delete_object",
+    "download_object",
+    "get_bucket",
+    "get_object_metadata",
+    "list_buckets",
+    "list_objects",
+    "update_bucket",
+    "update_object_metadata",
+    "upload_object_streaming"
+  ]
+}

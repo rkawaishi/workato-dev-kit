@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0",
+  "connector": "segment",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "send_event",
+    "send_event_batch"
+  ]
+}

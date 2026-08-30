@@ -1,0 +1,18 @@
+{
+  "version": "0.1.0",
+  "connector": "veeva",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_object",
+    "get_related",
+    "search_objects",
+    "update_object"
+  ],
+  "valid_trigger_names": [
+    "object_created",
+    "object_review",
+    "object_updated"
+  ]
+}

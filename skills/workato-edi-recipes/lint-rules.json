@@ -1,0 +1,17 @@
+{
+  "version": "0.1.0",
+  "connector": "workato_edi",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "convert_data_format",
+    "create_record",
+    "generate_label",
+    "get_record",
+    "search_records"
+  ],
+  "valid_trigger_names": [
+    "new_transactions_in_polling_bucket"
+  ]
+}

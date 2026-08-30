@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "connector": "workato_template",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "create_document"
+  ]
+}

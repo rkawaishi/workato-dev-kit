@@ -1,0 +1,19 @@
+{
+  "version": "0.1.0",
+  "connector": "plan_grid",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_object",
+    "download_object",
+    "get_object",
+    "search_objects",
+    "update_object",
+    "upload_object"
+  ],
+  "valid_trigger_names": [
+    "new_object",
+    "new_updated_object"
+  ]
+}

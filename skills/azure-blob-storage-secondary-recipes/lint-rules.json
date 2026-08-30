@@ -1,0 +1,22 @@
+{
+  "version": "0.1.0",
+  "connector": "azure_blob_storage_secondary",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "create_container",
+    "download_blob",
+    "generate_presigned_url",
+    "get_blob_properties",
+    "get_container_properties",
+    "search_blob",
+    "search_container",
+    "update_blob_metadata",
+    "upload_blob"
+  ],
+  "valid_trigger_names": [
+    "new_blob",
+    "new_event_webhook"
+  ]
+}

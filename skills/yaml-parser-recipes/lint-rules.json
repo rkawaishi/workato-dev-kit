@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "connector": "yaml_parser",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "parse_yaml"
+  ]
+}

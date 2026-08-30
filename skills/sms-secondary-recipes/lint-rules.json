@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "connector": "sms_secondary",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "send_sms"
+  ]
+}

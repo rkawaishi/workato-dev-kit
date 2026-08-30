@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "connector": "sap_s4_hana_cloud",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "batch_request",
+    "create_object",
+    "delete_object",
+    "get_object",
+    "search_object",
+    "search_object_with_proxy",
+    "update_object",
+    "upsert_object"
+  ],
+  "valid_trigger_names": [
+    "new_object",
+    "new_or_updated_object"
+  ]
+}

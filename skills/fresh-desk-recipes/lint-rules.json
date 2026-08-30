@@ -1,0 +1,30 @@
+{
+  "version": "0.1.0",
+  "connector": "fresh_desk",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_note_to_ticket",
+    "create_company",
+    "create_contact",
+    "create_ticket",
+    "get_agent",
+    "get_group_by_id",
+    "get_ticket",
+    "get_ticket_attachments",
+    "get_user",
+    "search_companies_v2",
+    "search_contacts_v2",
+    "search_tickets",
+    "update_company",
+    "update_contact",
+    "update_ticket_v2"
+  ],
+  "valid_trigger_names": [
+    "closed_ticket",
+    "company_created",
+    "company_updated",
+    "new_updated_ticket_v2"
+  ]
+}

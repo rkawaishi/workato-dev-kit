@@ -1,0 +1,17 @@
+{
+  "version": "0.1.0",
+  "connector": "workplace_bot",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "post_bot_attachment",
+    "post_bot_message",
+    "post_bot_reply",
+    "post_simple_message",
+    "post_simple_reply"
+  ],
+  "valid_trigger_names": [
+    "bot_command"
+  ]
+}

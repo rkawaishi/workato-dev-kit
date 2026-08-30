@@ -1,0 +1,12 @@
+{
+  "version": "0.1.0",
+  "connector": "file_connector",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "compress_file",
+    "read_file",
+    "transform_image",
+    "uncompress_file"
+  ]
+}

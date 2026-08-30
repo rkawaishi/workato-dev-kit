@@ -1,0 +1,12 @@
+{
+  "version": "0.1.0",
+  "connector": "workato_service",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "call_service",
+    "call_service_async",
+    "send_reply",
+    "wait_for_async_jobs"
+  ]
+}

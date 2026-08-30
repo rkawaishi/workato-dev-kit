@@ -1,0 +1,25 @@
+{
+  "version": "0.1.0",
+  "connector": "bynder",
+  "connector_internals": [],
+  "action_rules": [],
+  "valid_action_names": [
+    "__adhoc_http_action",
+    "add_assets_to_collection",
+    "add_tag_to_assets",
+    "create_asset_usage",
+    "delete_assets_from_collections",
+    "download_asset",
+    "get_records",
+    "list_brands",
+    "retrieve_assets_in_collection",
+    "search_records",
+    "share_collection",
+    "update_record",
+    "upload_asset"
+  ],
+  "valid_trigger_names": [
+    "new_asset",
+    "new_or_updated_asset"
+  ]
+}
