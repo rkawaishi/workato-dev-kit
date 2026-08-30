@@ -7,7 +7,7 @@ description: First-time onboarding for a workspace that already has Workato proj
 
 Bootstrap the organization knowledge base from **Workato assets that already exist** before the kit was adopted.
 
-Most teams adopt this kit when their Workato workspace is already full of projects and custom connectors. `$onboard` pulls all of that down and runs the existing learn / sync / catalog skills over it, so `docs/` and `org/docs/` start out populated with the patterns, built-in actions, schemas and connector details this organization actually uses — making every later `$create-recipe` and `$plan` sharper.
+Most teams adopt this kit when their Workato workspace is already full of projects and custom connectors. `$onboard` pulls all of that down and runs the existing learn / sync / catalog skills over it, so `docs/` and `org/docs/` start out populated with the patterns, built-in actions, schemas and connector details this organization actually uses — making every later `$create-recipe` run sharper.
 
 This skill is a **thin orchestrator**. It does not pull, learn, sync or catalog anything itself — it sequences the existing skills and never reimplements their logic.
 

@@ -36,7 +36,6 @@ Canonical English translations for terms used throughout the workato-dev-kit doc
 | ベストエフォート実装 | best-effort implementation | – |
 | 不可侵の 3 原則 | three inviolable principles | – |
 | 学習サイクル | learning cycle | – |
-| 設計書 | design document | Use only when discussing the legacy DESIGN.md |
 
 ## Tooling / framework terminology
 

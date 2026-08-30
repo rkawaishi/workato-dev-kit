@@ -96,36 +96,24 @@ When Claude Code starts, the skills and rules under `.claude/` are loaded automa
 
 ## 8. Create your first project
 
-### Option A: Start with the spec-driven workflow (recommended)
-
-```
-You: /spec "[App] Expense request"
-```
-
-Claude will interview you on:
-1. Who wants to do what (in business terms)
-2. What flow you have in mind
-3. Who is involved
-4. What outcome counts as success
-5. What existing tools or data sources are available
-
-From the interview, `projects/<project>/specs/001-<slug>/spec.md` (requirements, WHAT/WHY) is generated, and any open points are recorded under `## Open Questions`. Then:
-
-```
-You: /clarify <project>/001-<slug>   # Resolve Open Questions
-You: /plan <project>/001-<slug>      # Workato design (plan.md)
-You: /tasks <project>/001-<slug>     # Execution tasks (tasks.md)
-You: /analyze <project>/001-<slug>   # Consistency check across spec ↔ plan ↔ tasks
-You: /implement <project>/001-<slug> # Dispatch to /create-recipe etc. for implementation
-```
-
-### Option B: Jump straight to building
-
 ```
 You: /create-recipe
 ```
 
-Or, if you need a Workflow App:
+Claude will interview you on:
+1. What you want to automate
+2. Which app's event starts it (the trigger)
+3. What happens after that (the actions)
+4. Which connections to use
+
+It reads the connector docs, generates `*.recipe.json` and `*.connection.json`,
+and then you validate before pushing:
+
+```
+wk lint projects/<project>/Recipes/*.recipe.json --skills-path kit/skills
+```
+
+### Need a full Workflow App instead?
 
 ```
 You: /create-workflow-app
@@ -224,11 +212,9 @@ It is the unit that groups Recipes and Connections in the Workato UI. `workato p
 
 It lives directly inside the workspace repository. Manage it normally with `git add projects/<name> && git commit`.
 
-### Q: Do spec.md / plan.md / tasks.md get wiped by workato pull?
+### Q: How do I stop `workato pull` from wiping my local-only files?
 
-No, as long as each project's `.workatoignore` lists `specs/`. The `/spec` command sets this up automatically on first run.
-
-> Projects still using the legacy `DESIGN.md` can be converted to `specs/` via `/design migrate <project>`. `/design new` has been retired.
+List them in the project's `.workatoignore`. `/pull-project` places the kit's base template automatically on first run; add anything project-specific to it.
 
 ### Q: Can I use this with Cursor?
 

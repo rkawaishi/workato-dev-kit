@@ -114,46 +114,30 @@ After analysis, report:
 - The list of updated docs (all under `org/docs/`) with a summary of what was appended.
 - Any newly discovered patterns.
 
-## Reconciling Unlearned Actions
+## Clearing Unlearned entries
 
-When run against a project, scan every feature's `plan.md` and `tasks.md` under `projects/<project-name>/specs/` and reconcile entries that correspond to the `provider` / `action` you just learned (see "Recipe implementation lifecycle" in `GEMINI.md`).
+`/create-recipe` records any action it had to implement best-effort under an
+`## Unlearned` heading in `org/docs/connectors/<provider>.md`. After learning
+that provider:
 
-### `## Unlearned Actions` table in plan.md
-
-For each `projects/<project-name>/specs/<NNN>-<slug>/plan.md`:
-
-1. Check for a `## Unlearned Actions` table.
-2. If a row matches the just-learned `provider` / `action`, **delete the row**.
-3. When every row is deleted, leave the table in place with a note "(learned)" — keep it as a history record.
-
-### `[learn]` tasks in tasks.md
-
-For each `projects/<project-name>/specs/<NNN>-<slug>/tasks.md`:
-
-1. Find unfinished tasks (`- [ ]`) tagged `[learn]` that mention `provider/action`.
-2. Check them off as `- [x]`.
-3. Update `Last updated`.
-
-### Reporting
+1. Remove the entry for every `provider` / `action` pair you just documented.
+2. Report what is left:
 
 ```
-Unlearned Actions reconciliation:
-- Rows removed from plan.md: <N> (in <feature> etc.)
-- Tasks checked off in tasks.md: <M> (in <feature> etc.)
-
-Features still carrying unfinished Unlearned Actions:
-- <project>/specs/<NNN>-<slug>: <remaining count>
+Unlearned entries cleared: <N>
+Still undocumented: <provider>/<action>, ...
 ```
 
-> **Backwards compatibility**: the legacy `## Unlearned Actions` in `projects/<project-name>/DESIGN.md` is **not read** (hard-cutover in Phase B). If a project still only has DESIGN.md, run `/design migrate` first to convert into `specs/`.
+Anything still listed is a real gap — either run `/auto-learn <provider>` to
+observe the fields in the Workato UI, or leave it for the next pull.
 
 ## Git management
 
-Writes happen in the workspace repository, under `org/docs/` and `projects/<name>/specs/`:
+Writes happen in the workspace repository, under `org/docs/`:
 
 ```bash
 cd <workspace-root>
-git add org/docs/ projects/<name>/specs/
+git add org/docs/
 git commit -m "docs(org): learn from <project-name> recipes"
 ```
 

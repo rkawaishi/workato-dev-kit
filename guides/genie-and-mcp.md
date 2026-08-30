@@ -60,7 +60,7 @@ For JSON formatting rules, see `.claude/rules/workato-agentic-format.md` (Cursor
 
 ### 1. Design
 
-Use `/spec` then `/plan` to consolidate the overall agent design in `plan.md`:
+`/create-genie` interviews you for the agent design. Have answers ready for:
 
 - **Persona**: who the agent is for (sales team, IT help desk, etc.)
 - **Skill list**: what operations it can perform

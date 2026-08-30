@@ -5,32 +5,14 @@ description: Generate Workato recipe JSON interactively. Pick a provider, trigge
 
 # /create-recipe
 
-Generates Workato recipe JSON files. In the spec-driven workflow (`/spec` → `/plan` → `/tasks` → `/implement`), this skill is invoked from `[recipe]` / `[function]` / `[handler]` tasks.
+Generates Workato recipe JSON files from a short interview.
 
 ## Usage
 
-- `/create-recipe <project>/<NNN>-<slug>` — pull context from `plan.md` and generate (**preferred**; this is how `/implement` invokes it automatically)
-- `/create-recipe <project>` — only the project is fixed; if a `plan.md` exists we look it up and confirm with the user
-- `/create-recipe` — infer from context; confirm `<project>/<NNN>-<slug>`
-
-> **Note**: as part of the migration to the spec-driven workflow, the legacy `DESIGN.md` reference is retired. Start new projects with `/spec`; for existing projects, run `/design migrate` first to convert into `specs/`.
+- `/create-recipe <project>` — generate into that project
+- `/create-recipe` — infer the project from context and confirm it
 
 ## Procedure
-
-### 0. Pull context from plan.md
-
-When `<project>/<NNN>-<slug>` is supplied (or can be inferred), read `projects/<project>/specs/<NNN>-<slug>/plan.md` and take the following as **defaults**:
-
-| plan.md section | What to pull in |
-|---|---|
-| `## New Components` `### Recipes` | The target recipe definition (trigger, flow, inputs/outputs) |
-| `## New Components` `### Connections` | Connections to use (provider, auth method) |
-| `## Reused Assets` | Shared Functions / Connections to reference via `call_recipe` |
-| `## Resource Inventory` | Resource values (Slack channel, Jira project, etc.) — no interview needed |
-| `## Applied Patterns` | Construction patterns (step-composition guidance) |
-| `## Unlearned Actions` | Best-effort-implementation flag |
-
-If plan.md does not exist or cannot be read, fall back to the interactive interview mode (continue to Step 1).
 
 ### 1. Interview the recipe design
 
@@ -63,7 +45,7 @@ If the catalog is missing, skip this and tell the user it can be generated with 
   - Or: `https://docs.workato.com/en/connectors/<name>/actions.html`
 - Append what you fetched to `docs/connectors/<connector>.md` so the knowledge accumulates.
 - **Prohibited**: do not grep `projects/<other-project>/Recipes/` to copy fields from sample JSON. That leaks project-specific logic and naming, and it hides documentation gaps (see "Recipe implementation lifecycle" in `GEMINI.md`).
-- If you have to implement best-effort because there's no documentation anywhere, append `provider` / `action` to the `## Unlearned Actions` table in `projects/<project>/specs/<NNN>-<slug>/plan.md`. If possible, add a matching `[learn]` task to the same directory's `tasks.md` (or regenerate via `/tasks --update`).
+- If you have to implement best-effort because there's no documentation anywhere, record `provider` / `action` under `## Unlearned` in `org/docs/connectors/<provider>.md` and tell the user, so `/learn-recipe` can close the gap after the first push.
 
 ### 5. Auto-fetch resource info
 
@@ -153,7 +135,7 @@ Remaining items:
 
 Steps 7–9 below are the **JSON generation procedure**. Generating a recipe produces ~1000 lines of JSON; running it inline keeps that JSON in the main conversation for the rest of the session even though it is never read again.
 
-**Dispatch Steps 7–9 to the `workato-builder` subagent.** Every supported editor — Claude Code, Cursor, Gemini CLI, Codex CLI — ships this subagent; invoke it through your editor's subagent mechanism. Pass it asset type `recipe` plus the design from Steps 0–6: the interview results (or the `plan.md` pointer), the catalog / pattern findings, the interviewed input values, and the target file paths. The subagent executes Steps 7–9, validates and writes the files, and returns a short summary — the large JSON never enters the main conversation. Continue at "Output and deployment guide" using that summary. (Only if your editor has no subagent support, perform Steps 7–9 inline.)
+**Dispatch Steps 7–9 to the `workato-builder` subagent.** Every supported editor — Claude Code, Cursor, Gemini CLI, Codex CLI — ships this subagent; invoke it through your editor's subagent mechanism. Pass it asset type `recipe` plus the design from Steps 1–6: the interview results, the catalog / pattern findings, the interviewed input values, and the target file paths. The subagent executes Steps 7–9, validates and writes the files, and returns a short summary — the large JSON never enters the main conversation. Continue at "Output and deployment guide" using that summary. (Only if your editor has no subagent support, perform Steps 7–9 inline.)
 
 The generation procedure itself is the same either way:
 
@@ -239,7 +221,7 @@ Then, following "Recipe deployment flow" in `docs/patterns/deployment-guide.md`,
    Let me know when authentication is done.
    ```
 4. **After auth, guide UI verification**: recipe structure, field mappings.
-5. **Learning (mandatory)**: pull → `/learn-recipe`. **Do not skip** if you used any action recorded in `projects/<project>/specs/<NNN>-<slug>/plan.md`'s `## Unlearned Actions` or the same directory's `tasks.md` `[learn]` tasks (otherwise documentation gaps stay open). Once learning is done, close out the entry / task.
+5. **Learning (mandatory)**: pull → `/learn-recipe`. **Do not skip** if you implemented any action best-effort (Step 4) — otherwise the documentation gap stays open.
 6. **Test run**: test in the UI; analyze and fix errors if any.
 7. **Pattern accumulation**: if the recipe contains a new construction pattern, add it to the catalog via `/learn-pattern`.
 

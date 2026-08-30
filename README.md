@@ -23,7 +23,6 @@ Covers recipe development, Workflow App construction, AI agent creation (Genie /
 - **Knowledge base** — docs for 316 connectors, 7 logic patterns, and 13 platform features
 - **Learning cycle** — pull → analyze → accumulate patterns → feed back into the next generation
 - **Lint pack for `wk lint`** — a generated connector skill pack (`skills/`, 302 connectors) that makes the official [recipe-lint](https://github.com/workato-devs/recipe-lint) reject actions and triggers a connector does not actually have
-- **Spec-driven artifacts** — `spec.md` / `plan.md` / `tasks.md` per feature, with cross-session continuity
 
 ## Prerequisites
 
@@ -135,50 +134,22 @@ Pass `--exclude-official` to skip the seven connectors
 [workato-devs/recipe-skills](https://github.com/workato-devs/recipe-skills)
 already ships, if you point `--skills-path` at a directory that merges both.
 
-### Spec-driven artifacts (spec.md / plan.md / tasks.md)
-
-Record each feature of each project in three files under `projects/<project>/specs/<NNN>-<slug>/`:
-
-- `spec.md` — user experience and business requirements (WHAT/WHY; no Workato terminology)
-- `plan.md` — Workato configuration (HOW)
-- `tasks.md` — executable tasks (with `[P]` parallel markers and kind tags)
-
-Add `specs/` to `.workatoignore` so it isn't wiped out by `workato pull`.
-
-```bash
-/spec "[App] IT Onboarding"                # create spec.md
-/clarify "[App] IT Onboarding"/001-main    # resolve Open Questions
-/plan "[App] IT Onboarding"/001-main       # create plan.md
-/tasks "[App] IT Onboarding"/001-main      # create tasks.md
-/analyze "[App] IT Onboarding"/001-main    # consistency check
-/implement "[App] IT Onboarding"/001-main  # dispatch to implementation skills
-```
-
-> The old single-file `DESIGN.md` workflow is **deprecated**. Use `/design migrate <project>` to split an existing DESIGN.md into `specs/`. `/design new` is retired.
-
 ## Skills
 
 | Skill | Description |
 |---|---|
-| `/spec` | Create feature requirements (spec.md), technology-agnostic |
-| `/clarify` | Resolve Open Questions in spec.md |
-| `/plan` | spec.md → plan.md (Workato configuration) |
-| `/tasks` | plan.md → tasks.md (tagged executable tasks) |
-| `/analyze` | Verify spec ↔ plan ↔ tasks consistency (read-only) |
-| `/implement` | Read tasks.md and dispatch to existing skills (thin orchestrator) |
 | `/create-recipe` | Generate a recipe JSON interactively |
 | `/create-workflow-app` | Build a Workflow App in stages (Data Table, pages, recipes) |
 | `/create-genie` | Generate a Genie / MCP server + skills configuration |
 | `/create-connector` | Scaffold a custom connector |
 | `/catalog` | Scan and catalog shared assets |
-| `/validate-recipe` | Validate recipe JSON structure |
+| `/validate-recipe` | Validate Genie / Workflow App / connection JSON (recipes go through `wk lint`) |
 | `/pull-project` | Pull a project from Workato |
 | `/push-project` | Push local changes (with validation and recipe start) |
-| `/learn-recipe` | Learn field info from pulled recipes; reconcile plan.md/tasks.md Unlearned/[learn] entries |
+| `/learn-recipe` | Learn field info from pulled recipes into `org/docs/` |
 | `/learn-pattern` | Record or update recipe construction patterns in the catalog |
 | `/sync-connectors` | Collect and update connector info (pre-built: API; custom: parse `connector.rb`) |
 | `/auto-learn` | Autonomously collect all operations for one connector via Claude in Chrome (no prompts) |
-| `/design` | **Deprecated**: only `/design migrate` (legacy DESIGN.md → specs/) is in normal use |
 
 See [skill reference](guides/skills-reference.md) and [lifecycle and responsibility map](guides/lifecycle.md) for details.
 
@@ -198,18 +169,14 @@ Cross-agent conventions (`CLAUDE.md` + `rules/` aggregated) are distributed as `
 ### New project
 
 ```
-/spec "<project-name>"                       ← create spec.md (business requirements)
-/clarify "<project-name>"/001-<slug>         ← resolve Open Questions
-/plan "<project-name>"/001-<slug>            ← create plan.md (Workato configuration)
-/tasks "<project-name>"/001-<slug>           ← create tasks.md
-/analyze "<project-name>"/001-<slug>         ← consistency check
-/implement "<project-name>"/001-<slug>       ← dispatch to /create-recipe etc.
+/catalog                                     ← check what already exists and can be reused
+/sync-connectors <provider>                  ← fetch metadata + regenerate the lint pack
+/create-recipe "<project-name>"              ← interview → generate recipe JSON
+wk lint ... --skills-path kit/skills         ← deterministic validation
 /push-project --start                        ← push + start recipes
 (adjust in the Workato UI)
-/pull-project → /learn-recipe                ← learning cycle (auto-reconciles plan.md/tasks.md)
+/pull-project → /learn-recipe                ← learning cycle
 ```
-
-> Projects on the legacy single-file `DESIGN.md` should run `/design migrate <project>` to convert into `specs/` before joining this flow. `/design new` is retired.
 
 ### Learning cycle
 

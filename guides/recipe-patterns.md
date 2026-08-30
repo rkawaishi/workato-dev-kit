@@ -21,7 +21,7 @@ The write target is consolidated to `org/docs/patterns/recipe-patterns/`. When r
 
 The distinction between general and org-domain is expressed in the "Scope" section of each pattern's body, not by file path.
 
-`/create-recipe` and `/plan` consult all three catalogs, and conflicts are resolved in favor of the org side (`org/docs/`) (see `@.claude/rules/org-knowledge-overlay.md`).
+`/create-recipe` consults all three catalogs, and conflicts are resolved in favor of the org side (`org/docs/`) (see `@.claude/rules/org-knowledge-overlay.md`).
 
 ## Pattern flow
 
@@ -33,7 +33,6 @@ An expert has know-how
 Another developer creates a Recipe
   → /create-recipe automatically references the catalog
   → proposes step composition based on the pattern
-  → /plan also proposes patterns when converting spec.md → plan.md
 ```
 
 ## How to use /learn-pattern

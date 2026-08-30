@@ -54,7 +54,6 @@ my-org-workato/               ← organization's workspace repository (working r
 │
 ├── projects/                 ← organization's recipes
 │   └── <project-name>/
-│       ├── DESIGN.md
 │       ├── Recipes/
 │       └── ...
 │
@@ -116,8 +115,8 @@ The biggest feature of this toolkit is that **knowledge grows the more you use i
               Knowledge accumulates in docs/
                                │
                     ┌──────────▼───────────┐
-                    │  /create-recipe      │
-                    │  /plan               │── used for the next build
+                    │  /create-recipe      │── used for the next build
+                    │  wk lint (skills/)   │   and enforced by the linter
                     └──────────────────────┘
 ```
 
@@ -125,17 +124,27 @@ Workato JSON contains many fields that can only be set via the UI and many undoc
 
 For details, see the [knowledge management guide](knowledge-management.md).
 
-## Spec-driven development
+## Generated lint pack (`skills/`)
 
-Each feature in each project is managed under `projects/<project>/specs/<NNN>-<slug>/` across three files:
+`scripts/gen_lint_rules.py` turns every `docs/connectors/<provider>.md` into a
+connector skill that [`wk lint`](https://github.com/workato-devs/recipe-lint)
+consumes:
 
-- **`spec.md`** — user experience and business requirements (WHAT/WHY, no Workato terminology)
-- **`plan.md`** — Workato composition (HOW, Data Table / Recipe / Connection / applied patterns / Unlearned Actions)
-- **`tasks.md`** — executable tasks (`[P]` parallel marker + tags like `[recipe]` / `[page]` / `[learn]`)
+```
+docs/connectors/<provider>.md          ← knowledge source (hand-written + /sync-connectors + /auto-learn)
+        │  scripts/gen_lint_rules.py
+        ▼
+skills/<provider>-recipes/
+├── lint-rules.json                    ← valid_action_names / valid_trigger_names
+├── skill.yaml                         ← extends: workato-recipes (the official base skill)
+└── SKILL.md                           ← agent-facing knowledge
+        │  wk lint --skills-path kit/skills
+        ▼
+ACTION_NAME_VALID errors on anything the connector cannot actually do
+```
 
-Proceed in the order `/spec` → `/clarify` → `/plan` → `/tasks` → `/analyze` → `/implement`. For resilience to interruption, Open Questions are persisted in spec.md and can be resumed with `/clarify`.
-
-> The legacy single-file DESIGN.md format is migrated into specs/ via `/design migrate`. `/design new` is retired (see the Deprecation phase in [lifecycle and responsibility map](lifecycle.md)).
+The tree under `skills/` is **generated** — never hand-edit it. Regenerate after
+`/sync-connectors` or `/auto-learn` changes a connector doc.
 
 ## Skill system
 
@@ -143,14 +152,11 @@ Skills cover each phase of the development lifecycle:
 
 | Phase | Skills | Role |
 |---|---|---|
-| **Specification** | `/spec`, `/clarify` | Create spec.md and resolve Open Questions |
-| **Design** | `/plan`, `/tasks`, `/analyze` | Generate plan.md / tasks.md and check consistency |
-| **Build** | `/implement`, `/create-recipe`, `/create-workflow-app`, `/create-genie`, `/create-connector` | Asset generation |
-| **Validation** | `/validate-recipe` | JSON structure check |
+| **Build** | `/create-recipe`, `/create-workflow-app`, `/create-genie`, `/create-connector` | Asset generation |
+| **Validation** | `wk lint`, `/validate-recipe` | Deterministic recipe checks; JSON structure check for the asset types `wk lint` does not cover |
 | **Sync** | `/push-project`, `/pull-project` | Sync with Workato |
-| **Learning** | `/learn-recipe`, `/learn-pattern`, `/sync-connectors` | Knowledge accumulation |
-| **Organization** | `/catalog` | Inventory of shared assets |
-| **Legacy** | `/design migrate` | Migration tool from legacy DESIGN.md → specs/ |
+| **Learning** | `/learn-recipe`, `/learn-pattern`, `/sync-connectors`, `/auto-learn` | Knowledge accumulation |
+| **Organization** | `/catalog`, `/onboard` | Inventory of shared assets; first-time bootstrap |
 
 For details on each skill, see the [skill reference](skills-reference.md).
 
