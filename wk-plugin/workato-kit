@@ -1,0 +1,5 @@
+#!/bin/sh
+# POSIX launcher for the workato-kit wk plugin.
+# wk spawns the entrypoint declared in plugin.toml as a subprocess and talks
+# newline-delimited JSON-RPC 2.0 over its stdin/stdout.
+exec python3 "$(dirname "$0")/workato_kit.py" "$@"

@@ -149,6 +149,19 @@ Pass `--exclude-official` to skip the seven connectors
 [workato-devs/recipe-skills](https://github.com/workato-devs/recipe-skills)
 already ships, if you point `--skills-path` at a directory that merges both.
 
+### Validating the assets `wk` does not model
+
+`wk` has no commands for Genies, Data Tables or Workflow Apps, and `recipe-lint`
+only models `*.recipe.json`. The kit ships a `wk` plugin for the rest:
+
+```bash
+wk plugins install kit/wk-plugin
+wk kit projects/<project>          # connection filenames, Data Table system
+                                   # columns, Genie/skill reference resolution
+```
+
+See [wk-plugin/README.md](wk-plugin/README.md).
+
 ## Skills
 
 | Skill | Description |

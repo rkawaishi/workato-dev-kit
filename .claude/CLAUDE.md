@@ -31,6 +31,8 @@ workato-dev-kit/                  ← this repository
 │   └── AGENTS.md                 # agent-neutral rules (generated; aggregated CLAUDE.md + rules). GEMINI.md is the same artifact
 ├── docs/                         # knowledge base (connector info, logic, platform) — SOURCE for skills/
 ├── skills/                       # GENERATED wk-lint connector pack (302 connectors); never hand-edit
+├── wk-plugin/                    # `wk` plugin (JSON-RPC): the asset types wk does not model
+├── .claude-plugin/               # marketplace.json (plugin distribution; framework/claude is the plugin root)
 ├── guides/                       # lifecycle and other guides
 ├── connectors/                   # custom connector doc templates (users add connector.rb here)
 ├── projects/                     # patterns/ for user projects, etc.

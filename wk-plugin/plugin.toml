@@ -1,0 +1,33 @@
+name = "workato-kit"
+version = "0.1.0"
+description = "Workato asset types the wk CLI does not cover: Workflow Apps, Genie, Data Tables, connector SDK"
+entrypoint = "./workato-kit"
+
+[hooks]
+pre-push = "kit.pre_push"
+
+[[commands]]
+name = "kit"
+description = "Validate and manage the Workato assets wk does not model"
+method = "kit.run"
+renderer = "kit.render"
+
+[[commands.args]]
+name = "paths"
+description = "Files or directories to act on"
+required = false
+
+[[commands.flags]]
+name = "strict"
+description = "Treat warnings as errors"
+type = "bool"
+
+[[commands.subcommands]]
+name = "validate"
+description = "Validate Genie, Workflow App, Data Table and connection JSON"
+method = "kit.validate"
+
+[[commands.subcommands]]
+name = "version"
+description = "Show workato-kit plugin version"
+method = "kit.version"
