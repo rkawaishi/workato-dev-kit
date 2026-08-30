@@ -27,12 +27,27 @@ Covers recipe development, Workflow App construction, AI agent creation (Genie /
 ## Prerequisites
 
 - A [Workato](https://www.workato.com/) account and API token
-- [Workato Platform CLI](https://github.com/workato-devs/workato-platform-cli) (`pipx install workato-platform-cli`)
+- [`wk`](https://github.com/workato-devs/wk) and the [`recipe-lint`](https://github.com/workato-devs/recipe-lint) plugin — the official Workato Labs CLI and linter
+- [Workato Platform CLI](https://github.com/workato-devs/workato-platform-cli) (`pipx install workato-platform-cli`) — still used for the asset types `wk` does not cover
 - One of the supported editors: [Claude Code](https://claude.com/claude-code), [Cursor](https://cursor.com), [Codex CLI](https://github.com/openai/codex), or [Gemini CLI](https://github.com/google-gemini/gemini-cli)
 
 ## Setup
 
 > For the full walkthrough, see **[Quick Start (Claude Code)](guides/quickstart-claude-code.md)** or **[Quick Start (Cursor)](guides/quickstart-cursor.md)**.
+
+### Option A: Claude Code plugin (quickest)
+
+```
+/plugin marketplace add rkawaishi/workato-dev-kit
+/plugin install workato-dev-kit@workato-dev-kit
+```
+
+This gives you the skills, the `workato-builder` subagent and the credential-guard
+hooks. Use Option B as well when you want the knowledge base (`docs/`), the
+generated lint pack (`skills/`) and the `org/` overlay checked into your workspace
+repository — which is what makes the learning cycle stick.
+
+### Option B: git submodule (full workspace setup)
 
 Add workato-dev-kit as a submodule of your organization's workspace repository. You can update the framework later with `git submodule update`.
 
