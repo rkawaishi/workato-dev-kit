@@ -30,8 +30,11 @@ Collect connector metadata and update the documentation.
 python3 scripts/workato-api.py connectors list-platform --provider <name>
 
 # List of custom connectors
-python3 scripts/workato-api.py connectors list-custom
+wk connectors list --json
 ```
+
+`connectors list-platform` has no `wk` equivalent — `wk connectors list`
+returns only custom SDK connectors — which is why it stays in the API helper.
 
 What the API gives you:
 - Connector name (`name`), display title (`title`).

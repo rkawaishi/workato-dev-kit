@@ -24,19 +24,21 @@ This rule applies to AI agents and human developers alike. It exists because:
 
 Run these in order. **Abort the push if any check fails. There is no confirmation-prompt escape hatch — the rule is inviolable.**
 
-1. **Read `.workatoenv`** and extract `workspace_id`.
-2. **Resolve the profile** via `python3 scripts/workato-api.py profile show`.
-3. **Confirm the profile name ends with `-dev`.** Anything else — `-test`, `-prod`, `-production`, `-staging`, `-qa`, or any non-`-dev` suffix — is a hard stop. Abort and tell the user:
+1. **Resolve the profile and its environment** via `python3 scripts/workato-api.py profile show`. Read the `environment` field.
+2. **Confirm `environment` is `dev`.** Anything else — `test`, `prod`, `production`, `staging`, `qa`, or `null` — is a hard stop. Abort and tell the user:
 
    ```
-   Refusing to push: the resolved profile is <profile-name>, which does not match the dev convention (<org>-dev).
+   Refusing to push: the resolved profile <profile-name> targets the <environment> environment.
    Push must target dev. Options:
-     (a) Switch to a dev profile: workato profiles use <org>-dev
-     (b) If <profile-name> is in fact your dev workspace, rename it to follow the <org>-dev convention.
-   To promote to test/prod, use the Deploy feature in the Workato UI.
+     (a) Switch to a dev profile: wk auth switch
+     (b) If this really is your dev workspace, re-register it with the right environment:
+         wk auth login --environment dev --region <region>
+   To promote to test/prod, use `deploy run` or the Deploy feature in the Workato UI.
    ```
 
-   Do **not** ask the user for confirmation to proceed. The convention exists specifically so that AI agents can reason about the target environment from the profile name alone; honoring custom names ad-hoc defeats the safety guarantee.
+   Do **not** ask the user for confirmation to proceed. The guard exists so an AI agent can reason about the target environment without inspecting the workspace; honoring an override ad-hoc defeats it.
+
+3. **When `environment` is `null`**, the profile came from the Platform CLI, which has no such field, and the environment was inferred from a `<org>-dev` name. Treat a name that does not follow the convention as a hard stop with the same message, and recommend moving the profile to `wk`, which records the environment explicitly.
 
 4. **Confirm `workspace_id` matches a dev workspace.** If your organization tags workspaces (e.g. in a comment field), verify the tag says dev.
 

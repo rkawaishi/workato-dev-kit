@@ -466,8 +466,8 @@ Go through them in order. Stop at the first one that applies. Only ask the user 
 | Pull a project | `workato pull` |
 | Push a project | `workato push` (`--restart-recipes` / `--delete` available) |
 | List assets (DT, custom connectors, properties, etc.) | `workato assets [--folder-id <id>]` |
-| List recipes | `workato recipes list` or `python3 scripts/workato-api.py recipes list` |
-| Start / stop a recipe | `workato recipes start --id <id>` / `workato recipes start --all` |
+| List recipes | `wk recipes list [--folder N] [--status running\|stopped]` |
+| Start / stop a recipe | `python3 scripts/workato-api.py recipes start <id>... [--folder N]` (delegates to `wk`, refuses outside dev) |
 | Swap a recipe's connection | `workato recipes update-connection` |
 | Validate recipe JSON | `workato recipes validate <file>` |
 | Create a connection (when auth params can be JSON-ified) | `workato connections create --provider <p> --name <n> --input '<json>'` |
@@ -478,9 +478,10 @@ Go through them in order. Stop at the first one that applies. Only ask the user 
 | Create a data table | `workato data-tables create --name <n> --schema-json '<json>'` |
 | List data tables | `workato data-tables list` |
 | Manipulate properties | `workato properties list` / `workato properties upsert` |
-| List / show jobs | `python3 scripts/workato-api.py jobs list/get` |
+| List / show jobs | `wk recipes jobs <recipe-id>` / `wk recipes jobs get <recipe-id> <job-id>` |
+| Follow jobs as they run | `python3 scripts/workato-api.py jobs tail --recipe-id <id>` |
 | Look up pre-built connector info | `python3 scripts/workato-api.py connectors list-platform` |
-| List custom connectors | `python3 scripts/workato-api.py connectors list-custom` |
+| List custom connectors | `wk connectors list` |
 | Push a custom connector (recommended) | `python3 scripts/workato-api.py sdk push --connector <path> [--connector-id <id>]` |
 | Manage OAuth profiles | `workato oauth-profiles ...` |
 | Manage API clients | `workato api-clients ...` |
@@ -529,38 +530,81 @@ workato guide structure <topic>       # related topics
 
 *Applies to: `.workatoenv`, `projects/**`, `connectors/**`*
 
-Pick the right one of three tools:
+Four tools, in priority order. **Reach for `wk` first** — it is the official
+Workato Labs CLI and it owns credentials, so the others borrow its token.
 
-### 1. Platform CLI (project management)
+### 1. `wk` (Workato Labs CLI) — the default
 
-Install: `pipx install workato-platform-cli`
+Install: `brew install workato-devs/tap/wk` (macOS/Linux) or
+`scoop bucket add workato-devs https://github.com/workato-devs/scoop-bucket && scoop install wk` (Windows).
 
-Common commands:
-- Init: `workato init --non-interactive --profile <profile> --project-id <id> --folder-name "projects/<name>"`
-- Pull: `workato projects use "<name>" && workato pull`
-- Push: `workato push`
-- Push (with restart): `workato push --restart-recipes`
-- Push (with delete): `workato push --delete`
-- Start a recipe: `workato recipes start --id <id>` / `workato recipes start --all`
+```bash
+wk auth login --environment dev --region us   # once, per environment
+wk auth status                                # which workspace am I on?
+```
 
-### 2. API helper (complements the CLI)
+Use it for:
 
-A script that fills the gaps in Platform CLI by calling the API directly. Profile auto-resolves from `workspace_id`.
+| Task | Command |
+|---|---|
+| Sync a project | `wk pull` / `wk push` / `wk status` / `wk diff` |
+| List recipes | `wk recipes list [--folder N] [--status running\|stopped]` |
+| Read jobs | `wk recipes jobs <recipe-id> [--status failed] [--limit N]` |
+| One job's step traces | `wk recipes jobs get <recipe-id> <job-id>` |
+| Retry jobs | `wk recipes jobs retry ...` |
+| Connections | `wk connections list/get/create/update/delete` |
+| Custom SDK connectors | `wk connectors list` |
+| Folders, projects, tags | `wk folders ...` / `wk tags ...` |
+| API Platform | `wk api collections/endpoints/clients ...` |
+| MCP servers | `wk mcp servers ...` |
+| Lint a recipe | `wk lint <file> --skills-path kit/skills` |
+
+Add `--json` to any command for machine-readable output.
+
+> **`wk` has no environment guard.** `wk recipes start 123` will start a recipe
+> in production without complaint. For anything that mutates state outside
+> `wk push`, prefer the kit wrappers below, which refuse against non-dev.
+
+### 2. API helper (only what `wk` does not do)
 
 ```bash
 python3 scripts/workato-api.py <command>
 ```
 
-| Command | Use |
+It resolves the profile and token from `wk` (`wk auth status --json` +
+`wk auth token`), falling back to the Platform CLI profile store when `wk` is
+not set up. Nothing has to be authenticated twice.
+
+| Command | Why it is not `wk` |
 |---|---|
-| `jobs list --recipe-id <id> [--status <s>]` | List jobs |
-| `jobs get --recipe-id <id> --job-id <id>` | Job detail |
-| `connectors list-platform [--provider <name>]` | Pre-built connector info |
-| `connectors list-custom` | List custom connectors |
-| `recipes list [--folder-id <id>]` | List recipes (JSON) |
-| `sdk push --connector <path> [--connector-id <id>]` | Push a custom connector (**recommended**) |
-| `sdk pull (--connector-id <id> \| --name <name>)` | Pull a custom connector's source into `connectors/<name>/` |
-| `profile show` | Show the resolved profile |
+| `connectors list-platform [--provider <name>]` | `wk connectors list` returns only **custom SDK** connectors; this is pre-built connector metadata, and it is what `/sync-connectors` feeds into `docs/connectors/` and `skills/` |
+| `jobs tail --recipe-id <id>` | `wk recipes jobs` is a single fetch; this follows |
+| `recipes start <id>... [--folder N]` | delegates to `wk recipes start`, but **refuses unless the profile targets dev** |
+| `recipes stop <id>... [--folder N]` | same guard, delegates to `wk recipes stop` |
+| `deploy preview/run/status/list` | environment promotion via the Projects API — no `wk` command |
+| `sdk push/pull/test/...` | Connector SDK — no `wk` command |
+| `oauth-profiles list/get/create/update/delete` | custom OAuth profiles — listed as unsupported in `wk`'s known-limitations |
+| `profile show` | shows the resolved profile **and its environment**, which is what the deploy guards read |
+
+**Removed — use `wk` instead.** These fail with the replacement printed:
+
+| Was | Now |
+|---|---|
+| `workato-api.py jobs list` | `wk recipes jobs <recipe-id>` |
+| `workato-api.py jobs get` | `wk recipes jobs get <recipe-id> <job-id>` |
+| `workato-api.py recipes list` | `wk recipes list` |
+| `workato-api.py connectors list-custom` | `wk connectors list` |
+
+### 2b. Platform CLI (legacy; still used by `pull-project` / `push-project`)
+
+Install: `pipx install workato-platform-cli`
+
+The kit's project pull/push still goes through this because the local layout is
+`.workatoenv` + `projects/<name>/`, not `wk`'s `.wk/wk.toml` + `[[sync]]`.
+
+- Init: `workato init --non-interactive --profile <profile> --project-id <id> --folder-name "projects/<name>"`
+- Pull: `workato projects use "<name>" && workato pull`
+- Push: `workato push` (`--restart-recipes`, `--delete`)
 
 ### 3. Connector SDK CLI (custom connector development & local testing)
 
@@ -767,19 +811,21 @@ This rule applies to AI agents and human developers alike. It exists because:
 
 Run these in order. **Abort the push if any check fails. There is no confirmation-prompt escape hatch — the rule is inviolable.**
 
-1. **Read `.workatoenv`** and extract `workspace_id`.
-2. **Resolve the profile** via `python3 scripts/workato-api.py profile show`.
-3. **Confirm the profile name ends with `-dev`.** Anything else — `-test`, `-prod`, `-production`, `-staging`, `-qa`, or any non-`-dev` suffix — is a hard stop. Abort and tell the user:
+1. **Resolve the profile and its environment** via `python3 scripts/workato-api.py profile show`. Read the `environment` field.
+2. **Confirm `environment` is `dev`.** Anything else — `test`, `prod`, `production`, `staging`, `qa`, or `null` — is a hard stop. Abort and tell the user:
 
    ```
-   Refusing to push: the resolved profile is <profile-name>, which does not match the dev convention (<org>-dev).
+   Refusing to push: the resolved profile <profile-name> targets the <environment> environment.
    Push must target dev. Options:
-     (a) Switch to a dev profile: workato profiles use <org>-dev
-     (b) If <profile-name> is in fact your dev workspace, rename it to follow the <org>-dev convention.
-   To promote to test/prod, use the Deploy feature in the Workato UI.
+     (a) Switch to a dev profile: wk auth switch
+     (b) If this really is your dev workspace, re-register it with the right environment:
+         wk auth login --environment dev --region <region>
+   To promote to test/prod, use `deploy run` or the Deploy feature in the Workato UI.
    ```
 
-   Do **not** ask the user for confirmation to proceed. The convention exists specifically so that AI agents can reason about the target environment from the profile name alone; honoring custom names ad-hoc defeats the safety guarantee.
+   Do **not** ask the user for confirmation to proceed. The guard exists so an AI agent can reason about the target environment without inspecting the workspace; honoring an override ad-hoc defeats it.
+
+3. **When `environment` is `null`**, the profile came from the Platform CLI, which has no such field, and the environment was inferred from a `<org>-dev` name. Treat a name that does not follow the convention as a hard stop with the same message, and recommend moving the profile to `wk`, which records the environment explicitly.
 
 4. **Confirm `workspace_id` matches a dev workspace.** If your organization tags workspaces (e.g. in a comment field), verify the tag says dev.
 

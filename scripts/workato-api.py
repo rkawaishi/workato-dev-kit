@@ -1,28 +1,35 @@
 #!/usr/bin/env python3
 """Workato Platform API helper.
 
-Complements the official Workato Platform CLI with API calls for features
-not available in the CLI (jobs, connectors metadata, recipes list as JSON).
+Covers the gaps the Workato Labs CLI leaves. `wk` owns credentials, profiles,
+recipes, jobs, connections, folders, tags, API Platform and MCP servers; this
+script covers what wk's own docs/known-limitations.md lists as unsupported:
+
+  deploy           environment promotion via the Projects API
+  sdk              Connector SDK push/pull/test and the encrypted settings file
+  oauth-profiles   custom OAuth profiles
+  connectors       pre-built (platform) connector metadata -- wk's
+                   `connectors list` only returns custom SDK connectors
+  jobs tail        follow mode; wk's `recipes jobs` is a single fetch
+
+plus `recipes start|stop`, which delegates the call to wk but keeps the
+dev-only guard wk does not have.
 
 Authentication:
-  Reuses the same credentials as the Platform CLI (keyring + ~/.workato/profiles).
-  Supports workspace_id-based automatic profile resolution from .workatoenv,
-  so .workatoenv never needs to contain a profile name (Git-sharing safe).
+  Prefers wk: `wk auth status --json` resolves the profile and `wk auth token`
+  supplies the credential, so nothing has to be duplicated into a second
+  store. Falls back to the Platform CLI (keyring + ~/.workato/profiles,
+  with workspace_id auto-resolution from .workatoenv) when wk is absent or
+  has no profile, so a workspace that has not migrated keeps working.
 
 Usage:
-  python3 scripts/workato-api.py jobs list --recipe-id <id>
-    [--status <status>] [--limit <N>]
-  python3 scripts/workato-api.py jobs get --recipe-id <id> --job-id <id>
   python3 scripts/workato-api.py jobs tail --recipe-id <id>
     [--status <status>] [--interval <sec>] [--max-iterations <N>]
   python3 scripts/workato-api.py connectors list-platform [--provider <name>]
-  python3 scripts/workato-api.py connectors list-custom
-  python3 scripts/workato-api.py recipes list [--folder-id <id>]
-    [--status running|stopped]
-  python3 scripts/workato-api.py recipes start <id> [--dry-run]
-    (PUT /api/recipes/:id/start; requires <org>-dev profile)
-  python3 scripts/workato-api.py recipes stop <id> [--dry-run]
-    (PUT /api/recipes/:id/stop; requires <org>-dev profile)
+  python3 scripts/workato-api.py recipes start <id>... [--folder <id>]
+    [--no-wait] [--dry-run]     (delegates to `wk recipes start`; dev only)
+  python3 scripts/workato-api.py recipes stop <id>... [--folder <id>]
+    [--dry-run]                 (delegates to `wk recipes stop`; dev only)
   python3 scripts/workato-api.py sdk push --connector <path> [--title <t>]
     (auto-detects new vs. update by reading connector_id from
      connectors/docs/<name>.md frontmatter; saves ID back after initial create)
@@ -114,6 +121,134 @@ from pathlib import Path
 PROFILES_PATH = Path.home() / ".workato" / "profiles"
 KEYRING_SERVICE = "workato-platform-cli"
 
+# ---------------------------------------------------------------------------
+# wk delegation
+# ---------------------------------------------------------------------------
+#
+# `wk` (the Workato Labs CLI) owns credentials, profiles and every read this
+# helper used to duplicate. What is left here is what wk's own
+# docs/known-limitations.md lists as unsupported -- deploy, Connector SDK,
+# custom OAuth profiles, platform connector metadata -- plus the dev-only
+# mutation guard, which wk does not have.
+
+WK_BIN = os.environ.get("WK_BIN", "wk")
+
+# Fallback only. wk reports base_url on the profile, so this table is used
+# just when a profile predates that field.
+WK_REGION_URLS = {
+    "us": "https://www.workato.com",
+    "eu": "https://app.eu.workato.com",
+    "jp": "https://app.jp.workato.com",
+    "au": "https://app.au.workato.com",
+    "sg": "https://app.sg.workato.com",
+    "il": "https://app.il.workato.com",
+    "trial": "https://app.trial.workato.com",
+}
+
+# Reads that wk 1.0.x does at least as well as this helper did. Kept as
+# argparse stubs rather than deleted outright so muscle memory and any stale
+# skill text fail loudly with the replacement instead of a bare "unknown
+# command".
+DELEGATED_TO_WK = {
+    ("jobs", "list"): "wk recipes jobs <recipe-id> [--status succeeded|failed|all] [--limit N] [--json]",
+    ("jobs", "get"): "wk recipes jobs get <recipe-id> <job-id> [--json]",
+    ("recipes", "list"): "wk recipes list [--folder N] [--status running|stopped|all] [--json]",
+    ("connectors", "list-custom"): "wk connectors list [--search <term>] [--json]",
+}
+
+
+def run_wk(argv: list[str], _runner=None) -> subprocess.CompletedProcess:
+    """Invoke `wk` and capture its output. Never raises on a non-zero exit."""
+    runner = _runner if _runner is not None else subprocess.run
+    return runner(
+        [WK_BIN, *argv],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def wk_auth_status(explicit_profile: str | None = None, _runner=None) -> dict | None:
+    """Return wk's active (or --profile) auth profile, or None.
+
+    None means "wk cannot answer" -- not installed, no profile yet, or an
+    older build without --json. Every such case falls through to the Platform
+    CLI resolver, so a workspace that has not migrated keeps working.
+    """
+    argv = ["auth", "status", "--json"]
+    if explicit_profile:
+        argv += ["--profile", explicit_profile]
+    try:
+        proc = run_wk(argv, _runner=_runner)
+    except (FileNotFoundError, OSError):
+        return None
+    if proc.returncode != 0 or not (proc.stdout or "").strip():
+        return None
+    try:
+        data = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        return None
+    # `auth status` also reports connectivity; the profile may be nested.
+    if isinstance(data, dict) and isinstance(data.get("profile"), dict):
+        data = data["profile"]
+    return data if isinstance(data, dict) and data.get("name") else None
+
+
+def wk_auth_token(explicit_profile: str | None = None, _runner=None) -> str | None:
+    """Read the API token out of wk's credential store.
+
+    `wk auth token` exists for exactly this ("Intended for scripting"), so the
+    token never has to be duplicated into a second keyring entry.
+    """
+    argv = ["auth", "token"]
+    if explicit_profile:
+        argv += ["--profile", explicit_profile]
+    try:
+        proc = run_wk(argv, _runner=_runner)
+    except (FileNotFoundError, OSError):
+        return None
+    if proc.returncode != 0:
+        return None
+    token = (proc.stdout or "").strip()
+    return token or None
+
+
+def normalise_wk_profile(wk_profile: dict) -> dict:
+    """Map a wk profile onto the shape the rest of this script expects."""
+    base_url = (wk_profile.get("base_url") or "").rstrip("/")
+    if not base_url:
+        base_url = WK_REGION_URLS.get(str(wk_profile.get("region") or "us"), "")
+    return {
+        "region_url": base_url,
+        "workspace_id": wk_profile.get("workspace_id"),
+        # wk carries the environment as a first-class field, so guards no
+        # longer have to infer it from a `<org>-dev` naming convention.
+        "environment": wk_profile.get("environment"),
+        "_source": "wk",
+        "_wk_profile": wk_profile.get("name"),
+    }
+
+
+def _add_delegated_stub(sub, name: str, help_text: str):
+    """Register a removed subcommand so it fails with its replacement.
+
+    Deleting the parser outright would make `jobs list` report "invalid
+    choice", which says nothing about where the command went.
+    """
+    return sub.add_parser(name, help=help_text, description=help_text)
+
+
+def _delegated_exit(command: str, sub_command: str) -> None:
+    replacement = DELEGATED_TO_WK[(command, sub_command)]
+    print(
+        f"`workato-api.py {command} {sub_command}` has been removed: the "
+        f"Workato Labs CLI covers it.\n\n"
+        f"    {replacement}\n\n"
+        f"See framework/claude/rules/workato-cli.md for the full mapping.",
+        file=sys.stderr,
+    )
+    sys.exit(2)
+
 
 def load_profiles() -> dict:
     """Load ~/.workato/profiles JSON."""
@@ -154,10 +289,16 @@ def resolve_profile(
     """Resolve which profile to use.
 
     Resolution order:
+      0. wk (`wk auth status --json`), honouring --profile
       1. --profile <name> explicitly given
       2. .workatoenv workspace_id (walking up from `start_dir`, default cwd)
          -> match against all profiles
       3. current_profile from ~/.workato/profiles
+
+    wk comes first because it is the credential store the Labs toolchain
+    already maintains, and its profile carries `environment` explicitly.
+    Steps 1-3 are the Platform CLI fallback for workspaces that have not
+    migrated; they still work unchanged.
 
     `start_dir` is forwarded to find_workatoenv() so callers that
     operate on a specific project directory (e.g. sdk pull-project
@@ -165,6 +306,10 @@ def resolve_profile(
 
     Returns (profile_name, profile_dict).
     """
+    wk_profile = wk_auth_status(explicit_profile)
+    if wk_profile is not None:
+        return str(wk_profile["name"]), normalise_wk_profile(wk_profile)
+
     data = load_profiles()
     profiles = data.get("profiles", {})
 
@@ -249,20 +394,38 @@ def _get_token_from_os_keychain(profile_name: str) -> str | None:
     return None
 
 
-def get_token(profile_name: str) -> str:
+def get_token(profile_name: str, profile: dict | None = None) -> str:
     """Retrieve API token for a profile.
 
     Tries in order:
       1. WORKATO_API_TOKEN env var
+      1b. `wk auth token` -- when the profile came from wk
       2. Python keyring package (same as Platform CLI)
-      2b. OS keychain CLI (macOS security / Linux secret-tool) — when
+      2b. OS keychain CLI (macOS security / Linux secret-tool) - when
           keyring package is unavailable (e.g. pipx isolated env)
       3. ~/.workato/token_store.json
+
+    `profile` is the dict resolve_profile() returned. When it carries
+    `_source == "wk"` the credential lives in wk's store, so there is no
+    Platform CLI keyring entry to look for.
     """
     # 1. Environment variable
     env_token = os.environ.get("WORKATO_API_TOKEN")
     if env_token:
         return env_token
+
+    # 1b. wk credential store
+    if profile is not None and profile.get("_source") == "wk":
+        token = wk_auth_token(profile.get("_wk_profile") or profile_name)
+        if token:
+            return token
+        print(
+            f"Error: wk resolved profile '{profile_name}' but "
+            f"`wk auth token` returned nothing. Run `wk auth status` to "
+            f"check the credential store.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
     # 2. Keyring (Python package)
     try:
@@ -358,9 +521,6 @@ class WorkatoAPI:
             params["status"] = status
         result = self._request(f"/api/recipes/{recipe_id}/jobs", params)
         return result if isinstance(result, list) else result.get("items", [])
-
-    def jobs_get(self, recipe_id: int, job_id: str) -> dict:
-        return self._request(f"/api/recipes/{recipe_id}/jobs/{job_id}")
 
     # -- Connectors --
 
@@ -561,32 +721,6 @@ class WorkatoAPI:
             page += 1
         return all_recipes
 
-    def recipe_start(self, recipe_id: int) -> dict:
-        """PUT /api/recipes/:id/start — start a recipe.
-
-        State-changing; the caller must enforce the dev-profile
-        constraint (require_dev_profile_for_mutation) before invoking.
-        """
-        result = self._request(
-            f"/api/recipes/{recipe_id}/start", method="PUT",
-        )
-        if isinstance(result, dict):
-            return result.get("data", result.get("result", result))
-        return result  # type: ignore[return-value]
-
-    def recipe_stop(self, recipe_id: int) -> dict:
-        """PUT /api/recipes/:id/stop — stop a recipe.
-
-        State-changing; the caller must enforce the dev-profile
-        constraint (require_dev_profile_for_mutation) before invoking.
-        """
-        result = self._request(
-            f"/api/recipes/{recipe_id}/stop", method="PUT",
-        )
-        if isinstance(result, dict):
-            return result.get("data", result.get("result", result))
-        return result  # type: ignore[return-value]
-
     # -- Projects API: deploy --
 
     def project_deploy(
@@ -684,37 +818,57 @@ def infer_profile_env(profile_name: str) -> str | None:
     return None
 
 
-def require_dev_profile_for_mutation(profile_name: str, operation: str) -> None:
-    """Refuse a non-deploy state mutation unless the profile is <org>-dev.
+def resolve_env(profile_name: str, profile: dict | None = None) -> str | None:
+    """Determine the target environment for a resolved profile.
+
+    A wk profile states its environment outright, so use that. Platform CLI
+    profiles have no such field and fall back to the `<org>-<env>` naming
+    convention.
+    """
+    if profile:
+        declared = profile.get("environment")
+        if declared:
+            return str(declared).strip().lower()
+    return infer_profile_env(profile_name)
+
+
+def require_dev_profile_for_mutation(
+    profile_name: str, operation: str, profile: dict | None = None,
+) -> None:
+    """Refuse a non-deploy state mutation unless the target is dev.
 
     Used by commands like `recipes start` / `recipes stop` that mutate
     Workato state directly. The deploy-only promotion policy in
     workato-deployment-flow.md forbids such mutations against
     test/prod workspaces — those changes must arrive via `deploy run`.
 
+    `wk` has no equivalent guard: `wk recipes start` will happily start a
+    recipe in production. That is the reason this helper still wraps those
+    two commands instead of delegating them outright.
+
     Refuses with a clear message when:
-      - the profile name does not follow `<org>-<env>` (cannot prove dev), or
-      - the inferred env is anything other than `dev`.
+      - the environment cannot be determined, or
+      - it is anything other than `dev`.
     """
-    env = infer_profile_env(profile_name)
+    env = resolve_env(profile_name, profile)
     if env == "dev":
         return
     if env is None:
         print(
             f"Error: refusing to {operation} — cannot prove the resolved "
-            f"profile '{profile_name}' targets a dev workspace. The "
-            f"safety guard requires `<org>-dev` naming (e.g. acme-dev). "
-            f"Rename the profile or pass --profile <name> to select one "
-            f"that follows the convention.",
+            f"profile '{profile_name}' targets a dev workspace. Either use a "
+            f"wk profile, which records its environment explicitly "
+            f"(`wk auth login --environment dev`), or follow the Platform CLI "
+            f"`<org>-dev` naming convention (e.g. acme-dev). "
+            f"Pass --profile <name> to select a different one.",
             file=sys.stderr,
         )
         sys.exit(1)
     print(
-        f"Error: refusing to {operation} against `{env}` workspace "
-        f"(profile '{profile_name}'). Direct state mutations are "
-        f"allowed only on `<org>-dev` profiles; promote changes to "
-        f"test/prod via `deploy run` instead. See "
-        f"workato-deployment-flow.md.",
+        f"Error: refusing to {operation} against the `{env}` workspace "
+        f"(profile '{profile_name}'). Direct state mutations are allowed "
+        f"only against dev; promote changes to test/prod via `deploy run` "
+        f"instead. See workato-deployment-flow.md.",
         file=sys.stderr,
     )
     sys.exit(1)
@@ -844,18 +998,6 @@ def poll_deployment(
 # ---------------------------------------------------------------------------
 
 
-def cmd_jobs_list(api: WorkatoAPI, args: argparse.Namespace):
-    jobs = api.jobs_list(args.recipe_id, args.status)
-    if args.limit is not None and args.limit >= 0:
-        jobs = jobs[: args.limit]
-    print(json.dumps(jobs, indent=2, ensure_ascii=False))
-
-
-def cmd_jobs_get(api: WorkatoAPI, args: argparse.Namespace):
-    job = api.jobs_get(args.recipe_id, args.job_id)
-    print(json.dumps(job, indent=2, ensure_ascii=False))
-
-
 def jobs_tail_loop(
     api: WorkatoAPI,
     recipe_id: int,
@@ -930,54 +1072,73 @@ def cmd_connectors_list_platform(api: WorkatoAPI, args: argparse.Namespace):
     print(json.dumps(connectors, indent=2, ensure_ascii=False))
 
 
-def cmd_connectors_list_custom(api: WorkatoAPI, args: argparse.Namespace):
-    connectors = api.connectors_list_custom()
-    print(json.dumps(connectors, indent=2, ensure_ascii=False))
+def _recipes_mutate_via_wk(
+    verb: str, args: argparse.Namespace, _runner=None,
+) -> None:
+    """Guard, then hand the actual call to `wk recipes <verb>`.
 
-
-def cmd_recipes_list(api: WorkatoAPI, args: argparse.Namespace):
-    recipes = api.recipes_list(args.folder_id)
-    if args.status is not None:
-        want_running = (args.status == "running")
-        recipes = [
-            r for r in recipes
-            if isinstance(r, dict) and bool(r.get("running")) is want_running
-        ]
-    print(json.dumps(recipes, indent=2, ensure_ascii=False))
-
-
-def cmd_recipes_start(api: WorkatoAPI, args: argparse.Namespace):
-    """Start a recipe by ID. Refuses against non-`<org>-dev` profiles."""
-    require_dev_profile_for_mutation(
-        args._resolved_profile_name, f"start recipe {args.recipe_id}",
+    wk does start/stop better than this helper did -- it takes several ids,
+    a --folder scope, and waits for the recipe to reach the target state --
+    but it has no notion of a protected environment. So the guard stays on
+    this side and only the API call is delegated.
+    """
+    targets = [str(i) for i in (args.recipe_id or [])]
+    label = (
+        f"{verb} every recipe in folder {args.folder}"
+        if args.folder is not None
+        else f"{verb} recipe(s) {', '.join(targets)}"
     )
+    require_dev_profile_for_mutation(
+        args._resolved_profile_name, label, getattr(args, "_resolved_profile", None),
+    )
+
+    argv = ["recipes", verb, *targets]
+    if args.folder is not None:
+        argv += ["--folder", str(args.folder)]
+    if verb == "start" and getattr(args, "no_wait", False):
+        argv.append("--no-wait")
+    if args._resolved_profile_name:
+        argv += ["--profile", args._resolved_profile_name]
+    argv.append("--json")
+
     if args.dry_run:
-        url = f"{api.base_url}/api/recipes/{args.recipe_id}/start"
         print(json.dumps({
             "mode": "dry-run",
-            "would_call": {"method": "PUT", "url": url, "body": None},
+            "would_run": [WK_BIN, *argv],
             "profile": args._resolved_profile_name,
+            "environment": resolve_env(
+                args._resolved_profile_name,
+                getattr(args, "_resolved_profile", None),
+            ),
         }, indent=2, ensure_ascii=False))
         return
-    result = api.recipe_start(args.recipe_id)
-    print(json.dumps(result, indent=2, ensure_ascii=False))
+
+    try:
+        proc = run_wk(argv, _runner=_runner)
+    except (FileNotFoundError, OSError):
+        print(
+            f"Error: `{WK_BIN}` not found. Recipe start/stop is delegated to "
+            f"the Workato Labs CLI; install it with "
+            f"`brew install workato-devs/tap/wk` (or scoop on Windows).",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if proc.stdout:
+        sys.stdout.write(proc.stdout)
+    if proc.returncode != 0:
+        if proc.stderr:
+            sys.stderr.write(proc.stderr)
+        sys.exit(proc.returncode)
 
 
-def cmd_recipes_stop(api: WorkatoAPI, args: argparse.Namespace):
-    """Stop a recipe by ID. Refuses against non-`<org>-dev` profiles."""
-    require_dev_profile_for_mutation(
-        args._resolved_profile_name, f"stop recipe {args.recipe_id}",
-    )
-    if args.dry_run:
-        url = f"{api.base_url}/api/recipes/{args.recipe_id}/stop"
-        print(json.dumps({
-            "mode": "dry-run",
-            "would_call": {"method": "PUT", "url": url, "body": None},
-            "profile": args._resolved_profile_name,
-        }, indent=2, ensure_ascii=False))
-        return
-    result = api.recipe_stop(args.recipe_id)
-    print(json.dumps(result, indent=2, ensure_ascii=False))
+def cmd_recipes_start(_api: WorkatoAPI | None, args: argparse.Namespace):
+    """Start recipes. Refuses unless the resolved profile targets dev."""
+    _recipes_mutate_via_wk("start", args)
+
+
+def cmd_recipes_stop(_api: WorkatoAPI | None, args: argparse.Namespace):
+    """Stop recipes. Refuses unless the resolved profile targets dev."""
+    _recipes_mutate_via_wk("stop", args)
 
 
 # ---------------------------------------------------------------------------
@@ -1000,7 +1161,7 @@ def _deploy_resolve_profile_and_api(args: argparse.Namespace) -> tuple[str, dict
             file=sys.stderr,
         )
         sys.exit(1)
-    token = get_token(profile_name)
+    token = get_token(profile_name, profile)
     return profile_name, profile, WorkatoAPI(region_url, token)
 
 
@@ -2073,15 +2234,34 @@ def cmd_sdk_edit(_api: WorkatoAPI, args: argparse.Namespace):
 
 
 def cmd_profile_show(_api: WorkatoAPI, args: argparse.Namespace):
-    """Show resolved profile info (without token)."""
+    """Show the resolved profile (never the token).
+
+    The `environment` field is what the deploy and mutation guards read, so
+    it is the important line here: a wk profile states it outright, while a
+    Platform CLI profile only has it inferred from `<org>-<env>` naming.
+    """
     profile_name, profile = resolve_profile(args.profile)
-    env = find_workatoenv()
+    source = profile.get("_source", "workato-platform-cli")
     info = {
         "resolved_profile": profile_name,
+        "source": source,
         "region_url": profile.get("region_url", ""),
         "workspace_id": profile.get("workspace_id"),
-        "workatoenv": env,
-        "resolution_method": (
+        "environment": resolve_env(profile_name, profile),
+        "environment_source": (
+            "wk profile field"
+            if profile.get("environment")
+            else "inferred from `<org>-<env>` profile name"
+        ),
+    }
+    if source == "wk":
+        info["resolution_method"] = (
+            "wk auth status --profile" if args.profile else "wk active profile"
+        )
+    else:
+        env = find_workatoenv()
+        info["workatoenv"] = env
+        info["resolution_method"] = (
             "explicit --profile"
             if args.profile
             else "workspace_id from .workatoenv"
@@ -2091,8 +2271,7 @@ def cmd_profile_show(_api: WorkatoAPI, args: argparse.Namespace):
             and profile.get("workspace_id") is not None
             and str(env["workspace_id"]) == str(profile.get("workspace_id"))
             else "current_profile"
-        ),
-    }
+        )
     print(json.dumps(info, indent=2, ensure_ascii=False))
 
 
@@ -2119,32 +2298,12 @@ def main():
     jobs_parser = subparsers.add_parser("jobs", help="Manage recipe jobs")
     jobs_sub = jobs_parser.add_subparsers(dest="jobs_command")
 
-    jobs_list_p = jobs_sub.add_parser(
-        "list",
-        help="List jobs for a recipe",
-        description=(
-            "List jobs for a recipe in reverse-chronological order. "
-            "Optionally filter by status (e.g. failed, success). "
-            "--limit caps the output client-side. Read-only."
-        ),
+    _add_delegated_stub(
+        jobs_sub, "list", "Removed: use `wk recipes jobs`",
     )
-    jobs_list_p.add_argument("--recipe-id", type=int, required=True)
-    jobs_list_p.add_argument("--status", default=None, help="Filter by status")
-    jobs_list_p.add_argument(
-        "--limit", type=int, default=None,
-        help="Cap the number of jobs returned (client-side)",
+    _add_delegated_stub(
+        jobs_sub, "get", "Removed: use `wk recipes jobs get`",
     )
-
-    jobs_get_p = jobs_sub.add_parser(
-        "get",
-        help="Get job details",
-        description=(
-            "Show the full input/output payload, error, and metadata for a "
-            "single job. Read-only."
-        ),
-    )
-    jobs_get_p.add_argument("--recipe-id", type=int, required=True)
-    jobs_get_p.add_argument("--job-id", type=str, required=True)
 
     jobs_tail_p = jobs_sub.add_parser(
         "tail",
@@ -2198,44 +2357,26 @@ def main():
         "--provider", default=None, help="Filter by provider name"
     )
 
-    conn_sub.add_parser(
-        "list-custom",
-        help="List custom connectors",
-        description=(
-            "List custom connectors in the connected workspace. Read-only."
-        ),
+    _add_delegated_stub(
+        conn_sub, "list-custom", "Removed: use `wk connectors list`",
     )
 
-    # -- recipes --
     recipes_parser = subparsers.add_parser("recipes", help="Manage recipes")
     recipes_sub = recipes_parser.add_subparsers(dest="recipes_command")
 
-    recipes_list_p = recipes_sub.add_parser(
-        "list",
-        help="List recipes (JSON)",
-        description=(
-            "List recipes in the connected workspace as JSON, with "
-            "pagination. Optionally filter by folder, and by run state "
-            "(running/stopped, filtered client-side on the `running` "
-            "field). Read-only."
-        ),
-    )
-    recipes_list_p.add_argument(
-        "--folder-id", type=int, default=None, help="Filter by folder ID"
-    )
-    recipes_list_p.add_argument(
-        "--status", choices=("running", "stopped"), default=None,
-        help="Filter by run state (client-side filter on the `running` field)",
+    _add_delegated_stub(
+        recipes_sub, "list", "Removed: use `wk recipes list`",
     )
 
     recipes_start_p = recipes_sub.add_parser(
         "start",
         help="Start a recipe (PUT /api/recipes/:id/start)",
         description=(
-            "Start a recipe by numeric ID. Refuses unless the resolved "
-            "profile is `<org>-dev` — direct mutations against test/prod "
-            "violate the deploy-only promotion policy. Use --dry-run to "
-            "print the intended request without sending it."
+            "Start recipes, delegating the call to `wk recipes start`. "
+            "Refuses unless the resolved profile targets dev — direct "
+            "mutations against test/prod violate the deploy-only promotion "
+            "policy, and wk has no such guard of its own. Use --dry-run to "
+            "print the wk invocation without running it."
         ),
         epilog=(
             "Examples:\n"
@@ -2243,25 +2384,38 @@ def main():
             "  python3 scripts/workato-api.py recipes start 12345 --dry-run\n\n"
             "  # Start a recipe in the dev workspace\n"
             "  python3 scripts/workato-api.py recipes start 12345\n\n"
-            "  # Refused: profile is not `<org>-dev`\n"
+            "  # Start every recipe in a folder\n"
+            "  python3 scripts/workato-api.py recipes start --folder 678\n\n"
+            "  # Refused: profile does not target dev\n"
             "  python3 scripts/workato-api.py recipes start 12345 --profile acme-prod\n"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    recipes_start_p.add_argument("recipe_id", type=int, help="Recipe ID")
+    recipes_start_p.add_argument(
+        "recipe_id", type=int, nargs="*", help="Recipe ID(s)",
+    )
+    recipes_start_p.add_argument(
+        "--folder", type=int, default=None,
+        help="Start every recipe in this folder instead of listing IDs",
+    )
+    recipes_start_p.add_argument(
+        "--no-wait", action="store_true",
+        help="Do not wait for the recipe to become active",
+    )
     recipes_start_p.add_argument(
         "--dry-run", action="store_true",
-        help="Print the intended PUT request without sending it",
+        help="Print the wk invocation without running it",
     )
 
     recipes_stop_p = recipes_sub.add_parser(
         "stop",
         help="Stop a recipe (PUT /api/recipes/:id/stop)",
         description=(
-            "Stop a recipe by numeric ID. Refuses unless the resolved "
-            "profile is `<org>-dev` — direct mutations against test/prod "
-            "violate the deploy-only promotion policy. Use --dry-run to "
-            "print the intended request without sending it."
+            "Stop recipes, delegating the call to `wk recipes stop`. "
+            "Refuses unless the resolved profile targets dev — direct "
+            "mutations against test/prod violate the deploy-only promotion "
+            "policy, and wk has no such guard of its own. Use --dry-run to "
+            "print the wk invocation without running it."
         ),
         epilog=(
             "Examples:\n"
@@ -2270,10 +2424,16 @@ def main():
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    recipes_stop_p.add_argument("recipe_id", type=int, help="Recipe ID")
+    recipes_stop_p.add_argument(
+        "recipe_id", type=int, nargs="*", help="Recipe ID(s)",
+    )
+    recipes_stop_p.add_argument(
+        "--folder", type=int, default=None,
+        help="Stop every recipe in this folder instead of listing IDs",
+    )
     recipes_stop_p.add_argument(
         "--dry-run", action="store_true",
-        help="Print the intended PUT request without sending it",
+        help="Print the wk invocation without running it",
     )
 
     # -- deploy (Projects API) --
@@ -2819,6 +2979,11 @@ def main():
             deploy_parser.print_help()
         return
 
+    # Removed reads: fail with the wk replacement before touching credentials.
+    _sub_for_stub = getattr(args, f"{args.command.replace('-', '_')}_command", None)
+    if (args.command, _sub_for_stub) in DELEGATED_TO_WK:
+        _delegated_exit(args.command, _sub_for_stub)
+
     # Resolve profile and create API client
     profile_name, profile = resolve_profile(args.profile)
     region_url = profile.get("region_url", "")
@@ -2828,22 +2993,21 @@ def main():
         )
         sys.exit(1)
 
-    token = get_token(profile_name)
-    api = WorkatoAPI(region_url, token)
-    # Make the resolved profile name visible to handlers that need to
-    # apply env-aware guards (e.g. recipes start/stop's dev-only check).
+    # recipes start/stop delegate the call to wk, so they never need a token
+    # of their own -- only the guard, which reads the resolved profile.
     args._resolved_profile_name = profile_name
+    args._resolved_profile = profile
+    if (args.command, _sub_for_stub) in (("recipes", "start"), ("recipes", "stop")):
+        (cmd_recipes_start if _sub_for_stub == "start" else cmd_recipes_stop)(None, args)
+        return
+
+    token = get_token(profile_name, profile)
+    api = WorkatoAPI(region_url, token)
 
     # Dispatch
     commands = {
-        ("jobs", "list"): cmd_jobs_list,
-        ("jobs", "get"): cmd_jobs_get,
         ("jobs", "tail"): cmd_jobs_tail,
         ("connectors", "list-platform"): cmd_connectors_list_platform,
-        ("connectors", "list-custom"): cmd_connectors_list_custom,
-        ("recipes", "list"): cmd_recipes_list,
-        ("recipes", "start"): cmd_recipes_start,
-        ("recipes", "stop"): cmd_recipes_stop,
         ("sdk", "push"): cmd_sdk_push,
         ("sdk", "pull"): cmd_sdk_pull,
         ("sdk", "generate-schema"): cmd_sdk_generate_schema,
