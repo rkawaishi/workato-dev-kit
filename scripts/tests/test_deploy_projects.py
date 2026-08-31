@@ -342,7 +342,7 @@ def _patch_profile(name: str, region_url: str = "https://example.com"):
     wa.resolve_profile = lambda explicit: (
         (explicit, pool[explicit]) if explicit else (name, pool[name])
     )
-    wa.get_token = lambda _n: "fake-token"
+    wa.get_token = lambda _n, _profile=None: "fake-token"
 
     def restore():
         wa.load_profiles = saved_load

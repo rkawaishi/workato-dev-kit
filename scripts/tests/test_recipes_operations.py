@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
-"""Tests for recipes start / stop / list --status in workato-api.py.
+"""Tests for recipes start / stop in workato-api.py.
+
+`recipes list` is gone -- `wk recipes list` covers it. start/stop delegate the
+API call to `wk recipes start|stop` but keep the dev-only guard, which wk does
+not have, so these tests assert the guard fires before wk is ever spawned.
 
 Covers:
   - require_dev_profile_for_mutation (refuses test/prod/None)
-  - cmd_recipes_start / cmd_recipes_stop env guard + --dry-run + happy path
-  - cmd_recipes_list --status running|stopped filter
+  - resolve_env prefers a wk profile's `environment` over name inference
+  - cmd_recipes_start / cmd_recipes_stop guard + --dry-run + wk argv
 
 Run with:
     python3 scripts/tests/test_recipes_operations.py
@@ -107,198 +111,170 @@ def test_require_dev_error_includes_operation_label():
 
 
 # ---------------------------------------------------------------------------
-# cmd_recipes_start — guard + --dry-run + real PUT
+# resolve_env
 # ---------------------------------------------------------------------------
 
 
-class _RecordingAPI:
-    def __init__(self, base_url="https://workato.example.com"):
-        self.base_url = base_url
+def test_resolve_env_prefers_wk_environment_field():
+    """A wk profile states its environment; naming must not override it."""
+    profile = {"environment": "prod", "_source": "wk"}
+    assert wa.resolve_env("anything-dev", profile) == "prod"
+
+
+def test_resolve_env_falls_back_to_name_when_no_field():
+    assert wa.resolve_env("acme-dev", {"region_url": "https://x"}) == "dev"
+
+
+def test_resolve_env_normalises_case_and_whitespace():
+    assert wa.resolve_env("x", {"environment": " DEV "}) == "dev"
+
+
+def test_guard_refuses_wk_prod_profile_despite_dev_name():
+    """The regression this guard exists for: a dev-looking name on prod."""
+    exited, code, err = _capture_stderr_exit(
+        lambda: wa.require_dev_profile_for_mutation(
+            "acme-dev", "start recipe 1", {"environment": "prod"},
+        )
+    )
+    assert exited and code == 1
+    assert "prod" in err
+
+
+# ---------------------------------------------------------------------------
+# cmd_recipes_start / cmd_recipes_stop — guard + --dry-run + wk delegation
+# ---------------------------------------------------------------------------
+
+
+class _RecordingRunner:
+    """Stands in for subprocess.run so no wk process is spawned."""
+
+    def __init__(self, returncode=0, stdout="{}", stderr=""):
         self.calls: list = []
+        self._rc, self._out, self._err = returncode, stdout, stderr
 
-    def recipe_start(self, recipe_id):
-        self.calls.append(("start", recipe_id))
-        return {"id": recipe_id, "running": True}
-
-    def recipe_stop(self, recipe_id):
-        self.calls.append(("stop", recipe_id))
-        return {"id": recipe_id, "running": False}
+    def __call__(self, argv, **_kw):
+        self.calls.append(argv)
+        return SimpleNamespace(
+            args=argv, returncode=self._rc, stdout=self._out, stderr=self._err,
+        )
 
 
-class _ExplodingAPI:
-    base_url = "https://workato.example.com"
+def _explode(*_a, **_kw):
+    raise AssertionError("wk invoked despite guard refusal")
 
-    def recipe_start(self, *_a, **_kw):
-        raise AssertionError("recipe_start called despite guard refusal")
 
-    def recipe_stop(self, *_a, **_kw):
-        raise AssertionError("recipe_stop called despite guard refusal")
+def _args(**kw):
+    base = dict(
+        recipe_id=[1], folder=None, no_wait=False, dry_run=False,
+        _resolved_profile_name="acme-dev", _resolved_profile=None,
+    )
+    base.update(kw)
+    return SimpleNamespace(**base)
 
 
 def test_start_refuses_when_profile_is_test():
-    api = _ExplodingAPI()
-    args = SimpleNamespace(
-        recipe_id=1, dry_run=False, _resolved_profile_name="acme-test",
-    )
     exited, code, err = _capture_stderr_exit(
-        lambda: wa.cmd_recipes_start(api, args)
+        lambda: wa._recipes_mutate_via_wk(
+            "start", _args(_resolved_profile_name="acme-test"), _runner=_explode,
+        )
     )
     assert exited and code == 1
     assert "test" in err
 
 
 def test_stop_refuses_when_profile_is_prod():
-    api = _ExplodingAPI()
-    args = SimpleNamespace(
-        recipe_id=1, dry_run=False, _resolved_profile_name="acme-prod",
-    )
     exited, code, err = _capture_stderr_exit(
-        lambda: wa.cmd_recipes_stop(api, args)
+        lambda: wa._recipes_mutate_via_wk(
+            "stop", _args(_resolved_profile_name="acme-prod"), _runner=_explode,
+        )
     )
     assert exited and code == 1
     assert "prod" in err
 
 
-def test_start_dry_run_does_not_call_api():
-    api = _RecordingAPI()
-    args = SimpleNamespace(
-        recipe_id=42, dry_run=True, _resolved_profile_name="acme-dev",
+def test_guard_runs_before_wk_is_spawned():
+    runner = _RecordingRunner()
+    _capture_stderr_exit(
+        lambda: wa._recipes_mutate_via_wk(
+            "start", _args(_resolved_profile_name="acme-prod"), _runner=runner,
+        )
     )
-    out = _capture_stdout(lambda: wa.cmd_recipes_start(api, args))
+    assert runner.calls == []
+
+
+def test_start_dry_run_does_not_invoke_wk():
+    runner = _RecordingRunner()
+    out = _capture_stdout(
+        lambda: wa._recipes_mutate_via_wk(
+            "start", _args(recipe_id=[42], dry_run=True), _runner=runner,
+        )
+    )
     parsed = json.loads(out)
     assert parsed["mode"] == "dry-run"
-    assert parsed["would_call"]["method"] == "PUT"
-    assert parsed["would_call"]["url"].endswith("/api/recipes/42/start")
+    assert parsed["would_run"][1:4] == ["recipes", "start", "42"]
     assert parsed["profile"] == "acme-dev"
-    assert api.calls == []
+    assert runner.calls == []
 
 
-def test_stop_dry_run_does_not_call_api():
-    api = _RecordingAPI()
-    args = SimpleNamespace(
-        recipe_id=7, dry_run=True, _resolved_profile_name="acme-dev",
+def test_stop_dry_run_does_not_invoke_wk():
+    runner = _RecordingRunner()
+    out = _capture_stdout(
+        lambda: wa._recipes_mutate_via_wk(
+            "stop", _args(recipe_id=[7], dry_run=True), _runner=runner,
+        )
     )
-    out = _capture_stdout(lambda: wa.cmd_recipes_stop(api, args))
     parsed = json.loads(out)
-    assert parsed["mode"] == "dry-run"
-    assert parsed["would_call"]["url"].endswith("/api/recipes/7/stop")
-    assert api.calls == []
+    assert parsed["would_run"][1:4] == ["recipes", "stop", "7"]
+    assert runner.calls == []
 
 
-def test_start_happy_path_invokes_api():
-    api = _RecordingAPI()
-    args = SimpleNamespace(
-        recipe_id=100, dry_run=False, _resolved_profile_name="acme-dev",
+def test_start_happy_path_invokes_wk_with_profile_and_json():
+    runner = _RecordingRunner(stdout='{"ok":true}')
+    out = _capture_stdout(
+        lambda: wa._recipes_mutate_via_wk(
+            "start", _args(recipe_id=[100, 200]), _runner=runner,
+        )
     )
-    out = _capture_stdout(lambda: wa.cmd_recipes_start(api, args))
-    parsed = json.loads(out)
-    assert parsed == {"id": 100, "running": True}
-    assert api.calls == [("start", 100)]
+    assert out == '{"ok":true}'
+    argv = runner.calls[0]
+    assert argv[1:4] == ["recipes", "start", "100"]
+    assert "200" in argv
+    # The guard resolved a profile; wk must act on that same one, not on
+    # whatever its own active profile happens to be.
+    assert argv[argv.index("--profile") + 1] == "acme-dev"
+    assert argv[-1] == "--json"
 
 
-def test_stop_happy_path_invokes_api():
-    api = _RecordingAPI()
-    args = SimpleNamespace(
-        recipe_id=200, dry_run=False, _resolved_profile_name="acme-dev",
+def test_folder_scope_is_forwarded():
+    runner = _RecordingRunner()
+    wa._recipes_mutate_via_wk(
+        "stop", _args(recipe_id=[], folder=678), _runner=runner,
     )
-    out = _capture_stdout(lambda: wa.cmd_recipes_stop(api, args))
-    parsed = json.loads(out)
-    assert parsed == {"id": 200, "running": False}
-    assert api.calls == [("stop", 200)]
+    argv = runner.calls[0]
+    assert argv[argv.index("--folder") + 1] == "678"
+
+
+def test_no_wait_only_applies_to_start():
+    runner = _RecordingRunner()
+    wa._recipes_mutate_via_wk("start", _args(no_wait=True), _runner=runner)
+    assert "--no-wait" in runner.calls[0]
+    runner2 = _RecordingRunner()
+    wa._recipes_mutate_via_wk("stop", _args(no_wait=True), _runner=runner2)
+    assert "--no-wait" not in runner2.calls[0]
+
+
+def test_wk_failure_exit_code_propagates():
+    runner = _RecordingRunner(returncode=3, stdout="", stderr="boom")
+    exited, code, err = _capture_stderr_exit(
+        lambda: wa._recipes_mutate_via_wk("start", _args(), _runner=runner)
+    )
+    assert exited and code == 3
+    assert "boom" in err
 
 
 # ---------------------------------------------------------------------------
-# cmd_recipes_list --status
+# CLI argparse
 # ---------------------------------------------------------------------------
-
-
-class _ListAPI:
-    def __init__(self, recipes):
-        self._recipes = recipes
-
-    def recipes_list(self, _folder_id):
-        return self._recipes
-
-
-def test_list_no_status_returns_all():
-    api = _ListAPI([
-        {"id": 1, "running": True},
-        {"id": 2, "running": False},
-    ])
-    args = SimpleNamespace(folder_id=None, status=None)
-    out = _capture_stdout(lambda: wa.cmd_recipes_list(api, args))
-    parsed = json.loads(out)
-    assert len(parsed) == 2
-
-
-def test_list_status_running_filters_to_running():
-    api = _ListAPI([
-        {"id": 1, "running": True, "name": "A"},
-        {"id": 2, "running": False, "name": "B"},
-        {"id": 3, "running": True, "name": "C"},
-    ])
-    args = SimpleNamespace(folder_id=None, status="running")
-    out = _capture_stdout(lambda: wa.cmd_recipes_list(api, args))
-    parsed = json.loads(out)
-    assert [r["id"] for r in parsed] == [1, 3]
-
-
-def test_list_status_stopped_filters_to_stopped():
-    api = _ListAPI([
-        {"id": 1, "running": True},
-        {"id": 2, "running": False},
-        {"id": 3, "running": False},
-    ])
-    args = SimpleNamespace(folder_id=None, status="stopped")
-    out = _capture_stdout(lambda: wa.cmd_recipes_list(api, args))
-    parsed = json.loads(out)
-    assert [r["id"] for r in parsed] == [2, 3]
-
-
-def test_list_status_treats_missing_running_field_as_stopped():
-    """Recipes without a `running` field should be treated as not-running."""
-    api = _ListAPI([
-        {"id": 1, "running": True},
-        {"id": 2},  # no `running` field
-    ])
-    args_running = SimpleNamespace(folder_id=None, status="running")
-    out_running = _capture_stdout(lambda: wa.cmd_recipes_list(api, args_running))
-    assert [r["id"] for r in json.loads(out_running)] == [1]
-
-    args_stopped = SimpleNamespace(folder_id=None, status="stopped")
-    out_stopped = _capture_stdout(lambda: wa.cmd_recipes_list(api, args_stopped))
-    assert [r["id"] for r in json.loads(out_stopped)] == [2]
-
-
-def test_list_status_skips_non_dict_entries():
-    """Defensive: a malformed list entry must not break the filter."""
-    api = _ListAPI([
-        {"id": 1, "running": True},
-        "not a dict",
-        None,
-    ])
-    args = SimpleNamespace(folder_id=None, status="running")
-    out = _capture_stdout(lambda: wa.cmd_recipes_list(api, args))
-    assert [r["id"] for r in json.loads(out)] == [1]
-
-
-# ---------------------------------------------------------------------------
-# CLI argparse — --status choices, recipe_id type
-# ---------------------------------------------------------------------------
-
-
-def test_cli_argparse_refuses_invalid_status():
-    import subprocess
-    result = subprocess.run(
-        [
-            sys.executable, str(SCRIPT),
-            "recipes", "list",
-            "--status", "paused",  # not in {running, stopped}
-        ],
-        capture_output=True, text=True,
-    )
-    assert result.returncode == 2
-    assert "invalid choice" in result.stderr
 
 
 def test_cli_argparse_refuses_non_int_recipe_id():

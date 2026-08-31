@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Tests for `jobs list --limit` and `jobs tail` in workato-api.py.
+"""Tests for `jobs tail` in workato-api.py.
+
+`jobs list` and `jobs get` are gone -- `wk recipes jobs` covers them. Follow
+mode has no wk equivalent, so it stays here.
 
 Covers:
-  - cmd_jobs_list --limit caps client-side
   - jobs_tail_loop: priming, new-job detection, max_iterations exit,
     KeyboardInterrupt exit, chronological ordering, defensive handling
     of malformed entries
@@ -42,7 +44,7 @@ def _capture_stdout(fn):
 
 
 # ---------------------------------------------------------------------------
-# cmd_jobs_list --limit
+# jobs_list client behaviour (now only reachable through tail)
 # ---------------------------------------------------------------------------
 
 
@@ -60,28 +62,6 @@ class _ScriptedJobsAPI:
         if len(self._pages) == 1:
             return self._pages[0]
         return self._pages.pop(0)
-
-
-def test_jobs_list_no_limit_returns_all():
-    api = _ScriptedJobsAPI([[{"id": i} for i in range(5)]])
-    args = SimpleNamespace(recipe_id=1, status=None, limit=None)
-    out = _capture_stdout(lambda: wa.cmd_jobs_list(api, args))
-    assert len(json.loads(out)) == 5
-
-
-def test_jobs_list_limit_caps_client_side():
-    api = _ScriptedJobsAPI([[{"id": i} for i in range(10)]])
-    args = SimpleNamespace(recipe_id=1, status=None, limit=3)
-    out = _capture_stdout(lambda: wa.cmd_jobs_list(api, args))
-    parsed = json.loads(out)
-    assert [r["id"] for r in parsed] == [0, 1, 2]
-
-
-def test_jobs_list_limit_zero_returns_empty():
-    api = _ScriptedJobsAPI([[{"id": 1}, {"id": 2}]])
-    args = SimpleNamespace(recipe_id=1, status=None, limit=0)
-    out = _capture_stdout(lambda: wa.cmd_jobs_list(api, args))
-    assert json.loads(out) == []
 
 
 # ---------------------------------------------------------------------------

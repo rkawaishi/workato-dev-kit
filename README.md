@@ -28,7 +28,7 @@ Covers recipe development, Workflow App construction, AI agent creation (Genie /
 
 - A [Workato](https://www.workato.com/) account and API token
 - [`wk`](https://github.com/workato-devs/wk) and the [`recipe-lint`](https://github.com/workato-devs/recipe-lint) plugin — the official Workato Labs CLI and linter
-- [Workato Platform CLI](https://github.com/workato-devs/workato-platform-cli) (`pipx install workato-platform-cli`) — still used for the asset types `wk` does not cover
+- [Workato Platform CLI](https://github.com/workato-devs/workato-platform-cli) (`pipx install workato-platform-cli`) — still used by `/pull-project` and `/push-project`, whose local layout is `.workatoenv` rather than `wk`'s `.wk/wk.toml`
 - One of the supported editors: [Claude Code](https://claude.com/claude-code), [Cursor](https://cursor.com), [Codex CLI](https://github.com/openai/codex), or [Gemini CLI](https://github.com/google-gemini/gemini-cli)
 
 ## Setup
@@ -62,8 +62,10 @@ git submodule add https://github.com/rkawaishi/workato-dev-kit.git kit
 # Run the setup script (creates symlinks/copies and config files)
 bash kit/setup.sh
 
-# Initialize the Platform CLI
-workato init
+# Authenticate. `wk` is the credential store; the kit's API helper borrows
+# its token, so nothing has to be set up twice.
+wk auth login --environment dev --region us
+workato init          # still needed for project pull/push
 
 # Initial commit
 git add -A && git commit -m "Initial setup with workato-dev-kit"

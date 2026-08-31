@@ -28,8 +28,9 @@ Push local changes to the Workato remote and verify the recipes work.
 python3 scripts/workato-api.py profile show
 ```
 
-- **Hard-block: if the resolved profile name does not end with `-dev`, abort immediately.** This covers `-test`, `-prod`, `-production`, `-staging`, `-qa`, and any other non-dev suffix. Do not offer a confirmation prompt — the rule is inviolable.
-- The only way to proceed is for the user to either (a) switch to a `-dev` profile, or (b) rename their dev profile to follow the `<org>-dev` convention. Tell the user which option applies.
+- **Hard-block unless the reported `environment` is `dev`.** `test`, `prod`, `staging`, `qa` and `null` all abort. Do not offer a confirmation prompt — the rule is inviolable.
+- A `wk` profile states its environment outright. A Platform CLI profile has none, so `environment` is inferred from `<org>-dev` naming and reads `null` when the name does not follow it — also a hard stop.
+- The only way to proceed is for the user to either (a) switch profiles (`wk auth switch`), or (b) re-register the workspace with the right environment (`wk auth login --environment dev`). Tell the user which option applies.
 - Direct push to test/prod is forbidden; promotion goes through the Deploy feature (`docs/platform/environments.md`).
 
 ### 1. Project validation
@@ -203,30 +204,36 @@ Workflow App UI verification checklist:
 
 ```bash
 # List recipes in the project (folder_id comes from .workatoenv)
-python3 scripts/workato-api.py recipes list --folder-id <folder_id>
+wk recipes list --folder <folder_id> --json
 
-# Start one recipe
-workato recipes start --id <recipe-id>
+# Start one or more recipes (guarded: refuses outside dev, then calls wk)
+python3 scripts/workato-api.py recipes start <recipe-id> [<recipe-id>...]
 
-# Start every recipe
-workato recipes start --all
+# Start every recipe in the project's folder
+python3 scripts/workato-api.py recipes start --folder <folder_id>
 ```
+
+> Go through the kit wrapper, not `wk recipes start` directly: `wk` has no
+> environment guard and will start recipes in production without complaint.
 
 ### 6. Job verification (`--test`)
 
 ```bash
 # Failed jobs for a recipe
-python3 scripts/workato-api.py jobs list --recipe-id <recipe-id> --status failed
+wk recipes jobs <recipe-id> --status failed --json
 
-# Job detail (error message)
-python3 scripts/workato-api.py jobs get --recipe-id <recipe-id> --job-id <job-id>
+# Job detail, including step traces
+wk recipes jobs get <recipe-id> <job-id> --json
+
+# Watch jobs arrive while you reproduce the problem
+python3 scripts/workato-api.py jobs tail --recipe-id <recipe-id>
 ```
 
 ### 7. Fix-error cycle
 
 If a job fails:
 
-1. Run `python3 scripts/workato-api.py jobs get` to read the error.
+1. Run `wk recipes jobs get <recipe-id> <job-id>` to read the error and its step traces.
 2. Diagnose:
    - **Datapill reference error**: wrong `path` → fix the recipe JSON.
    - **Connection not configured**: guide the user through connection auth in the UI.

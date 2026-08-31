@@ -35,8 +35,8 @@ Go through them in order. Stop at the first one that applies. Only ask the user 
 | Pull a project | `workato pull` |
 | Push a project | `workato push` (`--restart-recipes` / `--delete` available) |
 | List assets (DT, custom connectors, properties, etc.) | `workato assets [--folder-id <id>]` |
-| List recipes | `workato recipes list` or `python3 scripts/workato-api.py recipes list` |
-| Start / stop a recipe | `workato recipes start --id <id>` / `workato recipes start --all` |
+| List recipes | `wk recipes list [--folder N] [--status running\|stopped]` |
+| Start / stop a recipe | `python3 scripts/workato-api.py recipes start <id>... [--folder N]` (delegates to `wk`, refuses outside dev) |
 | Swap a recipe's connection | `workato recipes update-connection` |
 | Validate recipe JSON | `workato recipes validate <file>` |
 | Create a connection (when auth params can be JSON-ified) | `workato connections create --provider <p> --name <n> --input '<json>'` |
@@ -47,9 +47,10 @@ Go through them in order. Stop at the first one that applies. Only ask the user 
 | Create a data table | `workato data-tables create --name <n> --schema-json '<json>'` |
 | List data tables | `workato data-tables list` |
 | Manipulate properties | `workato properties list` / `workato properties upsert` |
-| List / show jobs | `python3 scripts/workato-api.py jobs list/get` |
+| List / show jobs | `wk recipes jobs <recipe-id>` / `wk recipes jobs get <recipe-id> <job-id>` |
+| Follow jobs as they run | `python3 scripts/workato-api.py jobs tail --recipe-id <id>` |
 | Look up pre-built connector info | `python3 scripts/workato-api.py connectors list-platform` |
-| List custom connectors | `python3 scripts/workato-api.py connectors list-custom` |
+| List custom connectors | `wk connectors list` |
 | Push a custom connector (recommended) | `python3 scripts/workato-api.py sdk push --connector <path> [--connector-id <id>]` |
 | Manage OAuth profiles | `workato oauth-profiles ...` |
 | Manage API clients | `workato api-clients ...` |
